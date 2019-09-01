@@ -36,9 +36,9 @@ This benchmark table shows the `Trial` level `final_return_ma` from SLM Lab. Thi
 
 The specs for these are contained in the [`slm_lab/spec/benchmark`](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/spec/benchmark) folder. All the results are shown below and the data folders including the metrics and models are uploaded to the [SLM Lab public Dropbox](https://www.dropbox.com/sh/urifraklxcvol70/AADxtt6zUNuVR6qe288JYNCNa?dl=0)
 
->The results for A2C (GAE), A2C (n-step), PPO, DQN, DDQN+PER were uploaded in [PR 396](https://github.com/kengz/SLM-Lab/pull/396).
+>Click on the algorithm to see the result upload Pull Request.
 
-| Env. \ Alg. | A2C (GAE) | A2C (n-step) | PPO | DQN | DDQN+PER |
+| Env. \ Alg. | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/396) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/396) | [PPO](https://github.com/kengz/SLM-Lab/pull/396) | [DQN](https://github.com/kengz/SLM-Lab/pull/396) | [DDQN+PER](https://github.com/kengz/SLM-Lab/pull/396) |
 |:---|---|---|---|---|---|
 | Breakout <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232119-554cf680-b37a-11e9-9059-3e49bbb799d2.png"><img src="https://user-images.githubusercontent.com/8209263/62232118-554cf680-b37a-11e9-9d5b-dd2ddf527305.png"></details> | 389.99 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62019989-0171c000-b176-11e9-94da-017b146afe65.png"></details> | 391.32 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020340-6c6fc680-b177-11e9-8aa1-9ac5c2001783.png"></details> | **425.89** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067085-c0b28f00-b1e7-11e9-9dd5-c52b6104878f.png"></details> | 65.04 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100441-9ba13900-b246-11e9-9373-95c6063915ab.png"></details> | 181.72 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230967-dd7dcc80-b377-11e9-965b-60a9f3d5a7a1.png"></details> |
 | Pong <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232135-5b42d780-b37a-11e9-9454-ff2d109ef4f4.png"><img src="https://user-images.githubusercontent.com/8209263/62232134-5b42d780-b37a-11e9-892f-a84ea8881e78.png"></details> | 20.04 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020247-10a53d80-b177-11e9-9f0d-1433d4d87210.png"></details> | 19.66 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020342-6f6ab700-b177-11e9-824e-75f431dc14ec.png"></details> | 20.09 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067100-c6a87000-b1e7-11e9-919e-ad68e4166213.png"></details> | 18.34 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100450-9fcd5680-b246-11e9-8170-2ad4473e8294.png"></details> | **20.44** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230975-e2428080-b377-11e9-8970-6917ae80c0b4.png"></details> |
@@ -57,9 +57,9 @@ The specs for these are contained in the [`slm_lab/spec/benchmark`](https://gith
 
 [Roboschool](https://github.com/openai/roboschool) by OpenAI offers free open source robotics simulations with improved physics. Although it mirrors the environments from MuJuCo, its environments' rewards are different.
 
->The results for A2C (GAE), A2C (n-step), PPO, SAC were uploaded in [PR 405](https://github.com/kengz/SLM-Lab/pull/405).
+>Click on the algorithm to see the result upload Pull Request.
 
-| Env. \ Alg. | A2C (GAE) | A2C (n-step) | PPO | SAC |
+| Env. \ Alg. | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/405) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/405) | [PPO](https://github.com/kengz/SLM-Lab/pull/405) | [SAC](https://github.com/kengz/SLM-Lab/pull/405) |
 |:---|---|---|---|---|
 | RoboschoolAnt <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63823815-fbecce80-c909-11e9-82be-58b5b27a1f22.png"><img src="https://user-images.githubusercontent.com/8209263/63823816-fbecce80-c909-11e9-81ff-92373420582a.png"></details> | 1029.51 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822013-d4930300-c903-11e9-91f8-13e9bda44b59.png"></details> | 1148.76 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822318-d90beb80-c904-11e9-8ddf-16c105508e5e.png"></details> | 1931.35 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822580-a57d9100-c905-11e9-8d31-6df248d62a74.png"></details> | **2903.32** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822931-dca07200-c906-11e9-9687-812ab83a3bdd.png"></details> |
 | RoboschoolAtlasForwardWalk <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63823818-fbecce80-c909-11e9-8872-f40951ffb7c0.png"><img src="https://user-images.githubusercontent.com/8209263/63823819-fc856500-c909-11e9-876e-6222a21e036c.png"></details> | 68.15 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822079-16bc4480-c904-11e9-9b0b-d63267f820aa.png"></details> | 73.46 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822362-f17c0600-c904-11e9-888b-2511bc59df9a.png"></details> | 148.81 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822614-c7771380-c905-11e9-9978-5fc9a6b0f218.png"></details> | **942.39** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63822963-f93caa00-c906-11e9-869f-df8f6032d469.png"></details> |
@@ -74,11 +74,11 @@ The specs for these are contained in the [`slm_lab/spec/benchmark`](https://gith
 
 #### Asynchronous Algorithms Benchmark
 
->The results for SAC were uploaded in [PR 404](https://github.com/kengz/SLM-Lab/pull/404).
+>Click on the algorithm to see the result upload Pull Request.
 
 The frames in the graphs are per worker, and graphs are averaged across workers. To get the total frames, simply multiply the x-axis with the number of sessions (workers).
 
-| Env. \ Alg. | A3C (GAE) | A3C (n-step) | Async PPO | Async SAC |
+| Env. \ Alg. | A3C (GAE) | A3C (n-step) | Async PPO | [Async SAC](https://github.com/kengz/SLM-Lab/pull/404) |
 |:---|---|---|---|---|
 | RoboschoolAnt |  |  |  | 2525.08 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63918070-d25aa280-c9f0-11e9-8672-2fa18987d936.png"></details> |
 | RoboschoolAtlasForwardWalk |  |  |  | 1849.50 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63918273-3c734780-c9f1-11e9-993c-d22cb0740223.png"></details> |
