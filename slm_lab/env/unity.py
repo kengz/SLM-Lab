@@ -21,7 +21,7 @@ class GymUnityEnv(UnityEnv):
 
     def step(self, action):
         # Unity wants list instead of numpy
-        action = [sub_action for sub_action in action]
+        action = list(action)
         state, reward, done, info = super().step(action)
         # Unity returns list, we need array
         state = np.array(state)
