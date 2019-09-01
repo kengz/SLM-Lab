@@ -577,7 +577,9 @@ def split_minibatch(batch, mb_size):
     idxs = np.arange(size)
     np.random.shuffle(idxs)
     chunks = int(size / mb_size)
-    nested_idxs = np.array_split(idxs, chunks)
+    nested_idxs = np.array_split(idxs[:chunks * mb_size], chunks)
+    if size % mb_size != 0:  # append leftover from split
+        nested_idxs += [idxs[chunks * mb_size:]]
     mini_batches = []
     for minibatch_idxs in nested_idxs:
         minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
