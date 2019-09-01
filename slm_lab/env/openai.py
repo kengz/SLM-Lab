@@ -39,6 +39,10 @@ class OpenAIEnv(BaseEnv):
             self.u_env = make_gym_venv(self.name, self.num_envs, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
         else:
             self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
+        if self.name.startswith('Unity'):
+            # Unity is always initialized as singleton gym env, but the Unity runtime can be vec_env
+            self.num_envs = self.u_env.number_agents
+            self._infer_venv_attr()  # update
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None

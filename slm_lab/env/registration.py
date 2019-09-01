@@ -25,10 +25,10 @@ def try_register_env(spec):
                 entry_point='slm_lab.env.vizdoom.vizdoom_env:VizDoomEnv',
                 kwargs={'cfg_name': cfg_name})
         elif env_name.startswith('Unity'):
+            # NOTE: do not specify max_episode_steps, will cause shape inconsistency in done
             register(
                 id=env_name,
                 entry_point='slm_lab.env.unity:GymUnityEnv',
-                max_episode_steps=1000,  # default value different from spec
                 kwargs={'name': env_name})
     except Exception as e:
         logger.exception(e)
