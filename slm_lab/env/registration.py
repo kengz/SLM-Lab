@@ -7,7 +7,7 @@ import os
 
 def get_env_path(env_name):
     '''Get the path to Unity env binaries distributed via npm'''
-    env_path = util.smart_path(f'node_modules/slm-env-{env_name}/build/{env_name}')
+    env_path = util.smart_path(f'slm_lab/env/SLM-Env/build/{env_name}')
     env_dir = os.path.dirname(env_path)
     assert os.path.exists(env_dir), f'Missing {env_path}. See README to install from yarn.'
     return env_path
@@ -24,7 +24,7 @@ def try_register_env(spec):
                 id=env_name,
                 entry_point='slm_lab.env.vizdoom.vizdoom_env:VizDoomEnv',
                 kwargs={'cfg_name': cfg_name})
-        elif env_name.startswith('unity'):
+        elif env_name.startswith('Unity'):
             register(
                 id=env_name,
                 entry_point='slm_lab.env.unity:GymUnityEnv',

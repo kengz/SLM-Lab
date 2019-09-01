@@ -5,25 +5,11 @@
 set -e
 trap "exit" INT
 
-echo "--- Installing NodeJS Lab interface ---"
-if which node >/dev/null; then
-  echo "Nodejs is already installed"
-else
-  curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-  apt-get install -y nodejs
-  sudo npm install --unsafe-perm=true --allow-root -g yarn
-fi
-
-echo "--- Installing npm modules for Lab interface ---"
-if [ -d ./node_modules ]; then
-  echo "Npm modules are already installed"
-else
-  yarn install
-fi
-
 echo "--- Installing Unity ML agents ---"
 conda activate lab
 pip install gym_unity==0.4.5
+# Update git submodule at slm_lab/env/SLM-Env
+git pull --recurse-submodules
 
 echo "--- Installing VizDoom ---"
 pip install vizdoom==1.1.6
