@@ -314,7 +314,7 @@ def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
         var_list = []
         for k, v in trial_vars.items():
             if hasattr(v, '__round__'):
-                v = round(v, 5)  # prevent long float digits in formatting
+                v = round(v, 8)  # prevent long float digits in formatting
             var_list.append(f'{k.split(".").pop()} {v}')
         var_str = ' '.join(var_list)
         legend = f't{trial_idx}: {var_str}'
