@@ -6,6 +6,11 @@ import os
 import pydash as ps
 
 
+# 3DBallHard 9
+# Hallways 3
+# PushBlock 3
+# Walker 5
+
 class GymUnityEnv(UnityEnv):
     '''Wrapper to make UnityEnv register-able under gym'''
     spec = None
@@ -13,6 +18,7 @@ class GymUnityEnv(UnityEnv):
     def __init__(self, name):
         worker_id = int(f'{os.getpid()}{int(ps.unique_id())}'[-4:])
         super().__init__(get_env_path(name), worker_id, no_graphics=not util.to_render(), multiagent=True)
+        self.num_envs = self.number_agents
 
     def reset(self):
         state = super().reset()

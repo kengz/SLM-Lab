@@ -41,7 +41,7 @@ class OpenAIEnv(BaseEnv):
             self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
         if self.name.startswith('Unity'):
             # Unity is always initialized as singleton gym env, but the Unity runtime can be vec_env
-            self.num_envs = self.u_env.number_agents
+            self.num_envs = self.u_env.num_envs
             # update variables dependent on num_envs
             self._infer_venv_attr()
             self._set_clock()
