@@ -19,14 +19,5 @@
   "author": "kengz <kengzwl@gmail.com>, lgraesser",
   "license": "MIT",
   "private": false,
-  "dependencies": {
-    "slm-env-backup-unitywalker-v0": "^0.0.0",
-    "slm-env-unitybouncer-v0": "^0.0.2",
-    "slm-env-unitycrawlerdynamictarget-v0": "^0.0.1",
-    "slm-env-unitycrawlerstatictarget-v0": "^0.0.1",
-    "slm-env-unitygridworld-v0": "^0.0.1",
-    "slm-env-unityhallway-v0": "^0.0.1",
-    "slm-env-unitypushblock-v0": "^0.0.1",
-    "slm-env-unityreacher-v0": "^0.0.1"
-  }
+  "dependencies": {}
 }
