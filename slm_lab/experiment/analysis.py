@@ -117,7 +117,11 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
-    mean_rand_returns = rand_bl['mean']
+    if rand_bl is None:
+        mean_rand_returns = 0.0
+        logger.warn('Random baseline unavailable for environment. Please generate separately.')
+    else:
+        mean_rand_returns = rand_bl['mean']
     mean_returns = session_df['total_reward']
     frames = session_df['frame']
     opt_steps = session_df['opt_step']

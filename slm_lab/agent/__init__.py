@@ -163,7 +163,7 @@ class Body:
     def ckpt(self, env, df_mode):
         '''
         Checkpoint to update body.train_df or eval_df data
-        @param OpenAIEnv|UnityEnv:env self.env or self.eval_env
+        @param OpenAIEnv:env self.env or self.eval_env
         @param str:df_mode 'train' or 'eval'
         '''
         row = self.calc_df_row(env)

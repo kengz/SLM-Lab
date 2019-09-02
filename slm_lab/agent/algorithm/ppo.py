@@ -5,6 +5,7 @@ from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
+import math
 import numpy as np
 import pydash as ps
 import torch
@@ -90,6 +91,12 @@ class PPO(ActorCritic):
             'training_epoch',
         ])
         self.to_train = 0
+        # guard
+        num_envs = self.body.env.num_envs
+        if self.minibatch_size % num_envs != 0 or self.time_horizon % num_envs != 0:
+            self.minibatch_size = math.ceil(self.minibatch_size / num_envs) * num_envs
+            self.time_horizon = math.ceil(self.time_horizon / num_envs) * num_envs
+            logger.info(f'minibatch_size and time_horizon needs to be multiples of num_envs; autocorrected values: minibatch_size: {self.minibatch_size}  time_horizon {self.time_horizon}')
         self.training_frequency = self.time_horizon  # since all memories stores num_envs by batch in list
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)

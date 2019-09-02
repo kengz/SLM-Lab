@@ -32,6 +32,7 @@ checks:
     config:
       threshold: 800
 exclude_patterns:
+- bin/
 - config/
 - node_modules/
 - test/
