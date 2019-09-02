@@ -132,7 +132,7 @@
       "name": "UnityWalker-v0",
       "frame_op_len": 5,
       "num_envs": 1,
-      "max_t": null,
+      "max_t": 1000,
       "max_frame": 2e6
     }],
     "body": {
@@ -206,7 +206,7 @@
     "env": [{
       "name": "{env}",
       "num_envs": 1,
-      "max_t": null,
+      "max_t": 1000,
       "max_frame": 1e6
     }],
     "body": {
@@ -291,7 +291,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "num_envs": 1,
-      "max_t": null,
+      "max_t": 1000,
       "max_frame": 1e6
     }],
     "body": {
