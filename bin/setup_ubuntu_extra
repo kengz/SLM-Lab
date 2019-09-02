@@ -9,7 +9,7 @@ echo "--- Installing Unity ML agents ---"
 conda activate lab
 pip install gym_unity==0.4.5
 # Update git submodule at slm_lab/env/SLM-Env
-git pull --recurse-submodules
+git submodule update --init --recursive
 
 echo "--- Installing VizDoom ---"
 pip install vizdoom==1.1.6
