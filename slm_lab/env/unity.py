@@ -5,11 +5,12 @@ import numpy as np
 import os
 import pydash as ps
 
-
+# NOTE: stack-frames used in ml-agents:
 # 3DBallHard 9
 # Hallways 3
 # PushBlock 3
 # Walker 5
+
 
 class GymUnityEnv(UnityEnv):
     '''Wrapper to make UnityEnv register-able under gym'''

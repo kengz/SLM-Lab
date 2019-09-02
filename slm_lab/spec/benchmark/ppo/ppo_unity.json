@@ -25,7 +25,7 @@
         },
         "val_loss_coef": 1.0,
         "time_horizon": 128,
-        "minibatch_size": 256,
+        "minibatch_size": 128,
         "training_epoch": 10
       },
       "memory": {
@@ -129,7 +129,8 @@
       }
     }],
     "env": [{
-      "name": "unitywalker-v0",
+      "name": "UnityWalker-v0",
+      "frame_op_len": 5,
       "num_envs": 1,
       "max_t": null,
       "max_frame": 2e6
@@ -206,7 +207,7 @@
       "name": "{env}",
       "num_envs": 1,
       "max_t": null,
-      "max_frame": 1e5
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -222,13 +223,11 @@
     },
     "spec_params": {
       "env": [
-        "slm-env-unityball3d-v0",
-        "slm-env-unityball3dhard-v0",
-        "slm-env-unitybouncer-v0",
-        "slm-env-unitygridworld-v0",
-        "slm-env-unityhallway-v0",
-        "slm-env-unitypushblock-v0",
-        "slm-env-unityreacher-v0"
+        "Unity3DBall-v0",
+        "UnityCrawlerDynamic-v0",
+        "UnityCrawlerStatic-v0",
+        "UnityPyramids-v0",
+        "UnityReacher-v0"
       ]
     }
   },
@@ -289,6 +288,8 @@
     }],
     "env": [{
       "name": "{env}",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "num_envs": 1,
       "max_t": null,
       "max_frame": 1e6
@@ -307,9 +308,10 @@
     },
     "spec_params": {
       "env": [
-        "slm-env-unitycrawlerdynamictarget-v0",
-        "slm-env-unitycrawlerstatictarget-v0",
-        "slm-env-unitywalker-v0"
+        "Unity3DBallHard-v0",
+        "UnityHallway-v0",
+        "UnityPushBlock-v0",
+        "UnityWalker-v0"
       ]
     }
   }
