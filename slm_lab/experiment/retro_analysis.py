@@ -14,7 +14,8 @@ def retro_analyze_sessions(predir):
     '''Retro analyze all sessions'''
     logger.info('Running retro_analyze_sessions')
     session_spec_paths = glob(f'{predir}/*_s*_spec.json')
-    util.parallelize(_retro_analyze_session, [(p,) for p in session_spec_paths], num_cpus=util.NUM_CPUS)
+    for p in session_spec_paths:
+        _retro_analyze_session(p)
 
 
 def _retro_analyze_session(session_spec_path):
@@ -32,7 +33,8 @@ def retro_analyze_trials(predir):
     session_spec_paths = glob(f'{predir}/*_s*_spec.json')
     # remove session spec paths
     trial_spec_paths = ps.difference(glob(f'{predir}/*_t*_spec.json'), session_spec_paths)
-    util.parallelize(_retro_analyze_trial, [(p,) for p in trial_spec_paths], num_cpus=util.NUM_CPUS)
+    for p in trial_spec_paths:
+        _retro_analyze_trial(p)
 
 
 def _retro_analyze_trial(trial_spec_path):
