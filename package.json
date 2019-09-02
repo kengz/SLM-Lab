@@ -19,11 +19,5 @@
   "author": "kengz <kengzwl@gmail.com>, lgraesser",
   "license": "MIT",
   "private": false,
-  "dependencies": {
-    "slm-env-2dball": "^2.0.0",
-    "slm-env-3dball": "^2.0.0",
-    "slm-env-gridworld": "^2.0.0",
-    "slm-env-reacher-discrete": "^2.0.0",
-    "slm-env-tennis": "^2.0.0"
-  }
+  "dependencies": {}
 }

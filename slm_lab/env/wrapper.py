@@ -239,6 +239,48 @@ class FrameStack(gym.Wrapper):
         return LazyFrames(list(self.frames), self.frame_op)
 
 
+class UnityVecFrameStack(gym.Wrapper):
+    '''Frame stack wrapper for Unity vector environment'''
+
+    def __init__(self, env, frame_op, frame_op_len):
+        self.env = env
+        assert frame_op in ('concat', 'stack'), 'Invalid frame_op mode'
+        self.is_stack = frame_op == 'stack'
+        self.frame_op_len = frame_op_len
+        self.spec = env.spec
+        wos = env.observation_space  # wrapped ob space
+        if self.is_stack:
+            self.shape_dim0 = 1
+            low = np.repeat(np.expand_dims(wos.low, axis=0), self.frame_op_len, axis=0)
+            high = np.repeat(np.expand_dims(wos.high, axis=0), self.frame_op_len, axis=0)
+        else:  # concat
+            self.shape_dim0 = wos.shape[0]
+            low = np.repeat(wos.low, self.frame_op_len, axis=0)
+            high = np.repeat(wos.high, self.frame_op_len, axis=0)
+        self.stackedobs = np.zeros((env.num_envs,) + low.shape, low.dtype)
+        self.observation_space = spaces.Box(low=low, high=high, dtype=env.observation_space.dtype)
+        self.action_space = env.action_space
+
+    def step(self, action):
+        obs, rews, news, infos = self.env.step(action)
+        self.stackedobs[:, :-self.shape_dim0] = self.stackedobs[:, self.shape_dim0:]
+        for (i, new) in enumerate(news):
+            if new:
+                self.stackedobs[i] = 0
+        if self.is_stack:
+            obs = np.expand_dims(obs, axis=1)
+        self.stackedobs[:, -self.shape_dim0:] = obs
+        return self.stackedobs.copy(), rews, news, infos
+
+    def reset(self):
+        obs = self.env.reset()
+        self.stackedobs[...] = 0
+        if self.is_stack:
+            obs = np.expand_dims(obs, axis=1)
+        self.stackedobs[:, -self.shape_dim0:] = obs
+        return self.stackedobs.copy()
+
+
 class NormalizeStateEnv(gym.ObservationWrapper):
     def __init__(self, env=None):
         '''
@@ -292,9 +334,12 @@ class TrackReward(gym.Wrapper):
         obs, reward, done, info = self.env.step(action)
         self.tracked_reward += reward
         # use self.was_real_done from EpisodicLifeEnv, or plain done
-        if info.get('was_real_done', done):
-            self.total_reward = self.tracked_reward
-            self.tracked_reward = 0  # reset
+        real_done = info.get('was_real_done', False) or done
+        not_real_done = (1 - real_done)
+        # update total_reward only when real_done, else use old value
+        self.total_reward = np.nan_to_num(self.total_reward) * not_real_done + self.tracked_reward * real_done
+        # reset to 0 on real_done, i.e. multiply with not_real_done
+        self.tracked_reward = self.tracked_reward * not_real_done
         info.update({'total_reward': self.total_reward})
         return obs, reward, done, info
 
@@ -341,7 +386,8 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
         if normalize_state:
             env = NormalizeStateEnv(env)
         if frame_op is not None:
-            env = FrameStack(env, frame_op, frame_op_len)
+            Stacker = UnityVecFrameStack if name.startswith('Unity') else FrameStack
+            env = Stacker(env, frame_op, frame_op_len)
     env = TrackReward(env)  # auto-track total reward
     if reward_scale is not None:
         env = ScaleRewardEnv(env, reward_scale)

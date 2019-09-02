@@ -2,22 +2,3 @@
 # yarn lockfile v1
 
 
-slm-env-2dball@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/slm-env-2dball/-/slm-env-2dball-2.0.0.tgz#57d1f8ba9528e1339d28ba07df57d2530c7be068"
-
-slm-env-3dball@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/slm-env-3dball/-/slm-env-3dball-2.0.0.tgz#9f373db1913dd57267c764bc8281be8f3d0d9a9f"
-
-slm-env-gridworld@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/slm-env-gridworld/-/slm-env-gridworld-2.0.0.tgz#c66d5465f1f17b707eaceca0bb5850883947f614"
-
-slm-env-reacher-discrete@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/slm-env-reacher-discrete/-/slm-env-reacher-discrete-2.0.0.tgz#7c369b281da001dc90635f1aa533af2d0a147048"
-
-slm-env-tennis@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/slm-env-tennis/-/slm-env-tennis-2.0.0.tgz#ea1a167c436cf4f3eeba9d2656982cd6bb402f59"
