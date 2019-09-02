@@ -191,7 +191,6 @@ Below shows a trial graph with multiple sessions:
 Once a Trial completes with a good model saved into the `data/` folder, for example `data/a2c_gae_pong_2019_08_01_010727`, use the `enjoy` mode to show the trained agent playing the environment. Use the `enjoy@{prename}` mode to pick a saved trial-sesison, for example:
 
 ```shell
-python run_lab.py data/ppo_atari_full_SpaceInvadersNoFrameskip-v4_2019_07_31_172215/ppo_atari_full_SpaceInvadersNoFrameskip-v4_spec.json ppo_atari_full_SpaceInvadersNoFrameskip-v4 enjoy@ppo_atari_full_SpaceInvadersNoFrameskip-v4_t0_s0
 python run_lab.py data/a2c_gae_pong_2019_08_01_010727/a2c_gae_pong_spec.json a2c_gae_pong enjoy@a2c_gae_pong_t0_s0
 ```
 
