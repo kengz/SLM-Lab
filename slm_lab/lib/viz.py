@@ -143,7 +143,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('strengths', 'frames'),
         ('sample_efficiencies', 'frames'),
         ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames')
+        ('stabilities', 'frames'),
     ]
     for name, time in name_time_pairs:
         sr = local_metrics[name]
@@ -156,7 +156,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
-    if df_mode == 'eval' or ma:
+    if ma:
         return
     # training plots from session_df
     name_time_pairs = [
