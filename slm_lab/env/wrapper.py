@@ -344,6 +344,7 @@ class TrackReward(gym.Wrapper):
         return obs, reward, done, info
 
     def reset(self, **kwargs):
+        self.tracked_reward = 0
         return self.env.reset(**kwargs)
 
 
