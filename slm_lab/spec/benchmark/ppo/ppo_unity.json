@@ -8,7 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": 0.97,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.20,
@@ -73,7 +73,7 @@
       "max_trial": 1
     }
   },
-  "ppo_unitywalker": {
+  "ppo_unity": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -82,7 +82,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": 0.97,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.20,
@@ -98,7 +98,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "time_horizon": 2048,
+        "time_horizon": 512,
         "minibatch_size": 128,
         "training_epoch": 10
       },
@@ -118,86 +118,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 1e-3,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
-        },
-        "lr_scheduler_spec": null,
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "UnityWalker-v0",
-      "frame_op_len": 5,
-      "num_envs": 1,
-      "max_t": 1000,
-      "max_frame": 2e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
-      "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 1
-    }
-  },
-  "ppo_unitybasic": {
-    "agent": [{
-      "name": "PPO",
-      "algorithm": {
-        "name": "PPO",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "clip_eps_spec": {
-          "name": "no_decay",
-          "start_val": 0.20,
-          "end_val": 0.20,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.0,
-          "end_val": 0.0,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.0,
-        "time_horizon": 2048,
-        "minibatch_size": 128,
-        "training_epoch": 10
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay",
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [256, 256],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 3e-4,
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 3e-4,
+          "lr": 1e-3,
         },
         "lr_scheduler_spec": null,
         "gpu": false
@@ -205,9 +130,11 @@
     }],
     "env": [{
       "name": "${env}",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "num_envs": 1,
       "max_t": 1000,
-      "max_frame": 1e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
@@ -224,93 +151,13 @@
     "spec_params": {
       "env": [
         "Unity3DBall-v0",
+        "Unity3DBallHard-v0",
         "UnityCrawlerDynamic-v0",
         "UnityCrawlerStatic-v0",
-        "UnityPyramids-v0",
-        "UnityReacher-v0"
-      ]
-    }
-  },
-  "ppo_unityadv": {
-    "agent": [{
-      "name": "PPO",
-      "algorithm": {
-        "name": "PPO",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "clip_eps_spec": {
-          "name": "no_decay",
-          "start_val": 0.20,
-          "end_val": 0.20,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.0,
-          "end_val": 0.0,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.0,
-        "time_horizon": 2048,
-        "minibatch_size": 128,
-        "training_epoch": 10
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay",
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [256, 256],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 3e-4,
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 3e-4,
-        },
-        "lr_scheduler_spec": null,
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "${env}",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "num_envs": 1,
-      "max_t": 1000,
-      "max_frame": 1e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
-      "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 1
-    },
-    "spec_params": {
-      "env": [
-        "Unity3DBallHard-v0",
         "UnityHallway-v0",
         "UnityPushBlock-v0",
+        "UnityPyramids-v0",
+        "UnityReacher-v0",
         "UnityWalker-v0"
       ]
     }
