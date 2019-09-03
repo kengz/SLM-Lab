@@ -58,7 +58,7 @@
       "name": "Unity3DBall-v0",
       "num_envs": 1,
       "max_t": 40000,
-      "max_frame": 1e5
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -219,7 +219,7 @@
       "frame_op_len": 4,
       "num_envs": 1,
       "max_t": 40000,
-      "max_frame": 2e6
+      "max_frame": 2e7
     }],
     "body": {
       "product": "outer",
