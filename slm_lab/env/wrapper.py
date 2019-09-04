@@ -333,13 +333,22 @@ class TrackReward(gym.Wrapper):
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         self.tracked_reward += reward
+        # fix shape by inferring from reward
+        if np.isscalar(self.total_reward) and not np.isscalar(reward):
+            self.total_reward = np.full_like(reward, self.total_reward)
         # use self.was_real_done from EpisodicLifeEnv, or plain done
         real_done = info.get('was_real_done', False) or done
         not_real_done = (1 - real_done)
-        # Guard against updating total_reward from np.nan before first episode is done
-        if not (np.isnan(self.total_reward) and not_real_done):
-            # update total_reward only when real_done, else use old value
-            self.total_reward = np.nan_to_num(self.total_reward) * not_real_done + self.tracked_reward * real_done
+        # if isnan and at done, reset total_reward from nan to 0 so it can be updated with tracked_reward
+        if np.isnan(self.total_reward).any():
+            if np.isscalar(self.total_reward):
+                if np.isnan(self.total_reward) and real_done:
+                    self.total_reward = 0.0
+            else:
+                replace_locs = np.logical_and(np.isnan(self.total_reward), real_done)
+                self.total_reward[replace_locs] = 0.0
+        # update total_reward
+        self.total_reward = self.total_reward * not_real_done + self.tracked_reward * real_done
         # reset to 0 on real_done, i.e. multiply with not_real_done
         self.tracked_reward = self.tracked_reward * not_real_done
         info.update({'total_reward': self.total_reward})
