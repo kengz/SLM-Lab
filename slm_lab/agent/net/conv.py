@@ -286,7 +286,7 @@ class DuelingConvNet(ConvNet):
         # tails. avoid list for single-tail for compute speed
         self.v = nn.Linear(tail_in_dim, 1)  # state value
         self.adv = nn.Linear(tail_in_dim, out_dim)  # action dependent raw advantage
-        self.model_tails = nn.ModuleList(self.v, self.adv)
+        self.model_tails = nn.ModuleList([self.v, self.adv])
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)

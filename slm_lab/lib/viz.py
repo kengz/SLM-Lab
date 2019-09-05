@@ -51,7 +51,7 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.layout.Margin(l=60, r=60, t=60, b=60),
+        margin=go.layout.Margin(l=60, r=30, t=60, b=60),
     )
     layout.update(layout_kwargs)
     return layout
@@ -119,7 +119,7 @@ def save_image(figure, filepath):
         return
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath)
+        pio.write_image(figure, filepath, scale=4)
     except Exception as e:
         orca_warn_once(e)
 
@@ -143,7 +143,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('strengths', 'frames'),
         ('sample_efficiencies', 'frames'),
         ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames')
+        ('stabilities', 'frames'),
     ]
     for name, time in name_time_pairs:
         sr = local_metrics[name]
@@ -156,7 +156,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
-    if df_mode == 'eval' or ma:
+    if ma:
         return
     # training plots from session_df
     name_time_pairs = [
@@ -311,7 +311,11 @@ def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
     trial_legends = []
     for trial_idx in trial_idxs:
         trial_vars = var_df.loc[trial_idx].to_dict()
-        var_list = [f'{k.split(".").pop()} {v}' for k, v in trial_vars.items()]
+        var_list = []
+        for k, v in trial_vars.items():
+            if hasattr(v, '__round__'):
+                v = round(v, 8)  # prevent long float digits in formatting
+            var_list.append(f'{k.split(".").pop()} {v}')
         var_str = ' '.join(var_list)
         legend = f't{trial_idx}: {var_str}'
         trial_legends.append(legend)
