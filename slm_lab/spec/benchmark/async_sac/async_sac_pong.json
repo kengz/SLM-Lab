@@ -50,7 +50,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 8,
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
     }],
@@ -118,7 +118,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 8,
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
     }],
