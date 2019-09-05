@@ -55,7 +55,7 @@
       }
     }],
     "env": [{
-      "name": "Unity3DBall-v0",
+      "name": "UnityHallway-v0",
       "frame_op": "concat",
       "frame_op_len": 4,
       "num_envs": 1,
@@ -79,15 +79,6 @@
         "algorithm": {
           "lam__grid_search": [0.70, 0.90, 0.95, 0.97]
         }
-      }],
-      "env": [{
-        "name__grid_search": [
-          "Unity3DBall-v0",
-          "Unity3DBallHard-v0",
-          "UnityHallway-v0",
-          "UnityPushBlock-v0",
-          "UnityPyramids-v0"
-        ]
       }]
     }
   },
