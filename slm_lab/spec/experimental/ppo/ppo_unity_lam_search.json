@@ -1,5 +1,5 @@
 {
-  "ppo_unitybasic": {
+  "ppo_unityhallway": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -82,7 +82,7 @@
       }]
     }
   },
-  "ppo_unityadv": {
+  "ppo_unitycrawlerdynamic": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
