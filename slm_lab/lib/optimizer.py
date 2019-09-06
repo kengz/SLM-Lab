@@ -1,5 +1,6 @@
 # Custom PyTorch optimizer classes, to be registered in net_util.py
 from torch.optim.optimizer import Optimizer
+import itertools as it
 import math
 import torch
 
@@ -101,6 +102,54 @@ class GlobalRMSprop(torch.optim.RMSprop):
                 avg = square_avg.sqrt().add_(group['eps'])
                 p.data.addcdiv_(-group['lr'], grad, avg)
         return loss
+
+
+class Lookahead(Optimizer):
+    '''
+    Lookahead Optimizer: k steps forward, 1 step back
+    https://arxiv.org/abs/1907.08610
+    Implementation modified from https://github.com/lonePatient/lookahead_pytorch; reference from https://medium.com/@lessw/new-deep-learning-optimizer-ranger-synergistic-combination-of-radam-lookahead-for-the-best-of-2dc83f79a48d
+    '''
+
+    def __init__(self, params, alpha=0.5, k=5, optimizer='RAdam', **optimizer_kwargs):
+        if not 0.0 <= alpha <= 1.0:
+            raise ValueError(f'Invalid slow update rate: {alpha}')
+        if not 1 <= k:
+            raise ValueError(f'Invalid lookahead steps: {k}')
+        # construct base optimizer
+        OptimClass = getattr(torch.optim, optimizer)
+        self.optimizer = OptimClass(params, **optimizer_kwargs)
+        self.param_groups = self.optimizer.param_groups
+        self.alpha = alpha
+        self.k = k
+        for group in self.param_groups:
+            group['step_counter'] = 0
+        self.slow_weights = [[
+            p.clone().detach() for p in group['params']]
+            for group in self.param_groups]
+
+        for w in it.chain(*self.slow_weights):
+            w.requires_grad = False
+
+    def step(self, closure=None):
+        loss = None
+        if closure is not None:
+            loss = closure()
+        loss = self.optimizer.step()
+        for group, slow_weights in zip(self.param_groups, self.slow_weights):
+            group['step_counter'] += 1
+            if group['step_counter'] % self.k != 0:
+                continue
+            for p, q in zip(group['params'], slow_weights):
+                if p.grad is None:
+                    continue
+                q.data.add_(self.alpha, p.data - q.data)
+                p.data.copy_(q.data)
+        return loss
+
+    @property
+    def state(self):
+        return self.optimizer.state
 
 
 class RAdam(Optimizer):
