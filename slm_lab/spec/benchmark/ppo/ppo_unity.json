@@ -43,11 +43,13 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 3e-4,
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
@@ -117,11 +119,13 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 3e-4,
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
@@ -202,11 +206,13 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 3e-4,
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
