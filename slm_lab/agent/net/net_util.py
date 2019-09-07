@@ -332,7 +332,7 @@ def init_global_nets(algorithm):
             global_nets[f'global_{net_name}'] = g_net
         # if optim is Global, set to override the local optim and its scheduler
         optim = getattr(algorithm, optim_name)
-        if 'Global' in util.get_class_name(optim):
+        if hasattr(optim, 'share_memory'):
             optim.share_memory()  # make optim global
             global_nets[optim_name] = optim
             lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
