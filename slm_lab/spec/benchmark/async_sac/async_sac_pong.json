@@ -35,7 +35,8 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "GlobalAdam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
