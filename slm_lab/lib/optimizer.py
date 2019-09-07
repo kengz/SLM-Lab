@@ -121,16 +121,17 @@ class Lookahead(Optimizer):
         self.optimizer = OptimClass(params, **optimizer_kwargs)
         self.param_groups = self.optimizer.param_groups
         self.state = self.optimizer.state
+        # create and use defaults to track params to retain them in multiprocessing spawn
         self.defaults = self.optimizer.defaults
-        self.alpha = alpha
-        self.k = k
+        self.defaults['alpha'] = alpha
+        self.defaults['k'] = k
         for group in self.param_groups:
             group['step_counter'] = 0
-        self.slow_weights = [[
+        self.defaults['slow_weights'] = [[
             p.clone().detach() for p in group['params']]
             for group in self.param_groups]
 
-        for w in it.chain(*self.slow_weights):
+        for w in it.chain(*self.defaults['slow_weights']):
             w.requires_grad = False
 
     def share_memory(self):
@@ -141,14 +142,14 @@ class Lookahead(Optimizer):
         if closure is not None:
             loss = closure()
         loss = self.optimizer.step()
-        for group, slow_weights in zip(self.param_groups, self.slow_weights):
+        for group, slow_weights in zip(self.param_groups, self.defaults['slow_weights']):
             group['step_counter'] += 1
-            if group['step_counter'] % self.k != 0:
+            if group['step_counter'] % self.defaults['k'] != 0:
                 continue
             for p, q in zip(group['params'], slow_weights):
                 if p.grad is None:
                     continue
-                q.data.add_(self.alpha, p.data - q.data)
+                q.data.add_(self.defaults['alpha'], p.data - q.data)
                 p.data.copy_(q.data)
         return loss
 
