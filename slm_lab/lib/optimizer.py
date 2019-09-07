@@ -120,6 +120,8 @@ class Lookahead(Optimizer):
         OptimClass = getattr(torch.optim, optimizer)
         self.optimizer = OptimClass(params, **optimizer_kwargs)
         self.param_groups = self.optimizer.param_groups
+        self.state = self.optimizer.state
+        self.defaults = self.optimizer.defaults
         self.alpha = alpha
         self.k = k
         for group in self.param_groups:
@@ -150,10 +152,6 @@ class Lookahead(Optimizer):
                 p.data.copy_(q.data)
         return loss
 
-    @property
-    def state(self):
-        return self.optimizer.state
-
 
 class RAdam(Optimizer):
     '''
@@ -167,6 +165,13 @@ class RAdam(Optimizer):
         self.buffer = [[None, None, None] for ind in range(10)]
         super(RAdam, self).__init__(params, defaults)
 
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                state['step'] = torch.zeros(1)
+                state['exp_avg'] = p.data.new().resize_as_(p.data).zero_()
+                state['exp_avg_sq'] = p.data.new().resize_as_(p.data).zero_()
+
     def __setstate__(self, state):
         super(RAdam, self).__setstate__(state)
 
@@ -179,13 +184,11 @@ class RAdam(Optimizer):
                 state['exp_avg_sq'].share_memory_()
 
     def step(self, closure=None):
-
         loss = None
         if closure is not None:
             loss = closure()
 
         for group in self.param_groups:
-
             for p in group['params']:
                 if p.grad is None:
                     continue
@@ -194,16 +197,9 @@ class RAdam(Optimizer):
                     raise RuntimeError('RAdam does not support sparse gradients')
 
                 p_data_fp32 = p.data.float()
-
                 state = self.state[p]
-
-                if len(state) == 0:
-                    state['step'] = 0
-                    state['exp_avg'] = torch.zeros_like(p_data_fp32)
-                    state['exp_avg_sq'] = torch.zeros_like(p_data_fp32)
-                else:
-                    state['exp_avg'] = state['exp_avg'].type_as(p_data_fp32)
-                    state['exp_avg_sq'] = state['exp_avg_sq'].type_as(p_data_fp32)
+                state['exp_avg'] = state['exp_avg'].type_as(p_data_fp32)
+                state['exp_avg_sq'] = state['exp_avg_sq'].type_as(p_data_fp32)
 
                 exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
                 beta1, beta2 = group['betas']
