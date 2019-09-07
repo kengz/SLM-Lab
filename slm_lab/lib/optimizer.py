@@ -131,6 +131,9 @@ class Lookahead(Optimizer):
         for w in it.chain(*self.slow_weights):
             w.requires_grad = False
 
+    def share_memory(self):
+        self.optimizer.share_memory()
+
     def step(self, closure=None):
         loss = None
         if closure is not None:
@@ -166,6 +169,14 @@ class RAdam(Optimizer):
 
     def __setstate__(self, state):
         super(RAdam, self).__setstate__(state)
+
+    def share_memory(self):
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                state['step'].share_memory_()
+                state['exp_avg'].share_memory_()
+                state['exp_avg_sq'].share_memory_()
 
     def step(self, closure=None):
 
