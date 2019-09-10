@@ -28,7 +28,7 @@
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
-        "batch_norm": true,
+        "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -97,7 +97,7 @@
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
-        "batch_norm": true,
+        "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -166,7 +166,7 @@
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
-        "batch_norm": true,
+        "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -235,7 +235,7 @@
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
-        "batch_norm": true,
+        "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
