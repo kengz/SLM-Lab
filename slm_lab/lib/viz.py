@@ -257,7 +257,7 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
     for idx, local_metrics in enumerate(local_metrics_list):
         fig = plot_mean_sr(
             local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
-        if legend is not None:
+        if legend_list is not None:
             # update legend for the main trace
             fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
         all_data += list(fig.data)
@@ -266,7 +266,7 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually
@@ -285,7 +285,7 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
     viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     '''
     local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
-    name_time_pairs = [
+    name_time_pairs = name_time_pairs or [
         ('mean_returns', 'frames'),
         ('strengths', 'frames'),
         ('sample_efficiencies', 'frames'),
