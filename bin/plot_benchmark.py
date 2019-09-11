@@ -11,10 +11,14 @@ trial_metrics_path = '*t0_trial_metrics.pkl'
 
 
 def get_trial_metrics_scalar(algo, env, data_folder):
-    filepaths = glob(f'{data_folder}/*{algo}*{env}*/{trial_metrics_scalar_path}')
-    assert len(filepaths) == 1, f'{algo}, {env}, {filepaths}'
-    filepath = filepaths[0]
-    return util.read(filepath)
+    try:
+        filepaths = glob(f'{data_folder}/*{algo}*{env}*/{trial_metrics_scalar_path}')
+        assert len(filepaths) == 1, f'{algo}, {env}, {filepaths}'
+        filepath = filepaths[0]
+        return util.read(filepath)
+    except Exception as e:
+        # blank fill
+        return {'final_return_ma': ''}
 
 
 def get_latex_row(algos, env, data_folder):
@@ -26,8 +30,11 @@ def get_latex_row(algos, env, data_folder):
     max_val = ps.max_(env_ret_ma_list)
     ret_ma_str_list = []
     for ret_ma in env_ret_ma_list:
-        ret_ma_str = str(round(ret_ma, 2))
-        if ret_ma == max_val:
+        if isinstance(ret_ma, str):
+            ret_ma_str = str(ret_ma)
+        else:
+            ret_ma_str = str(round(ret_ma, 2))
+        if ret_ma and ret_ma == max_val:
             ret_ma_str = f'\\textbf{{{ret_ma_str}}}'
         ret_ma_str_list.append(ret_ma_str)
     latex_row = f'& {env} & {" & ".join(ret_ma_str_list)} \\\\'
