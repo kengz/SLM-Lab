@@ -63,7 +63,8 @@ def plot_envs(algos, envs, data_folder, legend_list):
             plot_env(algos, env, data_folder)
 
 
-# Roboschool
+# Continuous
+# Roboschool + Unity
 
 algos = [
     'a2c_gae',
@@ -86,48 +87,79 @@ envs = [
     'RoboschoolInvertedDoublePendulum',
     'RoboschoolInvertedPendulum',
     'RoboschoolReacher',
-    'RoboschoolWalker2d'
+    'RoboschoolWalker2d',
+    # 'RoboschoolHumanoid',
+    # 'RoboschoolHumanoidFlagrun',
+    # 'RoboschoolHumanoidFlagrunHarder',
+    # 'Unity3DBall',
+    # 'Unity3DBallHard',
+    # 'UnityCrawlerDynamic',
+    # 'UnityCrawlerStatic',
+    # 'UnityReacher',
+    # 'UnityWalker',
 ]
 
-data_folder = util.smart_path('../Desktop/benchmark/roboschool')
+data_folder = util.smart_path('../Desktop/benchmark/cont')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
 
 plot_envs(algos, envs, data_folder, legend_list)
 
 
-# Unity
+# Discrete
+# LunarLander + Small Atari + Unity
 
 algos = [
-    # 'a2c_gae',
-    # 'a2c_nstep',
+    'dqn',
+    'ddqn_per',
+    'a2c_gae',
+    'a2c_nstep',
     'ppo',
-    'ppo',
-    'ppo',
-    'ppo',
-    # 'sac',
+    'sac',
+]
+legend_list = [
+    'DQN',
+    'DDQN+PER',
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
+    'SAC',
 ]
 
 envs = [
-    "Unity3DBall-v0",
-    "Unity3DBallHard",
-    "UnityHallway",
-    "UnityPushBlock",
-    "UnityPyramids"
+    'LunarLander',
+    'Beamrider',
+    'Breakout',
+    'MsPacman',
+    'Pong',
+    'Seaquest',
+    'SpaceInvaders',
+    'Qbert',
+    'UnityHallway',
+    'UnityPushBlock',
+    'UnityPyramids',
 ]
 
-data_folder = util.smart_path('../Desktop/benchmark/unity')
+data_folder = util.smart_path('../Desktop/benchmark/discrete')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
 
 
 # Atari full
+
 algos = [
     'dqn_atari',
     'ddqn_per',
     'a2c_gae',
     'a2c_nstep',
     'ppo',
+]
+legend_list = [
+    'DQN',
+    'DDQN+PER',
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
 ]
 
 envs = [
