@@ -12,7 +12,7 @@ trial_metrics_path = '*t0_trial_metrics.pkl'
 
 def get_trial_metrics_scalar(algo, env, data_folder):
     filepaths = glob(f'{data_folder}/*{algo}*{env}*/{trial_metrics_scalar_path}')
-    assert len(filepaths) == 1
+    assert len(filepaths) == 1, f'{algo}, {env}, {filepaths}'
     filepath = filepaths[0]
     return util.read(filepath)
 
@@ -47,9 +47,13 @@ def get_latex_body(algos, envs, data_folder):
     return latex_body
 
 
+get_trial_metrics_path(algo, env, data_folder)
+
+# Roboschool
+
 algos = [
-    'a2c_nstep',
     'a2c_gae',
+    'a2c_nstep',
     'ppo',
     'sac',
 ]
@@ -65,8 +69,25 @@ envs = [
     'RoboschoolWalker2d-v1'
 ]
 
-data_folder = util.smart_path('../Desktop/benchmark')
+data_folder = util.smart_path('../Desktop/benchmark/roboschool')
+latex_body = get_latex_body(algos, envs, data_folder)
+print(latex_body)
 
+
+# Atari full
+algos = [
+    'dqn_atari',
+    'ddqn_per',
+    'a2c_gae',
+    'a2c_nstep',
+    'ppo',
+]
+
+envs = [
+"Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
+]
+
+data_folder = util.smart_path('../Desktop/benchmark/atari')
 
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
