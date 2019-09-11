@@ -257,8 +257,9 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
     for idx, local_metrics in enumerate(local_metrics_list):
         fig = plot_mean_sr(
             local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
-        # update legend for the main trace
-        fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
+        if legend is not None:
+            # update legend for the main trace
+            fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
         all_data += list(fig.data)
     layout = create_layout(title, name, time)
     fig = go.Figure(all_data, layout)
