@@ -87,25 +87,25 @@ legend_list = [
 ]
 
 envs = [
-    'RoboschoolAnt',
-    'RoboschoolAtlasForwardWalk',
-    'RoboschoolHalfCheetah',
-    'RoboschoolHopper',
-    'RoboschoolInvertedDoublePendulum',
-    'RoboschoolInvertedPendulum',
-    'RoboschoolReacher',
-    'RoboschoolWalker2d',
-    'RoboschoolHumanoid',
+    'RoboschoolAnt-v1',
+    'RoboschoolAtlasForwardWalk-v1',
+    'RoboschoolHalfCheetah-v1',
+    'RoboschoolHopper-v1',
+    'RoboschoolInvertedDoublePendulum-v1',
+    'RoboschoolInvertedPendulum-v1',
+    'RoboschoolReacher-v1',
+    'RoboschoolWalker2d-v1',
+    'RoboschoolHumanoid-v1',
     # !subset name conflict
-    'RoboschoolHumanoidFlagrun',
-    'RoboschoolHumanoidFlagrunHarder',
+    'RoboschoolHumanoidFlagrun-v1',
+    'RoboschoolHumanoidFlagrunHarder-v1',
     # !subset name conflict
-    'Unity3DBall',
-    'Unity3DBallHard',
-    'UnityCrawlerDynamic',
-    'UnityCrawlerStatic',
-    'UnityReacher',
-    'UnityWalker',
+    'Unity3DBall-v0',
+    'Unity3DBallHard-v0',
+    'UnityCrawlerDynamic-v0',
+    'UnityCrawlerStatic-v0',
+    'UnityReacher-v0',
+    'UnityWalker-v0',
 ]
 
 data_folder = util.smart_path('../Desktop/benchmark/cont')
