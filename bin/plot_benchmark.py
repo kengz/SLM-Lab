@@ -17,12 +17,6 @@ def get_trial_metrics_scalar(algo, env, data_folder):
     return util.read(filepath)
 
 
-def get_trial_metrics_path(algo, env, data_folder):
-    filepaths = glob(f'{data_folder}/*{algo}*{env}*/info/{trial_metrics_path}')
-    assert len(filepaths) == 1
-    return filepaths[0]
-
-
 def get_latex_row(algos, env, data_folder):
     '''
     Get an environment's latex row where each column cell is an algorithm's reward.
@@ -47,7 +41,27 @@ def get_latex_body(algos, envs, data_folder):
     return latex_body
 
 
-get_trial_metrics_path(algo, env, data_folder)
+def get_trial_metrics_path(algo, env, data_folder):
+    filepaths = glob(f'{data_folder}/*{algo}*{env}*/info/{trial_metrics_path}')
+    assert len(filepaths) == 1
+    return filepaths[0]
+
+
+def plot_env(algos, env, data_folder, legend_list=None):
+    trial_metrics_path_list = [get_trial_metrics_path(algo, env, data_folder) for algo in algos]
+    title = env
+    graph_prepath = f'{data_folder}/{env}'
+    # viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, name_time_pairs=[('mean_returns', 'frames')])
+    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')])
+
+
+def plot_envs(algos, envs, data_folder, legend_list):
+    for idx, env in enumerate(envs):
+        if idx == len(envs) - 1:  # add legend to the last
+            plot_env(algos, env, data_folder, legend_list)
+        else:
+            plot_env(algos, env, data_folder)
+
 
 # Roboschool
 
@@ -57,19 +71,52 @@ algos = [
     'ppo',
     'sac',
 ]
+legend_list = [
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
+    'SAC',
+]
 
 envs = [
-    'RoboschoolAnt-v1',
-    'RoboschoolAtlasForwardWalk-v1',
-    'RoboschoolHalfCheetah-v1',
-    'RoboschoolHopper-v1',
-    'RoboschoolInvertedDoublePendulum-v1',
-    'RoboschoolInvertedPendulum-v1',
-    'RoboschoolReacher-v1',
-    'RoboschoolWalker2d-v1'
+    'RoboschoolAnt',
+    'RoboschoolAtlasForwardWalk',
+    'RoboschoolHalfCheetah',
+    'RoboschoolHopper',
+    'RoboschoolInvertedDoublePendulum',
+    'RoboschoolInvertedPendulum',
+    'RoboschoolReacher',
+    'RoboschoolWalker2d'
 ]
 
 data_folder = util.smart_path('../Desktop/benchmark/roboschool')
+latex_body = get_latex_body(algos, envs, data_folder)
+print(latex_body)
+
+plot_envs(algos, envs, data_folder, legend_list)
+
+
+# Unity
+
+algos = [
+    # 'a2c_gae',
+    # 'a2c_nstep',
+    'ppo',
+    'ppo',
+    'ppo',
+    'ppo',
+    # 'sac',
+]
+
+envs = [
+    "Unity3DBall-v0",
+    "Unity3DBallHard",
+    "UnityHallway",
+    "UnityPushBlock",
+    "UnityPyramids"
+]
+
+data_folder = util.smart_path('../Desktop/benchmark/unity')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
 
@@ -84,7 +131,7 @@ algos = [
 ]
 
 envs = [
-"Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
+    "Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
 ]
 
 data_folder = util.smart_path('../Desktop/benchmark/atari')
