@@ -37,6 +37,7 @@ def get_latex_row(algos, env, data_folder):
         if ret_ma and ret_ma == max_val:
             ret_ma_str = f'\\textbf{{{ret_ma_str}}}'
         ret_ma_str_list.append(ret_ma_str)
+    env = env.split('-')[0]
     latex_row = f'& {env} & {" & ".join(ret_ma_str_list)} \\\\'
     return latex_row
 
