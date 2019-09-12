@@ -8,6 +8,19 @@ import pydash as ps
 # declare file patterns
 trial_metrics_scalar_path = '*trial_metrics_scalar.json'
 trial_metrics_path = '*t0_trial_metrics.pkl'
+env_name_map = {
+    'lunar': 'LunarLander',
+    'humanoid': 'RoboschoolHumanoid',
+    'humanoidflagrun': 'RoboschoolHumanoidFlagrun',
+    'humanoidflagrunharder': 'RoboschoolHumanoidFlagrunHarder',
+}
+
+
+def guard_env_name(env):
+    if env in env_name_map:
+        return env_name_map[env]
+    else:
+        return env
 
 
 def get_trial_metrics_scalar(algo, env, data_folder):
@@ -45,8 +58,7 @@ def get_latex_row(algos, env, data_folder):
             ret_ma_str = f'\\textbf{{{ret_ma_str}}}'
         ret_ma_str_list.append(ret_ma_str)
     env = env.split('-')[0]
-    if env == 'lunar':
-        env = 'LunarLander'
+    env = guard_env_name(env)
     latex_row = f'& {env} & {" & ".join(ret_ma_str_list)} \\\\'
     return latex_row
 
@@ -77,8 +89,7 @@ def get_trial_metrics_path(algo, env, data_folder):
 
 def plot_env(algos, env, data_folder, legend_list=None):
     trial_metrics_path_list = [get_trial_metrics_path(algo, env, data_folder) for algo in algos]
-    if env == 'lunar':
-        env = 'LunarLander'
+    env = guard_env_name(env)
     title = env
     if legend_list is None:
         graph_prepath = f'{data_folder}/{env}'
