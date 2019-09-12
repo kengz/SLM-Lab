@@ -76,9 +76,8 @@ def get_trial_metrics_path(algo, env, data_folder):
 def plot_env(algos, env, data_folder, legend_list=None):
     trial_metrics_path_list = [get_trial_metrics_path(algo, env, data_folder) for algo in algos]
     if env == 'lunar':
-        title = 'LunarLander'
-    else:
-        title = env
+        env = 'LunarLander'
+    title = env
     if legend_list is None:
         graph_prepath = f'{data_folder}/{env}'
     else:
