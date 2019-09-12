@@ -59,7 +59,7 @@ def get_latex_row(algos, env, data_folder):
         ret_ma_str_list.append(ret_ma_str)
     env = env.split('-')[0]
     env = guard_env_name(env)
-    latex_row = f'& {env} & {" & ".join(ret_ma_str_list)} \\\\'
+    latex_row = f'{env} & {" & ".join(ret_ma_str_list)} \\\\'
     return latex_row
 
 
