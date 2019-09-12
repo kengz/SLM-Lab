@@ -83,7 +83,7 @@ def get_latex_im_body(envs):
 
 def get_trial_metrics_path(algo, env, data_folder):
     filepaths = glob(f'{data_folder}/{algo}*{env}*/info/{trial_metrics_path}')
-    assert len(filepaths) == 1
+    assert len(filepaths) == 1, f'{algo}, {env}, {filepaths}'
     return filepaths[0]
 
 
@@ -100,10 +100,13 @@ def plot_env(algos, env, data_folder, legend_list=None):
 
 def plot_envs(algos, envs, data_folder, legend_list):
     for idx, env in enumerate(envs):
-        plot_env(algos, env, data_folder)
-        if idx == len(envs) - 1:
-            # plot extra to crop legend out
-            plot_env(algos, env, data_folder, legend_list)
+        try:
+            plot_env(algos, env, data_folder)
+            if idx == len(envs) - 1:
+                # plot extra to crop legend out
+                plot_env(algos, env, data_folder, legend_list)
+        except Exception as e:
+            logger.warning(f'Cant plot for env: {env}. Error: {e}')
 
 
 # Continuous
