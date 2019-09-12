@@ -119,7 +119,7 @@ def save_image(figure, filepath):
         return
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath, scale=4)
+        pio.write_image(figure, filepath, scale=2)
     except Exception as e:
         orca_warn_once(e)
 
