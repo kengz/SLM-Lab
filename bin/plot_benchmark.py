@@ -131,15 +131,15 @@ envs = [
     'RoboschoolInvertedPendulum-v1',
     'RoboschoolReacher-v1',
     'RoboschoolWalker2d-v1',
-    'RoboschoolHumanoid-v1',
-    'RoboschoolHumanoidFlagrun-v1',
-    'RoboschoolHumanoidFlagrunHarder-v1',
+    'humanoid',
+    # 'humanoidflagrun',
+    # 'humanoidflagrunharder',
     'Unity3DBall-v0',
     'Unity3DBallHard-v0',
-    'UnityCrawlerDynamic-v0',
-    'UnityCrawlerStatic-v0',
-    'UnityReacher-v0',
-    'UnityWalker-v0',
+    # 'UnityCrawlerDynamic-v0',
+    # 'UnityCrawlerStatic-v0',
+    # 'UnityReacher-v0',
+    # 'UnityWalker-v0',
 ]
 
 data_folder = util.smart_path('../Desktop/benchmark/cont')
