@@ -266,7 +266,7 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually
@@ -285,6 +285,10 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
     viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     '''
     local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
+    # for plotting with async runs to adjust frame scale
+    if frame_scales is not None:
+        for idx, scale in frame_scales:
+            local_metrics_list[idx]['frames'] = local_metrics_list[idx]['frames'] * scale
     name_time_pairs = name_time_pairs or [
         ('mean_returns', 'frames'),
         ('strengths', 'frames'),

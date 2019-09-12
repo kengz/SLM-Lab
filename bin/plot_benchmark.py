@@ -17,6 +17,7 @@ env_name_map = {
 
 
 def guard_env_name(env):
+    env = env.strip('_').strip('-')
     if env in env_name_map:
         return env_name_map[env]
     else:
@@ -73,6 +74,7 @@ def get_latex_body(algos, envs, data_folder):
 def get_latex_im_body(envs):
     latex_ims = []
     for env in envs:
+        env = guard_env_name(env)
         latex_im = f'\subfloat{{\includegraphics[width=1.22in]{{images/{env}_multi_trial_graph_mean_returns_ma_vs_frames.png}}}}'
         latex_ims.append(latex_im)
 
@@ -87,7 +89,7 @@ def get_trial_metrics_path(algo, env, data_folder):
     return filepaths[0]
 
 
-def plot_env(algos, env, data_folder, legend_list=None):
+def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None):
     trial_metrics_path_list = [get_trial_metrics_path(algo, env, data_folder) for algo in algos]
     env = guard_env_name(env)
     title = env
@@ -95,16 +97,16 @@ def plot_env(algos, env, data_folder, legend_list=None):
         graph_prepath = f'{data_folder}/{env}'
     else:
         graph_prepath = f'{data_folder}/{env}-legend'
-    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')])
+    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')], frame_scales=frame_scales)
 
 
-def plot_envs(algos, envs, data_folder, legend_list):
+def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
     for idx, env in enumerate(envs):
         try:
-            plot_env(algos, env, data_folder)
+            plot_env(algos, env, data_folder, frame_scales=frame_scales)
             if idx == len(envs) - 1:
                 # plot extra to crop legend out
-                plot_env(algos, env, data_folder, legend_list)
+                plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales)
         except Exception as e:
             logger.warning(f'Cant plot for env: {env}. Error: {e}')
 
@@ -124,31 +126,100 @@ legend_list = [
     'PPO',
     'SAC',
 ]
-
 envs = [
-    'RoboschoolAnt-v1',
-    'RoboschoolAtlasForwardWalk-v1',
-    'RoboschoolHalfCheetah-v1',
-    'RoboschoolHopper-v1',
-    'RoboschoolInvertedDoublePendulum-v1',
-    'RoboschoolInvertedPendulum-v1',
-    'RoboschoolReacher-v1',
-    'RoboschoolWalker2d-v1',
-    'humanoid',
-    # 'humanoidflagrun',
-    # 'humanoidflagrunharder',
-    'Unity3DBall-v0',
-    'Unity3DBallHard-v0',
-    # 'UnityCrawlerDynamic-v0',
-    # 'UnityCrawlerStatic-v0',
-    # 'UnityReacher-v0',
-    # 'UnityWalker-v0',
+    'RoboschoolAnt',
+    'RoboschoolAtlasForwardWalk',
+    'RoboschoolHalfCheetah',
+    'RoboschoolHopper',
+    'RoboschoolInvertedDoublePendulum',
+    'RoboschoolInvertedPendulum',
+    'RoboschoolReacher',
+    'RoboschoolWalker2d',
+    'Unity3DBall-',
+    'Unity3DBallHard',
+    # 'UnityCrawlerDynamic',
+    # 'UnityCrawlerStatic',
+    # 'UnityReacher',
+    # 'UnityWalker',
 ]
 
 data_folder = util.smart_path('../Desktop/benchmark/cont')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
 plot_envs(algos, envs, data_folder, legend_list)
+
+
+# Continuous humanoids with async sac
+
+algos = [
+    'a2c_gae',
+    'a2c_nstep',
+    'ppo',
+    'async_sac',
+]
+legend_list = [
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
+    'Async SAC',
+]
+envs = [
+    'humanoid_',
+    'humanoidflagrun_',
+    'humanoidflagrunharder',
+]
+
+data_folder = util.smart_path('../Desktop/benchmark/cont')
+latex_body = get_latex_body(algos, envs, data_folder)
+print(latex_body)
+
+# exclude n-step since it's out of scale
+algos = [
+    'a2c_gae',
+    'ppo',
+    'async_sac',
+]
+legend_list = [
+    'A2C (GAE)',
+    'PPO',
+    'Async SAC',
+]
+# plot shorter humanoid
+envs = [
+    'humanoid_',
+]
+plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 16)])
+
+# plot harder humanoids with more workers
+envs = [
+    'humanoidflagrun_',
+    'humanoidflagrunharder',
+]
+plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
+
+
+# finally create image grid of all together
+envs = [
+    'RoboschoolAnt',
+    'RoboschoolAtlasForwardWalk',
+    'RoboschoolHalfCheetah',
+    'RoboschoolHopper',
+    'RoboschoolInvertedDoublePendulum',
+    'RoboschoolInvertedPendulum',
+    'RoboschoolReacher',
+    'RoboschoolWalker2d',
+    'humanoid_',
+    'humanoidflagrun_',
+    'humanoidflagrunharder',
+    'Unity3DBall',
+    'Unity3DBallHard',
+    # 'UnityCrawlerDynamic',
+    # 'UnityCrawlerStatic',
+    # 'UnityReacher',
+    # 'UnityWalker',
+]
+latex_im_body = get_latex_im_body(envs)
+print(latex_im_body)
 
 
 # Discrete
@@ -170,7 +241,6 @@ legend_list = [
     'PPO',
     'SAC',
 ]
-
 envs = [
     'BeamRider',
     'Breakout',
@@ -188,6 +258,8 @@ envs = [
 data_folder = util.smart_path('../Desktop/benchmark/discrete')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
+latex_im_body = get_latex_im_body(envs)
+print(latex_im_body)
 plot_envs(algos, envs, data_folder, legend_list)
 
 
@@ -207,7 +279,6 @@ legend_list = [
     'A2C (n-step)',
     'PPO',
 ]
-
 envs = [
     "Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
 ]
