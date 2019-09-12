@@ -56,6 +56,17 @@ def get_latex_body(algos, envs, data_folder):
     return latex_body
 
 
+def get_latex_im_body(envs):
+    latex_ims = []
+    for env in envs:
+        latex_im = f'\subfloat{{\includegraphics[width=1.22in]{{images/{env}_multi_trial_graph_mean_returns_ma_vs_frames.png}}}}'
+        latex_ims.append(latex_im)
+
+    im_matrix = ps.chunk(latex_ims, 4)
+    latex_im_body = '\\\\\n'.join([' & \n'.join(row) for row in im_matrix])
+    return latex_im_body
+
+
 def get_trial_metrics_path(algo, env, data_folder):
     filepaths = glob(f'{data_folder}/*{algo}*{env}*/info/{trial_metrics_path}')
     assert len(filepaths) == 1
@@ -188,4 +199,6 @@ envs = [
 data_folder = util.smart_path('../Desktop/benchmark/atari')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
+latex_im_body = get_latex_im_body(envs)
+print(latex_im_body)
 plot_envs(algos, envs, data_folder, legend_list)
