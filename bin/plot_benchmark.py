@@ -27,13 +27,20 @@ def get_latex_row(algos, env, data_folder):
     Max value in a row is formatted with textbf
     '''
     env_ret_ma_list = [get_trial_metrics_scalar(algo, env, data_folder)['final_return_ma'] for algo in algos]
-    max_val = ps.max_(env_ret_ma_list)
+    try:
+        max_val = ps.max_(env_ret_ma_list)
+    except Exception as e:
+        print(env, env_ret_ma_list)
+        raise
     ret_ma_str_list = []
     for ret_ma in env_ret_ma_list:
         if isinstance(ret_ma, str):
             ret_ma_str = str(ret_ma)
         else:
-            ret_ma_str = str(round(ret_ma, 2))
+            if abs(ret_ma) < 100:
+                ret_ma_str = str(round(ret_ma, 2))
+            else:
+                ret_ma_str = str(round(ret_ma))
         if ret_ma and ret_ma == max_val:
             ret_ma_str = f'\\textbf{{{ret_ma_str}}}'
         ret_ma_str_list.append(ret_ma_str)
@@ -58,17 +65,19 @@ def get_trial_metrics_path(algo, env, data_folder):
 def plot_env(algos, env, data_folder, legend_list=None):
     trial_metrics_path_list = [get_trial_metrics_path(algo, env, data_folder) for algo in algos]
     title = env
-    graph_prepath = f'{data_folder}/{env}'
-    # viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, name_time_pairs=[('mean_returns', 'frames')])
+    if legend_list is None:
+        graph_prepath = f'{data_folder}/{env}'
+    else:
+        graph_prepath = f'{data_folder}/{env}-legend'
     viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')])
 
 
 def plot_envs(algos, envs, data_folder, legend_list):
     for idx, env in enumerate(envs):
-        if idx == len(envs) - 1:  # add legend to the last
+        plot_env(algos, env, data_folder)
+        if idx == len(envs) - 1:
+            # plot extra to crop legend out
             plot_env(algos, env, data_folder, legend_list)
-        else:
-            plot_env(algos, env, data_folder)
 
 
 # Continuous
@@ -112,7 +121,6 @@ envs = [
 data_folder = util.smart_path('../Desktop/benchmark/cont')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
-
 plot_envs(algos, envs, data_folder, legend_list)
 
 
@@ -153,6 +161,7 @@ envs = [
 data_folder = util.smart_path('../Desktop/benchmark/discrete')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
+plot_envs(algos, envs, data_folder, legend_list)
 
 
 # Atari full
@@ -177,6 +186,6 @@ envs = [
 ]
 
 data_folder = util.smart_path('../Desktop/benchmark/atari')
-
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
+plot_envs(algos, envs, data_folder, legend_list)
