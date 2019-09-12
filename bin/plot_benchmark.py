@@ -12,7 +12,7 @@ trial_metrics_path = '*t0_trial_metrics.pkl'
 
 def get_trial_metrics_scalar(algo, env, data_folder):
     try:
-        filepaths = glob(f'{data_folder}/*{algo}*{env}*/{trial_metrics_scalar_path}')
+        filepaths = glob(f'{data_folder}/{algo}*{env}*/{trial_metrics_scalar_path}')
         assert len(filepaths) == 1, f'{algo}, {env}, {filepaths}'
         filepath = filepaths[0]
         return util.read(filepath)
