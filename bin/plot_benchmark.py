@@ -169,7 +169,6 @@ legend_list = [
 ]
 
 envs = [
-    'lunar',
     'BeamRider',
     'Breakout',
     'MsPacman',
@@ -177,6 +176,7 @@ envs = [
     'Seaquest',
     'SpaceInvaders',
     'Qbert',
+    'lunar',
     'UnityHallway',
     'UnityPushBlock',
     'UnityPyramids',
