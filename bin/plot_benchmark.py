@@ -28,7 +28,7 @@ def get_latex_row(algos, env, data_folder):
     '''
     env_ret_ma_list = [get_trial_metrics_scalar(algo, env, data_folder)['final_return_ma'] for algo in algos]
     try:
-        max_val = ps.max_(env_ret_ma_list)
+        max_val = ps.max_([k for k in env_ret_ma_list if isinstance(k, (int, float))])
     except Exception as e:
         print(env, env_ret_ma_list)
         raise
@@ -68,7 +68,7 @@ def get_latex_im_body(envs):
 
 
 def get_trial_metrics_path(algo, env, data_folder):
-    filepaths = glob(f'{data_folder}/*{algo}*{env}*/info/{trial_metrics_path}')
+    filepaths = glob(f'{data_folder}/{algo}*{env}*/info/{trial_metrics_path}')
     assert len(filepaths) == 1
     return filepaths[0]
 
@@ -117,10 +117,8 @@ envs = [
     'RoboschoolReacher-v1',
     'RoboschoolWalker2d-v1',
     'RoboschoolHumanoid-v1',
-    # !subset name conflict
     'RoboschoolHumanoidFlagrun-v1',
     'RoboschoolHumanoidFlagrunHarder-v1',
-    # !subset name conflict
     'Unity3DBall-v0',
     'Unity3DBallHard-v0',
     'UnityCrawlerDynamic-v0',
@@ -156,8 +154,8 @@ legend_list = [
 ]
 
 envs = [
-    'LunarLander',
-    'Beamrider',
+    'lunar',
+    'BeamRider',
     'Breakout',
     'MsPacman',
     'Pong',
