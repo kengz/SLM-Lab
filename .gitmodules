@@ -1,3 +1,0 @@
-[submodule "slm_lab/env/SLM-Env"]
-	path = slm_lab/env/SLM-Env
-	url = https://github.com/kengz/SLM-Env.git
