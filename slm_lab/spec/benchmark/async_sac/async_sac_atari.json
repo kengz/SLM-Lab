@@ -8,12 +8,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 80000,
         "use_cer": false
       },
       "net": {
@@ -25,14 +25,14 @@
           [32, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256, 256],
-        "hid_layers_activation": "leakyrelu",
-        "init_fn": "orthogonal_",
+        "hid_layers_activation": "relu",
+        "init_fn": null,
         "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
@@ -64,7 +64,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 8,
       "max_trial": 1,
     }
   },
@@ -77,12 +77,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 80000,
         "use_cer": false
       },
       "net": {
@@ -94,14 +94,14 @@
           [32, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256, 256],
-        "hid_layers_activation": "leakyrelu",
-        "init_fn": "orthogonal_",
+        "hid_layers_activation": "relu",
+        "init_fn": null,
         "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
@@ -133,7 +133,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 8,
       "max_trial": 1,
     }
   },
@@ -146,12 +146,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 80000,
         "use_cer": false
       },
       "net": {
@@ -163,14 +163,14 @@
           [32, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256, 256],
-        "hid_layers_activation": "leakyrelu",
-        "init_fn": "orthogonal_",
+        "hid_layers_activation": "relu",
+        "init_fn": null,
         "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
@@ -202,7 +202,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 8,
       "max_trial": 1,
     }
   },
@@ -215,12 +215,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 80000,
         "use_cer": false
       },
       "net": {
@@ -232,14 +232,14 @@
           [32, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256, 256],
-        "hid_layers_activation": "leakyrelu",
-        "init_fn": "orthogonal_",
+        "hid_layers_activation": "relu",
+        "init_fn": null,
         "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
@@ -271,7 +271,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 8,
       "max_trial": 1,
     }
   }
