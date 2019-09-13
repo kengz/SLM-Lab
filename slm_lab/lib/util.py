@@ -593,7 +593,7 @@ def to_json(d, indent=2):
 
 
 def to_render():
-    return os.environ.get('RENDER', 'false') == 'true' or (get_lab_mode() in ('dev', 'enjoy' and os.environ.get('RENDER', 'true') == 'true'))
+    return os.environ.get('RENDER', 'false') == 'true' or (get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true')
 
 
 def to_torch_batch(batch, device, is_episodic):
