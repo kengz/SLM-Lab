@@ -1,5 +1,5 @@
 {
-  "a2c_gae_unitybasic": {
+  "a2c_nstep_unitybasic": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
