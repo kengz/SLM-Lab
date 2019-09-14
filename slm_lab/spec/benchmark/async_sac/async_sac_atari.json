@@ -8,12 +8,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 200000,
         "use_cer": false
       },
       "net": {
@@ -32,12 +32,12 @@
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 1e-4,
+          "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -77,12 +77,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 200000,
         "use_cer": false
       },
       "net": {
@@ -101,12 +101,12 @@
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 1e-4,
+          "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -146,12 +146,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 200000,
         "use_cer": false
       },
       "net": {
@@ -170,12 +170,12 @@
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 1e-4,
+          "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -215,12 +215,12 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 8
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
         "batch_size": 512,
-        "max_size": 100000,
+        "max_size": 200000,
         "use_cer": false
       },
       "net": {
@@ -239,12 +239,12 @@
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 1e-4,
+          "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
