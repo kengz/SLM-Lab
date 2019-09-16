@@ -59,7 +59,7 @@
     "env": [{
       "name": "Unity3DBall-v0",
       "num_envs": 1,
-      "max_t": 40000,
+      "max_t": 10000,
       "max_frame": 2e6
     }],
     "body": {
@@ -137,7 +137,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "num_envs": 1,
-      "max_t": 40000,
+      "max_t": 10000,
       "max_frame": 2e6
     }],
     "body": {
@@ -224,7 +224,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "num_envs": 1,
-      "max_t": 40000,
+      "max_t": 10000,
       "max_frame": 2e7
     }],
     "body": {

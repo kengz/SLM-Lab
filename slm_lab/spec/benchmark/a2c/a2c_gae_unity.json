@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 128
+        "training_frequency": 64
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -54,7 +54,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "num_envs": 1,
-      "max_t": 40000,
+      "max_t": 10000,
       "max_frame": 2e6
     }],
     "body": {
@@ -98,7 +98,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 128
+        "training_frequency": 64
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -134,7 +134,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "num_envs": 1,
-      "max_t": 40000,
+      "max_t": 10000,
       "max_frame": 2e6
     }],
     "body": {
