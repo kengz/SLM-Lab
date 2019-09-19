@@ -103,32 +103,28 @@ def get_trial_metrics_path(algo, env, data_folder):
     return filepaths[0]
 
 
-def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None):
+def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None, showlegend=False):
     trial_metrics_path_list = []
     for idx, algo in enumerate(algos):
         try:
             trial_metrics_path_list.append(get_trial_metrics_path(algo, env, data_folder))
         except Exception as e:
-            if legend_list is not None:  # remove from legend
-                del legend_list[idx]
+            del legend_list[idx]
             logger.warning(f'Nothing to plot for algo: {algo}, env: {env}')
     env = guard_env_name(env)
     title = env
-    if legend_list is None:
-        graph_prepath = f'{data_folder}/{env}'
-    else:
+    if showlegend:
         graph_prepath = f'{data_folder}/{env}-legend'
-    if legend_list is not None:
-        palette = [master_palette_dict[k] for k in legend_list]
     else:
-        palette = None
-    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')], frame_scales=frame_scales, palette=palette)
+        graph_prepath = f'{data_folder}/{env}'
+    palette = [master_palette_dict[k] for k in legend_list]
+    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')], frame_scales=frame_scales, palette=palette, showlegend=showlegend)
 
 
 def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
     for idx, env in enumerate(envs):
         try:
-            plot_env(algos, env, data_folder, frame_scales=frame_scales)
+            plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales, showlegend=False)
             if idx == len(envs) - 1:
                 # plot extra to crop legend out
                 plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales)

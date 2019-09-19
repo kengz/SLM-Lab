@@ -250,7 +250,7 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     return fig
 
 
-def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette=None):
+def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette=None, showlegend=True):
     '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
     palette = palette or get_palette(len(local_metrics_list))
     all_data = []
@@ -259,14 +259,14 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title,
             local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
         if legend_list is not None:
             # update legend for the main trace
-            fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
+            fig.data[0].update({'showlegend': showlegend, 'name': legend_list[idx]})
         all_data += list(fig.data)
     layout = create_layout(title, name, time)
     fig = go.Figure(all_data, layout)
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None, showlegend=True):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually
@@ -303,7 +303,7 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
                 sr_list = [calc_sr_ma(sr) for sr in sr_list]
                 local_metrics[f'{name}_ma'] = sr_list
             name = f'{name}_ma'  # for labeling
-        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette)
+        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette, showlegend)
         save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
         if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             prepath = graph_prepath.replace('/graph/', '/')
