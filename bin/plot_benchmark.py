@@ -124,6 +124,7 @@ def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
 
 # Discrete
 # LunarLander + Small Atari + Unity
+data_folder = util.smart_path('../Desktop/benchmark/discrete')
 
 algos = [
     'dqn',
@@ -155,11 +156,23 @@ envs = [
     'UnityPyramids',
 ]
 
-data_folder = util.smart_path('../Desktop/benchmark/discrete')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
 latex_im_body = get_latex_im_body(envs)
 print(latex_im_body)
+
+# plot normal
+envs = [
+    'BeamRider',
+    'Breakout',
+    'MsPacman',
+    'Seaquest',
+    'SpaceInvaders',
+    'lunar',
+    'UnityHallway',
+    'UnityPushBlock',
+    'UnityPyramids',
+]
 plot_envs(algos, envs, data_folder, legend_list)
 
 # Replot Pong and Qbert for Async SAC
@@ -173,6 +186,7 @@ plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 6)])
 
 # Continuous
 # Roboschool + Unity
+data_folder = util.smart_path('../Desktop/benchmark/cont')
 
 algos = [
     'a2c_gae',
@@ -195,43 +209,54 @@ envs = [
     'RoboschoolInvertedPendulum',
     'RoboschoolReacher',
     'RoboschoolWalker2d',
-    'Unity3DBall-',
-    'Unity3DBallHard',
-    # 'UnityCrawlerDynamic',
-    # 'UnityCrawlerStatic',
-    # 'UnityReacher',
-    # 'UnityWalker',
-]
-
-data_folder = util.smart_path('../Desktop/benchmark/cont')
-latex_body = get_latex_body(algos, envs, data_folder)
-print(latex_body)
-plot_envs(algos, envs, data_folder, legend_list)
-
-
-# Continuous humanoids with async sac
-
-algos = [
-    'a2c_gae',
-    'a2c_nstep',
-    'ppo',
-    'async_sac',
-]
-legend_list = [
-    'A2C (GAE)',
-    'A2C (n-step)',
-    'PPO',
-    'Async SAC',
-]
-envs = [
     'humanoid_',
     'humanoidflagrun_',
     'humanoidflagrunharder',
+    'Unity3DBall-',
+    'Unity3DBallHard',
+    # 'UnityCrawlerDynamic',
+    'UnityCrawlerStatic',
+    'UnityReacher',
+    # 'UnityWalker',
 ]
 
-data_folder = util.smart_path('../Desktop/benchmark/cont')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
+latex_im_body = get_latex_im_body(envs)
+print(latex_im_body)
+
+
+# plot simple
+envs = [
+    'RoboschoolAnt',
+    'RoboschoolAtlasForwardWalk',
+    'RoboschoolHalfCheetah',
+    'RoboschoolHopper',
+    'RoboschoolInvertedDoublePendulum',
+    'RoboschoolInvertedPendulum',
+    'RoboschoolReacher',
+    'RoboschoolWalker2d',
+    'Unity3DBall-',
+    'Unity3DBallHard',
+    # 'UnityCrawlerDynamic',
+    'UnityCrawlerStatic',
+    'UnityReacher',
+    # 'UnityWalker',
+]
+plot_envs(algos, envs, data_folder, legend_list)
+
+
+# plot humanoids with async sac
+envs = [
+    'humanoid_',
+]
+plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 16)])
+
+envs = [
+    'humanoidflagrun_',
+]
+plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
+
 
 # exclude n-step since it's out of scale
 algos = [
@@ -244,45 +269,18 @@ legend_list = [
     'PPO',
     'Async SAC',
 ]
-# plot shorter humanoid
-envs = [
-    'humanoid_',
-]
-plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 16)])
-
 # plot harder humanoids with more workers
 envs = [
-    'humanoidflagrun_',
     'humanoidflagrunharder',
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
 
 
-# finally create image grid of all together
-envs = [
-    'RoboschoolAnt',
-    'RoboschoolAtlasForwardWalk',
-    'RoboschoolHalfCheetah',
-    'RoboschoolHopper',
-    'RoboschoolInvertedDoublePendulum',
-    'RoboschoolInvertedPendulum',
-    'RoboschoolReacher',
-    'RoboschoolWalker2d',
-    'humanoid_',
-    'humanoidflagrun_',
-    'humanoidflagrunharder',
-    'Unity3DBall',
-    'Unity3DBallHard',
-    # 'UnityCrawlerDynamic',
-    # 'UnityCrawlerStatic',
-    # 'UnityReacher',
-    # 'UnityWalker',
-]
-latex_im_body = get_latex_im_body(envs)
-print(latex_im_body)
+
 
 
 # Atari full
+data_folder = util.smart_path('../Desktop/benchmark/atari')
 
 algos = [
     'dqn_atari',
@@ -302,7 +300,6 @@ envs = [
     "Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
 ]
 
-data_folder = util.smart_path('../Desktop/benchmark/atari')
 latex_body = get_latex_body(algos, envs, data_folder)
 print(latex_body)
 latex_im_body = get_latex_im_body(envs)
