@@ -1,4 +1,6 @@
 # Script to generate latex and markdown graphs and tables
+# NOTE: add this to viz.create_layout method:
+# font=dict(size=18),
 from glob import glob
 from slm_lab.lib import logger, util, viz
 import numpy as np
@@ -10,6 +12,8 @@ trial_metrics_scalar_path = '*trial_metrics_scalar.json'
 trial_metrics_path = '*t0_trial_metrics.pkl'
 env_name_map = {
     'lunar': 'LunarLander',
+    'ong': 'Pong',
+    'bert': 'Qbert',
     'humanoid': 'RoboschoolHumanoid',
     'humanoidflagrun': 'RoboschoolHumanoidFlagrun',
     'humanoidflagrunharder': 'RoboschoolHumanoidFlagrunHarder',
@@ -90,7 +94,14 @@ def get_trial_metrics_path(algo, env, data_folder):
 
 
 def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None):
-    trial_metrics_path_list = [get_trial_metrics_path(algo, env, data_folder) for algo in algos]
+    trial_metrics_path_list = []
+    for idx, algo in enumerate(algos):
+        try:
+            trial_metrics_path_list.append(get_trial_metrics_path(algo, env, data_folder))
+        except Exception as e:
+            if legend_list is not None:  # remove from legend
+                del legend_list[idx]
+            logger.warning(f'Nothing to plot for algo: {algo}, env: {env}')
     env = guard_env_name(env)
     title = env
     if legend_list is None:
@@ -109,6 +120,55 @@ def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
                 plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales)
         except Exception as e:
             logger.warning(f'Cant plot for env: {env}. Error: {e}')
+
+
+# Discrete
+# LunarLander + Small Atari + Unity
+
+algos = [
+    'dqn',
+    'ddqn_per',
+    'a2c_gae',
+    'a2c_nstep',
+    'ppo',
+    '*sac',
+]
+legend_list = [
+    'DQN',
+    'DDQN+PER',
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
+    'SAC',
+]
+envs = [
+    'BeamRider',
+    'Breakout',
+    'MsPacman',
+    'ong',
+    'Seaquest',
+    'SpaceInvaders',
+    'bert',
+    'lunar',
+    'UnityHallway',
+    'UnityPushBlock',
+    'UnityPyramids',
+]
+
+data_folder = util.smart_path('../Desktop/benchmark/discrete')
+latex_body = get_latex_body(algos, envs, data_folder)
+print(latex_body)
+latex_im_body = get_latex_im_body(envs)
+print(latex_im_body)
+plot_envs(algos, envs, data_folder, legend_list)
+
+# Replot Pong and Qbert for Async SAC
+envs = [
+    'ong',
+    'bert',
+]
+plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 6)])
+
 
 
 # Continuous
@@ -220,47 +280,6 @@ envs = [
 ]
 latex_im_body = get_latex_im_body(envs)
 print(latex_im_body)
-
-
-# Discrete
-# LunarLander + Small Atari + Unity
-
-algos = [
-    'dqn',
-    'ddqn_per',
-    'a2c_gae',
-    'a2c_nstep',
-    'ppo',
-    'sac',
-]
-legend_list = [
-    'DQN',
-    'DDQN+PER',
-    'A2C (GAE)',
-    'A2C (n-step)',
-    'PPO',
-    'SAC',
-]
-envs = [
-    'BeamRider',
-    'Breakout',
-    'MsPacman',
-    'Pong',
-    'Seaquest',
-    'SpaceInvaders',
-    'Qbert',
-    'lunar',
-    'UnityHallway',
-    'UnityPushBlock',
-    'UnityPyramids',
-]
-
-data_folder = util.smart_path('../Desktop/benchmark/discrete')
-latex_body = get_latex_body(algos, envs, data_folder)
-print(latex_body)
-latex_im_body = get_latex_im_body(envs)
-print(latex_im_body)
-plot_envs(algos, envs, data_folder, legend_list)
 
 
 # Atari full
