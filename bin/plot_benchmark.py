@@ -157,17 +157,13 @@ legend_list = [
     'SAC',
 ]
 envs = [
-    'BeamRider',
     'Breakout',
-    'MsPacman',
     'ong',
     'Seaquest',
-    'SpaceInvaders',
     'bert',
     'lunar',
     'UnityHallway',
     'UnityPushBlock',
-    'UnityPyramids',
 ]
 
 latex_body = get_latex_body(algos, envs, data_folder)
@@ -175,17 +171,14 @@ print(latex_body)
 latex_im_body = get_latex_im_body(envs)
 print(latex_im_body)
 
+
 # plot normal
 envs = [
-    'BeamRider',
     'Breakout',
-    'MsPacman',
     'Seaquest',
-    'SpaceInvaders',
     'lunar',
     'UnityHallway',
     'UnityPushBlock',
-    'UnityPyramids',
 ]
 plot_envs(algos, envs, data_folder, legend_list)
 
