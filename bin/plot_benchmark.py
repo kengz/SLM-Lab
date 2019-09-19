@@ -5,6 +5,7 @@
 #     yaxis=dict(rangemode='tozero', title=None),
 #     xaxis=dict(title=None),
 # ))
+from copy import deepcopy
 from glob import glob
 from slm_lab.lib import logger, util, viz
 import numpy as np
@@ -108,12 +109,14 @@ def get_trial_metrics_path(algo, env, data_folder):
 
 
 def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None, showlegend=False):
+    legend_list = deepcopy(legend_list)
     trial_metrics_path_list = []
     for idx, algo in enumerate(algos):
         try:
             trial_metrics_path_list.append(get_trial_metrics_path(algo, env, data_folder))
         except Exception as e:
-            del legend_list[idx]
+            if legend_list is not None:
+                del legend_list[idx]
             logger.warning(f'Nothing to plot for algo: {algo}, env: {env}')
     env = guard_env_name(env)
     title = env
@@ -131,7 +134,7 @@ def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
             plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales, showlegend=False)
             if idx == len(envs) - 1:
                 # plot extra to crop legend out
-                plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales)
+                plot_env(algos, env, data_folder, legend_list=legend_list, frame_scales=frame_scales, showlegend=True)
         except Exception as e:
             logger.warning(f'Cant plot for env: {env}. Error: {e}')
 
