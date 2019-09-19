@@ -259,6 +259,18 @@ envs = [
 plot_envs(algos, envs, data_folder, legend_list)
 
 
+algos = [
+    'a2c_gae',
+    'a2c_nstep',
+    'ppo',
+    '*sac',
+]
+legend_list = [
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
+    'Async SAC',
+]
 # plot humanoids with async sac
 envs = [
     'humanoid_',
@@ -275,7 +287,7 @@ plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
 algos = [
     'a2c_gae',
     'ppo',
-    'async_sac',
+    '*sac',
 ]
 legend_list = [
     'A2C (GAE)',
