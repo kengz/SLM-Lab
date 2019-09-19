@@ -250,9 +250,9 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     return fig
 
 
-def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title):
+def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette=None):
     '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
-    palette = get_palette(len(local_metrics_list))
+    palette = palette or get_palette(len(local_metrics_list))
     all_data = []
     for idx, local_metrics in enumerate(local_metrics_list):
         fig = plot_mean_sr(
@@ -266,7 +266,7 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually
@@ -303,7 +303,7 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
                 sr_list = [calc_sr_ma(sr) for sr in sr_list]
                 local_metrics[f'{name}_ma'] = sr_list
             name = f'{name}_ma'  # for labeling
-        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
+        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette)
         save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
         if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             prepath = graph_prepath.replace('/graph/', '/')

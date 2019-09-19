@@ -18,6 +18,16 @@ env_name_map = {
     'humanoidflagrun': 'RoboschoolHumanoidFlagrun',
     'humanoidflagrunharder': 'RoboschoolHumanoidFlagrunHarder',
 }
+master_legend_list = [
+    'DQN',
+    'DDQN+PER',
+    'A2C (GAE)',
+    'A2C (n-step)',
+    'PPO',
+    'SAC',
+]
+master_palette_dict = dict(zip(master_legend_list, viz.get_palette(len(master_legend_list))))
+master_palette_dict['Async SAC'] = master_palette_dict['SAC']
 
 
 def guard_env_name(env):
@@ -108,7 +118,11 @@ def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None):
         graph_prepath = f'{data_folder}/{env}'
     else:
         graph_prepath = f'{data_folder}/{env}-legend'
-    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')], frame_scales=frame_scales)
+    if legend_list is not None:
+        palette = [master_palette_dict[k] for k in legend_list]
+    else:
+        palette = None
+    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True, name_time_pairs=[('mean_returns', 'frames')], frame_scales=frame_scales, palette=palette)
 
 
 def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
@@ -192,7 +206,7 @@ algos = [
     'a2c_gae',
     'a2c_nstep',
     'ppo',
-    'sac',
+    '*sac',
 ]
 legend_list = [
     'A2C (GAE)',
