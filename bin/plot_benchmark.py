@@ -1,6 +1,10 @@
 # Script to generate latex and markdown graphs and tables
-# NOTE: add this to viz.create_layout method:
-# font=dict(size=18),
+# NOTE: add this to viz.plot_multi_trial method before saving fig:
+# fig.layout.update(dict(
+#     font=dict(size=18),
+#     yaxis=dict(rangemode='tozero', title=None),
+#     xaxis=dict(title=None),
+# ))
 from glob import glob
 from slm_lab.lib import logger, util, viz
 import numpy as np
@@ -193,7 +197,6 @@ envs = [
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 6)])
 
 
-
 # Continuous
 # Roboschool + Unity
 data_folder = util.smart_path('../Desktop/benchmark/cont')
@@ -284,9 +287,6 @@ envs = [
     'humanoidflagrunharder',
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
-
-
-
 
 
 # Atari full
