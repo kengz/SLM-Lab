@@ -63,7 +63,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 6,
       "max_trial": 1,
     }
   },
@@ -131,7 +131,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 6,
       "max_trial": 1,
     }
   }
