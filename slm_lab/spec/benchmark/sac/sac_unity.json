@@ -11,8 +11,8 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 128,
-        "max_size": 100000,
+        "batch_size": 256,
+        "max_size": 200000,
         "use_cer": false
       },
       "net": {
@@ -27,7 +27,7 @@
         "optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 3e-4,
+          "lr": 3e-3,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -42,7 +42,7 @@
       "frame_op_len": 4,
       "num_envs": 1,
       "max_t": 10000,
-      "max_frame": 5e5
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
