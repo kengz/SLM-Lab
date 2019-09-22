@@ -181,7 +181,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": true
       },
@@ -196,7 +196,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 5e-5,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
