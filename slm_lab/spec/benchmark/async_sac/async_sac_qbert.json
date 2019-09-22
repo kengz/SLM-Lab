@@ -12,7 +12,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
@@ -40,7 +40,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
-        "update_frequency": 1,
+        "update_frequency": 4,
         "polyak_coef": 0.005,
         "gpu": true
       }
@@ -80,7 +80,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
@@ -92,7 +92,7 @@
           [64, 4, 2, 0, 1],
           [32, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [128, 128],
+        "fc_hid_layers": [128, 128, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -108,7 +108,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
-        "update_frequency": 1,
+        "update_frequency": 4,
         "polyak_coef": 0.005,
         "gpu": true
       }
