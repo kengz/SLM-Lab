@@ -224,8 +224,8 @@ envs = [
     'Unity3DBall-',
     'Unity3DBallHard',
     # 'UnityCrawlerDynamic',
-    'UnityCrawlerStatic',
-    'UnityReacher',
+    # 'UnityCrawlerStatic',
+    # 'UnityReacher',
     # 'UnityWalker',
 ]
 
@@ -278,19 +278,6 @@ envs = [
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
 
-
-# exclude n-step since it's out of scale
-algos = [
-    'a2c_gae',
-    'ppo',
-    '*sac',
-]
-legend_list = [
-    'A2C (GAE)',
-    'PPO',
-    'Async SAC',
-]
-# plot harder humanoids with more workers
 envs = [
     'humanoidflagrunharder',
 ]
@@ -315,7 +302,7 @@ legend_list = [
     'PPO',
 ]
 envs = [
-    "Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
+    "Adventure", "AirRaid", "Alien", "Amidar", "Assault", "Asterix", "Asteroids", "Atlantis", "BankHeist", "BattleZone", "BeamRider", "Berzerk", "Bowling", "Boxing", "Breakout", "Carnival", "Centipede", "ChopperCommand", "CrazyClimber", "Defender", "DemonAttack", "DoubleDunk", "ElevatorAction", "Enduro", "FishingDerby", "Freeway", "Frostbite", "Gopher", "Gravitar", "Hero", "IceHockey", "Jamesbond", "JourneyEscape", "Kangaroo", "Krull", "KungFuMaster", "MontezumaRevenge", "MsPacman", "NameThisGame", "Phoenix", "Pitfall", "Pong", "Pooyan", "PrivateEye", "Qbert", "Riverraid", "RoadRunner", "Robotank", "Seaquest", "Skiing", "Solaris", "SpaceInvaders", "StarGunner", "Tennis", "TimePilot", "Tutankham", "UpNDown", "Venture", "VideoPinball", "WizardOfWor", "YarsRevenge", "Zaxxon"
 ]
 
 latex_body = get_latex_body(algos, envs, data_folder)
