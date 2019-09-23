@@ -93,7 +93,7 @@
           [64, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256, 256],
-        "hid_layers_activation": "leaky",
+        "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
         "batch_norm": false,
