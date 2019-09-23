@@ -111,27 +111,20 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "Lookahead",
+          "optimizer": "RAdam",
           "lr": 0.02
         },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
+        "lr_scheduler_spec": null,
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 100000,
     }],
     "body": {
       "product": "outer",

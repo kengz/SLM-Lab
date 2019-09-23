@@ -10,6 +10,7 @@ logger = logger.get_logger(__name__)
 # register custom torch.optim
 setattr(torch.optim, 'GlobalAdam', optimizer.GlobalAdam)
 setattr(torch.optim, 'GlobalRMSprop', optimizer.GlobalRMSprop)
+setattr(torch.optim, 'Lookahead', optimizer.Lookahead)
 setattr(torch.optim, 'RAdam', optimizer.RAdam)
 
 
@@ -329,9 +330,11 @@ def init_global_nets(algorithm):
             global_nets[f'global_{net_name}'] = g_net
         # if optim is Global, set to override the local optim and its scheduler
         optim = getattr(algorithm, optim_name)
-        if 'Global' in util.get_class_name(optim):
+        if hasattr(optim, 'share_memory'):
             optim.share_memory()  # make optim global
             global_nets[optim_name] = optim
+            if hasattr(optim, 'optimizer'):  # for Lookahead with an inner optimizer
+                global_nets[f'{optim_name}_optimizer'] = optim.optimizer
             lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
             lr_scheduler = getattr(algorithm, lr_scheduler_name)
             global_nets[lr_scheduler_name] = lr_scheduler
@@ -346,6 +349,12 @@ def set_global_nets(algorithm, global_nets):
         setattr(algorithm, f'global_{net_name}', None)
     # set attr created in init_global_nets
     if global_nets is not None:
+        # handle inner-optimizer recovery
+        inner_opt_keys = [k for k in global_nets if k.endswith('_optimizer')]
+        for inner_opt_key in inner_opt_keys:
+            opt = global_nets[inner_opt_key.replace('_optimizer', '')]  # optimizer which has a inner optimizer
+            setattr(opt, 'optimizer', global_nets.pop(inner_opt_key))
+        # set global nets and optims
         util.set_attr(algorithm, global_nets)
         logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
 
