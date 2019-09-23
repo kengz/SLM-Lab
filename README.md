@@ -75,6 +75,9 @@ Due to their standardized design, all the algorithms can be parallelized asynchr
 
 >Click on the algorithm to see the result upload Pull Request.
 
+**Legend:**
+<img width="200" alt="legend" src="https://user-images.githubusercontent.com/8209263/65397799-df588080-dd67-11e9-8eb2-339c4d1491b7.png">
+
 | Env. \ Alg. | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/416) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/416) | [PPO](https://github.com/kengz/SLM-Lab/pull/416) | [SAC](https://github.com/kengz/SLM-Lab/pull/416) |
 |:---|---|---|---|---|
 | RoboschoolAnt <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396960-d0220480-dd60-11e9-94ed-b6be9310a3e8.png"></details> | 787 | 1396 | 1843 | **2915** |
