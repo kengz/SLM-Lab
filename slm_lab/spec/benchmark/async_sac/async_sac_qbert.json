@@ -40,7 +40,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
-        "update_frequency": 1,
+        "update_frequency": 4,
         "polyak_coef": 0.005,
         "gpu": true
       }
@@ -52,7 +52,7 @@
       "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 1e7
     }],
     "body": {
       "product": "outer",
@@ -60,8 +60,8 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 6,
       "max_trial": 1,
