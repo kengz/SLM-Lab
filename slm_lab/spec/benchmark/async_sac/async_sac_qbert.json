@@ -27,7 +27,7 @@
         "fc_hid_layers": [256, 256],
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
-        "normalize": false,
+        "normalize": true,
         "batch_norm": true,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
