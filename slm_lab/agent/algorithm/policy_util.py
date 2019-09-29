@@ -183,7 +183,7 @@ def multi_default(states, algorithm, body_list, pdparam):
     action_a = self.action_policy(pdparam, self, body_list)
     '''
     # assert pdparam has been chunked
-    assert len(pdparam.shape) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
+    assert pdparam.dim() > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
     action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]

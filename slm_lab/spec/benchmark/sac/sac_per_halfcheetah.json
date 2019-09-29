@@ -28,7 +28,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 7e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -41,7 +41,7 @@
       "name": "RoboschoolHalfCheetah-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",

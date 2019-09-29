@@ -6,6 +6,7 @@ import pandas as pd
 import pydash as ps
 import shutil
 import torch
+import warnings
 
 
 METRICS_COLS = [
@@ -117,7 +118,11 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
-    mean_rand_returns = rand_bl['mean']
+    if rand_bl is None:
+        mean_rand_returns = 0.0
+        logger.warn('Random baseline unavailable for environment. Please generate separately.')
+    else:
+        mean_rand_returns = rand_bl['mean']
     mean_returns = session_df['total_reward']
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
@@ -125,9 +130,11 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     final_return_ma = mean_returns[-viz.PLOT_MA_WINDOW:].mean()
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
     max_str, final_str = local_strs.max(), local_strs.iloc[-1]
-    sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
-    train_eff, local_train_effs = calc_efficiency(local_strs, opt_steps)
-    sta, local_stas = calc_stability(local_strs)
+    with warnings.catch_warnings():  # mute np.nanmean warning
+        warnings.filterwarnings('ignore')
+        sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
+        train_eff, local_train_effs = calc_efficiency(local_strs, opt_steps)
+        sta, local_stas = calc_stability(local_strs)
 
     # all the scalar session metrics
     scalar = {

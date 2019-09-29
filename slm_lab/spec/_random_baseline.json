@@ -3151,5 +3151,41 @@
     "mean": -11.523448465579003,
     "std": 3.878485628897857
   },
-  "vizdoom-v0": null
+  "vizdoom-v0": null,
+  "Unity3DBall-v0": {
+    "mean": 1.24,
+    "std": 0.0
+  },
+  "Unity3DBallHard-v0": {
+    "mean": 1.17,
+    "std": 0.0
+  },
+  "UnityCrawlerDynamic-v0": {
+    "mean": 2.21,
+    "std": 0.0
+  },
+  "UnityCrawlerStatic-v0": {
+    "mean": 4.34,
+    "std": 0.0
+  },
+  "UnityHallway-v0": {
+    "mean": -0.99,
+    "std": 0.0
+  },
+  "UnityPushBlock-v0": {
+    "mean": -1.00,
+    "std": 0.0
+  },
+  "UnityPyramids-v0": {
+    "mean": -1.00,
+    "std": 0.0
+  },
+  "UnityReacher-v0": {
+    "mean": 0.27,
+    "std": 0.0
+  },
+  "UnityWalker-v0": {
+    "mean": -5.15,
+    "std": 0.0
+  }
 }

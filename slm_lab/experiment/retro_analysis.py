@@ -14,7 +14,8 @@ def retro_analyze_sessions(predir):
     '''Retro analyze all sessions'''
     logger.info('Running retro_analyze_sessions')
     session_spec_paths = glob(f'{predir}/*_s*_spec.json')
-    util.parallelize(_retro_analyze_session, [(p,) for p in session_spec_paths], num_cpus=util.NUM_CPUS)
+    for p in session_spec_paths:
+        _retro_analyze_session(p)
 
 
 def _retro_analyze_session(session_spec_path):
@@ -32,7 +33,8 @@ def retro_analyze_trials(predir):
     session_spec_paths = glob(f'{predir}/*_s*_spec.json')
     # remove session spec paths
     trial_spec_paths = ps.difference(glob(f'{predir}/*_t*_spec.json'), session_spec_paths)
-    util.parallelize(_retro_analyze_trial, [(p,) for p in trial_spec_paths], num_cpus=util.NUM_CPUS)
+    for p in trial_spec_paths:
+        _retro_analyze_trial(p)
 
 
 def _retro_analyze_trial(trial_spec_path):
@@ -47,7 +49,7 @@ def _retro_analyze_trial(trial_spec_path):
 def retro_analyze_experiment(predir):
     '''Retro analyze an experiment'''
     logger.info('Running retro_analyze_experiment')
-    if ps.is_empty(glob(f'{predir}/*_trial_data_dict.json')):
+    if ps.is_empty(glob(f'{predir}/info/*_trial_data_dict.json')):
         logger.info('Skipping retro_analyze_experiment since no experiment was ran.')
         return  # only run analysis if experiment had been ran
     trial_spec_paths = glob(f'{predir}/*_t*_spec.json')

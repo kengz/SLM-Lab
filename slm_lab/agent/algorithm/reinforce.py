@@ -91,9 +91,7 @@ class Reinforce(Algorithm):
 
     @lab_api
     def calc_pdparam(self, x, net=None):
-        '''
-        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
-        '''
+        '''The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.'''
         net = self.net if net is None else net
         pdparam = net(x)
         return pdparam
