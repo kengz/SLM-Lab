@@ -36,9 +36,9 @@ class OpenAIEnv(BaseEnv):
         seed = ps.get(spec, 'meta.random_seed')
         episode_life = not util.in_eval_lab_modes()
         if self.is_venv:  # make vector environment
-            self.u_env = make_gym_venv(self.name, self.num_envs, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
+            self.u_env = make_gym_venv(name=self.name, num_envs=self.num_envs, seed=seed, frame_op=self.frame_op, frame_op_len=self.frame_op_len, image_downsize=self.image_downsize, reward_scale=self.reward_scale, normalize_state=self.normalize_state, episode_life=episode_life)
         else:
-            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
+            self.u_env = make_gym_env(name=self.name, seed=seed, frame_op=self.frame_op, frame_op_len=self.frame_op_len, image_downsize=self.image_downsize, reward_scale=self.reward_scale, normalize_state=self.normalize_state, episode_life=episode_life)
         if self.name.startswith('Unity'):
             # Unity is always initialized as singleton gym env, but the Unity runtime can be vec_env
             self.num_envs = self.u_env.num_envs
