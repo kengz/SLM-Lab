@@ -705,14 +705,14 @@ def normalize_image(im):
     return np.divide(im, 255.0)
 
 
-def preprocess_image(im):
+def preprocess_image(im, w_h=(84, 84)):
     '''
     Image preprocessing using OpenAI Baselines method: grayscale, resize
     This resize uses stretching instead of cropping
     '''
     im = to_opencv_image(im)
     im = grayscale_image(im)
-    im = resize_image(im, (84, 84))
+    im = resize_image(im, w_h)
     im = np.expand_dims(im, 0)
     return im
 

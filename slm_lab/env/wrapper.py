@@ -157,7 +157,7 @@ class PreprocessImage(gym.ObservationWrapper):
             low=0, high=255, shape=(1, self.width, self.height), dtype=np.uint8)
 
     def observation(self, frame):
-        return util.preprocess_image(frame)
+        return util.preprocess_image(frame, (self.width, self.height))
 
 
 class LazyFrames(object):
