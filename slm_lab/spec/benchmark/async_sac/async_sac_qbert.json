@@ -1,5 +1,5 @@
 {
-  "async_sac_qbert_bignet": {
+  "async_sac_qbert": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
