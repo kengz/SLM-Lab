@@ -7,12 +7,12 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_start_step": 1000,
+        "training_start_step": 10000,
         "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
