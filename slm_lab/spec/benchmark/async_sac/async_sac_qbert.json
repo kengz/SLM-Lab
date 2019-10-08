@@ -76,12 +76,12 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_start_step": 1000,
-        "training_frequency": 4
+        "training_start_step": 10000,
+        "training_frequency": 1
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 1024,
         "max_size": 200000,
         "use_cer": false
       },
@@ -93,7 +93,7 @@
           [64, 4, 2, 0, 1],
           [32, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [256, 256],
+        "fc_hid_layers": [512, 512],
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
