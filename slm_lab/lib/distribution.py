@@ -40,6 +40,15 @@ class GumbelSoftmax(distributions.RelaxedOneHotCategorical):
         noisy_logits = self.logits - torch.log(-torch.log(u))
         return torch.argmax(noisy_logits, dim=-1)
 
+    def rsample(self, sample_shape=torch.Size()):
+        '''
+        Gumbel-softmax resampling using the Straight-Through trick.
+        Credit to Ian Temple for bringing this to our attention. To see standalone code of how this works, refer to https://gist.github.com/yzh119/fd2146d2aeb329d067568a493b20172f
+        '''
+        rout = super().rsample(sample_shape)  # differentiable
+        out = F.one_hot(torch.argmax(rout, dim=-1)).float()
+        return (out - rout).detach() + rout
+
     def log_prob(self, value):
         '''value is one-hot or relaxed'''
         if value.shape != self.logits.shape:
