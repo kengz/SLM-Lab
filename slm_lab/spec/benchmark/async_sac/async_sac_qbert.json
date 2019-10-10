@@ -8,7 +8,7 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_start_step": 10000,
-        "training_frequency": 4
+        "training_frequency": 1
       },
       "memory": {
         "name": "Replay",
@@ -64,7 +64,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 8,
+      "max_session": 6,
       "max_trial": 1,
     }
   },
