@@ -119,7 +119,7 @@ def save_image(figure, filepath):
         return
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath, scale=4)
+        pio.write_image(figure, filepath, scale=2)
     except Exception as e:
         orca_warn_once(e)
 
@@ -250,22 +250,23 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     return fig
 
 
-def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title):
+def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette=None, showlegend=True):
     '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
-    palette = get_palette(len(local_metrics_list))
+    palette = palette or get_palette(len(local_metrics_list))
     all_data = []
     for idx, local_metrics in enumerate(local_metrics_list):
         fig = plot_mean_sr(
             local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
-        # update legend for the main trace
-        fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
+        if legend_list is not None:
+            # update legend for the main trace
+            fig.data[0].update({'showlegend': showlegend, 'name': legend_list[idx]})
         all_data += list(fig.data)
     layout = create_layout(title, name, time)
     fig = go.Figure(all_data, layout)
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None, showlegend=True):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually
@@ -284,7 +285,11 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
     viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     '''
     local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
-    name_time_pairs = [
+    # for plotting with async runs to adjust frame scale
+    if frame_scales is not None:
+        for idx, scale in frame_scales:
+            local_metrics_list[idx]['frames'] = local_metrics_list[idx]['frames'] * scale
+    name_time_pairs = name_time_pairs or [
         ('mean_returns', 'frames'),
         ('strengths', 'frames'),
         ('sample_efficiencies', 'frames'),
@@ -298,7 +303,7 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
                 sr_list = [calc_sr_ma(sr) for sr in sr_list]
                 local_metrics[f'{name}_ma'] = sr_list
             name = f'{name}_ma'  # for labeling
-        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
+        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette, showlegend)
         save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
         if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             prepath = graph_prepath.replace('/graph/', '/')
