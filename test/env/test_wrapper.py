@@ -12,7 +12,7 @@ def test_make_gym_env_nostack(name, state_shape, reward_scale):
     seed = 0
     frame_op = None
     frame_op_len = None
-    env = make_gym_env(name, seed, frame_op, frame_op_len, reward_scale)
+    env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     env.reset()
     for i in range(5):
         state, reward, done, info = env.step(env.action_space.sample())
@@ -35,7 +35,7 @@ def test_make_gym_env_concat(name, state_shape, reward_scale):
     seed = 0
     frame_op = 'concat'  # used for image, or for concat vector
     frame_op_len = 4
-    env = make_gym_env(name, seed, frame_op, frame_op_len, reward_scale)
+    env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     env.reset()
     for i in range(5):
         state, reward, done, info = env.step(env.action_space.sample())
@@ -61,7 +61,7 @@ def test_make_gym_env_stack(name, state_shape, reward_scale):
     seed = 0
     frame_op = 'stack'  # used for rnn
     frame_op_len = 4
-    env = make_gym_env(name, seed, frame_op, frame_op_len, reward_scale)
+    env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     env.reset()
     for i in range(5):
         state, reward, done, info = env.step(env.action_space.sample())
@@ -72,6 +72,28 @@ def test_make_gym_env_stack(name, state_shape, reward_scale):
     # stack creates new dim
     stack_shape = (frame_op_len, ) + state_shape
     assert state.shape == stack_shape
+    assert state.shape == env.observation_space.shape
+    assert isinstance(reward, float)
+    assert isinstance(done, bool)
+    assert isinstance(info, dict)
+    env.close()
+
+
+@pytest.mark.parametrize('name,state_shape,image_downsize', [
+    ('PongNoFrameskip-v4', (1, 84, 84), (84, 84)),
+    ('PongNoFrameskip-v4', (1, 64, 64), (64, 64)),
+])
+def test_make_gym_env_downsize(name, state_shape, image_downsize):
+    seed = 0
+    frame_op = None
+    frame_op_len = None
+    env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, image_downsize=image_downsize)
+    env.reset()
+    for i in range(5):
+        state, reward, done, info = env.step(env.action_space.sample())
+
+    assert isinstance(state, np.ndarray)
+    assert state.shape == state_shape
     assert state.shape == env.observation_space.shape
     assert isinstance(reward, float)
     assert isinstance(done, bool)
