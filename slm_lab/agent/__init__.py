@@ -127,8 +127,8 @@ class Body:
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
-        frame = self.env.clock.get('frame')
-        wall_t = env.clock.get_elapsed_wall_t()
+        frame = self.env.clock.frame
+        wall_t = self.env.clock.wall_t
         fps = 0 if wall_t == 0 else frame / wall_t
         with warnings.catch_warnings():  # mute np.nanmean warning
             warnings.filterwarnings('ignore')
@@ -141,11 +141,11 @@ class Body:
 
         row = pd.Series({
             # epi and frame are always measured from training env
-            'epi': self.env.clock.get('epi'),
+            'epi': self.env.clock.epi,
             # t and reward are measured from a given env or eval_env
-            't': env.clock.get('t'),
+            't': env.clock.t,
             'wall_t': wall_t,
-            'opt_step': self.env.clock.get('opt_step'),
+            'opt_step': self.env.clock.opt_step,
             'frame': frame,
             'fps': fps,
             'total_reward': total_reward,
