@@ -224,7 +224,10 @@ class Body:
         Log summary and useful info to TensorBoard.
         To launch TensorBoard, run `tensorboard --logdir=data` after a session/trial is completed.
         '''
-        # log to tensorboard
+        if self.env.clock.t == 0:
+            # can only log 1 net to tb now
+            net = self.agent.algorithm.net
+            self.tb_writer.add_graph(net, torch.rand(net.in_dim))
         last_row = self.train_df.iloc[-1]
         trial_index = self.agent.spec['meta']['trial']
         session_index = self.agent.spec['meta']['session']
