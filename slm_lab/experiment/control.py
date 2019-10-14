@@ -75,7 +75,8 @@ class Session:
             if ps.get(self.spec, 'meta.rigorous_eval'):
                 analysis.gen_avg_return(agent, self.eval_env)
             body.ckpt(self.eval_env, 'eval')
-            body.log_summary('eval')
+            if ps.get(self.spec, 'meta.rigorous_eval'):
+                body.log_summary('eval')
             if body.total_reward_ma >= body.best_total_reward_ma:
                 body.best_total_reward_ma = body.total_reward_ma
                 agent.save(ckpt='best')
