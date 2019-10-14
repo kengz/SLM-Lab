@@ -189,6 +189,14 @@ Below shows a trial graph with multiple sessions:
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
 
+### TensorBoard
+
+Launch TensorBoard during/after a run for diagnosis.
+
+```shell
+tensorboard --log_dir=data
+```
+
 ### Enjoy mode
 
 Once a Trial completes with a good model saved into the `data/` folder, for example `data/a2c_gae_pong_2019_08_01_010727`, use the `enjoy` mode to show the trained agent playing the environment. Use the `enjoy@{prename}` mode to pick a saved trial-sesison, for example:

@@ -4,7 +4,9 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util, viz
 from slm_lab.lib.decorator import lab_api
+from torch.utils.tensorboard import SummaryWriter
 import numpy as np
+import os
 import pandas as pd
 import pydash as ps
 import torch
@@ -104,6 +106,9 @@ class Body:
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
+        # initialize writer for tensorboard
+        log_prepath = self.spec['meta']['log_prepath']
+        self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
 
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
@@ -211,3 +216,18 @@ class Body:
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{df_mode}_df] {row_str}'
         logger.info(msg)
+        if df_mode == 'train':  # log tensorboard only on train mode data
+            self.log_tensorboard()
+
+    def log_tensorboard(self):
+        '''
+        Log summary and useful info to TensorBoard.
+        To launch TensorBoard, run `tensorboard --logdir=data` after a session/trial is completed.
+        '''
+        # log to tensorboard
+        last_row = self.train_df.iloc[-1]
+        trial_index = self.agent.spec['meta']['trial']
+        session_index = self.agent.spec['meta']['session']
+        idx_suffix = f'trial{trial_index}_session{session_index}'
+        for k, v in last_row.items():
+            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, self.env.clock.frame)
