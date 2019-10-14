@@ -15,7 +15,7 @@ import torch.multiprocessing as mp
 def make_agent_env(spec, global_nets=None):
     '''Helper to create agent and env given spec'''
     env = make_env(spec)
-    body = Body(env, spec['agent'])
+    body = Body(env, spec)
     agent = Agent(spec, body=body, global_nets=global_nets)
     return agent, env
 

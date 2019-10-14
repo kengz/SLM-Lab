@@ -76,10 +76,11 @@ class Body:
     - acts as non-gradient variable storage for monitoring and analysis
     '''
 
-    def __init__(self, env, agent_spec, aeb=(0, 0, 0)):
+    def __init__(self, env, spec, aeb=(0, 0, 0)):
         # essential reference variables
         self.agent = None  # set later
         self.env = env
+        self.spec = spec
         # agent, env, body index for multi-agent-env
         self.a, self.e, self.b = self.aeb = aeb
 
@@ -113,7 +114,7 @@ class Body:
         self.is_discrete = self.env.is_discrete
         # set the ActionPD class for sampling action
         self.action_type = policy_util.get_action_type(self.action_space)
-        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
+        self.action_pdtype = ps.get(spec, f'agent.{self.a}.algorithm.action_pdtype')
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
