@@ -7,7 +7,7 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_start_step": 2000,
+        "training_start_step": 10000,
         "training_frequency": 1
       },
       "memory": {
