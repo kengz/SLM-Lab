@@ -241,7 +241,7 @@ class Body:
         idx_suffix = f'trial{trial_index}_session{session_index}'
         frame = self.env.clock.frame
         # add main graph
-        if self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
+        if False and self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
             # can only log 1 net to tb now, and 8 is a good common length for stacked and rnn inputs
             net = self.agent.algorithm.net
             self.tb_writer.add_graph(net, torch.rand(ps.flatten([8, net.in_dim])))
