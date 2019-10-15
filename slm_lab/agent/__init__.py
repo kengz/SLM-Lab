@@ -243,9 +243,9 @@ class Body:
         frame = self.env.clock.frame
         # add main graph
         if self.env.clock.t == 0 and hasattr(self.agent.algorithm, 'net'):
-            # can only log 1 net to tb now
+            # can only log 1 net to tb now, and 4 is a good common length for stacked and rnn inputs
             net = self.agent.algorithm.net
-            self.tb_writer.add_graph(net, torch.rand(net.in_dim))
+            self.tb_writer.add_graph(net, torch.rand((4, net.in_dim)))
         # add summary variables
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
