@@ -106,9 +106,9 @@ class Body:
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
-        # initialize writer for tensorboard
-        log_prepath = self.spec['meta']['log_prepath']
-        self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
+
+        # initialize TensorBoard writer
+        self.init_tb()
 
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
@@ -124,9 +124,18 @@ class Body:
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
+    def init_tb(self):
+        '''Initialize TensorBoardw writer and related tracking variables'''
+        log_prepath = self.spec['meta']['log_prepath']
+        self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
+        self.tb_actions = []  # store actions for tensorboard
+
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        pass
+        if self.env.is_venv:
+            self.tb_actions.extend(action.tolist())
+        else:
+            self.tb_actions.append(action.tolist())
 
     def __str__(self):
         return f'body: {util.to_json(util.get_class_attr(self))}'
@@ -242,3 +251,12 @@ class Body:
             net = getattr(self.agent.algorithm, net_name)
             for name, params in net.named_parameters():
                 self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
+        # add action histogram and flush
+        if not ps.is_empty(self.tb_actions):
+            actions = np.array(self.tb_actions)
+            if len(actions.shape) == 1:
+                self.tb_writer.add_histogram(f'action/{idx_suffix}', actions, frame)
+            else:  # multi-action
+                for idx, subactions in enumerate(actions.T):
+                    self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
+            self.tb_actions = []
