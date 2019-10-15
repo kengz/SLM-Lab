@@ -82,7 +82,8 @@ class Session:
                 agent.save(ckpt='best')
             if len(body.eval_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
-                body.log_metrics(metrics['scalar'], 'eval')
+                if ps.get(self.spec, 'meta.rigorous_eval'):
+                    body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
