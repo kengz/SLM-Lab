@@ -66,24 +66,21 @@ class Session:
         if self.to_ckpt(env, 'log'):
             body.ckpt(self.env, 'train')
             body.log_summary('train')
+            if body.total_reward_ma >= body.best_total_reward_ma:
+                body.best_total_reward_ma = body.total_reward_ma
+                agent.save(ckpt='best')
             if len(body.train_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
                 body.log_metrics(metrics['scalar'], 'train')
 
-        if self.to_ckpt(env, 'eval'):
+        if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
             logger.info('Running eval ckpt')
-            if ps.get(self.spec, 'meta.rigorous_eval'):
-                analysis.gen_avg_return(agent, self.eval_env)
+            analysis.gen_avg_return(agent, self.eval_env)
             body.ckpt(self.eval_env, 'eval')
-            if ps.get(self.spec, 'meta.rigorous_eval'):
-                body.log_summary('eval')
-            if body.total_reward_ma >= body.best_total_reward_ma:
-                body.best_total_reward_ma = body.total_reward_ma
-                agent.save(ckpt='best')
+            body.log_summary('eval')
             if len(body.eval_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
-                if ps.get(self.spec, 'meta.rigorous_eval'):
-                    body.log_metrics(metrics['scalar'], 'eval')
+                body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''

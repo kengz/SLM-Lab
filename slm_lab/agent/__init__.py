@@ -105,7 +105,10 @@ class Body:
             'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
-        self.eval_df = self.train_df.copy()
+        if ps.get(self.spec, 'meta.rigorous_eval'):
+            self.eval_df = self.train_df.copy()
+        else:
+            self.eval_df = self.train_df
 
         # initialize TensorBoard writer
         self.init_tb()
@@ -138,7 +141,9 @@ class Body:
             self.tb_actions.append(action.tolist())
 
     def __str__(self):
-        return f'body: {util.to_json(util.get_class_attr(self))}'
+        class_attr = util.get_class_attr(self)
+        class_attr.pop('spec')
+        return f'body: {util.to_json(class_attr)}'
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
@@ -185,8 +190,7 @@ class Body:
         df = getattr(self, f'{df_mode}_df')
         df.loc[len(df)] = row  # append efficiently to df
         df.iloc[-1]['total_reward_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
-        if df_mode == 'eval':
-            self.total_reward_ma = total_reward_ma
+        self.total_reward_ma = total_reward_ma
 
     def get_mean_lr(self):
         '''Gets the average current learning rate of the algorithm's nets.'''
