@@ -12,7 +12,6 @@ import pydash as ps
 import torch
 import warnings
 
-
 logger = logger.get_logger(__name__)
 
 
@@ -242,10 +241,10 @@ class Body:
         idx_suffix = f'trial{trial_index}_session{session_index}'
         frame = self.env.clock.frame
         # add main graph
-        if self.env.clock.t == 0 and hasattr(self.agent.algorithm, 'net'):
+        if self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
             # can only log 1 net to tb now, and 4 is a good common length for stacked and rnn inputs
             net = self.agent.algorithm.net
-            self.tb_writer.add_graph(net, torch.rand((4, net.in_dim)))
+            self.tb_writer.add_graph(net, torch.rand(ps.flatten([4, net.in_dim])))
         # add summary variables
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
