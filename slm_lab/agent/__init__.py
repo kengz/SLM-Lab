@@ -224,13 +224,21 @@ class Body:
         Log summary and useful info to TensorBoard.
         To launch TensorBoard, run `tensorboard --logdir=data` after a session/trial is completed.
         '''
+        trial_index = self.agent.spec['meta']['trial']
+        session_index = self.agent.spec['meta']['session']
+        idx_suffix = f'trial{trial_index}_session{session_index}'
+        frame = self.env.clock.frame
+        # add main graph
         if self.env.clock.t == 0:
             # can only log 1 net to tb now
             net = self.agent.algorithm.net
             self.tb_writer.add_graph(net, torch.rand(net.in_dim))
+        # add summary variables
         last_row = self.train_df.iloc[-1]
-        trial_index = self.agent.spec['meta']['trial']
-        session_index = self.agent.spec['meta']['session']
-        idx_suffix = f'trial{trial_index}_session{session_index}'
         for k, v in last_row.items():
-            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, self.env.clock.frame)
+            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
+        # add network parameters
+        for net_name in self.agent.algorithm.net_names:
+            net = getattr(self.agent.algorithm, net_name)
+            for name, params in net.named_parameters():
+                self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
