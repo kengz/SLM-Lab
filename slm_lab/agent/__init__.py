@@ -138,7 +138,7 @@ class Body:
         if self.env.is_venv:
             self.tb_actions.extend(action.tolist())
         else:
-            self.tb_actions.append(action.tolist())
+            self.tb_actions.append(action)
 
     def __str__(self):
         class_attr = util.get_class_attr(self)
@@ -242,7 +242,7 @@ class Body:
         idx_suffix = f'trial{trial_index}_session{session_index}'
         frame = self.env.clock.frame
         # add main graph
-        if self.env.clock.t == 0:
+        if self.env.clock.t == 0 and hasattr(self.agent.algorithm, 'net'):
             # can only log 1 net to tb now
             net = self.agent.algorithm.net
             self.tb_writer.add_graph(net, torch.rand(net.in_dim))
