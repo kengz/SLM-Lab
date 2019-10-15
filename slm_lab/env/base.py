@@ -42,6 +42,7 @@ class Clock:
         self.frame = 0  # i.e. total_t
         self.epi = 0
         self.start_wall_t = time.time()
+        self.wall_t = 0
         self.batch_size = 1  # multiplier to accurately count opt steps
         self.opt_step = 0  # count the number of optimizer updates
 
@@ -59,6 +60,7 @@ class Clock:
         if unit == 't':  # timestep
             self.t += self.clock_speed
             self.frame += self.clock_speed
+            self.wall_t = self.get_elapsed_wall_t()
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0

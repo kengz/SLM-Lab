@@ -111,7 +111,7 @@ SLM Lab integrates with multiple environment offerings:
 ### Metrics and Experimentation
 
 To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* and *experimentation framework*:
-- every run generates metrics, graphs and data for analysis, as well as spec for reproducibility
+- every run generates metrics, TensorBoard summaries, graphs and data for analysis, as well as spec for reproducibility
 - scalable hyperparameter search using [Ray tune](https://ray.readthedocs.io/en/latest/tune.html)
 
 
@@ -188,6 +188,19 @@ This will run a `Trial` with multiple Sessions in *training mode*. In the beginn
 Below shows a trial graph with multiple sessions:
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
+
+### TensorBoard
+
+TensorBoard writer is initialized in `agent.body` along with other logging variables and methods. It will log summary variables, graph, network parameter histograms, and action histograms automatically during checkpoint logging. This allows for richer diagnosis of the network and policy, e.g. by seeing if the distributions shift over the course of learning.
+
+Launch TensorBoard during/after a run for diagnosis.
+
+```shell
+tensorboard --log_dir=data
+```
+
+![](https://user-images.githubusercontent.com/8209263/66803221-d9bc0980-eed3-11e9-92b8-0e5cd42a6eab.png)
+
 
 ### Enjoy mode
 
