@@ -187,7 +187,7 @@ class SoftActorCritic(ActorCritic):
         alpha_loss.backward()
         self.alpha_optim.step()
         self.alpha = self.log_alpha.detach().exp()
-        self.body.tb_tracker['alpha'] = alpha
+        self.body.tb_tracker['alpha'] = self.alpha
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
