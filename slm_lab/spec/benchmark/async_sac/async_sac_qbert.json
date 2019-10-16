@@ -53,7 +53,7 @@
       "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
