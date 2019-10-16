@@ -111,6 +111,7 @@ class Body:
 
         # initialize TensorBoard writer
         self.init_tb()
+        self.tb_tracker = {}
 
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
@@ -248,6 +249,9 @@ class Body:
         # add summary variables
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
+            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
+        # add tensorboard tracker for custom variables
+        for k, v in self.tb_tracker.items():
             self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
         # add network parameters
         for net_name in self.agent.algorithm.net_names:
