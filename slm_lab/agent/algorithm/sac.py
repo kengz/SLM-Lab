@@ -187,7 +187,7 @@ class SoftActorCritic(ActorCritic):
         alpha_loss.backward()
         self.alpha_optim.step()
         # clamp for safety
-        self.log_alpha = self.log_alpha.clamp(-5, 4)
+        self.log_alpha = self.log_alpha.clamp(-5, 4).clone().detach().requires_grad_(True)
         self.alpha = self.log_alpha.detach().exp()
         self.body.tb_tracker['alpha'] = self.alpha
 
