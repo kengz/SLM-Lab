@@ -170,8 +170,6 @@ class SoftActorCritic(ActorCritic):
         return policy_loss
 
     def calc_alpha_loss(self, log_probs):
-        # clamp for safety
-        self.log_alpha = self.log_alpha.clamp(-10, 10)
         alpha_loss = - (self.log_alpha * (log_probs.detach() + self.target_entropy)).mean()
         self.body.tb_tracker['alpha_loss'] = alpha_loss
         return alpha_loss
@@ -188,6 +186,8 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
+        # clamp for safety
+        self.log_alpha = self.log_alpha.clamp(-5, 4)
         self.alpha = self.log_alpha.detach().exp()
         self.body.tb_tracker['alpha'] = self.alpha
 
