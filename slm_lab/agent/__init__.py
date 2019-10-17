@@ -255,6 +255,8 @@ class Body:
             self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
         # add network parameters
         for net_name in self.agent.algorithm.net_names:
+            if net_name.startswith('global_') or net_name.startswith('target_'):
+                continue
             net = getattr(self.agent.algorithm, net_name)
             for name, params in net.named_parameters():
                 self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
