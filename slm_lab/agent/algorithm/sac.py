@@ -76,7 +76,7 @@ class SoftActorCritic(ActorCritic):
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
         if self.body.is_discrete:
-            self.target_entropy = - 2 * self.body.action_space.n
+            self.target_entropy = - self.body.action_space.n
         else:
             self.target_entropy = - np.product(self.body.action_space.shape)
 
