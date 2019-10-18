@@ -239,6 +239,8 @@ class Body:
         '''
         trial_index = self.agent.spec['meta']['trial']
         session_index = self.agent.spec['meta']['session']
+        if session_index != 0:  # log only session 0
+            return
         idx_suffix = f'trial{trial_index}_session{session_index}'
         frame = self.env.clock.frame
         # add main graph
