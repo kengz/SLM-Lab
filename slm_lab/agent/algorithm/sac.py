@@ -186,9 +186,8 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
-        # clamp for safety
-        self.log_alpha = self.log_alpha.clamp(-5, 4).clone().detach().requires_grad_(True)
-        self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
+        with torch.no_grad():  # clamp alpha range to ~ 0.018 to 54
+            self.log_alpha.clamp_(-4, 4)
         self.alpha = self.log_alpha.detach().exp()
         self.body.tb_tracker['alpha'] = self.alpha
 
