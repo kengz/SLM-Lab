@@ -7,8 +7,8 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_start_step": 2000,
-        "training_frequency": 1
+        "training_start_step": 1000,
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
@@ -36,7 +36,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 3e-4,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -53,7 +53,7 @@
       "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 5e6
     }],
     "body": {
       "product": "outer",

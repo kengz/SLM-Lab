@@ -111,6 +111,7 @@ class Body:
 
         # initialize TensorBoard writer
         self.init_tb()
+        self.tb_tracker = {}
 
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
@@ -238,10 +239,12 @@ class Body:
         '''
         trial_index = self.agent.spec['meta']['trial']
         session_index = self.agent.spec['meta']['session']
+        if session_index != 0:  # log only session 0
+            return
         idx_suffix = f'trial{trial_index}_session{session_index}'
         frame = self.env.clock.frame
         # add main graph
-        if self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
+        if False and self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
             # can only log 1 net to tb now, and 8 is a good common length for stacked and rnn inputs
             net = self.agent.algorithm.net
             self.tb_writer.add_graph(net, torch.rand(ps.flatten([8, net.in_dim])))
@@ -249,8 +252,13 @@ class Body:
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
             self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
+        # add tensorboard tracker for custom variables
+        for k, v in self.tb_tracker.items():
+            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
         # add network parameters
         for net_name in self.agent.algorithm.net_names:
+            if net_name.startswith('global_') or net_name.startswith('target_'):
+                continue
             net = getattr(self.agent.algorithm, net_name)
             for name, params in net.named_parameters():
                 self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
