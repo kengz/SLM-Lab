@@ -46,57 +46,42 @@ Below shows the latest benchmark status. See the full [benchmark results here](h
 
 Due to their standardized design, all the algorithms can be parallelized asynchronously using Hogwild. Hence, SLM Lab also includes A3C, distributed-DQN, distributed-PPO.
 
-#### Atari benchmark
+
+#### Discrete Benchmark
 
 >See the full [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
 
->Click on the algorithm to see the result upload Pull Request.
+||||||||
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Env. \ Alg. | DQN | DDQN+PER | A2C (GAE) | A2C (n-step) | PPO | SAC |
+| Breakout <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737546-dabb6380-f9c8-11e9-901e-b96cc28f1fdf.png"></details> | 80.88 | 182 | 377 | 398 | **443** |  - |
+| Pong <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737554-e018ae00-f9c8-11e9-92b5-3bd8d213b1e0.png"></details> | 18.48 | 20.5 | 19.31 | 19.56 | **20.58** | 19.87* |
+| Seaquest <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737557-e3139e80-f9c8-11e9-9446-119593ca956b.png"></details> | 1185 | **4405** | 1070 | 1684 | 1715 |  - |
+| Qbert <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737559-e575f880-f9c8-11e9-8c98-f14c82041a45.png"></details> | 5494 | 11426 | 12405 | **13590** | 13460 | 214* |
+| LunarLander <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737566-e7d85280-f9c8-11e9-8df8-39c1205c5308.png"></details> | 192 | 233 | 25.21 | 68.23 | 214 | **276** |
+| UnityHallway <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737569-ead34300-f9c8-11e9-9e26-61fe1d779989.png"></details> | -0.32 | 0.27 | 0.08 | -0.96 | **0.73** | - |
+| UnityPushBlock <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737577-eeff6080-f9c8-11e9-931c-843ba697779c.png"></details> | 4.88 | 4.93 | 4.68 | 4.93 | **4.97** | - |
 
-| Env. \ Alg. | [DQN](https://github.com/kengz/SLM-Lab/pull/396) | [DDQN+PER](https://github.com/kengz/SLM-Lab/pull/396) | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/396) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/396) | [PPO](https://github.com/kengz/SLM-Lab/pull/396) |
-|:---|---|---|---|---|---|
-| Breakout <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232119-554cf680-b37a-11e9-9059-3e49bbb799d2.png"><img src="https://user-images.githubusercontent.com/8209263/62232118-554cf680-b37a-11e9-9d5b-dd2ddf527305.png"></details> | **425.89** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067085-c0b28f00-b1e7-11e9-9dd5-c52b6104878f.png"></details> | 65.04 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100441-9ba13900-b246-11e9-9373-95c6063915ab.png"></details> | 181.72 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230967-dd7dcc80-b377-11e9-965b-60a9f3d5a7a1.png"></details> | 389.99 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62019989-0171c000-b176-11e9-94da-017b146afe65.png"></details> | 391.32 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020340-6c6fc680-b177-11e9-8aa1-9ac5c2001783.png"></details> |
-| Pong <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232135-5b42d780-b37a-11e9-9454-ff2d109ef4f4.png"><img src="https://user-images.githubusercontent.com/8209263/62232134-5b42d780-b37a-11e9-892f-a84ea8881e78.png"></details> | 20.09 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067100-c6a87000-b1e7-11e9-919e-ad68e4166213.png"></details> | 18.34 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100450-9fcd5680-b246-11e9-8170-2ad4473e8294.png"></details> | **20.44** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230975-e2428080-b377-11e9-8970-6917ae80c0b4.png"></details> | 20.04 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020247-10a53d80-b177-11e9-9f0d-1433d4d87210.png"></details> | 19.66 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020342-6f6ab700-b177-11e9-824e-75f431dc14ec.png"></details> |
-| Qbert <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232149-60078b80-b37a-11e9-99bb-cedc9fe064d5.png"><img src="https://user-images.githubusercontent.com/8209263/62232148-60078b80-b37a-11e9-9610-17ac447a479f.png"></details> | 4,787.79 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100455-a4920a80-b246-11e9-8ca5-d4dc1ce3d76f.png"></details> | 11,673.52 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230986-e79fcb00-b377-11e9-8861-3686954b7e1a.png"></details> | 13,328.32 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020263-261a6780-b177-11e9-8936-22a74d2405d3.png"></details> | 13,259.19 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020347-742f6b00-b177-11e9-8bfb-edfcfd44c8b7.png"></details> | **13,691.89** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067104-cb6d2400-b1e7-11e9-9c4f-9eaac265d7d6.png"></details> |
-| Seaquest <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232168-6bf34d80-b37a-11e9-9564-fa3609dc5c75.png"><img src="https://user-images.githubusercontent.com/8209263/62232167-6bf34d80-b37a-11e9-8db3-c79a0e78292b.png"></details> | 1,118.50 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100462-a9ef5500-b246-11e9-8699-9356ff81ff93.png"></details> | **3,751.34** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230991-ebcbe880-b377-11e9-8de4-a01379d1d61c.png"></details> | 892.68 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020266-29adee80-b177-11e9-83c2-fafbdbb982b9.png"></details> | 1,686.08 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020350-772a5b80-b177-11e9-8917-e3c8a745cd08.png"></details> | 1,583.04 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067113-cf994180-b1e7-11e9-870b-b9bba71f2a7e.png"></details> |
+>For the full Atari benchmark, see [Atari Benchmark](https://github.com/kengz/SLM-Lab/blob/benchmark/BENCHMARK.md#atari-benchmark)
 
+#### Continuous Benchmark
 
-#### Roboschool Benchmark
-
-|||||
-|:---:|:---:|:---:|:---:|
-| ![sac ant](https://user-images.githubusercontent.com/8209263/63994867-ff6b8b80-caaa-11e9-971e-2fac1cddcbac.gif) | ![sac halfcheetah](https://user-images.githubusercontent.com/8209263/63994869-01354f00-caab-11e9-8e11-3893d2c2419d.gif) | ![sac hopper](https://user-images.githubusercontent.com/8209263/63994871-0397a900-caab-11e9-9566-4ca23c54b2d4.gif) | ![sac humanoid](https://user-images.githubusercontent.com/8209263/63994883-0befe400-caab-11e9-9bcc-c30c885aad73.gif) |
-| Ant | HalfCheetah | Hopper | Humanoid |
-| ![sac doublependulum](https://user-images.githubusercontent.com/8209263/63994879-07c3c680-caab-11e9-974c-06cdd25bfd68.gif) | ![sac pendulum](https://user-images.githubusercontent.com/8209263/63994880-085c5d00-caab-11e9-850d-049401540e3b.gif) | ![sac reacher](https://user-images.githubusercontent.com/8209263/63994881-098d8a00-caab-11e9-8e19-a3b32d601b10.gif) | ![sac walker](https://user-images.githubusercontent.com/8209263/63994882-0abeb700-caab-11e9-9e19-b59dc5c43393.gif) |
-| Inv.DoublePendulum | InvertedPendulum | Reacher | Walker |
-
-[Roboschool](https://github.com/openai/roboschool) by OpenAI offers free open source robotics simulations with improved physics. Although it mirrors the environments from MuJuCo, its environments' rewards are different.
-
->See the full [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
-
->Click on the algorithm to see the result upload Pull Request.
-
-**Legend:**
-<img width="200" alt="legend" src="https://user-images.githubusercontent.com/8209263/65397799-df588080-dd67-11e9-8eb2-339c4d1491b7.png">
-
-| Env. \ Alg. | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/416) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/416) | [PPO](https://github.com/kengz/SLM-Lab/pull/416) | [SAC](https://github.com/kengz/SLM-Lab/pull/416) |
-|:---|---|---|---|---|
-| RoboschoolAnt <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396960-d0220480-dd60-11e9-94ed-b6be9310a3e8.png"></details> | 787 | 1396 | 1843 | **2915** |
-| RoboschoolAtlasForwardWalk <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396961-d0220480-dd60-11e9-8c0c-bc60a2c80f80.png"></details> | 59.87 | 88.04 | 172 | **800** |
-| RoboschoolHalfCheetah <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396962-d0ba9b00-dd60-11e9-904d-4592f81a1432.png"></details> | 712 | 439 | 1960 | **2497** |
-| RoboschoolHopper <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396963-d0ba9b00-dd60-11e9-9e8c-87e442d61dd4.png"></details> | 710 | 285 | 2042 | **2045** |
-| RoboschoolInvertedDoublePendulum <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396967-d0ba9b00-dd60-11e9-9f30-514aee1fb88f.png"></details> | 996 | 4410 | 8076 | **8085** |
-| RoboschoolInvertedPendulum <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396968-d1533180-dd60-11e9-8dba-c838a58b9fd3.png"></details> | **995** | 978 | 986 | 941 |
-| RoboschoolReacher <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396970-d1533180-dd60-11e9-9f5b-e57502b1b094.png"></details> | 12.9 | 10.16 | 19.51 | **19.99** |
-| RoboschoolWalker2d <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396971-d1533180-dd60-11e9-9c07-b83215f19a20.png"></details> | 280 | 220 | 1660 | **1894** |
-
-Humanoid environments are significantly harder. Note that due to the number of frames required, we could only run Async-SAC.
-
-| Env. \ Alg. | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/416) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/416) | [PPO](https://github.com/kengz/SLM-Lab/pull/416) | [Async-SAC](https://github.com/kengz/SLM-Lab/pull/416) |
-|:---|---|---|---|---|
-| RoboschoolHumanoid <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396964-d0ba9b00-dd60-11e9-9177-9bad7329ba48.png"></details> | 99.31 | 54.58 | 2388 | **2621** |
-| RoboschoolHumanoidFlagrun <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396965-d0ba9b00-dd60-11e9-8796-cc2f0efe0818.png"></details> | 73.57 | 178 | 2014 | **2056** |
-| RoboschoolHumanoidFlagrunHarder <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/65396966-d0ba9b00-dd60-11e9-8814-1d8c06fb0527.png"></details> | -429 | 253 | **680** | 280 |
-
+||||||
+|:---:|:---:|:---:|:---:|:---:|
+| Env. \ Alg. | A2C (GAE) | A2C (n-step) | PPO | SAC |
+| RoboschoolAnt <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737923-1571cb80-f9ca-11e9-8f6b-b288fa19bff0.png"></details> | 787 | 1396 | 1843 | **2915** |
+| RoboschoolAtlasForwardWalk <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737924-1571cb80-f9ca-11e9-98ee-82c920dfbf44.png"></details> | 59.87 | 88.04 | 172 | **800** |
+| RoboschoolHalfCheetah <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737925-1571cb80-f9ca-11e9-9c7f-3a8294a517af.png"></details> | 712 | 439 | 1960 | **2497** |
+| RoboschoolHopper <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737926-160a6200-f9ca-11e9-8cae-9afc532e5af8.png"></details> | 710 | 285 | 2042 | **2045** |
+| RoboschoolInvertedDoublePendulum <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737927-160a6200-f9ca-11e9-8eb2-e04554e3844f.png"></details> | 996 | 4410 | 8076 | **8085** |
+| RoboschoolInvertedPendulum <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737928-160a6200-f9ca-11e9-8eae-e7a3ccbe914a.png"></details> | **995** | 978 | 986 | 941 |
+| RoboschoolReacher <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737929-160a6200-f9ca-11e9-9423-b27165def32e.png"></details> | 12.9 | 10.16 | 19.51 | **19.99** |
+| RoboschoolWalker2d <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737930-160a6200-f9ca-11e9-9a0f-edbd4f01f4e0.png"></details> | 280 | 220 | 1660 | **1894** |
+| RoboschoolHumanoid <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737931-16a2f880-f9ca-11e9-9340-fe90ab48e95f.png"></details> | 99.31 | 54.58 | 2388 | **2621*** |
+| RoboschoolHumanoidFlagrun <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737932-16a2f880-f9ca-11e9-92bb-9c896ec3991e.png"></details> | 73.57 | 178 | 2014 | **2056*** |
+| RoboschoolHumanoidFlagrunHarder <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737933-16a2f880-f9ca-11e9-98c8-7388fa9e1775.png"></details> | -429 | 253 | **680** | 280* |
+| Unity3DBall <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737934-16a2f880-f9ca-11e9-912b-37c8840d0acc.png"></details> | 33.48 | 53.46 | 78.24 | **98.44** |
+| Unity3DBallHard <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737935-16a2f880-f9ca-11e9-9275-f3b5fef22e1b.png"></details> | 62.92 | 71.92 | 91.41 | **97.06** |
 
 ### Environments
 
