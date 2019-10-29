@@ -25,9 +25,6 @@ For reference, the image based environment benchmarks are run on AWS GPU box `p2
 - SAC: Soft Actor-Critic
 - SIL: Self Imitation Learning
 
-
-### Atari Benchmark
-
 |||||
 |:---:|:---:|:---:|:---:|
 | ![ppo beamrider](https://user-images.githubusercontent.com/8209263/63994698-689ecf00-caaa-11e9-991f-0a5e9c2f5804.gif) | ![ppo breakout](https://user-images.githubusercontent.com/8209263/63994695-650b4800-caaa-11e9-9982-2462738caa45.gif) | ![ppo kungfumaster](https://user-images.githubusercontent.com/8209263/63994690-60469400-caaa-11e9-9093-b1cd38cee5ae.gif) | ![ppo mspacman](https://user-images.githubusercontent.com/8209263/63994685-5cb30d00-caaa-11e9-8f35-78e29a7d60f5.gif) |
@@ -41,7 +38,114 @@ This benchmark table shows the `Trial` level `final_return_ma` from SLM Lab. Thi
 
 The specs for these are contained in the [`slm_lab/spec/benchmark`](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/spec/benchmark) folder. All the results are shown below and the data folders including the metrics and models are uploaded to the [SLM Lab public Dropbox](https://www.dropbox.com/sh/urifraklxcvol70/AADxtt6zUNuVR6qe288JYNCNa?dl=0)
 
->Click on the algorithm to see the result upload Pull Request.
+
+### Discrete Benchmark
+
+||||||||
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Env. \ Alg. | DQN | DDQN+PER | A2C (GAE) | A2C (n-step) | PPO | SAC |
+| Breakout | 80.88 | 182 | 377 | 398 | **443** |  - |
+| Pong | 18.48 | 20.5 | 19.31 | 19.56 | **20.58** | 19.87* |
+| Seaquest | 1185 | **4405** | 1070 | 1684 | 1715 |  - |
+| Qbert | 5494 | 11426 | 12405 | **13590** | 13460 | 214* |
+| LunarLander | 192 | 233 | 25.21 | 68.23 | 214 | **276** |
+| UnityHallway | -0.32 | 0.27 | 0.08 | -0.96 | **0.73** | - |
+| UnityPushBlock | 4.88 | 4.93 | 4.68 | 4.93 | **4.97** | - |
+
+>Episode score at the end of training attained by SLM Lab implementations on discrete-action control problems. Reported episode scores are the average over the last 100 checkpoints, and then averaged over 4 Sessions. Results marked with `*` were trained using the hybrid synchronous/asynchronous version of SAC to parallelize and speed up training time.
+
+### Continuous Benchmark
+
+||||||
+|:---:|:---:|:---:|:---:|:---:|
+| Env. \ Alg. | A2C (GAE) | A2C (n-step) | PPO | SAC |
+| RoboschoolAnt | 787 | 1396 | 1843 | **2915** |
+| RoboschoolAtlasForwardWalk | 59.87 | 88.04 | 172 | **800** |
+| RoboschoolHalfCheetah | 712 | 439 | 1960 | **2497** |
+| RoboschoolHopper | 710 | 285 | 2042 | **2045** |
+| RoboschoolInvertedDoublePendulum | 996 | 4410 | 8076 | **8085** |
+| RoboschoolInvertedPendulum | **995** | 978 | 986 | 941 |
+| RoboschoolReacher | 12.9 | 10.16 | 19.51 | **19.99** |
+| RoboschoolWalker2d | 280 | 220 | 1660 | **1894** |
+| RoboschoolHumanoid | 99.31 | 54.58 | 2388 | **2621*** |
+| RoboschoolHumanoidFlagrun | 73.57 | 178 | 2014 | **2056*** |
+| RoboschoolHumanoidFlagrunHarder | -429 | 253 | **680** | 280* |
+| Unity3DBall | 33.48 | 53.46 | 78.24 | **98.44** |
+| Unity3DBallHard | 62.92 | 71.92 | 91.41 | **97.06** |
+
+>Episode score at the end of training attained by SLM Lab implementations on continuous control problems. Reported episode scores are the average over the last 100 checkpoints, and then averaged over 4 Sessions. Results marked with `*` require 50M-100M frames, so we use the hybrid synchronous/asynchronous version of SAC to parallelize and speed up training time.
+
+### Atari Benchmark
+
+|||||||
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| Env. \ Alg. | DQN | DDQN+PER | A2C (GAE) | A2C (n-step) | PPO |
+| Adventure | -0.94 | -0.92 | -0.77 | -0.85 | **-0.3** |
+| AirRaid | 1876 | 3974 | **4202** | 3557 | 4028 |
+| Alien | 822 | 1574 | 1519 | **1627** | 1413 |
+| Amidar | 90.95 | 431 | 577 | 418 | **795** |
+| Assault | 1392 | 2567 | 3366 | 3312 | **3619** |
+| Asterix | 1253 | **6866** | 5559 | 5223 | 6132 |
+| Asteroids | 439 | 426 | **2951** | 2147 | 2186 |
+| Atlantis | 68679 | 644810 | **2747371** | 2259733 | 2148077 |
+| BankHeist | 131 | 623 | 855 | 1170 | **1183** |
+| BattleZone | 6564 | 6395 | 4336 | 4533 | **13649** |
+| BeamRider | 2799 | **5870** | 2659 | 4139 | 4299 |
+| Berzerk | 319 | 401 | **1073** | 763 | 860 |
+| Bowling | 30.29 | **39.5** | 24.51 | 23.75 | 31.64 |
+| Boxing | 72.11 | 90.98 | 1.57 | 1.26 | **96.53** |
+| Breakout | 80.88 | 182 | 377 | 398 | **443** |
+| Carnival | 4280 | **4773** | 2473 | 1827 | 4566 |
+| Centipede | 1899 | 2153 | 3909 | 4202 | **5003** |
+| ChopperCommand | 1083 | **4020** | 3043 | 1280 | 3357 |
+| CrazyClimber | 46984 | 88814 | 106256 | 109998 | **116820** |
+| Defender | 281999 | 313018 | **665609** | 657823 | 534639 |
+| DemonAttack | 1705 | 19856 | 23779 | 19615 | **121172** |
+| DoubleDunk | -21.44 | -22.38 | **-5.15** | -13.3 | -6.01 |
+| ElevatorAction | 32.62 | 17.91 | **9966** | 8818 | 6471 |
+| Enduro | 437 | 959 | 787 | 0.0 | **1926** |
+| FishingDerby | -88.14 | -1.7 | 16.54 | 1.65 | **36.03** |
+| Freeway | 24.46 | 30.49 | 30.97 | 0.0 | **32.11** |
+| Frostbite | 98.8 | **2497** | 277 | 261 | 1062 |
+| Gopher | 1095 | **7562** | 929 | 1545 | 2933 |
+| Gravitar | 87.34 | 258 | 313 | **433** | 223 |
+| Hero | 1051 | 12579 | 16502 | **19322** | 17412 |
+| IceHockey | -14.96 | -14.24 | **-5.79** | -6.06 | -6.43 |
+| Jamesbond | 44.87 | **702** | 521 | 453 | 561 |
+| JourneyEscape | -4818 | -2003 | **-921** | -2032 | -1094 |
+| Kangaroo | 1965 | **8897** | 67.62 | 554 | 4989 |
+| Krull | 5522 | 6650 | 7785 | 6642 | **8477** |
+| KungFuMaster | 2288 | 16547 | 31199 | 25554 | **34523** |
+| MontezumaRevenge | 0.0 | 0.02 | 0.08 | 0.19 | **1.08** |
+| MsPacman | 1175 | 2215 | 1965 | 2158 | **2350** |
+| NameThisGame | 3915 | 4474 | 5178 | 5795 | **6386** |
+| Phoenix | 2909 | 8179 | 16345 | 13586 | **30504** |
+| Pitfall | -68.83 | -73.65 | -101 | **-31.13** | -35.93 |
+| Pong | 18.48 | 20.5 | 19.31 | 19.56 | **20.58** |
+| Pooyan | 1958 | 2741 | 2862 | 2531 | **6799** |
+| PrivateEye | **784** | 303 | 93.22 | 78.07 | 50.12 |
+| Qbert | 5494 | 11426 | 12405 | **13590** | 13460 |
+| Riverraid | 953 | **10492** | 8308 | 7565 | 9636 |
+| RoadRunner | 15237 | 29047 | 30152 | 31030 | **32956** |
+| Robotank | 3.43 | **9.05** | 2.98 | 2.27 | 2.27 |
+| Seaquest | 1185 | **4405** | 1070 | 1684 | 1715 |
+| Skiing | -14094 | **-12883** | -19481 | -14234 | -24713 |
+| Solaris | 612 | 1396 | 2115 | **2236** | 1892 |
+| SpaceInvaders | 451 | 670 | 733 | 750 | **797** |
+| StarGunner | 3565 | 38238 | 44816 | 48410 | **60579** |
+| Tennis | -23.78 | **-10.33** | -22.42 | -19.06 | -11.52 |
+| TimePilot | 2819 | 1884 | 3331 | 3440 | **4398** |
+| Tutankham | 35.03 | 159 | 161 | 175 | **211** |
+| UpNDown | 2043 | 11632 | 89769 | 18878 | **262208** |
+| Venture | 4.56 | 9.61 | 0.0 | 0.0 | **11.84** |
+| VideoPinball | 8056 | **79730** | 35371 | 40423 | 58096 |
+| WizardOfWor | 869 | 328 | 1516 | 1247 | **4283** |
+| YarsRevenge | 5816 | 15698 | **27097** | 11742 | 10114 |
+| Zaxxon | 442 | 54.28 | 64.72 | 24.7 | **641** |
+
+>The table below presents results for 62 Atari games. All agents were trained for 10M frames (40M including skipped frames). Reported results are the episode score at the end of training, averaged over the previous 100 evaluation checkpoints with each checkpoint averaged over 4 Sessions. Agents were checkpointed every 10k training frames.
+
+
 
 | Env. \ Alg. | [DQN](https://github.com/kengz/SLM-Lab/pull/396) | [DDQN+PER](https://github.com/kengz/SLM-Lab/pull/396) | [A2C (GAE)](https://github.com/kengz/SLM-Lab/pull/396) | [A2C (n-step)](https://github.com/kengz/SLM-Lab/pull/396) | [PPO](https://github.com/kengz/SLM-Lab/pull/396) |
 |:---|---|---|---|---|---|
