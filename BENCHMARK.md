@@ -58,7 +58,8 @@ SLM Lab's benchmark includes environments from the following offerings:
 
 ### Discrete Benchmark
 
->[Upload PR #427](https://github.com/kengz/SLM-Lab/pull/427)
+- [Upload PR #427](https://github.com/kengz/SLM-Lab/pull/427)
+- [Dropbox data](https://www.dropbox.com/s/az4vncwwktyotol/benchmark_discrete_2019_09.zip?dl=0)
 
 ||||||||
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -77,7 +78,8 @@ SLM Lab's benchmark includes environments from the following offerings:
 
 ### Continuous Benchmark
 
->[Upload PR #427](https://github.com/kengz/SLM-Lab/pull/427)
+- [Upload PR #427](https://github.com/kengz/SLM-Lab/pull/427)
+- [Dropbox data](https://www.dropbox.com/s/xaxybertpwt4s9j/benchmark_continuous_2019_09.zip?dl=0)
 
 ||||||
 |:---:|:---:|:---:|:---:|:---:|
@@ -100,7 +102,13 @@ SLM Lab's benchmark includes environments from the following offerings:
 
 ### Atari Benchmark
 
->[Upload PR #427](https://github.com/kengz/SLM-Lab/pull/427)
+- [Upload PR #427](https://github.com/kengz/SLM-Lab/pull/427)
+- [Dropbox data: DQN](https://www.dropbox.com/s/5hg78znvmi41ys5/benchmark_dqn_atari_2019_09.zip?dl=0)
+- [Dropbox data: DDQN+PER](https://www.dropbox.com/s/s8pgset1ewi0da1/benchmark_ddqn_per_atari_2019_09.zip?dl=0)
+- [Dropbox data: A2C (GAE)](https://www.dropbox.com/s/kbqw9a5f0e55y0y/benchmark_a2c_gae_atari_2019_09.zip?dl=0)
+- [Dropbox data: A2C (n-step)](https://www.dropbox.com/s/jc1xzd4uru6tksd/benchmark_a2c_nstep_atari_2019_09.zip?dl=0)
+- [Dropbox data: PPO](https://www.dropbox.com/s/o42fsnfoef5y9zl/benchmark_ppo_atari_2019_09.zip?dl=0)
+- [Dropbox data: all Atari graphs](https://www.dropbox.com/s/odxxr2cquw4bcfj/benchmark_atari_graphs_2019_09.zip?dl=0)
 
 |||||||
 |:---:|:---:|:---:|:---:|:---:|:---:|
