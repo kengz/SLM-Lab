@@ -12,7 +12,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
@@ -49,10 +49,11 @@
       "name": "BreakoutNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
-      "reward_scale": "sign",
+      "image_downsize": [64, 64],
+      "reward_scale": null,
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 5e6
     }],
     "body": {
       "product": "outer",
@@ -60,10 +61,10 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 4,
       "max_trial": 1,
     }
   },
@@ -80,7 +81,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
@@ -117,10 +118,11 @@
       "name": "PongNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
-      "reward_scale": "sign",
+      "image_downsize": [64, 64],
+      "reward_scale": null,
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 5e6
     }],
     "body": {
       "product": "outer",
@@ -128,10 +130,10 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 4,
       "max_trial": 1,
     }
   },
@@ -148,7 +150,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
@@ -185,10 +187,11 @@
       "name": "QbertNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
-      "reward_scale": "sign",
+      "image_downsize": [64, 64],
+      "reward_scale": null,
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 5e6
     }],
     "body": {
       "product": "outer",
@@ -196,10 +199,10 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 4,
       "max_trial": 1,
     }
   },
@@ -216,7 +219,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 200000,
         "use_cer": false
       },
@@ -253,10 +256,11 @@
       "name": "SeaquestNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
-      "reward_scale": "sign",
+      "image_downsize": [64, 64],
+      "reward_scale": null,
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 5e6
     }],
     "body": {
       "product": "outer",
@@ -264,10 +268,10 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 4,
       "max_trial": 1,
     }
   }
