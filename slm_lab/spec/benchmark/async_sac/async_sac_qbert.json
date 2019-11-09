@@ -50,7 +50,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "image_downsize": [64, 64],
-      "reward_scale": "sign",
+      "reward_scale": null,
       "num_envs": 4,
       "max_t": null,
       "max_frame": 5e6
@@ -64,7 +64,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 4,
       "max_trial": 1,
     }
   },
