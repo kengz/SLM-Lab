@@ -12,7 +12,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 512,
+        "batch_size": 256,
         "max_size": 200000,
         "use_cer": false
       },
@@ -50,10 +50,10 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "image_downsize": [64, 64],
-      "reward_scale": null,
+      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 5e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
@@ -81,7 +81,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 512,
+        "batch_size": 256,
         "max_size": 200000,
         "use_cer": false
       },
@@ -119,10 +119,10 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "image_downsize": [64, 64],
-      "reward_scale": null,
+      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 5e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
@@ -150,7 +150,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 512,
+        "batch_size": 256,
         "max_size": 200000,
         "use_cer": false
       },
@@ -188,10 +188,10 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "image_downsize": [64, 64],
-      "reward_scale": null,
+      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 5e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
@@ -219,7 +219,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 512,
+        "batch_size": 256,
         "max_size": 200000,
         "use_cer": false
       },
@@ -257,10 +257,10 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "image_downsize": [64, 64],
-      "reward_scale": null,
+      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 5e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
