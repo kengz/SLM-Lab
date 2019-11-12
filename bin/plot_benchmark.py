@@ -17,8 +17,10 @@ trial_metrics_scalar_path = '*trial_metrics_scalar.json'
 trial_metrics_path = '*t0_trial_metrics.pkl'
 env_name_map = {
     'lunar': 'LunarLander',
+    'reakout': 'Breakout',
     'ong': 'Pong',
     'bert': 'Qbert',
+    'eaquest': 'Seaquest',
     'humanoid': 'RoboschoolHumanoid',
     'humanoidflagrun': 'RoboschoolHumanoidFlagrun',
     'humanoidflagrunharder': 'RoboschoolHumanoidFlagrunHarder',
@@ -160,9 +162,9 @@ legend_list = [
     'SAC',
 ]
 envs = [
-    'Breakout',
+    'reakout',
     'ong',
-    'Seaquest',
+    'eaquest',
     'bert',
     'lunar',
     'UnityHallway',
@@ -177,8 +179,8 @@ print(latex_im_body)
 
 # plot normal
 envs = [
-    'Breakout',
-    'Seaquest',
+    # 'Breakout',
+    # 'Seaquest',
     'lunar',
     'UnityHallway',
     'UnityPushBlock',
@@ -187,10 +189,16 @@ plot_envs(algos, envs, data_folder, legend_list)
 
 # Replot Pong and Qbert for Async SAC
 envs = [
+    'reakout',
     'ong',
-    'bert',
+    'eaquest',
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 6)])
+
+envs = [
+    'bert',
+]
+plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 8)])
 
 
 # Continuous
