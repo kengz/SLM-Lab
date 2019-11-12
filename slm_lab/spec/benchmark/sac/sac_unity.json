@@ -12,12 +12,12 @@
       "memory": {
         "name": "Replay",
         "batch_size": 256,
-        "max_size": 200000,
+        "max_size": 100000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [64, 64, 32],
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.001,
+          "lr": 0.005,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
