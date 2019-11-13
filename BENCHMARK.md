@@ -64,13 +64,13 @@ SLM Lab's benchmark includes environments from the following offerings:
 ||||||||
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | Env. \ Alg. | DQN | DDQN+PER | A2C (GAE) | A2C (n-step) | PPO | SAC |
-| Breakout <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737546-dabb6380-f9c8-11e9-901e-b96cc28f1fdf.png"></details> | 80.88 | 182 | 377 | 398 | **443** | 3.51* |
-| Pong <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737554-e018ae00-f9c8-11e9-92b5-3bd8d213b1e0.png"></details> | 18.48 | 20.5 | 19.31 | 19.56 | **20.58** | 19.87* |
-| Seaquest <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737557-e3139e80-f9c8-11e9-9446-119593ca956b.png"></details> | 1185 | **4405** | 1070 | 1684 | 1715 | 171* |
-| Qbert <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737559-e575f880-f9c8-11e9-8c98-f14c82041a45.png"></details> | 5494 | 11426 | 12405 | **13590** | 13460 | 923* |
+| Breakout <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/68744935-84dee200-05aa-11ea-9086-12546f5aa606.png"></details> | 80.88 | 182 | 377 | 398 | **443** | 3.51* |
+| Pong <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/68744936-85777880-05aa-11ea-8a6a-4c364a27ba81.png"></details> | 18.48 | 20.5 | 19.31 | 19.56 | **20.58** | 19.87* |
+| Seaquest <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/68744937-85777880-05aa-11ea-9927-e300309d1e9c.png"></details> | 1185 | **4405** | 1070 | 1684 | 1715 | 171* |
+| Qbert <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/68744939-85777880-05aa-11ea-825c-b1225a0539af.png"></details> | 5494 | 11426 | 12405 | **13590** | 13460 | 923* |
 | LunarLander <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737566-e7d85280-f9c8-11e9-8df8-39c1205c5308.png"></details> | 192 | 233 | 25.21 | 68.23 | 214 | **276** |
-| UnityHallway <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737569-ead34300-f9c8-11e9-9e26-61fe1d779989.png"></details> | -0.32 | 0.27 | 0.08 | -0.96 | **0.73** | 0.01 |
-| UnityPushBlock <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/67737577-eeff6080-f9c8-11e9-931c-843ba697779c.png"></details> | 4.88 | 4.93 | 4.68 | 4.93 | **4.97** | -0.70 |
+| UnityHallway <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/68744968-90caa400-05aa-11ea-9247-d4d81533965a.png"></details> | -0.32 | 0.27 | 0.08 | -0.96 | **0.73** | 0.01 |
+| UnityPushBlock <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/68744969-90caa400-05aa-11ea-9b17-45fb852e2671.png"></details> | 4.88 | 4.93 | 4.68 | 4.93 | **4.97** | -0.70 |
 
 >Episode score at the end of training attained by SLM Lab implementations on discrete-action control problems. Reported episode scores are the average over the last 100 checkpoints, and then averaged over 4 Sessions. A Random baseline with score averaged over 100 episodes is included. Results marked with `*` were trained using the hybrid synchronous/asynchronous version of SAC to parallelize and speed up training time. For SAC, Breakout, Pong and Seaquest were trained for 2M frames instead of 10M frames.
 
