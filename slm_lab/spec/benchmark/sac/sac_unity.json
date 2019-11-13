@@ -12,22 +12,21 @@
       "memory": {
         "name": "Replay",
         "batch_size": 256,
-        "max_size": 200000,
+        "max_size": 100000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
-        "hid_layers_activation": "relu",
+        "hid_layers": [64, 64, 32],
+        "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Lookahead",
-          "optimizer": "RAdam",
-          "lr": 3e-3,
+          "name": "RAdam",
+          "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
