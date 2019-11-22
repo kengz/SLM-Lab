@@ -15,7 +15,7 @@ import torch.multiprocessing as mp
 def make_agent_env(spec, global_nets=None):
     '''Helper to create agent and env given spec'''
     env = make_env(spec)
-    body = Body(env, spec['agent'])
+    body = Body(env, spec)
     agent = Agent(spec, body=body, global_nets=global_nets)
     return agent, env
 
@@ -66,19 +66,18 @@ class Session:
         if self.to_ckpt(env, 'log'):
             body.ckpt(self.env, 'train')
             body.log_summary('train')
+            if body.total_reward_ma >= body.best_total_reward_ma:
+                body.best_total_reward_ma = body.total_reward_ma
+                agent.save(ckpt='best')
             if len(body.train_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
                 body.log_metrics(metrics['scalar'], 'train')
 
-        if self.to_ckpt(env, 'eval'):
+        if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
             logger.info('Running eval ckpt')
-            if ps.get(self.spec, 'meta.rigorous_eval'):
-                analysis.gen_avg_return(agent, self.eval_env)
+            analysis.gen_avg_return(agent, self.eval_env)
             body.ckpt(self.eval_env, 'eval')
             body.log_summary('eval')
-            if body.total_reward_ma >= body.best_total_reward_ma:
-                body.best_total_reward_ma = body.total_reward_ma
-                agent.save(ckpt='best')
             if len(body.eval_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
                 body.log_metrics(metrics['scalar'], 'eval')

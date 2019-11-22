@@ -143,7 +143,7 @@ class FireResetEnv(gym.Wrapper):
 
 
 class PreprocessImage(gym.ObservationWrapper):
-    def __init__(self, env):
+    def __init__(self, env, w_h):
         '''
         Apply image preprocessing:
         - grayscale
@@ -151,13 +151,13 @@ class PreprocessImage(gym.ObservationWrapper):
         - transpose shape from h,w,c to PyTorch format c,h,w
         '''
         gym.ObservationWrapper.__init__(self, env)
-        self.width = 84
-        self.height = 84
+        w_h = w_h or (84, 84)
+        self.width, self.height = w_h
         self.observation_space = spaces.Box(
             low=0, high=255, shape=(1, self.width, self.height), dtype=np.uint8)
 
     def observation(self, frame):
-        return util.preprocess_image(frame)
+        return util.preprocess_image(frame, (self.width, self.height))
 
 
 class LazyFrames(object):
@@ -367,19 +367,19 @@ def wrap_atari(env):
     return env
 
 
-def wrap_deepmind(env, episode_life=True, stack_len=None):
+def wrap_deepmind(env, episode_life=True, stack_len=None, image_downsize=None):
     '''Wrap Atari environment DeepMind-style'''
     if episode_life:
         env = EpisodicLifeEnv(env)
     if 'FIRE' in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
-    env = PreprocessImage(env)
+    env = PreprocessImage(env, image_downsize)
     if stack_len is not None:  # use concat for image (1, 84, 84)
         env = FrameStack(env, 'concat', stack_len)
     return env
 
 
-def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=False, episode_life=True):
+def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, image_downsize=None, reward_scale=None, normalize_state=False, episode_life=True):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
     if seed is not None:
@@ -387,9 +387,9 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
     if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
-        env = wrap_deepmind(env, episode_life, frame_op_len)
+        env = wrap_deepmind(env, episode_life, frame_op_len, image_downsize)
     elif len(env.observation_space.shape) == 3:  # image-state env
-        env = PreprocessImage(env)
+        env = PreprocessImage(env, image_downsize)
         if normalize_state:
             env = NormalizeStateEnv(env)
         if frame_op_len is not None:  # use concat for image (1, 84, 84)

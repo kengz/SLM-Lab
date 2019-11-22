@@ -7,14 +7,14 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_start_step": 10000,
-        "training_frequency": 4
+        "training_start_step": 1000,
+        "training_frequency": 1
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 64,
-        "max_size": 100000,
-        "use_cer": true
+        "batch_size": 512,
+        "max_size": 1000000,
+        "use_cer": false
       },
       "net": {
         "type": "ConvNet",
@@ -24,19 +24,20 @@
           [64, 4, 2, 0, 1],
           [32, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [512],
-        "hid_layers_activation": "relu",
+        "fc_hid_layers": [256, 256],
+        "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
-        "batch_norm": false,
+        "batch_norm": true,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1e-4,
+          "name": "Lookahead",
+          "optimizer": "RAdam",
+          "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -50,9 +51,9 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 16,
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 1e5
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -60,8 +61,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "log_frequency": 100,
+      "eval_frequency": 100,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1,

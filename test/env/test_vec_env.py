@@ -13,7 +13,7 @@ def test_make_gym_venv_nostack(name, num_envs, state_shape, reward_scale):
     seed = 0
     frame_op = None
     frame_op_len = None
-    venv = make_gym_venv(name, num_envs, seed, frame_op, frame_op_len, reward_scale)
+    venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
@@ -38,7 +38,7 @@ def test_make_gym_concat(name, num_envs, state_shape, reward_scale):
     seed = 0
     frame_op = 'concat'  # used for image, or for concat vector
     frame_op_len = 4
-    venv = make_gym_venv(name, num_envs, seed, frame_op, frame_op_len, reward_scale)
+    venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
@@ -64,7 +64,7 @@ def test_make_gym_stack(name, num_envs, state_shape, reward_scale):
     seed = 0
     frame_op = 'stack'  # used for rnn
     frame_op_len = 4
-    venv = make_gym_venv(name, num_envs, seed, frame_op, frame_op_len, reward_scale)
+    venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
@@ -72,6 +72,30 @@ def test_make_gym_stack(name, num_envs, state_shape, reward_scale):
     assert isinstance(state, np.ndarray)
     stack_shape = (num_envs, frame_op_len,) + state_shape
     assert state.shape == stack_shape
+    assert isinstance(reward, np.ndarray)
+    assert reward.shape == (num_envs,)
+    assert isinstance(done, np.ndarray)
+    assert done.shape == (num_envs,)
+    assert len(info) == num_envs
+    venv.close()
+
+
+@pytest.mark.parametrize('name,state_shape,image_downsize', [
+    ('PongNoFrameskip-v4', (1, 84, 84), (84, 84)),
+    ('PongNoFrameskip-v4', (1, 64, 64), (64, 64)),
+])
+@pytest.mark.parametrize('num_envs', (1, 4))
+def test_make_gym_venv_downsize(name, num_envs, state_shape, image_downsize):
+    seed = 0
+    frame_op = None
+    frame_op_len = None
+    venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, image_downsize=image_downsize)
+    venv.reset()
+    for i in range(5):
+        state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
+
+    assert isinstance(state, np.ndarray)
+    assert state.shape == (num_envs,) + state_shape
     assert isinstance(reward, np.ndarray)
     assert reward.shape == (num_envs,)
     assert isinstance(done, np.ndarray)

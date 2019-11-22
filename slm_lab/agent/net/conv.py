@@ -161,7 +161,7 @@ class ConvNet(Net, nn.Module):
                 conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
-                conv_layers.append(nn.BatchNorm2d(in_d))
+                conv_layers.append(nn.BatchNorm2d(hid_layer[0]))
             in_d = hid_layer[0]  # update to out_d
         conv_model = nn.Sequential(*conv_layers)
         return conv_model
