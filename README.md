@@ -5,7 +5,7 @@
   <i>Modular Deep Reinforcement Learning framework in PyTorch.</i>
   <br><br>
   <b>Documentation:</b><br>
-  <a href="https://kengz.gitbook.io/slm-lab/">https://kengz.gitbook.io/slm-lab/</a>
+  <a href="https://slm-lab.gitbook.io/slm-lab/">https://slm-lab.gitbook.io/slm-lab/</a>
   <br><br>
 </p>
 
