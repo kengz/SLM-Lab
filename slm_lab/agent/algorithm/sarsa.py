@@ -60,7 +60,7 @@ class SARSA(Algorithm):
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
         ])
-        self.to_train = 0
+        self.to_train = False
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
@@ -137,13 +137,13 @@ class SARSA(Algorithm):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock
-        if self.to_train == 1:
+        if self.to_train:
             batch = self.sample()
             clock.set_batch_size(len(batch))
             loss = self.calc_q_loss(batch)
             self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
             # reset
-            self.to_train = 0
+            self.to_train = False
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
