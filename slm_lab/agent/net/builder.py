@@ -502,9 +502,25 @@ film = FiLM(num_feat, num_cond)
 x = film(feat, cond)
 assert x.shape == feat.shape
 
-# TODO use named tensors yo
-# TODO build Concat layer
-
 
 class Concat(nn.Module):
-    pass
+    '''Flatten all input tensors and concatenate them'''
+    def forward(self, *tensors):
+        return torch.cat([t.flatten(start_dim=1) for t in tensors], dim=-1)
+
+# any tensors: vectors
+t1 = torch.rand(10).unsqueeze(dim=0)
+t2 = torch.rand(5).unsqueeze(dim=0)
+t3 = torch.rand(2).unsqueeze(dim=0)
+concat = Concat()
+x = concat(t1, t2, t3)
+assert x.dim() == 2
+assert x.shape[1] == t1.shape[1] + t2.shape[1] + t3.shape[1]
+
+# any tensors: an image and a vector
+t1 = torch.rand(3, 10, 10).unsqueeze(dim=0)
+t2 = torch.rand(5).unsqueeze(dim=0)
+concat = Concat()
+x = concat(t1, t2)
+assert x.dim() == 2
+assert x.shape[1] == 305
