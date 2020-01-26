@@ -1,12 +1,16 @@
 # Module to quickly build neural networks with relatively simple architecture
+import torch
 import torch.nn as nn
 import pydash as ps
+import torch.nn.functional as F
+
+# TODO rebuild dependencies too
 
 # general net spec, can be composed from programs
 net_spec = {
     "#heads": {
         "image": {
-            "type": "conv",
+            "type": "conv2d",
             "layers": [
                 [32, 8, 4, 0, 1],
                 [64, 4, 2, 0, 1],
@@ -20,28 +24,30 @@ net_spec = {
             "type": "mlp",
             "layers": [64, 64],
             "activation": "relu",
+            "batch_norm": None,
             "init_fn": "orthogonal_",
         },
     },
     "#body": {  # this is special since it contains a models op
-        "bottleneck": {
-            "input_op": "concat",
-            "type": "mlp",
-            "layers": [],
-            "activation": "relu",
-            "init_fn": "orthogonal_",
-        }
+        "join": "film",  # or concat
+        "type": "mlp",
+        "layers": [],
+        "activation": "relu",
+        "init_fn": "orthogonal_",
     },
     "#tails": {
         "v": {
             "type": "mlp",
             "layers": [],
             "activation": "relu",
+            "out_activation": None,
+            # TODO out_layer activation
         },
         "pi": {
             "type": "mlp",
             "layers": [],
             "activation": "relu",
+            "out_activation": None,
         }
     }
 }
@@ -55,17 +61,34 @@ def get_nn_name(uncased_name):
     raise ValueError(f'Name {uncased_name} not found in {nn.__dict__}')
 
 
-def get_conv_out_shape(conv_model, in_shape):
-    '''Helper to calculate the output shape of a conv model with flattened last layer given an input shape'''
-    x = torch.rand(in_shape).unsqueeze(dim=0)
-    y = conv_model(x)
-    return y.shape[1]
-
-
 def build_activation_layer(activation):
     '''Helper to build an activation function layer for net'''
-    ActivationClass = getattr(nn, get_nn_name(activation))
-    return ActivationClass()
+    if activation is None:
+        return None
+    else:
+        ActivationClass = getattr(nn, get_nn_name(activation))
+        return ActivationClass()
+
+
+def resolve_activation_layer(net_spec, is_last_layer):
+    '''
+    Help resolve the activation layer depending if it's the last layer
+    if not the last layer:
+        use net_spec['activation']
+    if the last layer and:
+        if net_spec['out_activation'] is specified, use it
+        else use net_spec['activation']
+    @param dict:net_spec Specifying 'activation' and optionally 'out_activation'
+    @return Layer:Activation
+    '''
+    activation, out_activation = ps.at(net_spec, *['activation', 'out_activation'])
+    if not is_last_layer:
+        return build_activation_layer(activation)
+    else:  # last layer
+        if 'out_activation' in net_spec:  # specified explicitly
+            return build_activation_layer(out_activation)
+        else:
+            return build_activation_layer(activation)
 
 
 def check_net_spec(net_spec):
@@ -74,28 +97,80 @@ def check_net_spec(net_spec):
 
 # TODO do init here too
 
+
 def build_mlp_model(net_spec):
     '''
     Build an MLP model given net_spec
     @param dict:net_spec With the following format/example:
     {
         "type": "mlp",
-        "layers": [64, 64],
-        "activation": "relu",
-        "init_fn": "orthogonal_",
+        "in_shape": 4,  # input shape
+        "layers": [64, 64],  # hidden layers
+        "batch_norm": True,  # optional: apply BatchNorm before activation
+        "activation": "relu",  # activation function
+        "out_activation": None,  # optional: specify to override 'activation' for the last layer, useful for output model
+        "init_fn": "orthogonal_",  # weight initialization
     }
     '''
     check_net_spec(net_spec)
-    in_shape, activation = ps.at(net_spec, *['in_shape', 'activation'])
-    layers = []
-    for out_shape in net_spec['layers']:
-        layers.append(nn.Linear(in_shape, out_shape))
-        if activation is not None:
-            layers.append(build_activation_layer(activation))
-        in_shape = out_shape  # update
+    in_shape, layers, batch_norm, activation, out_activation = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation'])
+
+    nn_layers = []
+    num_layers = len(layers)
+    for idx, out_shape in enumerate(layers):
+        nn_layers.append(nn.Linear(in_shape, out_shape))
+        if batch_norm:
+            nn_layers.append(nn.BatchNorm1d(out_shape))
+        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == num_layers - 1)))
+        in_shape = out_shape  # update in_shape
     net_spec['out_shape'] = out_shape
-    mlp_model = nn.Sequential(*layers)
+    nn_layers = ps.compact(nn_layers)  # remove None
+    mlp_model = nn.Sequential(*nn_layers)
+    # TODO init layers here too
     return mlp_model
+
+
+net_spec = {
+    "type": "mlp",
+    "in_shape": 4,
+    "layers": [64, 64],
+    "activation": "relu",
+    "init_fn": "orthogonal_",
+}
+mlp_model = build_mlp_model(net_spec)
+assert net_spec['out_shape'] == net_spec['layers'][-1]
+layer_names = ['Linear', 'ReLU', 'Linear', 'ReLU']
+for nn_layer, layer_name in zip(mlp_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+net_spec = {
+    "type": "mlp",
+    "in_shape": 4,
+    "layers": [64, 64],
+    "activation": "relu",
+    "out_activation": None,
+    "init_fn": "orthogonal_",
+}
+mlp_model = build_mlp_model(net_spec)
+assert net_spec['out_shape'] == net_spec['layers'][-1]
+layer_names = ['Linear', 'ReLU', 'Linear']
+for nn_layer, layer_name in zip(mlp_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+net_spec = {
+    "type": "mlp",
+    "in_shape": 4,
+    "layers": [64, 64],
+    "batch_norm": True,
+    "activation": "relu",
+    "out_activation": "sigmoid",
+    "init_fn": "orthogonal_",
+}
+mlp_model = build_mlp_model(net_spec)
+assert net_spec['out_shape'] == net_spec['layers'][-1]
+layer_names = ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'Sigmoid']
+for nn_layer, layer_name in zip(mlp_model, layer_names):
+    assert nn_layer._get_name() == layer_name
 
 
 gyro_net_spec = net_spec['#heads']['gyro']
@@ -104,28 +179,164 @@ gyro_net_spec['in_shape'] = 10
 build_mlp_model(gyro_net_spec)
 
 
+def get_conv_out_shape(conv_model, in_shape):
+    '''Helper to calculate the output shape of a conv model with flattened last layer given an input shape'''
+    x = torch.rand(in_shape).unsqueeze(dim=0)
+    y = conv_model(x).squeeze(dim=0)
+    return y.shape
+
+
 def build_conv_model(net_spec):
     '''
-    Build a Conv2d (vision) model given net_spec
-    Conv2D params: [in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1]
-    Layer contains arguments to Conv2D except the in_channels, which is inferred. Feel free to provide layer with as many params, since they are applied with *layer
+    Build a Conv1d, Conv2d (vision), or Conv3d model given net_spec
+    Conv params: layer = [in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1]
+    Layer contains arguments to Conv except the in_channels, which is inferred. Feel free to provide layer with as many params, since they are applied with *layer
+    @param dict:net_spec With the following format/example:
+    {
+        "type": "conv2d",  # options: 'conv1d', 'conv2d', conv3d
+        "in_shape": [3, 84, 84],  # channel, height, width
+        "layers": [
+            [32, 8, 4, 0, 1],  # out_channels, kernel_size, stride, padding, dilation
+            [64, 4, 2, 0, 1],
+            [32, 3, 1, 0, 1]
+        ],
+        "batch_norm": True,  # optional: apply BatchNorm before activation
+        "activation": "relu",  # activation function
+        "out_activation": None,  # optional: specify to override 'activation' for the last layer, useful for output model
+        "init_fn": "orthogonal_",  # weight initialization
+    }
     '''
     check_net_spec(net_spec)
-    in_shape, batch_norm, activation = ps.at(net_spec, *['in_shape', 'batch_norm', 'activation'])
+    in_shape, layers, batch_norm, activation, out_activation = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation'])
+    if net_spec['type'] == 'conv1d':
+        ConvClass, BNClass = nn.Conv1d, nn.BatchNorm1d
+    elif net_spec['type'] == 'conv2d':
+        ConvClass, BNClass = nn.Conv2d, nn.BatchNorm2d
+    elif net_spec['type'] == 'conv3d':
+        ConvClass, BNClass = nn.Conv3d, nn.BatchNorm3d
+    else:
+        raise ValueError(f"type: {net_spec['type']} is not supported")
+
     in_c = in_shape[0]  # PyTorch image input shape is (c,h,w)
-    layers = []
-    for layer in net_spec['layers']:
+    nn_layers = []
+    num_layers = len(layers)
+    for idx, layer in enumerate(layers):
         out_c = layer[0]
-        layers.append(nn.Conv2d(in_c, *layer))
-        if batch_norm is not None:
-            layers.append(nn.BatchNorm2d(out_c))
-        if activation is not None:
-            layers.append(build_activation_layer(activation))
+        nn_layers.append(ConvClass(in_c, *layer))
+        if batch_norm:
+            nn_layers.append(BNClass(out_c))
+        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == num_layers - 1)))
         in_c = out_c  # update
-    layers.append(nn.Flatten())  # add flatten layer automatically
-    conv_model = nn.Sequential(*layers)
-    net_spec['out_shape'] = get_conv_out_shape(conv_model, in_shape)
+    nn_layers.append(nn.Flatten())  # flatten the last layer automatically
+    nn_layers = ps.compact(nn_layers)  # remove None
+    conv_model = nn.Sequential(*nn_layers)
+    net_spec['out_shape'] = get_conv_out_shape(conv_model, in_shape)[0]
+    # TODO init layers here too
     return conv_model
+
+
+net_spec = {
+    "type": "conv1d",
+    "in_shape": [3, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "activation": "relu",
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert net_spec['out_shape'] > 0
+layer_names = ['Conv1d', 'ReLU', 'Conv1d', 'ReLU', 'Flatten']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+net_spec = {
+    "type": "conv1d",
+    "in_shape": [3, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "batch_norm": True,
+    "activation": "relu",
+    "out_activation": "sigmoid",
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert net_spec['out_shape'] > 0
+layer_names = ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'Sigmoid', 'Flatten']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+
+net_spec = {
+    "type": "conv2d",
+    "in_shape": [3, 20, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "activation": "relu",
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert net_spec['out_shape'] > 0
+layer_names = ['Conv2d', 'ReLU', 'Conv2d', 'ReLU', 'Flatten']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+net_spec = {
+    "type": "conv2d",
+    "in_shape": [3, 20, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "batch_norm": True,
+    "activation": "relu",
+    "out_activation": "sigmoid",
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert net_spec['out_shape'] > 0
+layer_names = ['Conv2d', 'BatchNorm2d', 'ReLU', 'Conv2d', 'BatchNorm2d', 'Sigmoid', 'Flatten']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+net_spec = {
+    "type": "conv3d",
+    "in_shape": [3, 20, 20, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "activation": "relu",
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert net_spec['out_shape'] > 0
+layer_names = ['Conv3d', 'ReLU', 'Conv3d', 'ReLU', 'Flatten']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
+
+net_spec = {
+    "type": "conv3d",
+    "in_shape": [3, 20, 20, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "batch_norm": True,
+    "activation": "relu",
+    "out_activation": "sigmoid",
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert net_spec['out_shape'] > 0
+layer_names = ['Conv3d', 'BatchNorm3d', 'ReLU', 'Conv3d', 'BatchNorm3d', 'Sigmoid', 'Flatten']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
 
 
 image_net_spec = net_spec['#heads']['image']
