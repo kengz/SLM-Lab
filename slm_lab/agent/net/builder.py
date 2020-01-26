@@ -177,11 +177,11 @@ def get_conv_out_shape(conv_model, in_shape):
     '''Helper to calculate the output shape of a conv model with flattened last layer given an input shape'''
     x = torch.rand(in_shape).unsqueeze(dim=0)
     y = conv_model(x).squeeze(dim=0)
-    out_shape = torch.tensor(y.shape)
+    out_shape = y.shape
     if len(out_shape) == 1:
-        return out_shape[0].item()
+        return out_shape[0]
     else:
-        return out_shape.tolist()
+        return list(out_shape)
 
 
 def build_conv_model(net_spec):
@@ -460,3 +460,35 @@ assert torch.is_tensor(h_n)
 assert torch.is_tensor(c_n)
 
 
+class FiLM(nn.Module):
+    '''
+    Feature-wise Linear Modulation layer https://distill.pub/2018/feature-wise-transformations/
+    Takes a feature tensor and affine-transforms it with a conditioner tensor:
+    output = cond_scale * feature + cond_shift
+    The conditioner is always a vector with length = number of features or channels (image), and the operation is element-wise on feature or channel-wide (image)
+    '''
+
+    def __init__(self, num_feat, num_cond):
+        # conditioner params with output shape matching num_feat, and
+        # num_feat = feat.shape[1]
+        # num_cond = cond.shape[1]
+        self.cond_scale = nn.Linear(num_cond, num_feat)
+        self.cond_shift = nn.Linear(num_cond, num_feat)
+
+    def forward(self, feat, cond):
+        cond_scale_x = cond_scale(cond)
+        cond_shift_x = cond_shift(cond)
+        # use view to ensure cond transform will broadcast consistently across entire feature/channel
+        view_shape = list(cond_scale_x.shape) + [1] * (feat.dim() - cond.dim())
+        x = cond_scale_x.view(*view_shape) * feat + cond_shift_x.view(*view_shape)
+        return x
+
+# TODO conv option to not flatten, out_shape adjust accordingly
+# OOOHH FiLM is either feature or channel, so it's always a vector
+# TODO use named tensors yo
+# TODO build FiLM as layer, of any shape, e.g. conv
+# TODO build Concat layer
+
+
+class Concat(nn.Module):
+    pass
