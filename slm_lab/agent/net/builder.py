@@ -481,12 +481,28 @@ class FiLM(nn.Module):
         # use view to ensure cond transform will broadcast consistently across entire feature/channel
         view_shape = list(cond_scale_x.shape) + [1] * (feat.dim() - cond.dim())
         x = cond_scale_x.view(*view_shape) * feat + cond_shift_x.view(*view_shape)
+        assert x.shape == feat.shape
         return x
 
-# TODO conv option to not flatten, out_shape adjust accordingly
-# OOOHH FiLM is either feature or channel, so it's always a vector
+# an example vector and a 5D conditioning vector
+feat = torch.rand(10).unsqueeze(dim=0)
+cond = torch.rand(5).unsqueeze(dim=0)
+num_feat = feat.shape[1]
+num_cond = cond.shape[1]
+film = FiLM(num_feat, num_cond)
+x = film(feat, cond)
+assert x.shape == feat.shape
+
+# an example image and a 5D conditioning vector
+feat = torch.rand(3, 10, 10).unsqueeze(dim=0)
+cond = torch.rand(5).unsqueeze(dim=0)
+num_feat = feat.shape[1]
+num_cond = cond.shape[1]
+film = FiLM(num_feat, num_cond)
+x = film(feat, cond)
+assert x.shape == feat.shape
+
 # TODO use named tensors yo
-# TODO build FiLM as layer, of any shape, e.g. conv
 # TODO build Concat layer
 
 
