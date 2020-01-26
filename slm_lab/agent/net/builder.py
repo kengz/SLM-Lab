@@ -102,7 +102,7 @@ def build_mlp_model(net_spec):
     '''
     Build an MLP model given net_spec
     @param dict:net_spec With the following format/example:
-    {
+    net_spec = {
         "type": "mlp",
         "in_shape": 4,  # input shape
         "layers": [64, 64],  # hidden layers
@@ -192,7 +192,7 @@ def build_conv_model(net_spec):
     Conv params: layer = [in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1]
     Layer contains arguments to Conv except the in_channels, which is inferred. Feel free to provide layer with as many params, since they are applied with *layer
     @param dict:net_spec With the following format/example:
-    {
+    net_spec = {
         "type": "conv2d",  # options: 'conv1d', 'conv2d', conv3d
         "in_shape": [3, 84, 84],  # channel, height, width
         "layers": [
@@ -346,5 +346,102 @@ conv_model
 in_shape = [3, 84, 84]
 
 
-def build_rnn_model(net_spec):
-    pass
+def build_recurrent_model(net_spec):
+    '''
+    Build a Recurrent model given net_spec
+    @param dict:net_spec With the following format/example:
+    net_spec = {
+        "type": "rnn",  # options: 'rnn', 'lstm', 'gru'
+        "in_shape": 3,  # the number of features in x
+        "layers": [64, 64],  # the hidden layers, must be the same for all layers
+        "bidirectional": False,  # whether to make network bidirectional
+        "init_fn": "orthogonal_",  # weight initialization
+    }
+    '''
+    check_net_spec(net_spec)
+    in_shape, layers, bidirectional = ps.at(net_spec, *['in_shape', 'layers', 'bidirectional'])
+
+    assert len(ps.uniq(layers)) == 1, f'layers must specify the same number of hidden units for each layer, but got {layers}'
+    hidden_size = layers[0]
+    recurrent_model = getattr(nn, get_nn_name(net_spec['type']))(
+        input_size=in_shape, hidden_size=hidden_size, num_layers=len(layers),
+        batch_first=True, bidirectional=bidirectional)
+    # y.shape = (batch, seq_len, num_directions * hidden_size)
+    # h_n.shape = (num_layers * num_directions, batch, hidden_size)
+    # NOTE seq_len, which is flexible, is not considered part of in_shape and out_shape. h_n shape is not useful - we'd have direct access to it
+    num_dir = 2 if recurrent_model.bidirectional else 1
+    net_spec['out_shape'] = num_dir * hidden_size
+    # TODO init layers here too
+    return recurrent_model
+
+
+net_spec = {
+    "type": "rnn",  # options: 'rnn', 'lstm', 'gru'
+    "in_shape": 3,  # the number of features in x
+    "layers": [64, 64],  # the hidden layers, must be the same for all layers
+    "bidirectional": False,  # whether to make network bidirectional
+    "init_fn": "orthogonal_",  # weight initialization
+}
+recurrent_model = build_recurrent_model(net_spec)
+num_dir = 2 if recurrent_model.bidirectional else 1
+hidden_size = net_spec['layers'][0]
+seq_len = 10
+assert net_spec['out_shape'] == num_dir * hidden_size
+x = torch.rand([seq_len, net_spec['in_shape']]).unsqueeze(dim=0)
+y, h_n = recurrent_model(x)
+torch.equal(torch.tensor(y.shape), torch.tensor([1, seq_len, hidden_size]))
+assert torch.is_tensor(h_n)
+
+net_spec = {
+    "type": "rnn",  # options: 'rnn', 'lstm', 'gru'
+    "in_shape": 3,  # the number of features in x
+    "layers": [64, 64],  # the hidden layers, must be the same for all layers
+    "bidirectional": True,  # whether to make network bidirectional
+    "init_fn": "orthogonal_",  # weight initialization
+}
+recurrent_model = build_recurrent_model(net_spec)
+num_dir = 2 if recurrent_model.bidirectional else 1
+hidden_size = net_spec['layers'][0]
+seq_len = 10
+assert net_spec['out_shape'] == num_dir * hidden_size
+x = torch.rand([seq_len, net_spec['in_shape']]).unsqueeze(dim=0)
+y, h_n = recurrent_model(x)
+torch.equal(torch.tensor(y.shape), torch.tensor([1, seq_len, hidden_size]))
+assert torch.is_tensor(h_n)
+
+net_spec = {
+    "type": "gru",  # options: 'rnn', 'lstm', 'gru'
+    "in_shape": 3,  # the number of features in x
+    "layers": [64, 64],  # the hidden layers, must be the same for all layers
+    "bidirectional": False,  # whether to make network bidirectional
+    "init_fn": "orthogonal_",  # weight initialization
+}
+recurrent_model = build_recurrent_model(net_spec)
+num_dir = 2 if recurrent_model.bidirectional else 1
+hidden_size = net_spec['layers'][0]
+seq_len = 10
+assert net_spec['out_shape'] == num_dir * hidden_size
+x = torch.rand([seq_len, net_spec['in_shape']]).unsqueeze(dim=0)
+y, h_n = recurrent_model(x)
+torch.equal(torch.tensor(y.shape), torch.tensor([1, seq_len, hidden_size]))
+assert torch.is_tensor(h_n)
+
+net_spec = {
+    "type": "rnn",  # options: 'rnn', 'lstm', 'gru'
+    "in_shape": 3,  # the number of features in x
+    "layers": [64, 64],  # the hidden layers, must be the same for all layers
+    "bidirectional": False,  # whether to make network bidirectional
+    "init_fn": "orthogonal_",  # weight initialization
+}
+recurrent_model = build_recurrent_model(net_spec)
+num_dir = 2 if recurrent_model.bidirectional else 1
+hidden_size = net_spec['layers'][0]
+seq_len = 10
+assert net_spec['out_shape'] == num_dir * hidden_size
+x = torch.rand([seq_len, net_spec['in_shape']]).unsqueeze(dim=0)
+y, (h_n, c_n) = recurrent_model(x)
+torch.equal(torch.tensor(y.shape), torch.tensor([1, seq_len, hidden_size]))
+assert torch.is_tensor(h_n)
+assert torch.is_tensor(c_n)
+
+
