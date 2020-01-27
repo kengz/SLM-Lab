@@ -1,4 +1,5 @@
 # Module to quickly build neural networks with relatively simple architecture
+import inspect
 import torch
 import torch.nn as nn
 import pydash as ps
@@ -91,11 +92,38 @@ def resolve_activation_layer(net_spec, is_last_layer):
             return build_activation_layer(activation)
 
 
+def get_init_weights(init_fn, activation=None):
+    '''
+    Helper to get the init_weights function given init_fn and activation to be applied as net.apply(init_weights)
+    @param str:init_fn
+    @param str:activation
+    @returns function:init_weights
+    '''
+    def init_weights(module):
+        if (not hasattr(module, 'weight')) or 'BatchNorm' in module.__class__.__name__:
+            # skip if not a module with weight, or if it's a BatchNorm layer
+            return
+
+        # init weight accordingly
+        weight_init_fn = getattr(nn.init, init_fn)
+        init_fn_args = inspect.getfullargspec(weight_init_fn).args
+        if activation is None:
+            weight_init_fn(module.weight)
+        elif 'gain' in init_fn_args:
+            weight_init_fn(module.weight, gain=nn.init.calculate_gain(activation))
+        elif 'nonlinearity' in init_fn_args:
+            weight_init_fn(module.weight, nonlinearity=activation)
+        else:
+            weight_init_fn(module.weight)
+        # init bias
+        if module.bias is not None:
+            nn.init.normal_(module.bias)
+    return init_weights
+
+
 def check_net_spec(net_spec):
     # CHECK FOR KEYS
     pass
-
-# TODO do init here too
 
 
 def build_mlp_model(net_spec):
@@ -113,7 +141,7 @@ def build_mlp_model(net_spec):
     }
     '''
     check_net_spec(net_spec)
-    in_shape, layers, batch_norm, activation, out_activation = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation'])
+    in_shape, layers, batch_norm, activation, out_activation, init_fn = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'init_fn'])
 
     nn_layers = []
     num_layers = len(layers)
@@ -126,7 +154,10 @@ def build_mlp_model(net_spec):
     net_spec['out_shape'] = out_shape
     nn_layers = ps.compact(nn_layers)  # remove None
     mlp_model = nn.Sequential(*nn_layers)
-    # TODO init layers here too
+
+    if init_fn:  # initialize weights if specified
+        init_weights = get_init_weights(init_fn, activation)
+        mlp_model.apply(init_weights)
     return mlp_model
 
 
@@ -206,7 +237,7 @@ def build_conv_model(net_spec):
     }
     '''
     check_net_spec(net_spec)
-    in_shape, layers, batch_norm, activation, out_activation, flatten = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'flatten'])
+    in_shape, layers, batch_norm, activation, out_activation, flatten, init_fn = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'flatten', 'init_fn'])
     if net_spec['type'] == 'conv1d':
         ConvClass, BNClass = nn.Conv1d, nn.BatchNorm1d
     elif net_spec['type'] == 'conv2d':
@@ -231,7 +262,10 @@ def build_conv_model(net_spec):
     nn_layers = ps.compact(nn_layers)  # remove None
     conv_model = nn.Sequential(*nn_layers)
     net_spec['out_shape'] = get_conv_out_shape(conv_model, in_shape)
-    # TODO init layers here too
+
+    if init_fn:  # initialize weights if specified
+        init_weights = get_init_weights(init_fn, activation)
+        conv_model.apply(init_weights)
     return conv_model
 
 
@@ -374,7 +408,7 @@ def build_recurrent_model(net_spec):
     }
     '''
     check_net_spec(net_spec)
-    in_shape, layers, bidirectional = ps.at(net_spec, *['in_shape', 'layers', 'bidirectional'])
+    in_shape, layers, bidirectional, init_fn = ps.at(net_spec, *['in_shape', 'layers', 'bidirectional', 'init_fn'])
 
     assert len(ps.uniq(layers)) == 1, f'layers must specify the same number of hidden units for each layer, but got {layers}'
     hidden_size = layers[0]
@@ -386,7 +420,10 @@ def build_recurrent_model(net_spec):
     # NOTE seq_len, which is flexible, is not considered part of in_shape and out_shape. h_n shape is not useful - we'd have direct access to it
     num_dir = 2 if recurrent_model.bidirectional else 1
     net_spec['out_shape'] = num_dir * hidden_size
-    # TODO init layers here too
+    
+    if init_fn:  # initialize weights if specified
+        init_weights = get_init_weights(init_fn)
+        mlp_model.apply(init_weights)
     return recurrent_model
 
 
@@ -472,17 +509,19 @@ class FiLM(nn.Module):
         # conditioner params with output shape matching num_feat, and
         # num_feat = feat.shape[1]
         # num_cond = cond.shape[1]
+        nn.Module.__init__(self)
         self.cond_scale = nn.Linear(num_cond, num_feat)
         self.cond_shift = nn.Linear(num_cond, num_feat)
 
     def forward(self, feat, cond):
-        cond_scale_x = cond_scale(cond)
-        cond_shift_x = cond_shift(cond)
+        cond_scale_x = self.cond_scale(cond)
+        cond_shift_x = self.cond_shift(cond)
         # use view to ensure cond transform will broadcast consistently across entire feature/channel
         view_shape = list(cond_scale_x.shape) + [1] * (feat.dim() - cond.dim())
         x = cond_scale_x.view(*view_shape) * feat + cond_shift_x.view(*view_shape)
         assert x.shape == feat.shape
         return x
+
 
 # an example vector and a 5D conditioning vector
 feat = torch.rand(10).unsqueeze(dim=0)
@@ -505,8 +544,10 @@ assert x.shape == feat.shape
 
 class Concat(nn.Module):
     '''Flatten all input tensors and concatenate them'''
+
     def forward(self, *tensors):
         return torch.cat([t.flatten(start_dim=1) for t in tensors], dim=-1)
+
 
 # any tensors: vectors
 t1 = torch.rand(10).unsqueeze(dim=0)
