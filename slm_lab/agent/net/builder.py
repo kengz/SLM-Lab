@@ -144,14 +144,13 @@ def build_mlp_model(net_spec):
     in_shape, layers, batch_norm, activation, out_activation, init_fn = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'init_fn'])
 
     nn_layers = []
-    num_layers = len(layers)
     for idx, out_shape in enumerate(layers):
         nn_layers.append(nn.Linear(in_shape, out_shape))
         if batch_norm:
             nn_layers.append(nn.BatchNorm1d(out_shape))
-        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == num_layers - 1)))
+        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == len(layers) - 1)))
         in_shape = out_shape  # update in_shape
-    net_spec['out_shape'] = out_shape
+        net_spec['out_shape'] = out_shape
     nn_layers = ps.compact(nn_layers)  # remove None
     mlp_model = nn.Sequential(*nn_layers)
 
@@ -249,13 +248,12 @@ def build_conv_model(net_spec):
 
     in_c = in_shape[0]  # PyTorch image input shape is (c,h,w)
     nn_layers = []
-    num_layers = len(layers)
     for idx, layer in enumerate(layers):
         out_c = layer[0]
         nn_layers.append(ConvClass(in_c, *layer))
         if batch_norm:
             nn_layers.append(BNClass(out_c))
-        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == num_layers - 1)))
+        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == len(layers) - 1)))
         in_c = out_c  # update
     if flatten:
         nn_layers.append(nn.Flatten())  # flatten the last layer if needed
@@ -420,7 +418,7 @@ def build_recurrent_model(net_spec):
     # NOTE seq_len, which is flexible, is not considered part of in_shape and out_shape. h_n shape is not useful - we'd have direct access to it
     num_dir = 2 if recurrent_model.bidirectional else 1
     net_spec['out_shape'] = num_dir * hidden_size
-    
+
     if init_fn:  # initialize weights if specified
         init_weights = get_init_weights(init_fn)
         mlp_model.apply(init_weights)
