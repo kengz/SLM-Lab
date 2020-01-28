@@ -230,21 +230,21 @@ def build_conv_model(net_spec):
     net_spec = {
         "type": "conv2d",  # options: 'conv1d', 'conv2d', conv3d
         "in_shape": [3, 84, 84],  # channel, height, width
-        "out_shape": 2,  # optional: output shape if this is a full model. This must go with "flatten": True.
+        "out_shape": 2,  # optional: output shape if this is a full model. This must go with "flatten_conv": True.
         "layers": [
             [32, 8, 4, 0, 1],  # out_channels, kernel_size, stride, padding, dilation
             [64, 4, 2, 0, 1],
             [32, 3, 1, 0, 1]
         ],
+        "flatten_conv": False,  # optional: flatten the conv output layer
         "batch_norm": True,  # optional: apply BatchNorm before activation
         "activation": "relu",  # activation function
         "out_activation": None,  # optional: specify to override 'activation' for the last layer, useful for output model
-        "flatten": False,  # optional: flatten the output layer
         "init_fn": "orthogonal_",  # weight initialization
     }
     '''
     check_net_spec(net_spec)
-    in_shape, out_shape, layers, batch_norm, activation, out_activation, flatten, init_fn = ps.at(net_spec, *['in_shape', 'out_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'flatten', 'init_fn'])
+    in_shape, out_shape, layers, flatten_conv, batch_norm, activation, out_activation, init_fn = ps.at(net_spec, *['in_shape', 'out_shape', 'layers', 'flatten_conv', 'batch_norm', 'activation', 'out_activation', 'init_fn'])
     if net_spec['type'] == 'conv1d':
         ConvClass, BNClass = nn.Conv1d, nn.BatchNorm1d
     elif net_spec['type'] == 'conv2d':
@@ -266,10 +266,10 @@ def build_conv_model(net_spec):
                 nn_layers.append(BNClass(out_c))
             nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
             in_c = out_c  # update
-            if is_last_layer and (not out_shape) and flatten:
+            if is_last_layer and (not out_shape) and flatten_conv:
                 nn_layers.append(nn.Flatten())
         else:  # if specified net_spec['out_shape] for output
-            assert is_last_layer and out_shape and flatten
+            assert is_last_layer and out_shape and flatten_conv
             # flatten conv model and get conv_out_shape
             nn_layers.append(nn.Flatten())
             conv_out_shape = get_conv_out_shape(nn_layers, in_shape)
@@ -309,8 +309,8 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "activation": "relu",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
@@ -326,10 +326,10 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "batch_norm": True,
     "activation": "relu",
     "out_activation": "sigmoid",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
@@ -338,7 +338,6 @@ layer_names = ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'Sigmoi
 for nn_layer, layer_name in zip(conv_model, layer_names):
     assert nn_layer._get_name() == layer_name
 
-# TODO rename to flatten_conv
 net_spec = {
     "type": "conv1d",
     "in_shape": [3, 20],
@@ -347,10 +346,10 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "batch_norm": True,
     "activation": "relu",
     "out_activation": "sigmoid",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
@@ -366,8 +365,8 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "activation": "relu",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
@@ -383,10 +382,10 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "batch_norm": True,
     "activation": "relu",
     "out_activation": "sigmoid",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
@@ -402,8 +401,8 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "activation": "relu",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
@@ -419,10 +418,10 @@ net_spec = {
         [16, 4, 2, 0, 1],
         [16, 4, 1, 0, 1]
     ],
+    "flatten_conv": True,
     "batch_norm": True,
     "activation": "relu",
     "out_activation": "sigmoid",
-    "flatten": True,
     "init_fn": "orthogonal_",
 }
 conv_model = build_conv_model(net_spec)
