@@ -133,6 +133,7 @@ def build_mlp_model(net_spec):
     net_spec = {
         "type": "mlp",
         "in_shape": 4,  # input shape
+        "out_shape": 2,  # optional: output shape if this is a full model
         "layers": [64, 64],  # hidden layers
         "batch_norm": True,  # optional: apply BatchNorm before activation
         "activation": "relu",  # activation function
@@ -141,9 +142,11 @@ def build_mlp_model(net_spec):
     }
     '''
     check_net_spec(net_spec)
-    in_shape, layers, batch_norm, activation, out_activation, init_fn = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'init_fn'])
+    in_shape, out_shape, layers, batch_norm, activation, out_activation, init_fn = ps.at(net_spec, *['in_shape', 'out_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'init_fn'])
 
     nn_layers = []
+    # if out_shape is specified for a full network, copy layers and append out_shape to iterate
+    layers = layers + [out_shape] if out_shape else layers
     for idx, out_shape in enumerate(layers):
         nn_layers.append(nn.Linear(in_shape, out_shape))
         if batch_norm:
@@ -190,6 +193,7 @@ for nn_layer, layer_name in zip(mlp_model, layer_names):
 net_spec = {
     "type": "mlp",
     "in_shape": 4,
+    "out_shape": 2,
     "layers": [64, 64],
     "batch_norm": True,
     "activation": "relu",
@@ -197,8 +201,8 @@ net_spec = {
     "init_fn": "orthogonal_",
 }
 mlp_model = build_mlp_model(net_spec)
-assert net_spec['out_shape'] == net_spec['layers'][-1]
-layer_names = ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'Sigmoid']
+assert net_spec['out_shape'] == net_spec['out_shape']
+layer_names = ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'Sigmoid']
 for nn_layer, layer_name in zip(mlp_model, layer_names):
     assert nn_layer._get_name() == layer_name
 
