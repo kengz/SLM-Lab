@@ -145,13 +145,14 @@ def build_mlp_model(net_spec):
     in_shape, out_shape, layers, batch_norm, activation, out_activation, init_fn = ps.at(net_spec, *['in_shape', 'out_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'init_fn'])
 
     nn_layers = []
-    # if out_shape is specified for a full network, copy layers and append out_shape to iterate
+    # if out_shape is specified in net_spec (a full network), copy layers and append out_shape to iterate
     layers = layers + [out_shape] if out_shape else layers
     for idx, out_shape in enumerate(layers):
+        is_last_layer = (idx == (len(layers) - 1))
         nn_layers.append(nn.Linear(in_shape, out_shape))
-        if batch_norm:
+        if batch_norm and not is_last_layer:
             nn_layers.append(nn.BatchNorm1d(out_shape))
-        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == len(layers) - 1)))
+        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
         in_shape = out_shape  # update in_shape
         net_spec['out_shape'] = out_shape
     nn_layers = ps.compact(nn_layers)  # remove None
@@ -202,7 +203,7 @@ net_spec = {
 }
 mlp_model = build_mlp_model(net_spec)
 assert net_spec['out_shape'] == net_spec['out_shape']
-layer_names = ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'Sigmoid']
+layer_names = ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'Sigmoid']
 for nn_layer, layer_name in zip(mlp_model, layer_names):
     assert nn_layer._get_name() == layer_name
 
@@ -210,6 +211,8 @@ for nn_layer, layer_name in zip(mlp_model, layer_names):
 def get_conv_out_shape(conv_model, in_shape):
     '''Helper to calculate the output shape of a conv model with flattened last layer given an input shape'''
     x = torch.rand(in_shape).unsqueeze(dim=0)
+    if isinstance(conv_model, list):  # if passed nn_layers, build tmp model
+        conv_model = nn.Sequential(*ps.compact(conv_model))
     y = conv_model(x).squeeze(dim=0)
     out_shape = y.shape
     if len(out_shape) == 1:
@@ -227,6 +230,7 @@ def build_conv_model(net_spec):
     net_spec = {
         "type": "conv2d",  # options: 'conv1d', 'conv2d', conv3d
         "in_shape": [3, 84, 84],  # channel, height, width
+        "out_shape": 2,  # optional: output shape if this is a full model. This must go with "flatten": True.
         "layers": [
             [32, 8, 4, 0, 1],  # out_channels, kernel_size, stride, padding, dilation
             [64, 4, 2, 0, 1],
@@ -240,7 +244,7 @@ def build_conv_model(net_spec):
     }
     '''
     check_net_spec(net_spec)
-    in_shape, layers, batch_norm, activation, out_activation, flatten, init_fn = ps.at(net_spec, *['in_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'flatten', 'init_fn'])
+    in_shape, out_shape, layers, batch_norm, activation, out_activation, flatten, init_fn = ps.at(net_spec, *['in_shape', 'out_shape', 'layers', 'batch_norm', 'activation', 'out_activation', 'flatten', 'init_fn'])
     if net_spec['type'] == 'conv1d':
         ConvClass, BNClass = nn.Conv1d, nn.BatchNorm1d
     elif net_spec['type'] == 'conv2d':
@@ -252,15 +256,26 @@ def build_conv_model(net_spec):
 
     in_c = in_shape[0]  # PyTorch image input shape is (c,h,w)
     nn_layers = []
+    layers = layers + [out_shape] if out_shape else layers
     for idx, layer in enumerate(layers):
-        out_c = layer[0]
-        nn_layers.append(ConvClass(in_c, *layer))
-        if batch_norm:
-            nn_layers.append(BNClass(out_c))
-        nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=(idx == len(layers) - 1)))
-        in_c = out_c  # update
-    if flatten:
-        nn_layers.append(nn.Flatten())  # flatten the last layer if needed
+        is_last_layer = (idx == (len(layers) - 1))
+        if isinstance(layer, list):
+            out_c = layer[0]
+            nn_layers.append(ConvClass(in_c, *layer))
+            if batch_norm:
+                nn_layers.append(BNClass(out_c))
+            nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
+            in_c = out_c  # update
+            if is_last_layer and (not out_shape) and flatten:
+                nn_layers.append(nn.Flatten())
+        else:  # if specified net_spec['out_shape] for output
+            assert is_last_layer and out_shape and flatten
+            # flatten conv model and get conv_out_shape
+            nn_layers.append(nn.Flatten())
+            conv_out_shape = get_conv_out_shape(nn_layers, in_shape)
+            # add the mlp output layer if specified in net_spec
+            nn_layers.append(nn.Linear(conv_out_shape, out_shape))
+            nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
     nn_layers = ps.compact(nn_layers)  # remove None
     conv_model = nn.Sequential(*nn_layers)
     net_spec['out_shape'] = get_conv_out_shape(conv_model, in_shape)
@@ -323,6 +338,26 @@ layer_names = ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'Sigmoi
 for nn_layer, layer_name in zip(conv_model, layer_names):
     assert nn_layer._get_name() == layer_name
 
+# TODO rename to flatten_conv
+net_spec = {
+    "type": "conv1d",
+    "in_shape": [3, 20],
+    "out_shape": 2,
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "batch_norm": True,
+    "activation": "relu",
+    "out_activation": "sigmoid",
+    "flatten": True,
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+assert isinstance(net_spec['out_shape'], int)
+layer_names = ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'ReLU', 'Flatten', 'Linear', 'Sigmoid']
+for nn_layer, layer_name in zip(conv_model, layer_names):
+    assert nn_layer._get_name() == layer_name
 
 net_spec = {
     "type": "conv2d",
