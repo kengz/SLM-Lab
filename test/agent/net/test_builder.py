@@ -271,3 +271,72 @@ def test_build_conv_model_3d(net_spec, layer_names, y_shape, out_shape):
     y = conv_model(x)
     assert list(y.shape) == y_shape
     assert net_spec['out_shape'] == out_shape
+
+
+# @pytest.mark.parametrize('cell_type', ['rnn', 'gru', 'lstm'])
+@pytest.mark.parametrize('net_spec,y_shape,out_shape', [
+    (
+        {  # basic
+            "type": "cell_type",
+            "in_shape": 3,
+            "layers": [64, 64],
+            "bidirectional": False,
+            "init_fn": "orthogonal_",
+        },
+        [8, 10, 1 * 64],  # [batch, seq_len, num_dir * hidden_size],
+        1 * 64,  # num_dir * hidden_size
+    ), (
+        {  # bidirectional
+            "type": "cell_type",
+            "in_shape": 3,
+            "layers": [64, 64],
+            "bidirectional": True,
+            "init_fn": "orthogonal_",
+        },
+        [8, 10, 2 * 64],  # [batch, seq_len, num_dir * hidden_size],
+        2 * 64,  # num_dir * hidden_size
+    ), (
+        {  # out_shape and out_activation
+            "type": "cell_type",
+            "in_shape": 3,
+            "out_shape": 2,
+            "layers": [64, 64],
+            "bidirectional": False,
+            "out_activation": "sigmoid",
+            "init_fn": "orthogonal_",
+        },
+        [8, 2],  # out_shape specified
+        2,  # this is of y.shape since out_shape is intended
+    ), (
+        {  # out_shape and out_activation and bidirectional
+            "type": "cell_type",
+            "in_shape": 3,
+            "out_shape": 2,
+            "layers": [64, 64],
+            "bidirectional": True,
+            "out_activation": "sigmoid",
+            "init_fn": "orthogonal_",
+        },
+        [8, 2],  # out_shape specified
+        2,  # this is of y.shape since out_shape is intended
+    ),
+])
+@pytest.mark.parametrize('cell_type', ['rnn', 'gru', 'lstm'])
+def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
+    net_spec = net_spec.copy()
+    net_spec['type'] = cell_type
+    recurrent_model = builder.Recurrent(net_spec)
+    num_dir = 2 if net_spec['bidirectional'] else 1
+    hidden_size = net_spec['layers'][0]
+    batch = 8
+    seq_len = 10
+    x = torch.rand([batch, seq_len, net_spec['in_shape']])
+    y, last_h_n = recurrent_model(x)
+    assert list(y.shape) == y_shape
+    assert list(last_h_n.shape) == [num_dir, batch, hidden_size]
+    assert net_spec['out_shape'] == out_shape
+
+    if 'out_activation' in net_spec:  # using specified out_shape and out_activation, has mlp and flattened
+        assert recurrent_model.recurrent_model._get_name() == cell_type.upper()
+        for nn_layer, layer_name in zip(recurrent_model.mlp_model, ['Linear', 'Sigmoid']):
+            assert nn_layer._get_name() == layer_name
