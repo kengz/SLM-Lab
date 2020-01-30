@@ -5,7 +5,7 @@ import torch
 
 @pytest.mark.parametrize('net_spec,layer_names,out_shape', [
     (
-        {
+        {  # basic
             "type": "mlp",
             "in_shape": 4,
             "layers": [64, 64],
@@ -15,7 +15,7 @@ import torch
         ['Linear', 'ReLU', 'Linear', 'ReLU'],
         64
     ), (
-        {
+        {  # out_activation
             "type": "mlp",
             "in_shape": 4,
             "layers": [64, 64],
@@ -26,7 +26,7 @@ import torch
         ['Linear', 'ReLU', 'Linear'],
         64
     ), (
-        {
+        {  # out_shape, out_activation, batch_norm
             "type": "mlp",
             "in_shape": 4,
             "out_shape": 2,
@@ -80,7 +80,7 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
         ['Conv1d', 'ReLU', 'Conv1d', 'ReLU', 'Flatten'],
         [8, 96], 96
     ), (
-        {  # batch norm and out activation
+        {  # batch_norm and out_activation
             "type": "conv1d",
             "in_shape": [3, 20],
             "layers": [
@@ -96,7 +96,7 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
         ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'Sigmoid', 'Flatten'],
         [8, 96], 96
     ), (
-        {  # with out_shape and flattened
+        {  # out_shape and flattened
             "type": "conv1d",
             "in_shape": [3, 20],
             "out_shape": 2,
@@ -123,6 +123,7 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
     y = conv_model(x)
     assert list(y.shape) == y_shape
     assert net_spec['out_shape'] == out_shape
+
 
 @pytest.mark.parametrize('net_spec,layer_names,y_shape,out_shape', [
     (
@@ -153,7 +154,7 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
         ['Conv2d', 'ReLU', 'Conv2d', 'ReLU', 'Flatten'],
         [8, 576], 576
     ), (
-        {  # batch norm and out activation
+        {  # batch_norm and out_activation
             "type": "conv2d",
             "in_shape": [3, 20, 20],
             "layers": [
@@ -169,7 +170,7 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
         ['Conv2d', 'BatchNorm2d', 'ReLU', 'Conv2d', 'BatchNorm2d', 'Sigmoid', 'Flatten'],
         [8, 576], 576
     ), (
-        {  # with out_shape and flattened
+        {  # out_shape and flattened
             "type": "conv2d",
             "in_shape": [3, 20, 20],
             "out_shape": 2,
@@ -227,7 +228,7 @@ def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
         ['Conv3d', 'ReLU', 'Conv3d', 'ReLU', 'Flatten'],
         [8, 3456], 3456
     ), (
-        {  # batch norm and out activation
+        {  # batch_norm and out_activation
             "type": "conv3d",
             "in_shape": [3, 20, 20, 20],
             "layers": [
@@ -243,7 +244,7 @@ def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
         ['Conv3d', 'BatchNorm3d', 'ReLU', 'Conv3d', 'BatchNorm3d', 'Sigmoid', 'Flatten'],
         [8, 3456], 3456
     ), (
-        {  # with out_shape and flattened
+        {  # out_shape and flattened
             "type": "conv3d",
             "in_shape": [3, 20, 20, 20],
             "out_shape": 2,
