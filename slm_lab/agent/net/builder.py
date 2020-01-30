@@ -294,25 +294,6 @@ class FiLM(nn.Module):
         return x
 
 
-# an example vector and a 5D conditioning vector
-feat = torch.rand(10).unsqueeze(dim=0)
-cond = torch.rand(5).unsqueeze(dim=0)
-num_feat = feat.shape[1]
-num_cond = cond.shape[1]
-film = FiLM(num_feat, num_cond)
-x = film(feat, cond)
-assert x.shape == feat.shape
-
-# an example image and a 5D conditioning vector
-feat = torch.rand(3, 10, 10).unsqueeze(dim=0)
-cond = torch.rand(5).unsqueeze(dim=0)
-num_feat = feat.shape[1]
-num_cond = cond.shape[1]
-film = FiLM(num_feat, num_cond)
-x = film(feat, cond)
-assert x.shape == feat.shape
-
-
 class Concat(nn.Module):
     '''Flatten all input tensors and concatenate them'''
 
@@ -320,22 +301,71 @@ class Concat(nn.Module):
         return torch.cat([t.flatten(start_dim=1) for t in tensors], dim=-1)
 
 
-# any tensors: vectors
-t1 = torch.rand(10).unsqueeze(dim=0)
-t2 = torch.rand(5).unsqueeze(dim=0)
-t3 = torch.rand(2).unsqueeze(dim=0)
+# TODO transformer
+# TODO generic and Hydra network builder
+# test case: one network
+# test case: hydra network
+
+# def build_model(net_spec):
+
+net_spec = {
+    "type": "mlp",
+    "in_shape": 4,
+    "layers": [64, 64],
+    "activation": "relu",
+    "init_fn": "orthogonal_",
+}
+mlp_model = build_mlp_model(net_spec)
+
+net_spec = {
+    "type": "conv2d",
+    "in_shape": [3, 20, 20],
+    "layers": [
+        [16, 4, 2, 0, 1],
+        [16, 4, 1, 0, 1]
+    ],
+    "activation": "relu",
+    "flatten": True,
+    "init_fn": "orthogonal_",
+}
+conv_model = build_conv_model(net_spec)
+
+net_spec = {
+    "type": "gru",
+    "in_shape": 3,
+    "layers": [64, 64],
+    "bidirectional": False,
+    "init_fn": "orthogonal_",
+}
+recurrent_model = Recurrent(net_spec)
+# options: 'rnn', 'lstm', 'gru'
+
+# Body operations
+feat = torch.rand(10).unsqueeze(dim=0)
+cond = torch.rand(5).unsqueeze(dim=0)
+num_feat = feat.shape[1]
+num_cond = cond.shape[1]
+film = FiLM(num_feat, num_cond)
+x = film(feat, cond)
+
 concat = Concat()
 x = concat(t1, t2, t3)
-assert x.dim() == 2
-assert x.shape[1] == t1.shape[1] + t2.shape[1] + t3.shape[1]
 
-# any tensors: an image and a vector
-t1 = torch.rand(3, 10, 10).unsqueeze(dim=0)
-t2 = torch.rand(5).unsqueeze(dim=0)
-concat = Concat()
-x = concat(t1, t2)
-assert x.dim() == 2
-assert x.shape[1] == 305
+net_spec = {
+    "type": "gru",
+    "in_shape": 3,
+    "layers": [64, 64],
+    "bidirectional": False,
+    "init_fn": "orthogonal_",
+}
+
+# TODO add 'out_shape' key and build a full network
+# TODO in_shape to out_shape directly for tails. maybe use _in_shape and _out_shape. or just infer no need to keep double keys
+# NOTE entire spec only has one level with in_shape and out_shape. Everything in between is inferred
+
+
+def build_hydra(net_spec):
+    pass
 
 
 net_spec = {

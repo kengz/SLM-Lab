@@ -340,3 +340,38 @@ def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
         assert recurrent_model.recurrent_model._get_name() == cell_type.upper()
         for nn_layer, layer_name in zip(recurrent_model.mlp_model, ['Linear', 'Sigmoid']):
             assert nn_layer._get_name() == layer_name
+
+
+@pytest.mark.parametrize('feat,cond', [
+    # an example vector and a 5D conditioning vector
+    (torch.rand(8, 10), torch.rand(8, 5)),
+    # an example image and a 5D conditioning vector
+    (torch.rand(8, 3, 10, 10), torch.rand(8, 5)),
+])
+def test_film(feat, cond):
+    num_feat = feat.shape[1]
+    num_cond = cond.shape[1]
+    film = builder.FiLM(num_feat, num_cond)
+    x = film(feat, cond)
+    assert x.shape == feat.shape
+
+
+def test_concat_vectors():
+    # any tensors: vectors
+    t1 = torch.rand(10).unsqueeze(dim=0)
+    t2 = torch.rand(5).unsqueeze(dim=0)
+    t3 = torch.rand(2).unsqueeze(dim=0)
+    concat = builder.Concat()
+    x = concat(t1, t2, t3)
+    assert x.dim() == 2
+    assert x.shape[1] == t1.shape[1] + t2.shape[1] + t3.shape[1]
+
+
+def test_concat_image_and_vector():
+    # any tensors: an image and a vector
+    t1 = torch.rand(3, 10, 10).unsqueeze(dim=0)
+    t2 = torch.rand(5).unsqueeze(dim=0)
+    concat = builder.Concat()
+    x = concat(t1, t2)
+    assert x.dim() == 2
+    assert x.shape[1] == 305
