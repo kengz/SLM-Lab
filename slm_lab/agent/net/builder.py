@@ -277,6 +277,10 @@ class FiLM(nn.Module):
     '''
 
     def __init__(self, num_feat, num_cond):
+        '''
+        @param int:num_feat Number of featues, which is usually the size of a feature vector or the number of channels of an image
+        @param int:num_cond Number of conditioner dimension, which is the size of a conditioner vector
+        '''
         # conditioner params with output shape matching num_feat, and
         # num_feat = feat.shape[1]
         # num_cond = cond.shape[1]
