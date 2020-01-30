@@ -221,7 +221,8 @@ class Recurrent(nn.Module):
         self.recurrent_model = getattr(nn, get_nn_name(net_spec['type']))(
             input_size=in_shape, hidden_size=hidden_size, num_layers=len(layers),
             batch_first=True, bidirectional=bidirectional)
-        # if no out_shape is specified in net_spec, out_shape is the last dim (num_dir * hidden_size) of last_h_n (1, batch, num_dir * hidden_size)
+        # y.shape = (batch, seq_len, num_dir * hidden_size)
+        # out_shape is of y without batch and varying seq_len, i.e. y.shape[-1]
         net_spec['out_shape'] = num_dir * hidden_size
 
         if init_fn:  # initialize weights if specified
@@ -239,33 +240,37 @@ class Recurrent(nn.Module):
             if init_fn:  # initialize weights if specified
                 init_weights = get_init_weights(init_fn)
                 recurrent_model.apply(init_weights)
+            # since y is now an mlp output, out_shape is just as specified
             net_spec['out_shape'] = out_shape  # update
 
         self.hidden_size = hidden_size
         self.num_layers = len(layers)
         self.num_dir = num_dir
 
-    def get_last_h_n(self, h_n):
-        '''Heler to get the h_n for the last rnn layer only'''
+    def get_mlp_h_n(self, h_n):
+        '''Get the h_n from the last rnn layer as flattened input for mlp'''
+        # h_n.shape = (num_layers * num_dir, batch, hidden_size)
         batch = h_n.shape[1]
         split_h_n = h_n.view(self.num_layers, self.num_dir, batch, self.hidden_size)  # split h_n
-        last_h_n = split_h_n[-1]  # get the last layer
-        return last_h_n
+        # get the last layer, concat along num_dir, so the resultant shape is (batch, num_dir * hidden_size)
+        last_h_n = split_h_n[-1]  # the last layer
+        mlp_h_n = last_h_n.view(1, batch, -1).squeeze(dim=0)  # slice along num_dir and concat
+        return mlp_h_n
 
-    def forward(self, x):
+    def forward(self, *args, **kwargs):
         '''The feedforward step. Input is batch_size x seq_len x in_shape'''
-        if self.recurrent_model._get_name() == 'LSTM':
-            y, (h_n, c_n) = self.recurrent_model(x)
-        else:
-            y, h_n = self.recurrent_model(x)
-        # y.shape = (batch, seq_len, num_directions * hidden_size)
-        # h_n.shape = (num_layers * num_directions, batch, hidden_size)
-        # last_h_n.shape = (num_directions, batch, hidden_size)
-        last_h_n = self.get_last_h_n(h_n)
+        # y.shape = (batch, seq_len, num_dir * hidden_size)
+        # h_n.shape = (num_layers * num_dir, batch, hidden_size)
+        y, h_out = self.recurrent_model(*args, **kwargs)
         if hasattr(self, 'mlp_model'):
-            mlp_x = last_h_n.view(1, h_n.shape[1], -1)[0]  # slice along num_dir and concat
+            # resolve hidden output h_out accordingly
+            if self.recurrent_model._get_name() == 'LSTM':
+                (h_n, c_n) = h_out
+            else:
+                h_n = h_out
+            mlp_x = self.get_mlp_h_n(h_n)
             y = self.mlp_model(mlp_x)
-        return y, last_h_n
+        return y, h_out
 
 
 class FiLM(nn.Module):
@@ -353,7 +358,6 @@ film = FiLM(num_feat, num_cond)
 x = film(feat, cond)
 
 concat = Concat()
-x = concat(t1, t2, t3)
 
 net_spec = {
     "type": "gru",
