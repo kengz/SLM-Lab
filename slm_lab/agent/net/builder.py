@@ -7,52 +7,6 @@ import torch.nn.functional as F
 
 # TODO rebuild dependencies too
 
-# general net spec, can be composed from programs
-net_spec = {
-    "#heads": {
-        "image": {
-            "type": "conv2d",
-            "layers": [
-                [32, 8, 4, 0, 1],
-                [64, 4, 2, 0, 1],
-                [32, 3, 1, 0, 1]
-            ],
-            "activation": "relu",
-            "batch_norm": None,
-            "init_fn": "orthogonal_",
-        },
-        "gyro": {
-            "type": "mlp",
-            "layers": [64, 64],
-            "activation": "relu",
-            "batch_norm": None,
-            "init_fn": "orthogonal_",
-        },
-    },
-    "#body": {  # this is special since it contains a models op
-        "join": "film",  # or concat
-        "type": "mlp",
-        "layers": [],
-        "activation": "relu",
-        "init_fn": "orthogonal_",
-    },
-    "#tails": {
-        "v": {
-            "type": "mlp",
-            "layers": [],
-            "activation": "relu",
-            "out_activation": None,
-            # TODO out_layer activation
-        },
-        "pi": {
-            "type": "mlp",
-            "layers": [],
-            "activation": "relu",
-            "out_activation": None,
-        }
-    }
-}
-
 
 def get_nn_name(uncased_name):
     '''Helper to get the proper name in PyTorch nn given a case-insensitive name'''
@@ -164,50 +118,6 @@ def build_mlp_model(net_spec):
     return mlp_model
 
 
-net_spec = {
-    "type": "mlp",
-    "in_shape": 4,
-    "layers": [64, 64],
-    "activation": "relu",
-    "init_fn": "orthogonal_",
-}
-mlp_model = build_mlp_model(net_spec)
-assert net_spec['out_shape'] == net_spec['layers'][-1]
-layer_names = ['Linear', 'ReLU', 'Linear', 'ReLU']
-for nn_layer, layer_name in zip(mlp_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "mlp",
-    "in_shape": 4,
-    "layers": [64, 64],
-    "activation": "relu",
-    "out_activation": None,
-    "init_fn": "orthogonal_",
-}
-mlp_model = build_mlp_model(net_spec)
-assert net_spec['out_shape'] == net_spec['layers'][-1]
-layer_names = ['Linear', 'ReLU', 'Linear']
-for nn_layer, layer_name in zip(mlp_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "mlp",
-    "in_shape": 4,
-    "out_shape": 2,
-    "layers": [64, 64],
-    "batch_norm": True,
-    "activation": "relu",
-    "out_activation": "sigmoid",
-    "init_fn": "orthogonal_",
-}
-mlp_model = build_mlp_model(net_spec)
-assert net_spec['out_shape'] == net_spec['out_shape']
-layer_names = ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'Sigmoid']
-for nn_layer, layer_name in zip(mlp_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-
 def get_conv_out_shape(conv_model, in_shape):
     '''Helper to calculate the output shape of a conv model with flattened last layer given an input shape'''
     x = torch.rand(in_shape).unsqueeze(dim=0)
@@ -284,151 +194,6 @@ def build_conv_model(net_spec):
         init_weights = get_init_weights(init_fn, activation)
         conv_model.apply(init_weights)
     return conv_model
-
-
-net_spec = {
-    "type": "conv1d",
-    "in_shape": [3, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "activation": "relu",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], list)
-layer_names = ['Conv1d', 'ReLU', 'Conv1d', 'ReLU']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv1d",
-    "in_shape": [3, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "activation": "relu",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv1d', 'ReLU', 'Conv1d', 'ReLU', 'Flatten']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv1d",
-    "in_shape": [3, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "batch_norm": True,
-    "activation": "relu",
-    "out_activation": "sigmoid",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'Sigmoid', 'Flatten']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv1d",
-    "in_shape": [3, 20],
-    "out_shape": 2,
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "batch_norm": True,
-    "activation": "relu",
-    "out_activation": "sigmoid",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'ReLU', 'Flatten', 'Linear', 'Sigmoid']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv2d",
-    "in_shape": [3, 20, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "activation": "relu",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv2d', 'ReLU', 'Conv2d', 'ReLU', 'Flatten']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv2d",
-    "in_shape": [3, 20, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "batch_norm": True,
-    "activation": "relu",
-    "out_activation": "sigmoid",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv2d', 'BatchNorm2d', 'ReLU', 'Conv2d', 'BatchNorm2d', 'Sigmoid', 'Flatten']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv3d",
-    "in_shape": [3, 20, 20, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "activation": "relu",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv3d', 'ReLU', 'Conv3d', 'ReLU', 'Flatten']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
-
-net_spec = {
-    "type": "conv3d",
-    "in_shape": [3, 20, 20, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "flatten_out": True,
-    "batch_norm": True,
-    "activation": "relu",
-    "out_activation": "sigmoid",
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-assert isinstance(net_spec['out_shape'], int)
-layer_names = ['Conv3d', 'BatchNorm3d', 'ReLU', 'Conv3d', 'BatchNorm3d', 'Sigmoid', 'Flatten']
-for nn_layer, layer_name in zip(conv_model, layer_names):
-    assert nn_layer._get_name() == layer_name
 
 
 class Recurrent(nn.Module):
@@ -669,3 +434,62 @@ concat = Concat()
 x = concat(t1, t2)
 assert x.dim() == 2
 assert x.shape[1] == 305
+
+
+net_spec = {
+    "heads": {
+        "image": {
+            "type": "conv2d",
+            "in_shape": [3, 20, 20],
+            "layers": [
+                [16, 4, 2, 0, 1],
+                [16, 4, 1, 0, 1]
+            ],
+            "flatten_out": True,
+            "batch_norm": True,
+            "activation": "relu",
+            "init_fn": "orthogonal_",
+        },
+        "gyro": {
+            "type": "mlp",
+            "in_shape": 4,
+            "layers": None,
+            "batch_norm": False,
+            "activation": "relu",
+            "init_fn": "orthogonal_",
+        },
+    },
+    "body": {  # this is special since it contains a models op
+        # TODO specify feat and cond
+        # TODO connect to a body model too
+        "join": {
+            "type": "film",  # or concat
+            "feat": "image",
+            "cond": "gyro",
+            # TODO auto-infer from out_shape for net_spec, so constructor has to operate on the full net_spec and be stateful
+        },
+        "type": "mlp",
+        # "in_shape": 4,
+        "layers": [256, 256],
+        "activation": "relu",
+        "init_fn": "orthogonal_",
+    },
+    "tails": {
+        "v": {
+            "type": "mlp",
+            # "in_shape": 4,
+            "out_shape": 1,
+            "layers": None,
+            "out_activation": None,
+            "init_fn": "orthogonal_",
+        },
+        "pi": {
+            "type": "mlp",
+            # "in_shape": 4,
+            "out_shape": 4,
+            "layers": None,
+            "out_activation": None,
+            "init_fn": "orthogonal_",
+        }
+    }
+}
