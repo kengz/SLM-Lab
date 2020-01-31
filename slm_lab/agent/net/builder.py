@@ -131,10 +131,7 @@ def get_conv_out_shape(conv_model, in_shape):
         conv_model = nn.Sequential(*ps.compact(conv_model))
     y = conv_model(x).squeeze(dim=0)
     out_shape = y.shape
-    if len(out_shape) == 1:
-        return out_shape[0]
-    else:
-        return list(out_shape)
+    return list(out_shape)
 
 
 def build_conv_model(net_spec):
@@ -146,7 +143,7 @@ def build_conv_model(net_spec):
     net_spec = {
         "type": "conv2d",  # options: 'conv1d', 'conv2d', conv3d
         "in_shape": [3, 84, 84],  # channel, height, width
-        "out_shape": 2,  # optional: output shape if this is a full model. This must go with "flatten_out": True.
+        "out_shape": [2],  # optional: output shape if this is a full model. This must go with "flatten_out": True.
         "layers": [
             [32, 8, 4, 0, 1],  # out_channels, kernel_size, stride, padding, dilation
             [64, 4, 2, 0, 1],
@@ -172,7 +169,7 @@ def build_conv_model(net_spec):
 
     in_c = in_shape[0]  # PyTorch image input shape is (c,h,w)
     nn_layers = []
-    layers = layers + [out_shape] if out_shape else layers
+    layers = layers + out_shape if out_shape else layers
     for idx, layer in enumerate(layers):
         is_last_layer = (idx == (len(layers) - 1))
         if isinstance(layer, list):
@@ -189,8 +186,9 @@ def build_conv_model(net_spec):
             # flatten conv model and get conv_out_shape
             nn_layers.append(nn.Flatten())
             conv_out_shape = get_conv_out_shape(nn_layers, in_shape)
+            assert len(conv_out_shape) == 1 and len(out_shape) == 1
             # add the mlp output layer if specified in net_spec
-            nn_layers.append(nn.Linear(conv_out_shape, out_shape))
+            nn_layers.append(nn.Linear(conv_out_shape[0], out_shape[0]))
             nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
     nn_layers = ps.compact(nn_layers)  # remove None
     conv_model = nn.Sequential(*nn_layers)

@@ -102,7 +102,7 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv1d', 'ReLU', 'Conv1d', 'ReLU', 'Flatten'],
-        [8, 96], 96
+        [8, 96], [96]
     ), (
         {  # batch_norm and out_activation
             "type": "conv1d",
@@ -118,12 +118,12 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'Sigmoid', 'Flatten'],
-        [8, 96], 96
+        [8, 96], [96]
     ), (
         {  # out_shape and flattened
             "type": "conv1d",
             "in_shape": [3, 20],
-            "out_shape": 2,
+            "out_shape": [2],
             "layers": [
                 [16, 4, 2, 0, 1],
                 [16, 4, 1, 0, 1]
@@ -135,7 +135,7 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv1d', 'BatchNorm1d', 'ReLU', 'Conv1d', 'BatchNorm1d', 'ReLU', 'Flatten', 'Linear', 'Sigmoid'],
-        [8, 2], 2
+        [8, 2], [2]
     ),
 ])
 def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
@@ -180,7 +180,7 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv2d', 'ReLU', 'Conv2d', 'ReLU', 'Flatten'],
-        [8, 576], 576
+        [8, 576], [576]
     ), (
         {  # batch_norm and out_activation
             "type": "conv2d",
@@ -196,12 +196,12 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv2d', 'BatchNorm2d', 'ReLU', 'Conv2d', 'BatchNorm2d', 'Sigmoid', 'Flatten'],
-        [8, 576], 576
+        [8, 576], [576]
     ), (
         {  # out_shape and flattened
             "type": "conv2d",
             "in_shape": [3, 20, 20],
-            "out_shape": 2,
+            "out_shape": [2],
             "layers": [
                 [16, 4, 2, 0, 1],
                 [16, 4, 1, 0, 1]
@@ -213,7 +213,7 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv2d', 'BatchNorm2d', 'ReLU', 'Conv2d', 'BatchNorm2d', 'ReLU', 'Flatten', 'Linear', 'Sigmoid'],
-        [8, 2], 2
+        [8, 2], [2]
     ),
 ])
 def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
@@ -258,7 +258,7 @@ def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv3d', 'ReLU', 'Conv3d', 'ReLU', 'Flatten'],
-        [8, 3456], 3456
+        [8, 3456], [3456]
     ), (
         {  # batch_norm and out_activation
             "type": "conv3d",
@@ -274,12 +274,12 @@ def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv3d', 'BatchNorm3d', 'ReLU', 'Conv3d', 'BatchNorm3d', 'Sigmoid', 'Flatten'],
-        [8, 3456], 3456
+        [8, 3456], [3456]
     ), (
         {  # out_shape and flattened
             "type": "conv3d",
             "in_shape": [3, 20, 20, 20],
-            "out_shape": 2,
+            "out_shape": [2],
             "layers": [
                 [16, 4, 2, 0, 1],
                 [16, 4, 1, 0, 1]
@@ -291,7 +291,7 @@ def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
             "init_fn": "orthogonal_",
         },
         ['Conv3d', 'BatchNorm3d', 'ReLU', 'Conv3d', 'BatchNorm3d', 'ReLU', 'Flatten', 'Linear', 'Sigmoid'],
-        [8, 2], 2
+        [8, 2], [2]
     ),
 ])
 def test_build_conv_model_3d(net_spec, layer_names, y_shape, out_shape):
