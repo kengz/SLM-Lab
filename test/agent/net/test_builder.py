@@ -64,11 +64,15 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
     mlp_model = builder.build_mlp_model(net_spec)
     for nn_layer, layer_name in zip(mlp_model, layer_names):
         assert nn_layer._get_name() == layer_name
+    # second call for idempotent test
+    rebuild_mlp_model = builder.build_mlp_model(net_spec)
+    for m1, m2 in zip(mlp_model, rebuild_mlp_model):
+        assert m1._get_name() == m2._get_name()
     batch = 8
     x = torch.rand([batch, net_spec['in_shape']])
     y = mlp_model(x)
-    assert list(y.shape) == [batch, net_spec['out_shape']]
-    assert net_spec['out_shape'] == out_shape
+    assert list(y.shape) == [batch, net_spec['_out_shape']]
+    assert net_spec['_out_shape'] == out_shape
 
 
 @pytest.mark.parametrize('net_spec,layer_names,y_shape,out_shape', [
@@ -138,11 +142,15 @@ def test_build_conv_model_1d(net_spec, layer_names, y_shape, out_shape):
     conv_model = builder.build_conv_model(net_spec)
     for nn_layer, layer_name in zip(conv_model, layer_names):
         assert nn_layer._get_name() == layer_name
+    # second call for idempotent test
+    rebuild_conv_model = builder.build_conv_model(net_spec)
+    for m1, m2 in zip(conv_model, rebuild_conv_model):
+        assert m1._get_name() == m2._get_name()
     batch = 8
     x = torch.rand([batch, *net_spec['in_shape']])
     y = conv_model(x)
     assert list(y.shape) == y_shape
-    assert net_spec['out_shape'] == out_shape
+    assert net_spec['_out_shape'] == out_shape
 
 
 @pytest.mark.parametrize('net_spec,layer_names,y_shape,out_shape', [
@@ -212,11 +220,15 @@ def test_build_conv_model_2d(net_spec, layer_names, y_shape, out_shape):
     conv_model = builder.build_conv_model(net_spec)
     for nn_layer, layer_name in zip(conv_model, layer_names):
         assert nn_layer._get_name() == layer_name
+    # second call for idempotent test
+    rebuild_conv_model = builder.build_conv_model(net_spec)
+    for m1, m2 in zip(conv_model, rebuild_conv_model):
+        assert m1._get_name() == m2._get_name()
     batch = 8
     x = torch.rand([batch, *net_spec['in_shape']])
     y = conv_model(x)
     assert list(y.shape) == y_shape
-    assert net_spec['out_shape'] == out_shape
+    assert net_spec['_out_shape'] == out_shape
 
 
 @pytest.mark.parametrize('net_spec,layer_names,y_shape,out_shape', [
@@ -286,11 +298,15 @@ def test_build_conv_model_3d(net_spec, layer_names, y_shape, out_shape):
     conv_model = builder.build_conv_model(net_spec)
     for nn_layer, layer_name in zip(conv_model, layer_names):
         assert nn_layer._get_name() == layer_name
+    # second call for idempotent test
+    rebuild_conv_model = builder.build_conv_model(net_spec)
+    for m1, m2 in zip(conv_model, rebuild_conv_model):
+        assert m1._get_name() == m2._get_name()
     batch = 8
     x = torch.rand([batch, *net_spec['in_shape']])
     y = conv_model(x)
     assert list(y.shape) == y_shape
-    assert net_spec['out_shape'] == out_shape
+    assert net_spec['_out_shape'] == out_shape
 
 
 # @pytest.mark.parametrize('cell_type', ['rnn', 'gru', 'lstm'])
@@ -346,6 +362,10 @@ def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
     net_spec = net_spec.copy()
     net_spec['type'] = cell_type
     recurrent_model = builder.build_recurrent_model(net_spec)
+    # second call for idempotent test
+    rebuild_recurrent_model = builder.build_recurrent_model(net_spec)
+    for m1, m2 in zip(recurrent_model.modules(), rebuild_recurrent_model.modules()):
+        assert m1._get_name() == m2._get_name()
     num_dir = 2 if net_spec['bidirectional'] else 1
     hidden_size = net_spec['layers'][0]
     batch = 8
@@ -356,7 +376,7 @@ def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
     next_y, next_h_out = recurrent_model(x, h_out)
     assert list(y.shape) == y_shape
     assert y.shape[-1] == out_shape
-    assert net_spec['out_shape'] == out_shape
+    assert net_spec['_out_shape'] == out_shape
 
     if 'out_activation' in net_spec:  # using specified out_shape and out_activation, has mlp and flattened
         assert recurrent_model.recurrent_model._get_name() == cell_type.upper()

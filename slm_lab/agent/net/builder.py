@@ -104,7 +104,7 @@ def build_mlp_model(net_spec):
 
     if len(layers) == 0:  # if empty, use Identity and below won't iterate
         nn_layers.append(nn.Identity())
-        net_spec['out_shape'] = in_shape
+        net_spec['_out_shape'] = in_shape  # set new attribute from builder
 
     for idx, out_shape in enumerate(layers):
         is_last_layer = (idx == (len(layers) - 1))
@@ -113,7 +113,7 @@ def build_mlp_model(net_spec):
             nn_layers.append(nn.BatchNorm1d(out_shape))
         nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
         in_shape = out_shape  # update in_shape
-        net_spec['out_shape'] = out_shape
+        net_spec['_out_shape'] = out_shape  # set new attribute from builder
     nn_layers = ps.compact(nn_layers)  # remove None
     mlp_model = nn.Sequential(*nn_layers)
 
@@ -193,7 +193,7 @@ def build_conv_model(net_spec):
             nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
     nn_layers = ps.compact(nn_layers)  # remove None
     conv_model = nn.Sequential(*nn_layers)
-    net_spec['out_shape'] = get_conv_out_shape(conv_model, in_shape)
+    net_spec['_out_shape'] = get_conv_out_shape(conv_model, in_shape)
 
     if init_fn:  # initialize weights if specified
         init_weights = get_init_weights(init_fn, activation)
@@ -228,7 +228,7 @@ class Recurrent(nn.Module):
             batch_first=True, bidirectional=bidirectional)
         # y.shape = (batch, seq_len, num_dir * hidden_size)
         # out_shape is of y without batch and varying seq_len, i.e. y.shape[-1]
-        net_spec['out_shape'] = num_dir * hidden_size
+        net_spec['_out_shape'] = num_dir * hidden_size  # set new attribute from builder
 
         if init_fn:  # initialize weights if specified
             init_weights = get_init_weights(init_fn)
@@ -246,7 +246,7 @@ class Recurrent(nn.Module):
                 init_weights = get_init_weights(init_fn)
                 self.recurrent_model.apply(init_weights)
             # since y is now an mlp output, out_shape is just as specified
-            net_spec['out_shape'] = out_shape  # update
+            net_spec['_out_shape'] = out_shape  # set new attribute from builder
 
         self.hidden_size = hidden_size
         self.num_layers = len(layers)
@@ -343,7 +343,7 @@ net_spec = {
         "gyro": {
             "type": "mlp",
             "in_shape": 4,
-            "layers": None,
+            "layers": [],
             "batch_norm": False,
             "activation": "relu",
             "init_fn": "orthogonal_",
@@ -369,7 +369,7 @@ net_spec = {
             "type": "mlp",
             # "in_shape": 4,
             "out_shape": 1,
-            "layers": None,
+            "layers": [],
             "out_activation": None,
             "init_fn": "orthogonal_",
         },
@@ -377,7 +377,7 @@ net_spec = {
             "type": "mlp",
             # "in_shape": 4,
             "out_shape": 4,
-            "layers": None,
+            "layers": [],
             "out_activation": None,
             "init_fn": "orthogonal_",
         }
