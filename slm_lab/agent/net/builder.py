@@ -101,6 +101,11 @@ def build_mlp_model(net_spec):
     nn_layers = []
     # if out_shape is specified in net_spec (a full network), copy layers and append out_shape to iterate
     layers = layers + [out_shape] if out_shape else layers
+
+    if len(layers) == 0:  # if empty, use Identity and below won't iterate
+        nn_layers.append(nn.Identity())
+        net_spec['out_shape'] = in_shape
+
     for idx, out_shape in enumerate(layers):
         is_last_layer = (idx == (len(layers) - 1))
         nn_layers.append(nn.Linear(in_shape, out_shape))
@@ -239,7 +244,7 @@ class Recurrent(nn.Module):
             self.mlp_model = nn.Sequential(*nn_layers)
             if init_fn:  # initialize weights if specified
                 init_weights = get_init_weights(init_fn)
-                recurrent_model.apply(init_weights)
+                self.recurrent_model.apply(init_weights)
             # since y is now an mlp output, out_shape is just as specified
             net_spec['out_shape'] = out_shape  # update
 
@@ -319,66 +324,6 @@ class Concat(nn.Module):
 # TODO generic and Hydra network builder
 # test case: one network
 # test case: hydra network
-
-# def build_model(net_spec):
-
-net_spec = {
-    "type": "mlp",
-    "in_shape": 4,
-    "layers": [64, 64],
-    "activation": "relu",
-    "init_fn": "orthogonal_",
-}
-mlp_model = build_mlp_model(net_spec)
-
-net_spec = {
-    "type": "conv2d",
-    "in_shape": [3, 20, 20],
-    "layers": [
-        [16, 4, 2, 0, 1],
-        [16, 4, 1, 0, 1]
-    ],
-    "activation": "relu",
-    "flatten": True,
-    "init_fn": "orthogonal_",
-}
-conv_model = build_conv_model(net_spec)
-
-net_spec = {
-    "type": "gru",
-    "in_shape": 3,
-    "layers": [64, 64],
-    "bidirectional": False,
-    "init_fn": "orthogonal_",
-}
-recurrent_model = Recurrent(net_spec)
-# options: 'rnn', 'lstm', 'gru'
-
-# Body operations
-feat = torch.rand(10).unsqueeze(dim=0)
-cond = torch.rand(5).unsqueeze(dim=0)
-num_feat = feat.shape[1]
-num_cond = cond.shape[1]
-film = FiLM(num_feat, num_cond)
-x = film(feat, cond)
-
-concat = Concat()
-
-net_spec = {
-    "type": "gru",
-    "in_shape": 3,
-    "layers": [64, 64],
-    "bidirectional": False,
-    "init_fn": "orthogonal_",
-}
-
-# TODO add 'out_shape' key and build a full network
-# TODO in_shape to out_shape directly for tails. maybe use _in_shape and _out_shape. or just infer no need to keep double keys
-# NOTE entire spec only has one level with in_shape and out_shape. Everything in between is inferred
-
-
-def build_hydra(net_spec):
-    pass
 
 
 net_spec = {

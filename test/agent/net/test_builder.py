@@ -38,6 +38,26 @@ import torch
         },
         ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'Sigmoid'],
         2
+    ), (
+        {  # no layers
+            "type": "mlp",
+            "in_shape": 4,
+            "layers": [],
+            "init_fn": "orthogonal_",
+        },
+        ['Identity'],
+        4
+    ), (
+        {  # no layers but has out_shape, out_activation
+            "type": "mlp",
+            "in_shape": 4,
+            "out_shape": 2,
+            "layers": [],
+            "out_activation": "sigmoid",
+            "init_fn": "orthogonal_",
+        },
+        ['Linear', 'Sigmoid'],
+        2
     ),
 ])
 def test_build_mlp_model(net_spec, layer_names, out_shape):
