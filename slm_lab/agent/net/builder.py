@@ -284,6 +284,26 @@ def build_recurrent_model(net_spec):
     return Recurrent(net_spec)
 
 
+MODEL_BUILDERS = {
+    'mlp': build_mlp_model,
+    'conv1d': build_conv_model,
+    'conv2d': build_conv_model,
+    'conv3d': build_conv_model,
+    'rnn': build_recurrent_model,
+    'gru': build_recurrent_model,
+    'lstm': build_recurrent_model,
+}
+
+
+def build_model(net_spec):
+    model_type = net_spec['type']
+    if model_type in MODEL_BUILDERS:
+        builder = MODEL_BUILDERS[model_type]
+        return builder(net_spec)
+    else:
+        raise ValueError(f'type {model_type} is not supported.')
+
+
 class FiLM(nn.Module):
     '''
     Feature-wise Linear Modulation layer https://distill.pub/2018/feature-wise-transformations/
