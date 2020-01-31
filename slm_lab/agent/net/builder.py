@@ -207,8 +207,8 @@ class Recurrent(nn.Module):
         @param dict:net_spec With the following format/example:
         net_spec = {
             "type": "rnn",  # options: 'rnn', 'lstm', 'gru'
-            "in_shape": 3,  # the number of features in x
-            "out_shape": 2,  # optional: output shape if this is a full model
+            "in_shape": [4],  # the number of features in x
+            "out_shape": [2],  # optional: output shape if this is a full model
             "layers": [64, 64],  # the hidden layers, must be the same for all layers
             "bidirectional": False,  # whether to make network bidirectional
             "out_activation": None,  # optional: specify the 'activation' for the last layer only if out_shape is specified
@@ -219,25 +219,27 @@ class Recurrent(nn.Module):
         check_net_spec(net_spec)
         in_shape, out_shape, layers, bidirectional, init_fn = ps.at(net_spec, *['in_shape', 'out_shape', 'layers', 'bidirectional', 'init_fn'])
 
+        assert len(in_shape) == 1
+        in_size = in_shape[0]
         assert len(ps.uniq(layers)) == 1, f'layers must specify the same number of hidden units for each layer, but got {layers}'
         hidden_size = layers[0]
         num_dir = 2 if bidirectional else 1
         self.recurrent_model = getattr(nn, get_nn_name(net_spec['type']))(
-            input_size=in_shape, hidden_size=hidden_size, num_layers=len(layers),
+            input_size=in_size, hidden_size=hidden_size, num_layers=len(layers),
             batch_first=True, bidirectional=bidirectional)
         # y.shape = (batch, seq_len, num_dir * hidden_size)
         # out_shape is of y without batch and varying seq_len, i.e. y.shape[-1]
-        net_spec['_out_shape'] = num_dir * hidden_size  # set new attribute from builder
+        net_spec['_out_shape'] = [num_dir * hidden_size]  # set new attribute from builder
 
         if init_fn:  # initialize weights if specified
             init_weights = get_init_weights(init_fn)
             self.recurrent_model.apply(init_weights)
 
         if out_shape:  # if out_shape is specified in net_spec
-            # get out_shape, build shit
-            recurrent_out_shape = num_dir * hidden_size  # the shape is from last_h_n, sliced along num_dir and concat
+            assert len(out_shape) == 1
+            recurrent_out_size = num_dir * hidden_size  # the shape is from last_h_n, sliced along num_dir and concat
             nn_layers = []
-            nn_layers.append(nn.Linear(recurrent_out_shape, out_shape))
+            nn_layers.append(nn.Linear(recurrent_out_size, out_shape[0]))
             nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=True))
             nn_layers = ps.compact(nn_layers)  # remove None
             self.mlp_model = nn.Sequential(*nn_layers)

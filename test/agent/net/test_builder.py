@@ -309,52 +309,51 @@ def test_build_conv_model_3d(net_spec, layer_names, y_shape, out_shape):
     assert net_spec['_out_shape'] == out_shape
 
 
-# @pytest.mark.parametrize('cell_type', ['rnn', 'gru', 'lstm'])
 @pytest.mark.parametrize('net_spec,y_shape,out_shape', [
     (
         {  # basic
             "type": "cell_type",
-            "in_shape": 3,
+            "in_shape": [4],
             "layers": [64, 64],
             "bidirectional": False,
             "init_fn": "orthogonal_",
         },
         [8, 10, 1 * 64],  # [batch, seq_len, num_dir * hidden_size],
-        1 * 64,  # of y without batch and seq_len, so = num_dir * hidden_size
+        [1 * 64],  # of y without batch and seq_len, so = num_dir * hidden_size
     ), (
         {  # bidirectional
             "type": "cell_type",
-            "in_shape": 3,
+            "in_shape": [4],
             "layers": [64, 64],
             "bidirectional": True,
             "init_fn": "orthogonal_",
         },
         [8, 10, 2 * 64],  # [batch, seq_len, num_dir * hidden_size],
-        2 * 64,  # of y without batch and seq_len, so = num_dir * hidden_size
+        [2 * 64],  # of y without batch and seq_len, so = num_dir * hidden_size
     ), (
         {  # out_shape and out_activation
             "type": "cell_type",
-            "in_shape": 3,
-            "out_shape": 2,
+            "in_shape": [4],
+            "out_shape": [2],
             "layers": [64, 64],
             "bidirectional": False,
             "out_activation": "sigmoid",
             "init_fn": "orthogonal_",
         },
         [8, 2],  # out_shape specified
-        2,  # of y.shape from mlp with out_shape from net_spec
+        [2],  # of y.shape from mlp with out_shape from net_spec
     ), (
         {  # out_shape and out_activation and bidirectional
             "type": "cell_type",
-            "in_shape": 3,
-            "out_shape": 2,
+            "in_shape": [4],
+            "out_shape": [2],
             "layers": [64, 64],
             "bidirectional": True,
             "out_activation": "sigmoid",
             "init_fn": "orthogonal_",
         },
         [8, 2],  # out_shape specified
-        2,  # of y.shape from mlp with out_shape from net_spec
+        [2],  # of y.shape from mlp with out_shape from net_spec
     ),
 ])
 @pytest.mark.parametrize('cell_type', ['rnn', 'gru', 'lstm'])
@@ -370,12 +369,12 @@ def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
     hidden_size = net_spec['layers'][0]
     batch = 8
     seq_len = 10
-    x = torch.rand([batch, seq_len, net_spec['in_shape']])
+    x = torch.rand([batch, seq_len, *net_spec['in_shape']])
     y, h_out = recurrent_model(x)
     # test passing h_out as input
     next_y, next_h_out = recurrent_model(x, h_out)
     assert list(y.shape) == y_shape
-    assert y.shape[-1] == out_shape
+    assert list(y.shape[-1:]) == out_shape
     assert net_spec['_out_shape'] == out_shape
 
     if 'out_activation' in net_spec:  # using specified out_shape and out_activation, has mlp and flattened
