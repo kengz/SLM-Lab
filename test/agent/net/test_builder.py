@@ -7,29 +7,29 @@ import torch
     (
         {  # basic
             "type": "mlp",
-            "in_shape": 4,
+            "in_shape": [4],
             "layers": [64, 64],
             "activation": "relu",
             "init_fn": "orthogonal_",
         },
         ['Linear', 'ReLU', 'Linear', 'ReLU'],
-        64
+        [64]
     ), (
         {  # out_activation
             "type": "mlp",
-            "in_shape": 4,
+            "in_shape": [4],
             "layers": [64, 64],
             "activation": "relu",
             "out_activation": None,
             "init_fn": "orthogonal_",
         },
         ['Linear', 'ReLU', 'Linear'],
-        64
+        [64]
     ), (
         {  # out_shape, out_activation, batch_norm
             "type": "mlp",
-            "in_shape": 4,
-            "out_shape": 2,
+            "in_shape": [4],
+            "out_shape": [2],
             "layers": [64, 64],
             "batch_norm": True,
             "activation": "relu",
@@ -37,27 +37,27 @@ import torch
             "init_fn": "orthogonal_",
         },
         ['Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'BatchNorm1d', 'ReLU', 'Linear', 'Sigmoid'],
-        2
+        [2]
     ), (
         {  # no layers
             "type": "mlp",
-            "in_shape": 4,
+            "in_shape": [4],
             "layers": [],
             "init_fn": "orthogonal_",
         },
         ['Identity'],
-        4
+        [4]
     ), (
         {  # no layers but has out_shape, out_activation
             "type": "mlp",
-            "in_shape": 4,
-            "out_shape": 2,
+            "in_shape": [4],
+            "out_shape": [2],
             "layers": [],
             "out_activation": "sigmoid",
             "init_fn": "orthogonal_",
         },
         ['Linear', 'Sigmoid'],
-        2
+        [2]
     ),
 ])
 def test_build_mlp_model(net_spec, layer_names, out_shape):
@@ -69,9 +69,9 @@ def test_build_mlp_model(net_spec, layer_names, out_shape):
     for m1, m2 in zip(mlp_model, rebuild_mlp_model):
         assert m1._get_name() == m2._get_name()
     batch = 8
-    x = torch.rand([batch, net_spec['in_shape']])
+    x = torch.rand([batch, *net_spec['in_shape']])
     y = mlp_model(x)
-    assert list(y.shape) == [batch, net_spec['_out_shape']]
+    assert list(y.shape) == [batch, *net_spec['_out_shape']]
     assert net_spec['_out_shape'] == out_shape
 
 

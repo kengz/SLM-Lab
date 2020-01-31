@@ -86,8 +86,8 @@ def build_mlp_model(net_spec):
     @param dict:net_spec With the following format/example:
     net_spec = {
         "type": "mlp",
-        "in_shape": 4,  # input shape
-        "out_shape": 2,  # optional: output shape if this is a full model
+        "in_shape": [4],  # input shape
+        "out_shape": [2],  # optional: output shape if this is a full model
         "layers": [64, 64],  # hidden layers
         "batch_norm": True,  # optional: apply BatchNorm before activation
         "activation": "relu",  # activation function
@@ -100,20 +100,21 @@ def build_mlp_model(net_spec):
 
     nn_layers = []
     # if out_shape is specified in net_spec (a full network), copy layers and append out_shape to iterate
-    layers = layers + [out_shape] if out_shape else layers
+    layers = layers + out_shape if out_shape else layers
 
     if len(layers) == 0:  # if empty, use Identity and below won't iterate
         nn_layers.append(nn.Identity())
         net_spec['_out_shape'] = in_shape  # set new attribute from builder
 
-    for idx, out_shape in enumerate(layers):
+    in_size = ps.get(in_shape, 0)
+    for idx, out_size in enumerate(layers):
         is_last_layer = (idx == (len(layers) - 1))
-        nn_layers.append(nn.Linear(in_shape, out_shape))
+        nn_layers.append(nn.Linear(in_size, out_size))
         if batch_norm and not is_last_layer:
-            nn_layers.append(nn.BatchNorm1d(out_shape))
+            nn_layers.append(nn.BatchNorm1d(out_size))
         nn_layers.append(resolve_activation_layer(net_spec, is_last_layer=is_last_layer))
-        in_shape = out_shape  # update in_shape
-        net_spec['_out_shape'] = out_shape  # set new attribute from builder
+        in_size = out_size  # update in_size
+        net_spec['_out_shape'] = [out_size]  # set new attribute from builder
     nn_layers = ps.compact(nn_layers)  # remove None
     mlp_model = nn.Sequential(*nn_layers)
 
@@ -309,7 +310,6 @@ class FiLM(nn.Module):
         # use view to ensure cond transform will broadcast consistently across entire feature/channel
         view_shape = list(cond_scale_x.shape) + [1] * (feat.dim() - cond.dim())
         x = cond_scale_x.view(*view_shape) * feat + cond_shift_x.view(*view_shape)
-        assert x.shape == feat.shape
         return x
 
 
