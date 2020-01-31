@@ -292,17 +292,17 @@ class FiLM(nn.Module):
     The conditioner is always a vector with length = number of features or channels (image), and the operation is element-wise on feature or channel-wide (image)
     '''
 
-    def __init__(self, num_feat, num_cond):
+    def __init__(self, feat_size, cond_size):
         '''
-        @param int:num_feat Number of featues, which is usually the size of a feature vector or the number of channels of an image
-        @param int:num_cond Number of conditioner dimension, which is the size of a conditioner vector
+        @param int:feat_size Number of featues, which is usually the size of a feature vector or the number of channels of an image
+        @param int:cond_size Number of conditioner dimension, which is the size of a conditioner vector
         '''
-        # conditioner params with output shape matching num_feat, and
-        # num_feat = feat.shape[1]
-        # num_cond = cond.shape[1]
+        # conditioner params with output shape matching feat_size, and
+        # feat_size = feat.shape[1]
+        # cond_size = cond.shape[1]
         nn.Module.__init__(self)
-        self.cond_scale = nn.Linear(num_cond, num_feat)
-        self.cond_shift = nn.Linear(num_cond, num_feat)
+        self.cond_scale = nn.Linear(cond_size, feat_size)
+        self.cond_shift = nn.Linear(cond_size, feat_size)
 
     def forward(self, feat, cond):
         cond_scale_x = self.cond_scale(cond)
@@ -342,7 +342,7 @@ net_spec = {
         },
         "gyro": {
             "type": "mlp",
-            "in_shape": 4,
+            "in_shape": [4],
             "layers": [],
             "batch_norm": False,
             "activation": "relu",
@@ -359,7 +359,7 @@ net_spec = {
             # TODO auto-infer from out_shape for net_spec, so constructor has to operate on the full net_spec and be stateful
         },
         "type": "mlp",
-        # "in_shape": 4,
+        # "in_shape": [4],
         "layers": [256, 256],
         "activation": "relu",
         "init_fn": "orthogonal_",
@@ -367,16 +367,16 @@ net_spec = {
     "tails": {
         "v": {
             "type": "mlp",
-            # "in_shape": 4,
-            "out_shape": 1,
+            # "in_shape": [4],
+            "out_shape": [1],
             "layers": [],
             "out_activation": None,
             "init_fn": "orthogonal_",
         },
         "pi": {
             "type": "mlp",
-            # "in_shape": 4,
-            "out_shape": 4,
+            # "in_shape": [4],
+            "out_shape": [4],
             "layers": [],
             "out_activation": None,
             "init_fn": "orthogonal_",

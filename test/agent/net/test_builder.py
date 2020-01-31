@@ -390,9 +390,9 @@ def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
     (torch.rand(8, 3, 10, 10), torch.rand(8, 5)),
 ])
 def test_film(feat, cond):
-    num_feat = feat.shape[1]
-    num_cond = cond.shape[1]
-    film = builder.FiLM(num_feat, num_cond)
+    feat_size = feat.shape[1]
+    cond_size = cond.shape[1]
+    film = builder.FiLM(feat_size, cond_size)
     x = film(feat, cond)
     assert x.shape == feat.shape
 
