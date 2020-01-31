@@ -273,6 +273,11 @@ class Recurrent(nn.Module):
         return y, h_out
 
 
+def build_recurrent_model(net_spec):
+    '''Recurrent model builder method for API consistency'''
+    return Recurrent(net_spec)
+
+
 class FiLM(nn.Module):
     '''
     Feature-wise Linear Modulation layer https://distill.pub/2018/feature-wise-transformations/

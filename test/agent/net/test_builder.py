@@ -325,7 +325,7 @@ def test_build_conv_model_3d(net_spec, layer_names, y_shape, out_shape):
 def test_build_recurrent_model(cell_type, net_spec, y_shape, out_shape):
     net_spec = net_spec.copy()
     net_spec['type'] = cell_type
-    recurrent_model = builder.Recurrent(net_spec)
+    recurrent_model = builder.build_recurrent_model(net_spec)
     num_dir = 2 if net_spec['bidirectional'] else 1
     hidden_size = net_spec['layers'][0]
     batch = 8
