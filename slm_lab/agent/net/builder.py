@@ -1,9 +1,9 @@
 # Module to quickly build neural networks with relatively simple architecture
 import inspect
+import numpy as np
+import pydash as ps
 import torch
 import torch.nn as nn
-import pydash as ps
-import torch.nn.functional as F
 
 # TODO rebuild dependencies too
 
@@ -312,38 +312,109 @@ class FiLM(nn.Module):
     The conditioner is always a vector with length = number of features or channels (image), and the operation is element-wise on feature or channel-wide (image)
     '''
 
-    def __init__(self, feat_size, cond_size):
+    def __init__(self, net_spec):
         '''
-        @param int:feat_size Number of featues, which is usually the size of a feature vector or the number of channels of an image
-        @param int:cond_size Number of conditioner dimension, which is the size of a conditioner vector
+        @param dict:net_spec With {'heads': head_spec, 'body': body_spec}
+        head_spec must be updated with '_out_shape' from heads construction. The keys of head_spec must match the keys specified in body_spec.join.{feat,cond}
         '''
-        # conditioner params with output shape matching feat_size, and
-        # feat_size = feat.shape[1]
-        # cond_size = cond.shape[1]
         nn.Module.__init__(self)
-        self.cond_scale = nn.Linear(cond_size, feat_size)
-        self.cond_shift = nn.Linear(cond_size, feat_size)
+        joiner_spec = ps.get(net_spec, 'body.joiner')
+        self.feat_name, self.cond_name = ps.at(joiner_spec, 'feat', 'cond')
+        head_spec = net_spec['heads']  # must have '_out_shape' specified from head models
+        feat_size = ps.get(head_spec, f'{self.feat_name}._out_shape.0')
+        cond_size = ps.get(head_spec, f'{self.cond_name}._out_shape.0')
+        # for constructing film cond weights
+        film_spec = joiner_spec['film']
+        film_spec.update({
+            'in_shape': [cond_size],
+            'out_shape': [feat_size],
+        })
+        self.cond_scale = build_model(film_spec)
+        self.cond_shift = build_model(film_spec)
+        joiner_spec['_out_shape'] = film_spec['out_shape']
 
-    def forward(self, feat, cond):
+    def forward(self, x_dict):
+        '''Affine transform for FiLM; x_dict must be a dict {feat: tensor, cond: tensor}'''
+        feat, cond = x_dict[self.feat_name], x_dict[self.cond_name]
         cond_scale_x = self.cond_scale(cond)
         cond_shift_x = self.cond_shift(cond)
         # use view to ensure cond transform will broadcast consistently across entire feature/channel
         view_shape = list(cond_scale_x.shape) + [1] * (feat.dim() - cond.dim())
-        x = cond_scale_x.view(*view_shape) * feat + cond_shift_x.view(*view_shape)
-        return x
+        y = cond_scale_x.view(*view_shape) * feat + cond_shift_x.view(*view_shape)
+        return y
 
 
 class Concat(nn.Module):
     '''Flatten all input tensors and concatenate them'''
 
-    def forward(self, *tensors):
-        return torch.cat([t.flatten(start_dim=1) for t in tensors], dim=-1)
+    def __init__(self, net_spec):
+        nn.Module.__init__(self)
+        joiner_spec = ps.get(net_spec, 'body.joiner')
+        joiner_spec['_out_shape'] = [np.sum([head_spec['_out_shape'] for head_spec in net_spec['heads'].values()]).item()]
+
+    def forward(self, x_dict):
+        return torch.cat([t.flatten(start_dim=1) for t in x_dict.values()], dim=-1)
 
 
+JOINER_BUILDERS = {
+    'film': FiLM,
+    'concat': Concat,
+}
+
+
+def build_joiner(net_spec):
+    joiner_type = ps.get(net_spec, 'body.joiner.type')
+    if joiner_type in JOINER_BUILDERS:
+        builder = JOINER_BUILDERS[joiner_type]
+        return builder(net_spec)
+    else:
+        raise ValueError(f'type {joiner_type} is not supported.')
+
+
+class Hydra(nn.Module):
+    '''Construct a basic Hydra network with a joined body'''
+    # TODO elaborate
+
+    def __init__(self, net_spec):
+        '''
+        @param dict:net_spec With {'heads': head_spec, 'body': body_spec, 'tails': tail_spec}
+        '''
+        nn.Module.__init__(self)
+        heads = nn.ModuleDict()
+        for name, head_spec in net_spec['heads'].items():
+            head_spec['in_shape'] = list(xs[name].shape)[1:]
+            heads.add_module(name, build_model(head_spec))
+
+        # build joiner to join head outputs into a vector before passing to body
+        joiner = build_joiner(net_spec)
+        body_spec = net_spec['body']
+        body_spec['in_shape'] = ps.get(body_spec, 'joiner._out_shape')
+        body = build_model(body_spec)
+
+        tails = nn.ModuleDict()
+        for name, tail_spec in net_spec['tails'].items():
+            tail_spec['in_shape'] = body_spec['_out_shape']
+            tails.add_module(name, build_model(tail_spec))
+
+        self.heads = heads
+        self.joiner = joiner
+        self.body = body
+        self.tails = tails
+
+    def forward(self, x):
+        head_y = {name: head(x[name]) for name, head in self.heads.items()}
+        film_y = self.joiner(head_y)
+        body_y = self.body(film_y)
+        tail_y = {name: tail(body_y) for name, tail in self.tails.items()}
+        return tail_y
+
+
+# TODO new tests
 # TODO transformer
 # TODO generic and Hydra network builder
 # test case: one network
 # test case: hydra network
+# TODO decouple in_shape from spec. use data to inject
 
 
 net_spec = {
@@ -372,10 +443,18 @@ net_spec = {
     "body": {  # this is special since it contains a models op
         # TODO specify feat and cond
         # TODO connect to a body model too
-        "join": {
-            "type": "film",  # or concat
-            "feat": "image",
-            "cond": "gyro",
+        "joiner": {
+            "type": "concat",  # or concat
+            # "type": "film",  # or concat
+            # "feat": "image",
+            # "cond": "gyro",
+            # # film layer spec
+            # "film": {
+            #     "type": "mlp",
+            #     "layers": [],
+            #     "activation": "relu",
+            #     "init_fn": "orthogonal_",
+            # }
             # TODO auto-infer from out_shape for net_spec, so constructor has to operate on the full net_spec and be stateful
         },
         "type": "mlp",
@@ -403,3 +482,12 @@ net_spec = {
         }
     }
 }
+
+# NOTE entire spec only has one level with in_shape and out_shape. Everything in between is inferred
+
+
+batch = 8
+x = {head: torch.rand([batch] + head_spec['in_shape']) for head, head_spec in net_spec['heads'].items()}
+hydra = Hydra(net_spec)
+hydra
+hydra(x)
