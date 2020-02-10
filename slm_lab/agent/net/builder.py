@@ -61,9 +61,11 @@ def get_init_weights(init_fn, activation=None):
         # init weight accordingly
         weight_init_fn = getattr(nn.init, init_fn)
         init_fn_args = inspect.getfullargspec(weight_init_fn).args
+        # PyTorch supports calculating gain for these functions: https://pytorch.org/docs/stable/nn.init.html
+        gain_supported_fns = ['linear', 'conv1d', 'conv2d', 'conv3d', 'conv_transpose1d', 'conv_transpose2d', 'conv_transpose3d', 'sigmoid', 'tanh', 'relu', 'leaky_relu']
         if activation is None:
             weight_init_fn(module.weight)
-        elif 'gain' in init_fn_args:
+        elif 'gain' in init_fn_args and activation in gain_supported_fns:
             weight_init_fn(module.weight, gain=nn.init.calculate_gain(activation))
         elif 'nonlinearity' in init_fn_args:
             weight_init_fn(module.weight, nonlinearity=activation)
