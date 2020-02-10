@@ -210,6 +210,9 @@ def load_algorithm(algorithm):
     if util.in_eval_lab_modes():
         # load specific model in eval mode
         model_prepath = agent.spec['meta']['eval_model_prepath']
+    elif 'load_net' in agent.spec['meta']:
+        # we load network from previous training
+        model_prepath = agent.spec['meta']['load_net']
     else:
         model_prepath = agent.spec['meta']['model_prepath']
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {model_prepath}_*.pt')

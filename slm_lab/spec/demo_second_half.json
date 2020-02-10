@@ -1,0 +1,63 @@
+{
+  "dqn_cartpole": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_start": 0.11,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 1,
+        "gamma": 0.99,
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 4
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 7000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 2,
+      "max_trial": 1,
+      "load_net": "data/dqn_cartpole_2020_02_10_162907/model/dqn_cartpole_t0_s0"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__grid_search": [0.5, 0.7, 0.90, 0.95, 0.99]
+        }
+      }]
+    }
+  }
+}

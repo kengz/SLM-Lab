@@ -48,6 +48,11 @@ class Algorithm(ABC):
         if util.in_eval_lab_modes():
             self.load()
             logger.info(f'Loaded algorithm models for lab_mode: {util.get_lab_mode()}')
+        elif 'load_net' in self.agent.spec['meta']:
+            # we load the spec in training mode while providing a network to load
+            net_to_load = self.agent.spec['meta']['load_net']
+            self.load()
+            logger.info(f'Load previously trained network {net_to_load} for lab_mode: {util.get_lab_mode()}')
         else:
             logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
 
