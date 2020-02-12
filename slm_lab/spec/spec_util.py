@@ -187,6 +187,15 @@ def get_param_specs(spec):
         specs.append(spec)
     return specs
 
+def get_resume_training_specs(spec_file_training, spec_file_enjoy, spec_name):
+    '''Get the spec in order to resume the training'''
+    logger.info(f'Load spec to resume training {spec_file_training} with enjoy sepc: {spec_file_enjoy}')
+    training_spec = get(spec_file_training, spec_name)
+    enjoy_spec = get_eval_spec(spec_file_enjoy, spec_name)
+    network_path = enjoy_spec['meta']['eval_model_prepath']
+    training_spec['meta']['load_net'] = f'{network_path}_t0_s0'
+    return training_spec
+
 
 def override_dev_spec(spec):
     spec['meta']['max_session'] = 1
