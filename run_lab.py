@@ -52,18 +52,8 @@ def read_spec_and_run(spec_file, spec_name, lab_mode):
     else:
         lab_mode, prename = lab_mode.split('@')
         if lab_mode in TRAIN_MODES:
-            predir = f'data/{prename}'
-            os.environ['LOG_PREPATH'] = f'{predir}/log/resumed_training'  # to prevent overwriting log file
-            logger.info(f'Resume training from {prename} data folder')
-            session_spec_paths = glob(f'{predir}/*_s*_spec.json')
-            # remove session spec paths
-            trial_spec_paths = ps.difference(glob(f'{predir}/*_t*_spec.json'), session_spec_paths)
-            # TODO which session to choose ? Add a Meta argument to choose ?
-            if len(trial_spec_paths) == 0:
-                raise FileNotFoundError(f'Unable to load the spec in order to resume the training in {predir}')
-            trial_spec = trial_spec_paths[0]
-            spec = spec_util.get_resume_training_specs(spec_file, trial_spec, spec_name)
-        else: # eval mode
+            spec = spec_util.get_resume_training_specs(spec_file, spec_name)
+        else:  # eval mode
             spec = spec_util.get_eval_spec(spec_file, prename)
 
     if 'spec_params' not in spec:
