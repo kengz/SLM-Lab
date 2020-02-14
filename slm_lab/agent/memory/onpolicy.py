@@ -139,3 +139,74 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             'dones'      : dones}
         '''
         return super().sample()
+
+
+class OnPolicyCrossEntropy(OnPolicyReplay):
+    '''
+    Same as OnPolicyReplay with the addition of the cross entropy method.
+
+    We collect a bach of episode with respect to the training_frequency argument and then we keep only the top cross_entropy
+    percent of episodes with respect to the accumulated reward.
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicyCrossEntropy",
+        "cross_entropy" : 1.0,
+    }
+    '''
+
+    def __init__(self, memory_spec, body):
+        # set default
+        util.set_attr(self, dict(
+            cross_entropy=1.0,
+        ))
+        util.set_attr(self, memory_spec, [
+            'cross_entropy',
+        ])
+        super().__init__(memory_spec, body)
+
+    def filter_episodes(self, batch, cross_entropy):
+        '''Filter the episodes for the cross_entropy method'''
+        accumulated_reward = [sum(rewards) for rewards in batch['rewards']]
+        percentile = cross_entropy * 100
+        reward_bound = np.percentile(accumulated_reward, percentile)
+        # we save the batch with reward above the bound
+        result = {k: [] for k in self.data_keys}
+        episode_kept = 0
+        for i in range(len(accumulated_reward)):
+            if accumulated_reward[i] >= reward_bound:
+                for k in self.data_keys:
+                    result[k].append(batch[k][i])
+                episode_kept += 1
+        return result
+
+    def add_experience(self, state, action, reward, next_state, done):
+        '''Interface helper method for update() to add experience to memory'''
+        super().add_experience(state, action, reward, next_state, done)
+
+    def update(self, state, action, reward, next_state, done):
+        '''Interface method to update memory'''
+        super().update(state, action, reward, next_state, done)
+
+    def reset(self):
+        '''Resets the memory. Also used to initialize memory vars'''
+        super().reset()
+
+    def sample(self):
+        '''
+        Returns all the examples from memory in a single batch. Batch is stored as a dict.
+        Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
+        e.g.
+        batch = {
+            'states'     : [[s_epi1], [s_epi2], ...],
+            'actions'    : [[a_epi1], [a_epi2], ...],
+            'rewards'    : [[r_epi1], [r_epi2], ...],
+            'next_states': [[ns_epi1], [ns_epi2], ...],
+            'dones'      : [[d_epi1], [d_epi2], ...]}
+        '''
+        batch = {k: getattr(self, k) for k in self.data_keys}
+        self.reset()
+        # we remove the episodes below the cross_entropy percentage
+        if self.cross_entropy < 1.0:
+            batch = self.filter_episodes(batch, self.cross_entropy)
+        return batch
