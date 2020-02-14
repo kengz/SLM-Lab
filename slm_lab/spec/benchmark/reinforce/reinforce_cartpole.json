@@ -129,7 +129,13 @@
         "center_return": true,
         "explore_var_spec": null,
         "gamma": 0.99,
-        "entropy_coef_spec": null,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 0,
+          "end_step": 20000,
+        },
         "training_frequency": 16
       },
       "memory": {
