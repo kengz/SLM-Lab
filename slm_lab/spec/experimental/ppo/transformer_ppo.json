@@ -145,10 +145,10 @@
         "name": "LunarLander-v2",
         "frame_op": "stack",
         "frame_op_len": 16,
+        "normalize_state": true,
         "max_t": null,
         "max_frame": 300000,
         "num_envs": 8,
-        "normalize_state": false
       }
     ],
     "body": {
@@ -229,6 +229,7 @@
         "name": "RoboschoolAnt-v1",
         "frame_op": "stack",
         "frame_op_len": 16,
+        "normalize_state": true,
         "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
@@ -313,6 +314,7 @@
         "name": "RoboschoolAtlasForwardWalk-v1",
         "frame_op": "stack",
         "frame_op_len": 16,
+        "normalize_state": true,
         "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
