@@ -117,8 +117,8 @@
           "type": "TransformerNet",
           "shared": false,
           "num_heads": 4,
-          "num_hids": 256,
-          "num_layers": 2,
+          "num_hids": 128,
+          "num_layers": 3,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "batch_norm": false,
@@ -129,11 +129,11 @@
           },
           "actor_optim_spec": {
             "name": "Adam",
-            "lr": 5e-3,
+            "lr": 1e-2,
           },
           "critic_optim_spec": {
             "name": "Adam",
-            "lr": 5e-3,
+            "lr": 1e-2,
           },
           "lr_scheduler_spec": null,
           "gpu": false
@@ -212,12 +212,12 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": false
@@ -297,12 +297,12 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": false
@@ -382,12 +382,12 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": false
@@ -466,12 +466,12 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": false
@@ -550,12 +550,12 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 5e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": false
