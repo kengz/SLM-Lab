@@ -144,7 +144,7 @@
       {
         "name": "LunarLander-v2",
         "frame_op": "stack",
-        "frame_op_len": 32,
+        "frame_op_len": 16,
         "max_t": null,
         "max_frame": 300000,
         "num_envs": 8,
@@ -228,7 +228,7 @@
       {
         "name": "RoboschoolAnt-v1",
         "frame_op": "stack",
-        "frame_op_len": 32,
+        "frame_op_len": 16,
         "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
@@ -312,7 +312,7 @@
       {
         "name": "RoboschoolAtlasForwardWalk-v1",
         "frame_op": "stack",
-        "frame_op_len": 32,
+        "frame_op_len": 16,
         "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
@@ -396,7 +396,7 @@
       {
         "name": "RoboschoolHopper-v1",
         "frame_op": "stack",
-        "frame_op_len": 32,
+        "frame_op_len": 16,
         "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
@@ -480,7 +480,7 @@
       {
         "name": "RoboschoolHumanoid-v1",
         "frame_op": "stack",
-        "frame_op_len": 64,
+        "frame_op_len": 32,
         "num_envs": 32,
         "max_t": null,
         "max_frame": 1e7
@@ -564,7 +564,7 @@
       {
         "name": "RoboschoolHumanoidFlagrun-v1",
         "frame_op": "stack",
-        "frame_op_len": 64,
+        "frame_op_len": 32,
         "num_envs": 32,
         "max_t": null,
         "max_frame": 1e7
