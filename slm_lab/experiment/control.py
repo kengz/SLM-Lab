@@ -7,6 +7,7 @@ from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import gc
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
@@ -93,6 +94,7 @@ class Session:
                 self.try_ckpt(self.agent, self.env)
                 if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
+                    gc.collect()
                     state = self.env.reset()
                     done = False
             self.try_ckpt(self.agent, self.env)
