@@ -9,6 +9,7 @@ import math
 import numpy as np
 import pydash as ps
 import torch
+from memory_profiler import profile
 
 logger = logger.get_logger(__name__)
 
@@ -167,6 +168,7 @@ class PPO(ActorCritic):
         logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
         return policy_loss
 
+    @profile
     def train(self):
         if util.in_eval_lab_modes():
             return np.nan

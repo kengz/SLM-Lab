@@ -11,7 +11,6 @@ import pandas as pd
 import pydash as ps
 import torch
 import warnings
-from memory_profiler import profile
 
 logger = logger.get_logger(__name__)
 
@@ -44,7 +43,7 @@ class Agent:
             action = self.algorithm.act(state)
         return action
 
-    @profile
+    @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         self.body.update(state, action, reward, next_state, done)
