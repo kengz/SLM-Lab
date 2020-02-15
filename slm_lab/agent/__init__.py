@@ -44,7 +44,6 @@ class Agent:
             action = self.algorithm.act(state)
         return action
 
-    @lab_api
     @profile
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
