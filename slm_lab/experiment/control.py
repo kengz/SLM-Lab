@@ -11,7 +11,6 @@ import gc
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
-from memory_profiler import profile
 
 
 def make_agent_env(spec, global_nets=None):
@@ -84,7 +83,6 @@ class Session:
                 metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
                 body.log_metrics(metrics['scalar'], 'eval')
 
-    @profile
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
