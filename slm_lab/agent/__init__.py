@@ -109,10 +109,6 @@ class Body:
         else:
             self.eval_df = self.train_df
 
-        # initialize TensorBoard writer
-        self.init_tb()
-        self.tb_tracker = {}
-
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
@@ -127,18 +123,9 @@ class Body:
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
-    def init_tb(self):
-        '''Initialize TensorBoardw writer and related tracking variables'''
-        log_prepath = self.spec['meta']['log_prepath']
-        self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
-        self.tb_actions = []  # store actions for tensorboard
-
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if self.env.is_venv:
-            self.tb_actions.extend(action.tolist())
-        else:
-            self.tb_actions.append(action)
+        pass
 
     def __str__(self):
         class_attr = util.get_class_attr(self)
@@ -229,14 +216,21 @@ class Body:
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{df_mode}_df] {row_str}'
         logger.info(msg)
-        if df_mode == 'train':  # log tensorboard only on train mode data
+        if util.get_lab_mode() == 'dev' and df_mode == 'train':  # log tensorboard only on dev mode and train df data
             self.log_tensorboard()
 
     def log_tensorboard(self):
         '''
         Log summary and useful info to TensorBoard.
+        NOTE this logging is comprehensive and memory-intensive, hence it is used in dev mode only
         To launch TensorBoard, run `tensorboard --logdir=data` after a session/trial is completed.
         '''
+        # initialize TensorBoard writer
+        if not hasattr(self, 'tb_writer'):
+            log_prepath = self.spec['meta']['log_prepath']
+            self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
+            # self.tb_actions = []  # store actions for tensorboard
+
         trial_index = self.agent.spec['meta']['trial']
         session_index = self.agent.spec['meta']['session']
         if session_index != 0:  # log only session 0
@@ -247,7 +241,7 @@ class Body:
         if False and self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
             # can only log 1 net to tb now, and 8 is a good common length for stacked and rnn inputs
             net = self.agent.algorithm.net
-            # self.tb_writer.add_graph(net, torch.rand(ps.flatten([8, net.in_dim])))
+            self.tb_writer.add_graph(net, torch.rand(ps.flatten([8, net.in_dim])))
         # add summary variables
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
@@ -260,15 +254,14 @@ class Body:
             if net_name.startswith('global_') or net_name.startswith('target_'):
                 continue
             net = getattr(self.agent.algorithm, net_name)
-            # TODO heavy, toggle by mode
-            # for name, params in net.named_parameters():
-            #     self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
-        # add action histogram and flush
-        if not ps.is_empty(self.tb_actions):
-            actions = np.array(self.tb_actions)
-            if len(actions.shape) == 1:
-                self.tb_writer.add_histogram(f'action/{idx_suffix}', actions, frame)
-            else:  # multi-action
-                for idx, subactions in enumerate(actions.T):
-                    self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
-            self.tb_actions = []
+            for name, params in net.named_parameters():
+                self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
+        # # add action histogram and flush
+        # if not ps.is_empty(self.tb_actions):
+        #     actions = np.array(self.tb_actions)
+        #     if len(actions.shape) == 1:
+        #         self.tb_writer.add_histogram(f'action/{idx_suffix}', actions, frame)
+        #     else:  # multi-action
+        #         for idx, subactions in enumerate(actions.T):
+        #             self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
+        #     self.tb_actions = []

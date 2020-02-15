@@ -156,7 +156,6 @@ class SoftActorCritic(ActorCritic):
         '''Calculate the regression loss for V and Q values, using the same loss function from net_spec'''
         assert preds.shape == targets.shape, f'{preds.shape} != {targets.shape}'
         reg_loss = self.net.loss_fn(preds, targets)
-        self.body.tb_tracker['reg_loss'] = reg_loss
         return reg_loss
 
     def calc_policy_loss(self, batch, log_probs, reparam_actions):
@@ -166,12 +165,10 @@ class SoftActorCritic(ActorCritic):
         q2_preds = self.calc_q(states, reparam_actions, self.q2_net)
         q_preds = torch.min(q1_preds, q2_preds)
         policy_loss = (self.alpha * log_probs - q_preds).mean()
-        self.body.tb_tracker['policy_loss'] = policy_loss
         return policy_loss
 
     def calc_alpha_loss(self, log_probs):
         alpha_loss = - (self.log_alpha * (log_probs.detach() + self.target_entropy)).mean()
-        self.body.tb_tracker['alpha_loss'] = alpha_loss
         return alpha_loss
 
     def try_update_per(self, q_preds, q_targets):
@@ -187,7 +184,6 @@ class SoftActorCritic(ActorCritic):
         alpha_loss.backward()
         self.alpha_optim.step()
         self.alpha = self.log_alpha.detach().exp()
-        self.body.tb_tracker['alpha'] = self.alpha
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
