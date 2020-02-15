@@ -5,6 +5,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
+from memory_profiler import profile
 
 logger = logger.get_logger(__name__)
 
@@ -60,6 +61,7 @@ class OnPolicyReplay(Memory):
         '''Interface method to update memory'''
         self.add_experience(state, action, reward, next_state, done)
 
+    @profile
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
         self.most_recent = (state, action, reward, next_state, done)
