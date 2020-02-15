@@ -260,8 +260,9 @@ class Body:
             if net_name.startswith('global_') or net_name.startswith('target_'):
                 continue
             net = getattr(self.agent.algorithm, net_name)
-            for name, params in net.named_parameters():
-                self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
+            # TODO heavy, toggle by mode
+            # for name, params in net.named_parameters():
+            #     self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
         # add action histogram and flush
         if not ps.is_empty(self.tb_actions):
             actions = np.array(self.tb_actions)
