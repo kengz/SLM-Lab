@@ -119,7 +119,7 @@
           "num_heads": 8,
           "num_hids": 256,
           "num_layers": 2,
-          "dropout": 0.02,
+          "dropout": 0.01,
           "init_fn": "orthogonal_",
           "batch_norm": false,
           "clip_grad_val": 0.5,
