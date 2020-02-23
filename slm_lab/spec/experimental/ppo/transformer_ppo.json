@@ -136,7 +136,7 @@
             "lr": 1e-2,
           },
           "lr_scheduler_spec": null,
-          "gpu": false
+          "gpu": true
         }
       }
     ],
@@ -220,7 +220,7 @@
             "lr": 1e-4,
           },
           "lr_scheduler_spec": null,
-          "gpu": false
+          "gpu": true
         }
       }
     ],
@@ -305,7 +305,7 @@
             "lr": 1e-4,
           },
           "lr_scheduler_spec": null,
-          "gpu": false
+          "gpu": true
         }
       }
     ],
@@ -390,7 +390,7 @@
             "lr": 1e-4,
           },
           "lr_scheduler_spec": null,
-          "gpu": false
+          "gpu": true
         }
       }
     ],
@@ -474,7 +474,7 @@
             "lr": 1e-4,
           },
           "lr_scheduler_spec": null,
-          "gpu": false
+          "gpu": true
         }
       }
     ],
@@ -558,7 +558,7 @@
             "lr": 1e-4,
           },
           "lr_scheduler_spec": null,
-          "gpu": false
+          "gpu": true
         }
       }
     ],
