@@ -118,7 +118,7 @@
           "shared": false,
           "num_heads": 8,
           "num_hids": 256,
-          "num_layers": 4,
+          "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "batch_norm": false,
@@ -129,11 +129,11 @@
           },
           "actor_optim_spec": {
             "name": "Adam",
-            "lr": 1e-2,
+            "lr": 1e-3,
           },
           "critic_optim_spec": {
             "name": "Adam",
-            "lr": 1e-2,
+            "lr": 1e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": true
