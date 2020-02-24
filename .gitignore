@@ -3,6 +3,7 @@
 
 # IDEs
 .idea/
+.vscode
 
 # Python
 __pycache__/
@@ -18,6 +19,7 @@ htmlcov/
 coverage.xml
 .coverage*
 .env
+.mypy_cache
 
 # NodeJS
 node_modules/
