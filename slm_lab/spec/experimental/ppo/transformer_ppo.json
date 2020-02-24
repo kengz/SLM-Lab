@@ -483,9 +483,9 @@
         "name": "RoboschoolHumanoid-v1",
         "frame_op": "stack",
         "frame_op_len": 16,
-        "num_envs": 32,
+        "num_envs": 64,
         "max_t": null,
-        "max_frame": 1e7
+        "max_frame": 2e8
       }
     ],
     "body": {
