@@ -153,6 +153,9 @@ class OnPolicyCrossEntropy(OnPolicyReplay):
         "name": "OnPolicyCrossEntropy",
         "cross_entropy" : 1.0,
     }
+
+    See: Kroese, Dirk P., et al. "Cross-entropy method." Encyclopedia of Operations Research and Management Science (2013): 326-333.
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.399.7005&rep=rep1&type=pdf (section 2)
     '''
 
     def __init__(self, memory_spec, body):
@@ -180,29 +183,10 @@ class OnPolicyCrossEntropy(OnPolicyReplay):
                 episode_kept += 1
         return result
 
-    def add_experience(self, state, action, reward, next_state, done):
-        '''Interface helper method for update() to add experience to memory'''
-        super().add_experience(state, action, reward, next_state, done)
-
-    def update(self, state, action, reward, next_state, done):
-        '''Interface method to update memory'''
-        super().update(state, action, reward, next_state, done)
-
-    def reset(self):
-        '''Resets the memory. Also used to initialize memory vars'''
-        super().reset()
-
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch. Batch is stored as a dict.
-        Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
-        e.g.
-        batch = {
-            'states'     : [[s_epi1], [s_epi2], ...],
-            'actions'    : [[a_epi1], [a_epi2], ...],
-            'rewards'    : [[r_epi1], [r_epi2], ...],
-            'next_states': [[ns_epi1], [ns_epi2], ...],
-            'dones'      : [[d_epi1], [d_epi2], ...]}
+        Refer to the parent methods for documentation
+        If the cross entropy parameter is activated, we filter the collected episodes
         '''
         batch = {k: getattr(self, k) for k in self.data_keys}
         self.reset()
