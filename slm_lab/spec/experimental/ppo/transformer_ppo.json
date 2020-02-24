@@ -453,8 +453,8 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "num_heads": 11,
-          "num_hids": 512,
+          "num_heads": 4,
+          "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
