@@ -125,7 +125,8 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        pass
+        if util.get_lab_mode() == 'dev':  # log tensorboard only on dev mode
+            self.track_tensorboard(action)
 
     def __str__(self):
         class_attr = util.get_class_attr(self)
@@ -223,13 +224,13 @@ class Body:
         '''
         Log summary and useful info to TensorBoard.
         NOTE this logging is comprehensive and memory-intensive, hence it is used in dev mode only
-        To launch TensorBoard, run `tensorboard --logdir=data` after a session/trial is completed.
         '''
         # initialize TensorBoard writer
         if not hasattr(self, 'tb_writer'):
             log_prepath = self.spec['meta']['log_prepath']
             self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
-            # self.tb_actions = []  # store actions for tensorboard
+            self.tb_actions = []  # store actions for tensorboard
+            logger.info(f'Using TensorBoard logging for dev mode. Run `tensorboard --logdir={log_prepath}` to start TensorBoard.')
 
         trial_index = self.agent.spec['meta']['trial']
         session_index = self.agent.spec['meta']['session']
@@ -246,9 +247,6 @@ class Body:
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
             self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
-        # add tensorboard tracker for custom variables
-        for k, v in self.tb_tracker.items():
-            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
         # add network parameters
         for net_name in self.agent.algorithm.net_names:
             if net_name.startswith('global_') or net_name.startswith('target_'):
@@ -256,12 +254,19 @@ class Body:
             net = getattr(self.agent.algorithm, net_name)
             for name, params in net.named_parameters():
                 self.tb_writer.add_histogram(f'{net_name}.{name}/{idx_suffix}', params, frame)
-        # # add action histogram and flush
-        # if not ps.is_empty(self.tb_actions):
-        #     actions = np.array(self.tb_actions)
-        #     if len(actions.shape) == 1:
-        #         self.tb_writer.add_histogram(f'action/{idx_suffix}', actions, frame)
-        #     else:  # multi-action
-        #         for idx, subactions in enumerate(actions.T):
-        #             self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
-        #     self.tb_actions = []
+        # add action histogram and flush
+        if not ps.is_empty(self.tb_actions):
+            actions = np.array(self.tb_actions)
+            if len(actions.shape) == 1:
+                self.tb_writer.add_histogram(f'action/{idx_suffix}', actions, frame)
+            else:  # multi-action
+                for idx, subactions in enumerate(actions.T):
+                    self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
+            self.tb_actions = []
+
+    def track_tensorboard(self, action):
+        '''Helper to track variables for tensorboard logging'''
+        if self.env.is_venv:
+            self.tb_actions.extend(action.tolist())
+        else:
+            self.tb_actions.append(action)
