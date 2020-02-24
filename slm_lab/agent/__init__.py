@@ -109,10 +109,6 @@ class Body:
         else:
             self.eval_df = self.train_df
 
-        # initialize TensorBoard writer
-        self.init_tb()
-        self.tb_tracker = {}
-
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
@@ -127,18 +123,10 @@ class Body:
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
-    def init_tb(self):
-        '''Initialize TensorBoardw writer and related tracking variables'''
-        log_prepath = self.spec['meta']['log_prepath']
-        self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
-        self.tb_actions = []  # store actions for tensorboard
-
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if self.env.is_venv:
-            self.tb_actions.extend(action.tolist())
-        else:
-            self.tb_actions.append(action)
+        if util.get_lab_mode() == 'dev':  # log tensorboard only on dev mode
+            self.track_tensorboard(action)
 
     def __str__(self):
         class_attr = util.get_class_attr(self)
@@ -229,14 +217,21 @@ class Body:
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{df_mode}_df] {row_str}'
         logger.info(msg)
-        if df_mode == 'train':  # log tensorboard only on train mode data
+        if util.get_lab_mode() == 'dev' and df_mode == 'train':  # log tensorboard only on dev mode and train df data
             self.log_tensorboard()
 
     def log_tensorboard(self):
         '''
         Log summary and useful info to TensorBoard.
-        To launch TensorBoard, run `tensorboard --logdir=data` after a session/trial is completed.
+        NOTE this logging is comprehensive and memory-intensive, hence it is used in dev mode only
         '''
+        # initialize TensorBoard writer
+        if not hasattr(self, 'tb_writer'):
+            log_prepath = self.spec['meta']['log_prepath']
+            self.tb_writer = SummaryWriter(os.path.dirname(log_prepath), filename_suffix=os.path.basename(log_prepath))
+            self.tb_actions = []  # store actions for tensorboard
+            logger.info(f'Using TensorBoard logging for dev mode. Run `tensorboard --logdir={log_prepath}` to start TensorBoard.')
+
         trial_index = self.agent.spec['meta']['trial']
         session_index = self.agent.spec['meta']['session']
         if session_index != 0:  # log only session 0
@@ -251,9 +246,6 @@ class Body:
         # add summary variables
         last_row = self.train_df.iloc[-1]
         for k, v in last_row.items():
-            self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
-        # add tensorboard tracker for custom variables
-        for k, v in self.tb_tracker.items():
             self.tb_writer.add_scalar(f'{k}/{idx_suffix}', v, frame)
         # add network parameters
         for net_name in self.agent.algorithm.net_names:
@@ -271,3 +263,10 @@ class Body:
                 for idx, subactions in enumerate(actions.T):
                     self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
             self.tb_actions = []
+
+    def track_tensorboard(self, action):
+        '''Helper to track variables for tensorboard logging'''
+        if self.env.is_venv:
+            self.tb_actions.extend(action.tolist())
+        else:
+            self.tb_actions.append(action)
