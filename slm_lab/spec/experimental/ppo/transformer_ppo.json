@@ -205,16 +205,11 @@
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
-          "use_same_optim": false,
+          "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
           },
           "actor_optim_spec": {
-            "name": "Lookahead",
-            "optimizer": "RAdam",
-            "lr": 7e-4,
-          },
-          "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
             "lr": 7e-4,
@@ -245,7 +240,19 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 1
+      "max_trial": 1,
+      "num_gpus": 1
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "num_hids__grid_search": [128, 256, 512],
+          "num_layers__grid_search": [2, 3],
+          "actor_optim_spec": {
+            "lr__grid_search": [1e-3, 5e-3]
+          }
+        }
+      }]
     }
   },
   "transformer_ppo_atlas": {
