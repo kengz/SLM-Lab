@@ -223,7 +223,7 @@
       {
         "name": "RoboschoolAnt-v1",
         "frame_op": "stack",
-        "frame_op_len": 16,
+        "frame_op_len": 8,
         "normalize_state": true,
         "num_envs": 16,
         "max_t": null,
