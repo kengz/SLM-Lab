@@ -190,8 +190,8 @@
           },
           "val_loss_coef": 1.0,
           "time_horizon": 1024,
-          "minibatch_size": 128,
-          "training_epoch": 10
+          "minibatch_size": 64,
+          "training_epoch": 20
         },
         "memory": {
           "name": "OnPolicyBatchReplay",
@@ -451,7 +451,7 @@
           },
           "val_loss_coef": 1.0,
           "time_horizon": 512,
-          "minibatch_size": 4096,
+          "minibatch_size": 2048,
           "training_epoch": 15
         },
         "memory": {
@@ -489,7 +489,7 @@
       {
         "name": "RoboschoolHumanoid-v1",
         "frame_op": "stack",
-        "frame_op_len": 16,
+        "frame_op_len": 24,
         "num_envs": 32,
         "max_t": null,
         "max_frame": 2e8
