@@ -492,7 +492,7 @@
         "frame_op_len": 24,
         "num_envs": 32,
         "max_t": null,
-        "max_frame": 2e8
+        "max_frame": 5e7
       }
     ],
     "body": {
