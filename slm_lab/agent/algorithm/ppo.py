@@ -149,8 +149,8 @@ class PPO(ActorCritic):
         assert log_probs.shape == old_log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
         logger.debug(f'ratios: {ratios}')
-        sur_1 = ratios * advs
-        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
+        sur_1 = ratios * advs.to(self.net.device)
+        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs.to(self.net.device)
         # flip sign because need to maximize
         clip_loss = -torch.min(sur_1, sur_2).mean()
         logger.debug(f'clip_loss: {clip_loss}')
