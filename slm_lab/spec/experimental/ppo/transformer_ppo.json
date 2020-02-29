@@ -212,7 +212,7 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 1e-3,
+            "lr": 2e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": true
