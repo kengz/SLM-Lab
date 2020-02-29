@@ -195,7 +195,7 @@ class PPO(ActorCritic):
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                    val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+                    val_loss = self.calc_val_loss(v_preds, v_targets.to(self.net.device))  # from critic
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
                         self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
