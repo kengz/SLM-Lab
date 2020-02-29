@@ -189,7 +189,7 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 2048,
+          "time_horizon": 1024,
           "minibatch_size": 128,
           "training_epoch": 10
         },
