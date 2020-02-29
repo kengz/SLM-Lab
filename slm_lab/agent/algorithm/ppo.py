@@ -184,12 +184,14 @@ class PPO(ActorCritic):
                     states = math_util.venv_unpack(states)
                 states.to(self.net.device)
                 input('just moved states')
-                v_preds = self.calc_v(states)
+                v_preds = self.calc_v(states.clone())
                 # _pdparams, v_preds = self.calc_pdparam_v(batch)
                 print(v_preds.shape, v_preds.numel())
                 input('just calc_v')
-                v_preds_clone = v_preds.clone()
+                v_preds_clone = self.calc_v(states)
                 input('just cloned')
+                del v_preds_clone
+                input('just delted clone')
 
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
                 v_targets = v_targets.to('cpu')
