@@ -172,30 +172,16 @@ class PPO(ActorCritic):
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
-            input('waiting to train')
             net_util.copy(self.net, self.old_net)  # update old net
-            input('just copied')
             batch = self.sample()
-            input('just sampled')
             clock.set_batch_size(len(batch))
             with torch.no_grad():
                 states = batch['states']
                 if self.body.env.is_venv:
                     states = math_util.venv_unpack(states)
-                states.to(self.net.device)
-                input('just moved states')
-                v_preds = self.calc_v(states.clone())
-                # _pdparams, v_preds = self.calc_pdparam_v(batch)
-                print(v_preds.shape, v_preds.numel())
-                input('just calc_v')
-                v_preds_clone = self.calc_v(states)
-                input('just cloned')
-                del v_preds_clone
-                input('just delted clone')
-
+                v_preds = self.calc_v(states)
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
                 v_targets = v_targets.to('cpu')
-                input('just calc_advs_v_targets')
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
             if self.body.env.is_venv:  # unpack if venv for minibatch sampling
@@ -203,7 +189,6 @@ class PPO(ActorCritic):
                     if k not in ('advs', 'v_targets'):
                         batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
-            input('epoch loop')
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
                 for minibatch in minibatches:
