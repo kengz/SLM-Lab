@@ -182,7 +182,9 @@ class PPO(ActorCritic):
                 states = batch['states']
                 if self.body.env.is_venv:
                     states = math_util.venv_unpack(states)
-                v_preds = self.calc_v(states.clone())
+                states.to(self.net.device)
+                input('just moved states')
+                v_preds = self.calc_v(states)
                 # _pdparams, v_preds = self.calc_pdparam_v(batch)
                 print(v_preds.shape, v_preds.numel())
                 input('just calc_v')
