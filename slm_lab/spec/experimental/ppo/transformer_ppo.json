@@ -189,7 +189,7 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 1024,
+          "time_horizon": 2048,
           "minibatch_size": 128,
           "training_epoch": 10
         },
@@ -210,9 +210,8 @@
             "name": "MSELoss"
           },
           "actor_optim_spec": {
-            "name": "Lookahead",
-            "optimizer": "RAdam",
-            "lr": 7e-4,
+            "name": "Adam",
+            "lr": 1e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": true
