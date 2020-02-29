@@ -228,8 +228,8 @@ class ActorCritic(Reinforce):
         if not self.body.env.is_venv:
             next_states = next_states.unsqueeze(dim=0)
         with torch.no_grad():
-            next_v_pred = self.calc_v(next_states, use_cache=False)
-        v_preds = v_preds.detach()  # adv does not accumulate grad
+            next_v_pred = self.calc_v(next_states, use_cache=False).to('cpu')
+        v_preds = v_preds.detach().to('cpu')  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
         nstep_rets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)

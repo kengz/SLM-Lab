@@ -134,8 +134,8 @@ class PPO(ActorCritic):
         '''
         clip_eps = self.body.clip_eps
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-        states = batch['states'].to(self.net.device)
-        actions = batch['actions'].to(self.net.device)
+        states = batch['states']
+        actions = batch['actions']
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
             actions = math_util.venv_unpack(actions)
@@ -149,8 +149,8 @@ class PPO(ActorCritic):
         assert log_probs.shape == old_log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
         logger.debug(f'ratios: {ratios}')
-        sur_1 = ratios * advs.to(self.net.device)
-        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs.to(self.net.device)
+        sur_1 = ratios * advs
+        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
         clip_loss = -torch.min(sur_1, sur_2).mean()
         logger.debug(f'clip_loss: {clip_loss}')
@@ -211,7 +211,7 @@ class PPO(ActorCritic):
                         for k, v in minibatch.items():
                             if k not in ('advs', 'v_targets'):
                                 minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
-                    # util.batch_to_device(minibatch, self.net.device)
+                    util.batch_to_device(minibatch, self.net.device)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
