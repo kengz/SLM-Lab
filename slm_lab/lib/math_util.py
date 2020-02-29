@@ -101,6 +101,9 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     gaes = torch.zeros_like(rewards)
     future_gae = torch.tensor(0.0, dtype=rewards.dtype)
     not_dones = 1 - dones  # to reset at episode boundary by multiplying 0
+    print('rewards', rewards.device)
+    print('v_preds', v_preds.device)
+    print('not_dones', not_dones.device)
     deltas = rewards + gamma * v_preds[1:] * not_dones - v_preds[:-1]
     coef = gamma * lam
     for t in reversed(range(T)):
