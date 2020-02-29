@@ -184,8 +184,10 @@ class PPO(ActorCritic):
                     states = math_util.venv_unpack(states)
                 v_preds = self.calc_v(states)
                 # _pdparams, v_preds = self.calc_pdparam_v(batch)
-                print(v_preds.shape, v_preds.numel)
+                print(v_preds.shape, v_preds.numel())
                 input('just calc_v')
+                v_preds_clone = v_preds.clone()
+                input('just cloned')
 
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
                 v_targets = v_targets.to('cpu')
