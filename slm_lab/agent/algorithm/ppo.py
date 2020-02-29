@@ -191,7 +191,7 @@ class PPO(ActorCritic):
                         for k, v in minibatch.items():
                             if k not in ('advs', 'v_targets'):
                                 minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
-                    util.batch_to_device(minibatch, self.net.device)
+                    # util.batch_to_device(minibatch, self.net.device)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
