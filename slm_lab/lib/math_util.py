@@ -95,15 +95,11 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
     NOTE any standardization is done outside of this method
     '''
-    v_preds = v_preds.to('cpu')  # compute gaes on CPU
     T = len(rewards)
     assert T + 1 == len(v_preds)  # v_preds runs into t+1
     gaes = torch.zeros_like(rewards)
     future_gae = torch.tensor(0.0, dtype=rewards.dtype)
     not_dones = 1 - dones  # to reset at episode boundary by multiplying 0
-    print('rewards', rewards.device)
-    print('v_preds', v_preds.device)
-    print('not_dones', not_dones.device)
     deltas = rewards + gamma * v_preds[1:] * not_dones - v_preds[:-1]
     coef = gamma * lam
     for t in reversed(range(T)):
