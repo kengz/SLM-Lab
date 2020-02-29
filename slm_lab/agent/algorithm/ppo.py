@@ -172,24 +172,18 @@ class PPO(ActorCritic):
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
-            import cv2
-            print('waiting to train')
-            cv2.waitKey(0)
+            input('waiting to train')
             net_util.copy(self.net, self.old_net)  # update old net
-            print('just copied')
-            cv2.waitKey(0)
+            input('just copied')
             batch = self.sample()
-            print('just sampled')
-            cv2.waitKey(0)
+            input('just sampled')
             clock.set_batch_size(len(batch))
             with torch.no_grad():
                 _pdparams, v_preds = self.calc_pdparam_v(batch)
-                print('just calc_pdparam_v')
-                cv2.waitKey(0)
+                input('just calc_pdparam_v')
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
                 v_targets = v_targets.to('cpu')
-                print('just calc_advs_v_targets')
-                cv2.waitKey(0)
+                input('just calc_advs_v_targets')
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
             if self.body.env.is_venv:  # unpack if venv for minibatch sampling
@@ -197,10 +191,10 @@ class PPO(ActorCritic):
                     if k not in ('advs', 'v_targets'):
                         batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
-            print('epoch loop')
+            input('epoch loop')
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
-                print('minibatch loop')
+                input('minibatch loop')
                 for minibatch in minibatches:
                     if self.body.env.is_venv:  # re-pack to restore proper shape
                         for k, v in minibatch.items():
@@ -209,14 +203,11 @@ class PPO(ActorCritic):
                     # util.batch_to_device(minibatch, self.net.device)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
-                    print('just calc_pdparam_v minibatch')
-                    time.sleep(10)
+                    input('just calc_pdparam_v minibatch')
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                    print('just calc_policy_loss minibatch')
-                    time.sleep(10)
+                    input('just calc_policy_loss minibatch')
                     val_loss = self.calc_val_loss(v_preds, v_targets.to(self.net.device))  # from critic
-                    print('just calc_val_loss minibatch')
-                    time.sleep(10)
+                    input('just calc_val_loss minibatch')
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
                         self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
