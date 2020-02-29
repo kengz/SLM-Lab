@@ -171,6 +171,8 @@ class PPO(ActorCritic):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock
+        import time
+        time.sleep(30)
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
