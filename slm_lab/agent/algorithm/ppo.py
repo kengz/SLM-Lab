@@ -134,8 +134,8 @@ class PPO(ActorCritic):
         '''
         clip_eps = self.body.clip_eps
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-        states = batch['states']
-        actions = batch['actions']
+        states = batch['states'].to(self.net.device)
+        actions = batch['actions'].to(self.net.device)
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
             actions = math_util.venv_unpack(actions)
