@@ -611,8 +611,8 @@ def to_torch_batch(batch, device, is_episodic):
 
 def batch_to_device(batch, device):
     '''Transfer a batch to device. Call this right before loss calculation to save on device space (i.e. GPU memory)'''
-    for k, v in batch.items():
-        v.to(device)
+    for k in batch:
+        batch[k] = batch[k].to(device)
     return batch
 
 
