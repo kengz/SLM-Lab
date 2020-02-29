@@ -206,7 +206,6 @@ class PPO(ActorCritic):
             input('epoch loop')
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
-                input('minibatch loop')
                 for minibatch in minibatches:
                     if self.body.env.is_venv:  # re-pack to restore proper shape
                         for k, v in minibatch.items():
@@ -215,11 +214,8 @@ class PPO(ActorCritic):
                     # util.batch_to_device(minibatch, self.net.device)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
-                    input('just calc_pdparam_v minibatch')
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                    input('just calc_policy_loss minibatch')
                     val_loss = self.calc_val_loss(v_preds, v_targets.to(self.net.device))  # from critic
-                    input('just calc_val_loss minibatch')
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
                         self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
