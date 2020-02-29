@@ -246,12 +246,14 @@
     "search": {
       "agent": [{
         "net": {
-          "num_hids__grid_search": [128, 256],
-          "num_layers__grid_search": [2, 3],
+          "num_layers__grid_search": [3, 2],
           "actor_optim_spec": {
-            "lr__grid_search": [5e-4, 1e-3]
+            "lr__grid_search": [1e-3, 3e-3]
           }
         }
+      }],
+      "env": [{
+        "normalize_state__grid_search": [true, false],
       }]
     }
   },
