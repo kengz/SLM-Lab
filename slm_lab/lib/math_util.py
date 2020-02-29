@@ -95,6 +95,7 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
     NOTE any standardization is done outside of this method
     '''
+    v_preds.to('cpu')  # do calculation in CPU
     T = len(rewards)
     assert T + 1 == len(v_preds)  # v_preds runs into t+1
     gaes = torch.zeros_like(rewards)
