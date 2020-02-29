@@ -210,7 +210,8 @@
             "name": "MSELoss"
           },
           "actor_optim_spec": {
-            "name": "Adam",
+            "name": "Lookahead",
+            "optimizer": "RAdam",
             "lr": 1e-3,
           },
           "lr_scheduler_spec": null,
