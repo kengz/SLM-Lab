@@ -110,7 +110,7 @@ class MLPNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = self.model(x)
+        x = self.model(x.to(self.device))
         if hasattr(self, 'model_tails'):
             outs = []
             for model_tail in self.model_tails:
@@ -264,7 +264,7 @@ class HydraMLPNet(Net, nn.Module):
         '''The feedforward step'''
         head_xs = []
         for model_head, x in zip(self.model_heads, xs):
-            head_xs.append(model_head(x))
+            head_xs.append(model_head(x.to(self.device)))
         head_xs = torch.cat(head_xs, dim=-1)
         body_x = self.model_body(head_xs)
         outs = []
