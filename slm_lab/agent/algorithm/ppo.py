@@ -174,20 +174,20 @@ class PPO(ActorCritic):
         if self.to_train == 1:
             import time
             print('waiting to train')
-            time.sleep(30)
+            time.sleep(10)
             net_util.copy(self.net, self.old_net)  # update old net
             print('just copied')
-            time.sleep(30)
+            time.sleep(10)
             batch = self.sample()
             print('just sampled')
-            time.sleep(30)
+            time.sleep(10)
             clock.set_batch_size(len(batch))
             _pdparams, v_preds = self.calc_pdparam_v(batch)
             print('just calc_pdparam_v')
-            time.sleep(30)
+            time.sleep(10)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             print('just calc_advs_v_targets')
-            time.sleep(30)
+            time.sleep(10)
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
             if self.body.env.is_venv:  # unpack if venv for minibatch sampling
