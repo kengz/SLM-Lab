@@ -185,7 +185,7 @@ class PPO(ActorCritic):
             _pdparams, v_preds = self.calc_pdparam_v(batch)
             print('just calc_pdparam_v')
             time.sleep(10)
-            advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
+            advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
             print('just calc_advs_v_targets')
             time.sleep(10)
             # piggy back on batch, but remember to not pack or unpack
