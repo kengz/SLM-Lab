@@ -201,7 +201,6 @@ class ActorCritic(Reinforce):
         states = batch['states']
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
-        states = states.to(self.net.device)
         pdparam = self.calc_pdparam(states)
         v_pred = self.calc_v(states)  # uses self.v_pred from calc_pdparam if self.shared
         return pdparam, v_pred

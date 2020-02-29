@@ -179,8 +179,14 @@ class PPO(ActorCritic):
             input('just sampled')
             clock.set_batch_size(len(batch))
             with torch.no_grad():
-                _pdparams, v_preds = self.calc_pdparam_v(batch)
-                input('just calc_pdparam_v')
+                states = batch['states']
+                if self.body.env.is_venv:
+                    states = math_util.venv_unpack(states)
+                v_preds = self.calc_v(states)
+                # _pdparams, v_preds = self.calc_pdparam_v(batch)
+                print(v_preds.shape, v_preds.numel)
+                input('just calc_v')
+
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
                 v_targets = v_targets.to('cpu')
                 input('just calc_advs_v_targets')
