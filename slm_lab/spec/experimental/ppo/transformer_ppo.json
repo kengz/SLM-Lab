@@ -259,6 +259,7 @@
       "agent": [{
         "net": {
           "num_layers__grid_search": [4, 3, 2],
+          "num_hids__grid_search": [256, 128],
         }
       }],
       "env": [{
