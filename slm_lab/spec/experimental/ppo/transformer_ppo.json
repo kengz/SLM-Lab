@@ -249,16 +249,19 @@
       "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 1,
-      "num_gpus": 0.5
+      "num_gpus": 0.3
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "time_horizon__grid_search": [1024, 1536, 2048],
-        },
+        "net": {
+          "num_layers__grid_search": [3, 2],
+          "actor_optim_spec": {
+            "lr__grid_search": [3e-4, 1e-3]
+          }
+        }
       }],
       "env": [{
-        "frame_op_len__grid_search": [8, 12, 16],
+        "frame_op_len__grid_search": [8, 12]
       }]
     }
   },
