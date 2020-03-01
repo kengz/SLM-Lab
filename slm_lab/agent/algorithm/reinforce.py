@@ -135,7 +135,7 @@ class Reinforce(Algorithm):
         if self.body.env.is_venv:
             actions = math_util.venv_unpack(actions)
         log_probs = action_pd.log_prob(actions)
-        policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
+        policy_loss = - self.policy_loss_coef * (log_probs * advs.to(self.net.device)).mean()
         if self.entropy_coef_spec:
             entropy = action_pd.entropy().mean()
             self.body.mean_entropy = entropy  # update logging variable

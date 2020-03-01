@@ -132,6 +132,7 @@ class PPO(ActorCritic):
 
         3. H = E[ entropy ]
         '''
+        advs = advs.to(self.net.device)
         clip_eps = self.body.clip_eps
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
         states = batch['states']

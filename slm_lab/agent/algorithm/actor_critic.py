@@ -207,7 +207,7 @@ class ActorCritic(Reinforce):
 
     def calc_ret_advs_v_targets(self, batch, v_preds):
         '''Calculate plain returns, and advs = rets - v_preds, v_targets = rets'''
-        v_preds = v_preds.detach()  # adv does not accumulate grad
+        v_preds = v_preds.detach().to('cpu')  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
         rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
@@ -267,12 +267,12 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, pdparams, advs):
         '''Calculate the actor's policy loss'''
-        return super().calc_policy_loss(batch, pdparams, advs)
+        return super().calc_policy_loss(batch, pdparams, advs.to(self.net.device))
 
     def calc_val_loss(self, v_preds, v_targets):
         '''Calculate the critic's value loss'''
         assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
-        val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
+        val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets.to(self.net.device))
         logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 
