@@ -283,7 +283,6 @@ class ActorCritic(Reinforce):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
-            util.batch_to_device(batch, self.net.device)
             clock.set_batch_size(len(batch))
             pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)

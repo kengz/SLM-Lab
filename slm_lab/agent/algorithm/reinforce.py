@@ -151,7 +151,6 @@ class Reinforce(Algorithm):
         if self.to_train == 1:
             batch = self.sample()
             clock.set_batch_size(len(batch))
-            util.batch_to_device(batch, self.net.device)
             pdparams = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pdparams, advs)

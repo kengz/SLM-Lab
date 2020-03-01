@@ -92,6 +92,7 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     v_preds are values predicted for current states, with one last element as the final next_state
     delta is defined as r + gamma * V(s') - V(s) in eqn 10
     GAE is defined in eqn 16
+    This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
     NOTE any standardization is done outside of this method
     '''
     T = len(rewards)

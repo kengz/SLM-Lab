@@ -82,6 +82,7 @@ def calc_pdparam(state, algorithm, body):
     '''
     if not torch.is_tensor(state):  # dont need to cast from numpy
         state = guard_tensor(state, body)
+        state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state)
     return pdparam
 
