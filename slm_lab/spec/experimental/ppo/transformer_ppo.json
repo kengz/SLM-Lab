@@ -160,7 +160,19 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1
+      "max_trial": 1,
+      "num_gpus": 0.25
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "num_layers__grid_search": [4, 3, 2],
+          "num_hids__grid_search": [256, 128],
+        }
+      }],
+      "env": [{
+        "frame_op_len__grid_search": [8, 12, 16],
+      }]
     }
   },
   "transformer_ppo_ant": {
@@ -201,7 +213,7 @@
           "shared": false,
           "num_heads": 7,
           "num_hids": 256,
-          "num_layers": 4,
+          "num_layers": 3,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
