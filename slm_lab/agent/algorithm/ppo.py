@@ -132,7 +132,6 @@ class PPO(ActorCritic):
 
         3. H = E[ entropy ]
         '''
-        advs = advs.to(self.net.device)
         clip_eps = self.body.clip_eps
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
         states = batch['states']
@@ -175,6 +174,7 @@ class PPO(ActorCritic):
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
+            util.batch_to_device(batch, self.net.device)
             clock.set_batch_size(len(batch))
             with torch.no_grad():
                 states = batch['states']
@@ -196,7 +196,7 @@ class PPO(ActorCritic):
                         for k, v in minibatch.items():
                             if k not in ('advs', 'v_targets'):
                                 minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
-                    util.batch_to_device(minibatch, self.net.device)
+                    # util.batch_to_device(minibatch, self.net.device)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
