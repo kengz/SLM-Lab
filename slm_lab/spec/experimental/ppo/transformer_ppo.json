@@ -116,9 +116,9 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "num_heads": 8,
+          "num_heads": 4,
           "num_hids": 256,
-          "num_layers": 2,
+          "num_layers": 3,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "batch_norm": false,
@@ -128,8 +128,9 @@
             "name": "MSELoss"
           },
           "actor_optim_spec": {
-            "name": "Adam",
-            "lr": 5e-4,
+            "name": "Lookahead",
+            "optimizer": "RAdam",
+            "lr": 1e-3,
           },
           "lr_scheduler_spec": null,
           "gpu": true
@@ -161,15 +162,12 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "time_horizon__grid_search": [128, 256],
-        },
         "net": {
-          "num_heads__grid_search": [4, 8],
-          "actor_optim_spec": {
-            "lr__grid_search": [5e-4, 7e-4, 1e-3]
-          }
+          "num_hids__grid_search": [64, 128, 256],
         }
+      }],
+      "env": [{
+        "frame_op_len__grid_search": [4, 8, 16],
       }]
     }
   },
