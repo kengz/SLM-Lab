@@ -253,6 +253,9 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "time_horizon__grid_search": [512, 1024],
+        },
         "net": {
           "num_layers__grid_search": [3, 2],
           "actor_optim_spec": {
