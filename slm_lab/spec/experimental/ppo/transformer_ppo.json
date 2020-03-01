@@ -161,9 +161,13 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "time_horizon__grid_search": [128, 256],
+        },
         "net": {
+          "num_heads__grid_search": [4, 8],
           "actor_optim_spec": {
-            "lr__grid_search": [5e-4, 1e-3]
+            "lr__grid_search": [5e-4, 7e-4, 1e-3]
           }
         }
       }]
