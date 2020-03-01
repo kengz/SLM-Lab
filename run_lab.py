@@ -1,9 +1,9 @@
 # The SLM Lab entrypoint
 import os
-# prevent pytorch multithread slowdown
-os.environ['OMP_NUM_THREADS'] = '1'
-# avoid RLIMIT_NPROC error during heavy workload
-os.environ['OPENBLAS_NUM_THREADS'] = '1'
+# # prevent pytorch multithread slowdown
+# os.environ['OMP_NUM_THREADS'] = '1'
+# # avoid RLIMIT_NPROC error during heavy workload
+# os.environ['OPENBLAS_NUM_THREADS'] = '1'
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment import search
 from slm_lab.experiment.control import Session, Trial, Experiment
