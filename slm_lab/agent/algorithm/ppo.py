@@ -180,8 +180,7 @@ class PPO(ActorCritic):
                 if self.body.env.is_venv:
                     states = math_util.venv_unpack(states)
                 v_preds = self.calc_v(states)
-                advs, v_targets = self.calc_advs_v_targets(batch, v_preds.to('cpu'))
-                v_targets = v_targets.to('cpu')
+                advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
             if self.body.env.is_venv:  # unpack if venv for minibatch sampling
@@ -200,7 +199,7 @@ class PPO(ActorCritic):
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                    val_loss = self.calc_val_loss(v_preds, v_targets.to(self.net.device))  # from critic
+                    val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
                         self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
