@@ -179,7 +179,11 @@ class PPO(ActorCritic):
                 states = batch['states']
                 if self.body.env.is_venv:
                     states = math_util.venv_unpack(states)
+                input('waiting')
+                states = states.to(self.net.device)
+                input('moved states')
                 v_preds = self.calc_v(states)
+                input('calc v')
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
