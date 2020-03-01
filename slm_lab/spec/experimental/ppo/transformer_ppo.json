@@ -155,18 +155,16 @@
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1,
       "num_gpus": 0.5
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "time_horizon__grid_search": [256, 512, 1024],
-        },
-      }],
-      "env": [{
-        "frame_op_len__grid_search": [8, 12, 16],
+        "net": {
+          "num_hids__grid_search": [512, 256, 128],
+          "num_layers__grid_search": [4, 3, 2],
+        }
       }]
     }
   },
