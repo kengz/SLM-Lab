@@ -140,7 +140,7 @@
       {
         "name": "LunarLander-v2",
         "frame_op": "stack",
-        "frame_op_len": 8,
+        "frame_op_len": 4,
         "normalize_state": true,
         "max_t": null,
         "max_frame": 300000,
@@ -155,19 +155,17 @@
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 1,
-      "num_gpus": 0.5
+      "num_gpus": 0.25
     },
     "search": {
       "agent": [{
         "net": {
-          "num_hids__grid_search": [256, 128, 64],
-          "num_layers__grid_search": [3, 2],
+          "actor_optim_spec": {
+            "lr__grid_search": [5e-4, 1e-3]
+          }
         }
-      }],
-      "env": [{
-        "frame_op_len__grid_search": [4, 8]
       }]
     }
   },
