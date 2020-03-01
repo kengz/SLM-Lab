@@ -112,7 +112,6 @@ class TransformerNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = x.to(self.device)
         x = x.transpose(0, 1)  # batch-first into seq-first
         x = self.model(x)
         if hasattr(self, 'model_tails'):

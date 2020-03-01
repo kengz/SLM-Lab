@@ -53,8 +53,6 @@ class QMLPNet(MLPNet):
         self.train()
 
     def forward(self, state, action):
-        state = state.to(self.device)
-        action = action.to(self.device)
         s_a = torch.cat((state, action), dim=-1)
         s_a = self.model(s_a)
         return self.model_tail(s_a)
@@ -117,8 +115,6 @@ class QConvNet(ConvNet):
         self.train()
 
     def forward(self, state, action):
-        state = state.to(self.device)
-        action = action.to(self.device)
         if self.normalize:
             state = state / 255.0
         state = self.conv_model(state)
@@ -193,8 +189,6 @@ class FiLMQConvNet(ConvNet):
         self.train()
 
     def forward(self, state, action):
-        state = state.to(self.device)
-        action = action.to(self.device)
         if self.normalize:
             state = state / 255.0
         state = self.conv_model(state)

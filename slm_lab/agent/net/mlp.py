@@ -110,7 +110,6 @@ class MLPNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = x.to(self.device)
         x = self.model(x)
         if hasattr(self, 'model_tails'):
             outs = []
@@ -265,7 +264,6 @@ class HydraMLPNet(Net, nn.Module):
         '''The feedforward step'''
         head_xs = []
         for model_head, x in zip(self.model_heads, xs):
-            x = x.to(self.device)
             head_xs.append(model_head(x))
         head_xs = torch.cat(head_xs, dim=-1)
         body_x = self.model_body(head_xs)
@@ -351,7 +349,6 @@ class DuelingMLPNet(MLPNet):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = x.to(self.device)
         x = self.model_body(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)

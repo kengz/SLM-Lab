@@ -171,7 +171,6 @@ class ConvNet(Net, nn.Module):
         The feedforward step
         Note that PyTorch takes (c,h,w) but gym provides (h,w,c), so preprocessing must be done before passing to network
         '''
-        x = x.to(self.device)
         if self.normalize:
             x = x / 255.0
         x = self.conv_model(x)
@@ -296,7 +295,6 @@ class DuelingConvNet(ConvNet):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = x.to(self.device)
         if self.normalize:
             x = x / 255.0
         x = self.conv_model(x)
