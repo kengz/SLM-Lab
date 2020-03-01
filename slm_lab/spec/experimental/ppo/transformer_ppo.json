@@ -200,7 +200,7 @@
           "type": "TransformerNet",
           "shared": false,
           "num_heads": 7,
-          "num_hids": 512,
+          "num_hids": 256,
           "num_layers": 4,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
@@ -223,7 +223,7 @@
       {
         "name": "RoboschoolAnt-v1",
         "frame_op": "stack",
-        "frame_op_len": 16,
+        "frame_op_len": 12,
         "normalize_state": true,
         "num_envs": 16,
         "max_t": null,
@@ -241,19 +241,16 @@
       "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 1,
-      "num_gpus": 0.3
+      "num_gpus": 0.5
     },
     "search": {
       "agent": [{
         "net": {
-          "num_layers__grid_search": [3, 2],
-          "actor_optim_spec": {
-            "lr__grid_search": [1e-3, 3e-3]
-          }
+          "num_layers__grid_search": [4, 3, 2],
         }
       }],
       "env": [{
-        "normalize_state__grid_search": [true, false],
+        "frame_op_len__grid_search": [8, 12, 16],
       }]
     }
   },
