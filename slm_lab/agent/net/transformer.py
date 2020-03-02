@@ -68,11 +68,13 @@ class PosEmbedding(nn.Module):
 class Transformer(nn.Module):
     '''The transformer for RL: only the encoder and multihead attention'''
 
-    def __init__(self, in_dim, out_dim, num_heads, num_hids, num_layers, dropout=0.5):
+    def __init__(self, in_dim, out_dim, num_heads, num_hids, num_layers, dropout=0.5, pos_encoder=True):
         super(Transformer, self).__init__()
         self.src_mask = None
-        # self.embedding = PosEmbedding(in_dim, num_hids, dropout)
-        self.embedding = PosExpand(in_dim, num_hids, dropout)
+        if pos_encoder:
+            self.embedding = PosExpand(in_dim, num_hids, dropout)
+        else:
+            self.embedding = PosEmbedding(in_dim, num_hids, dropout)
         encoder_layers = TransformerEncoderLayer(num_hids, num_heads, num_hids, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers)
         self.in_dim = in_dim
@@ -110,6 +112,7 @@ class TransformerNet(Net, nn.Module):
         ))
         util.set_attr(self, self.net_spec, [
             'shared',
+            'pos_encoder',
             'num_heads',
             'num_hids',
             'num_layers',
@@ -130,7 +133,7 @@ class TransformerNet(Net, nn.Module):
         assert len(self.in_dim) == 2, f'Transformer only works with stacked (sequence) states'
         in_dim = self.in_dim[-1]
         # the transformer encoder feeding to mlp tail
-        self.model = Transformer(in_dim=in_dim, out_dim=self.out_dim, num_heads=self.num_heads, num_hids=self.num_hids, num_layers=self.num_layers, dropout=self.dropout)
+        self.model = Transformer(in_dim=in_dim, out_dim=self.out_dim, num_heads=self.num_heads, num_hids=self.num_hids, num_layers=self.num_layers, dropout=self.dropout, pos_encoder=self.pos_encoder)
         # usual tail architecture like MLP
         if ps.is_integer(self.out_dim):
             self.model_tail = net_util.build_fc_model([self.num_hids, self.out_dim], self.out_layer_activation)
