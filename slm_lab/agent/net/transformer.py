@@ -71,8 +71,8 @@ class Transformer(nn.Module):
     def __init__(self, in_dim, out_dim, num_heads, num_hids, num_layers, dropout=0.5):
         super(Transformer, self).__init__()
         self.src_mask = None
-        self.embedding = PosEmbedding(in_dim, num_hids, dropout)
-        # self.embedding = PosExpand(in_dim, num_hids, dropout)
+        # self.embedding = PosEmbedding(in_dim, num_hids, dropout)
+        self.embedding = PosExpand(in_dim, num_hids, dropout)
         encoder_layers = TransformerEncoderLayer(num_hids, num_heads, num_hids, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers)
         self.in_dim = in_dim
