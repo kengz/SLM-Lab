@@ -252,7 +252,7 @@
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1,
-      "num_gpus": 0.3
+      "num_gpus": 0.25
     },
     "search": {
       "agent": [{
