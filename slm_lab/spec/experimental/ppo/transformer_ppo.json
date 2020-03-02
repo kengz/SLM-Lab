@@ -217,7 +217,7 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 3e-4,
+            "lr": 1e-4,
           },
           "lr_scheduler_spec": null,
           "gpu": true
@@ -251,7 +251,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "time_horizon__grid_search": [256, 512, 1024],
+          "training_epoch__grid_search": [5, 10, 15]
         }
       }]
     }
