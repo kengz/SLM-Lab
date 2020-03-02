@@ -45,8 +45,9 @@ class PosEmbedding(nn.Module):
 
     def __init__(self, in_dim, num_hids, dropout):
         super().__init__()
+        max_seq_len = 32
         self.in_embedding = nn.Linear(in_dim, num_hids)
-        self.position_embedding = nn.Embedding(in_dim, num_hids)
+        self.position_embedding = nn.Embedding(max_seq_len, num_hids)
         self.LayerNorm = nn.LayerNorm(num_hids, eps=1e-12)
         self.dropout = nn.Dropout(dropout)
 
