@@ -153,7 +153,7 @@ class TransformerNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = self.model(x)[:, 0]  # batch-first, get first in seq like BERT
+        x = self.model(x)[:, -1]  # batch-first, get last in seq
         if hasattr(self, 'model_tails'):
             outs = []
             for model_tail in self.model_tails:
