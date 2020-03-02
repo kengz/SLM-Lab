@@ -144,7 +144,7 @@
         "frame_op_len": 8,
         "normalize_state": true,
         "max_t": null,
-        "max_frame": 600000,
+        "max_frame": 300000,
         "num_envs": 8,
       }
     ],
