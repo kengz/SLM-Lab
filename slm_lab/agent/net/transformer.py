@@ -112,13 +112,12 @@ class TransformerNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        x = x.transpose(0, 1)  # batch-first into seq-first
         x = self.model(x)
         if hasattr(self, 'model_tails'):
             outs = []
             for model_tail in self.model_tails:
-                outs.append(model_tail(x)[-1, :, :])  # seq first, get last
+                outs.append(model_tail(x)[:, 0, :])  # get first like BERT
             return outs
         else:
-            out = self.model_tail(x)[-1, :, :]  # seq first, get last
+            out = self.model_tail(x)[:, 0, :]  # get first like BERT
             return out
