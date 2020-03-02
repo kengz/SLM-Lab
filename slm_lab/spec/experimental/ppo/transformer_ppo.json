@@ -208,7 +208,7 @@
         },
         "net": {
           "type": "TransformerNet",
-          "shared": false,
+          "shared": true,
           "pos_encoder": true,
           "num_heads": 8,
           "num_hids": 256,
