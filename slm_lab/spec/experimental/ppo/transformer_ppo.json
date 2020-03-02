@@ -209,7 +209,8 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "num_heads": 7,
+          "pos_encoder": true,
+          "num_heads": 8,
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
@@ -255,8 +256,8 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "training_epoch__grid_search": [5, 10, 15]
+        "net": {
+          "pos_encoder__grid_search": [true, false]
         }
       }]
     }
