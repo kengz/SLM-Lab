@@ -141,7 +141,7 @@
       {
         "name": "LunarLander-v2",
         "frame_op": "stack",
-        "frame_op_len": 12,
+        "frame_op_len": 4,
         "normalize_state": true,
         "max_t": null,
         "max_frame": 300000,
