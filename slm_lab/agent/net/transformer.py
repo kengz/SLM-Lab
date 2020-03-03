@@ -37,12 +37,7 @@ class PosEncoder(nn.Module):
         self.pos_encoder = PositionalEncoding(num_hids, dropout)
 
     def forward(self, x):
-        import os
-        if os.environ.get('PAUSE') == 'true':
-            input('to embed x')
         x = self.in_embedding(x)
-        if os.environ.get('PAUSE') == 'true':
-            input('to encode pos')
         x = self.pos_encoder(x)
         return x
 
@@ -61,12 +56,7 @@ class PosEmbedding(nn.Module):
         seq_len = x.shape[1]
         position_ids = torch.arange(seq_len, dtype=torch.long, device=x.device)
         position_ids = position_ids.unsqueeze(0).expand(x.shape[:2])
-        import os
-        if os.environ.get('PAUSE') == 'true':
-            input('to embed x')
         inputs_embeds = self.in_embedding(x)
-        if os.environ.get('PAUSE') == 'true':
-            input('to encode pos')
         position_embedding = self.position_embedding(position_ids)
 
         embedding = inputs_embeds + position_embedding
@@ -89,14 +79,7 @@ class Transformer(nn.Module):
         self.in_dim = in_dim
 
     def forward(self, x):
-        import os
-        if os.environ.get('PAUSE') == 'true':
-            input('to embed transformer x')
         x = self.embedding(x)
-        if os.environ.get('PAUSE') == 'true':
-            input('to encode transformer x')
-            print('x.shape', x.shape)
-            # x = x[0:8]
         output = self.transformer_encoder(x)
         return output
 

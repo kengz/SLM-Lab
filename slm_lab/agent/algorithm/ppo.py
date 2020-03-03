@@ -173,19 +173,15 @@ class PPO(ActorCritic):
         clock = self.body.env.clock
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
-            input('to sample')
             batch = self.sample()
             clock.set_batch_size(len(batch))
-            input('to unpack')
-            import os
-            os.environ['PAUSE'] = 'true'
             with torch.no_grad():
                 states = batch['states']
                 if self.body.env.is_venv:
                     states = math_util.venv_unpack(states)
-                input('to calc_v')
-                v_preds = self.calc_v(states, use_cache=False)
-                input('to calc_advs')
+                num_chunks = int(len(states) / self.minibatch_size)
+                v_preds_chunks = [self.calc_v(states_chunk, use_cache=False) for states_chunk in torch.chunk(states, num_chunks)]
+                v_preds = torch.cat(v_preds_chunks)
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
