@@ -10,42 +10,41 @@ import torch.nn as nn
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
+    def __init__(self, d_model, dropout=0.1, max_seq_len=5000):
+        super().__init__()
         self.dropout = nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        pe = torch.zeros(max_seq_len, d_model)
+        position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
+        pe = pe.unsqueeze(0)
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + self.pe[:x.size(0), :]
+        seq_len = x.size(1)
+        x = x + self.pe[:, :seq_len]
         return self.dropout(x)
 
 
-class PosExpand(nn.Module):
+class PosEncoder(nn.Module):
     '''Construct the positional encoding and pass through an expansion layer.'''
     def __init__(self, in_dim, num_hids, dropout):
         super().__init__()
-        self.pos_encoder = PositionalEncoding(in_dim, dropout)
-        self.expander = nn.Linear(in_dim, num_hids)
+        self.in_embedding = nn.Linear(in_dim, num_hids)
+        self.pos_encoder = PositionalEncoding(num_hids, dropout)
 
     def forward(self, x):
+        x = self.in_embedding(x)
         x = self.pos_encoder(x)
-        x = self.expander(x)
         return x
 
 
 class PosEmbedding(nn.Module):
     '''Construct the embedding from input (state) and position embedding.'''
 
-    def __init__(self, in_dim, num_hids, dropout):
+    def __init__(self, in_dim, num_hids, dropout, max_seq_len=5000):
         super().__init__()
-        max_seq_len = 32
         self.in_embedding = nn.Linear(in_dim, num_hids)
         self.position_embedding = nn.Embedding(max_seq_len, num_hids)
         self.LayerNorm = nn.LayerNorm(num_hids, eps=1e-12)
@@ -72,7 +71,7 @@ class Transformer(nn.Module):
         super(Transformer, self).__init__()
         self.src_mask = None
         if pos_encoder:
-            self.embedding = PosExpand(in_dim, num_hids, dropout)
+            self.embedding = PosEncoder(in_dim, num_hids, dropout)
         else:
             self.embedding = PosEmbedding(in_dim, num_hids, dropout)
         encoder_layers = TransformerEncoderLayer(num_hids, num_heads, num_hids, dropout)

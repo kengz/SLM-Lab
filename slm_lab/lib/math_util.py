@@ -96,7 +96,7 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     NOTE any standardization is done outside of this method
     '''
     T = len(rewards)
-    assert T + 1 == len(v_preds)  # v_preds runs into t+1
+    assert T + 1 == len(v_preds), f'T+1: {T+1} v.s. v_preds.shape: {v_preds.shape}'  # v_preds runs into t+1
     gaes = torch.zeros_like(rewards)
     future_gae = torch.tensor(0.0, dtype=rewards.dtype)
     not_dones = 1 - dones  # to reset at episode boundary by multiplying 0
