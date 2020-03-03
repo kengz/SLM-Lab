@@ -199,8 +199,8 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 256,
-          "minibatch_size": 128,
+          "time_horizon": 1024,
+          "minibatch_size": 256,
           "training_epoch": 10
         },
         "memory": {
@@ -256,6 +256,10 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "time_horizon__grid_search": [1024, 2048],
+          "minibatch_size__grid_search": [128, 256, 512],
+        },
         "net": {
           "pos_encoder__grid_search": [true, false]
         }
