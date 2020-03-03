@@ -78,10 +78,8 @@ class PosEmbedding(nn.Module):
 class Transformer(nn.Module):
     '''The transformer for RL: only the encoder and multihead attention'''
 
-    def __init__(self, in_dim, out_dim, num_heads, num_hids, num_layers, dropout=0.5, pos_encoder=True):
+    def __init__(self, in_dim, embed_dim, num_heads, num_hids, num_layers, dropout=0.5, pos_encoder=True):
         super(Transformer, self).__init__()
-        self.src_mask = None
-        embed_dim = int(num_hids / 4)
         if pos_encoder:
             self.embedding = PosEncoder(in_dim, embed_dim, dropout)
         else:
@@ -140,18 +138,19 @@ class TransformerNet(Net, nn.Module):
         ])
         assert len(self.in_dim) == 2, f'Transformer only works with stacked (sequence) states'
         in_dim = self.in_dim[-1]
+        self.embed_dim = int(self.num_hids / 4)  # set a reasonable embed_dim going into transformer to handle large batch size
         # the transformer encoder feeding to mlp tail
-        self.model = Transformer(in_dim=in_dim, out_dim=self.out_dim, num_heads=self.num_heads, num_hids=self.num_hids, num_layers=self.num_layers, dropout=self.dropout, pos_encoder=self.pos_encoder)
+        self.model = Transformer(in_dim=in_dim, embed_dim=self.embed_dim, num_heads=self.num_heads, num_hids=self.num_hids, num_layers=self.num_layers, dropout=self.dropout, pos_encoder=self.pos_encoder)
         # usual tail architecture like MLP
         if ps.is_integer(self.out_dim):
-            self.model_tail = net_util.build_fc_model([self.num_hids, self.out_dim], self.out_layer_activation)
+            self.model_tail = net_util.build_fc_model([self.embed_dim, self.out_dim], self.out_layer_activation)
         else:
             if not ps.is_list(self.out_layer_activation):
                 self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
             assert len(self.out_layer_activation) == len(self.out_dim)
             tails = []
             for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
-                tail = net_util.build_fc_model([self.num_hids, out_d], out_activ)
+                tail = net_util.build_fc_model([self.embed_dim, out_d], out_activ)
                 tails.append(tail)
             self.model_tails = nn.ModuleList(tails)
 
