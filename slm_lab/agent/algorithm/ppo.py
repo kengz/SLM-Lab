@@ -179,6 +179,7 @@ class PPO(ActorCritic):
                 states = batch['states']
                 if self.body.env.is_venv:
                     states = math_util.venv_unpack(states)
+                # NOTE states is massive with batch_size = time_horizon * num_envs. Chunk up so forward pass can fit into device esp. GPU
                 num_chunks = int(len(states) / self.minibatch_size)
                 v_preds_chunks = [self.calc_v(states_chunk, use_cache=False) for states_chunk in torch.chunk(states, num_chunks)]
                 v_preds = torch.cat(v_preds_chunks)
