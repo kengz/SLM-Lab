@@ -118,7 +118,7 @@
           "shared": false,
           "pos_encoder": true,
           "num_heads": 8,
-          "num_hids": 256,
+          "num_hids": 128,
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
