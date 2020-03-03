@@ -175,9 +175,6 @@ class PPO(ActorCritic):
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
             clock.set_batch_size(len(batch))
-            if self.body.env.is_venv:  # unpack if venv for minibatch sampling
-                for k, v in batch.items():  # don't unpack ('advs', 'v_targets') anyways
-                    batch[k] = math_util.venv_unpack(v)
             with torch.no_grad():
                 states = batch['states']
                 if self.body.env.is_venv:

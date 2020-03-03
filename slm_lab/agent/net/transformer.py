@@ -22,7 +22,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        seq_len = x.size(1)
+        seq_len = x.shape[1]
         x = x + self.pe[:, :seq_len]
         return self.dropout(x)
 
@@ -78,17 +78,9 @@ class Transformer(nn.Module):
         self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers)
         self.in_dim = in_dim
 
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
-
     def forward(self, x):
-        if self.src_mask is None or self.src_mask.size(0) != len(x):
-            mask = self._generate_square_subsequent_mask(len(x)).to(x.device)
-            self.src_mask = mask
         x = self.embedding(x)
-        output = self.transformer_encoder(x, self.src_mask)
+        output = self.transformer_encoder(x)
         return output
 
 
