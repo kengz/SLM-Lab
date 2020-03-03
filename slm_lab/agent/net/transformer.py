@@ -96,7 +96,8 @@ class Transformer(nn.Module):
         if os.environ.get('PAUSE') == 'true':
             input('to encode transformer x')
             print('x.shape', x.shape)
-        output = self.transformer_encoder(x[0:8])
+            x = x[0:8]
+        output = self.transformer_encoder(x)
         return output
 
 
