@@ -179,10 +179,17 @@ class PPO(ActorCritic):
                 for k, v in batch.items():  # don't unpack ('advs', 'v_targets') anyways
                     batch[k] = math_util.venv_unpack(v)
             with torch.no_grad():
-                v_preds = self.calc_v(batch['states'], use_cache=False)
+                states = batch['states']
+                if self.body.env.is_venv:
+                    states = math_util.venv_unpack(states)
+                v_preds = self.calc_v(states, use_cache=False)
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
-            # piggy back on batch, but don't pack or unpack
+            # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
+            if self.body.env.is_venv:  # unpack if venv for minibatch sampling
+                for k, v in batch.items():
+                    if k not in ('advs', 'v_targets'):
+                        batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
