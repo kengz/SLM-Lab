@@ -37,7 +37,12 @@ class PosEncoder(nn.Module):
         self.pos_encoder = PositionalEncoding(num_hids, dropout)
 
     def forward(self, x):
+        import os
+        if os.environ.get('PAUSE') == 'true':
+            input('to embed x')
         x = self.in_embedding(x)
+        if os.environ.get('PAUSE') == 'true':
+            input('to encode pos')
         x = self.pos_encoder(x)
         return x
 
@@ -81,7 +86,12 @@ class Transformer(nn.Module):
         self.in_dim = in_dim
 
     def forward(self, x):
+        import os
+        if os.environ.get('PAUSE') == 'true':
+            input('to embed transformer x')
         x = self.embedding(x)
+        if os.environ.get('PAUSE') == 'true':
+            input('to encode transformer x')
         output = self.transformer_encoder(x)
         return output
 
