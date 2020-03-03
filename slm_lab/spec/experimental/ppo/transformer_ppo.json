@@ -209,7 +209,7 @@
         "net": {
           "type": "TransformerNet",
           "shared": true,
-          "pos_encoder": true,
+          "pos_encoder": false,
           "num_heads": 8,
           "num_hids": 256,
           "num_layers": 2,

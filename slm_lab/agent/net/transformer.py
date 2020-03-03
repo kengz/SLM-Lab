@@ -61,8 +61,12 @@ class PosEmbedding(nn.Module):
         seq_len = x.shape[1]
         position_ids = torch.arange(seq_len, dtype=torch.long, device=x.device)
         position_ids = position_ids.unsqueeze(0).expand(x.shape[:2])
-
+        import os
+        if os.environ.get('PAUSE') == 'true':
+            input('to embed x')
         inputs_embeds = self.in_embedding(x)
+        if os.environ.get('PAUSE') == 'true':
+            input('to encode pos')
         position_embedding = self.position_embedding(position_ids)
 
         embedding = inputs_embeds + position_embedding
