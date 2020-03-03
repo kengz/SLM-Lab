@@ -96,7 +96,7 @@ class Transformer(nn.Module):
         if os.environ.get('PAUSE') == 'true':
             input('to encode transformer x')
             print('x.shape', x.shape)
-            x = x[0:8]
+            # x = x[0:8]
         output = self.transformer_encoder(x)
         return output
 
@@ -140,8 +140,7 @@ class TransformerNet(Net, nn.Module):
         ])
         assert len(self.in_dim) == 2, f'Transformer only works with stacked (sequence) states'
         in_dim = self.in_dim[-1]
-        self.embed_dim = int(self.num_hids / 4)  # set a reasonable embed_dim going into transformer to handle large batch size
-        self.embed_dim = 16  # set a reasonable embed_dim going into transformer to handle large batch size
+        self.embed_dim = self.num_hids  # set a reasonable embed_dim going into transformer to handle large batch size
         # the transformer encoder feeding to mlp tail
         self.model = Transformer(in_dim=in_dim, embed_dim=self.embed_dim, num_heads=self.num_heads, num_hids=self.num_hids, num_layers=self.num_layers, dropout=self.dropout, pos_encoder=self.pos_encoder)
         # usual tail architecture like MLP
