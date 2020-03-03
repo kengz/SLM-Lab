@@ -12,6 +12,7 @@ class PositionalEncoding(nn.Module):
 
     def __init__(self, d_model, dropout=0.1, max_seq_len=100):
         super().__init__()
+        self.d_model = d_model
         self.dropout = nn.Dropout(p=dropout)
         pe = torch.zeros(max_seq_len, d_model)
         position = torch.arange(0, max_seq_len, dtype=torch.float).unsqueeze(1)
@@ -22,6 +23,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
+        x = x * math.sqrt(self.d_model)
         seq_len = x.shape[1]
         x = x + self.pe[:, :seq_len]
         return self.dropout(x)
