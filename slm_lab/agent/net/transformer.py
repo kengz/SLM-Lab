@@ -10,7 +10,7 @@ import torch.nn as nn
 
 class PositionalEncoding(nn.Module):
 
-    def __init__(self, d_model, dropout=0.1, max_seq_len=5000):
+    def __init__(self, d_model, dropout=0.1, max_seq_len=100):
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
         pe = torch.zeros(max_seq_len, d_model)
@@ -43,7 +43,7 @@ class PosEncoder(nn.Module):
 class PosEmbedding(nn.Module):
     '''Construct the embedding from input (state) and position embedding.'''
 
-    def __init__(self, in_dim, num_hids, dropout, max_seq_len=5000):
+    def __init__(self, in_dim, num_hids, dropout, max_seq_len=100):
         super().__init__()
         self.in_embedding = nn.Linear(in_dim, num_hids)
         self.position_embedding = nn.Embedding(max_seq_len, num_hids)
