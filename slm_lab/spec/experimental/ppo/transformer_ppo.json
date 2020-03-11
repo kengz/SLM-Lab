@@ -119,7 +119,7 @@
           "type": "TransformerNet",
           "shared": false,
           "pos_encoder": "forward",
-          "embed_dim": 32,
+          "embed_dim": 16,
           "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
