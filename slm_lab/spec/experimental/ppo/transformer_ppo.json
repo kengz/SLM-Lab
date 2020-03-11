@@ -261,8 +261,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "time_horizon__grid_search": [1024, 2048],
-          "minibatch_size__grid_search": [128, 256, 512],
+          "time_horizon__grid_search": [2048, 1024],
+          "minibatch_size__grid_search": [512, 256, 128],
         },
         "net": {
           "pos_encoder__grid_search": ["forward", "concat"]
