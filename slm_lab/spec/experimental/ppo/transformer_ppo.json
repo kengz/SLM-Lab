@@ -41,7 +41,7 @@
           "num_hids": 64,
           "num_layers": 1,
           "dropout": 0.0,
-          "clip_grad_val": 0.5,
+          "clip_grad_val": 0.1,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
@@ -124,9 +124,9 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
-          "init_fn": "orthogonal_",
+          "init_fn": "xavier_normal_",
           "batch_norm": false,
-          "clip_grad_val": 0.5,
+          "clip_grad_val": 0.1,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -168,7 +168,7 @@
       "agent": [{
         "net": {
           "embed_dim__grid_search": [8, 16],
-          "num_heads__grid_search": [2, 4],
+          "num_heads__grid_search": [1, 2, 4],
           "num_hids__grid_search": [64, 128, 256],
         }
       }]
@@ -216,8 +216,8 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
-          "init_fn": "orthogonal_",
-          "clip_grad_val": 0.5,
+          "init_fn": "xavier_normal_",
+          "clip_grad_val": 0.1,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -260,8 +260,11 @@
       "agent": [{
         "net": {
           "embed_dim__grid_search": [16, 32, 64],
-          "num_heads__grid_search": [4, 8],
+          "num_heads__grid_search": [1, 2, 4],
         }
+      }],
+      "env": [{
+        "frame_op_len__grid_search": [8, 16]
       }]
     }
   },
@@ -305,8 +308,8 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
-          "init_fn": "orthogonal_",
-          "clip_grad_val": 0.5,
+          "init_fn": "xavier_normal_",
+          "clip_grad_val": 0.1,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
@@ -392,8 +395,8 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
-          "init_fn": "orthogonal_",
-          "clip_grad_val": 0.5,
+          "init_fn": "xavier_normal_",
+          "clip_grad_val": 0.1,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -436,11 +439,11 @@
       "agent": [{
         "net": {
           "embed_dim__grid_search": [32, 64, 128],
-          "num_heads__grid_search": [4, 8],
+          "num_heads__grid_search": [1, 2, 4],
         }
       }],
       "env": [{
-        "frame_op_len__grid_search": [8, 18]
+        "frame_op_len__grid_search": [8, 16]
       }]
     }
   },
@@ -484,8 +487,8 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
-          "init_fn": "orthogonal_",
-          "clip_grad_val": 0.5,
+          "init_fn": "xavier_normal_",
+          "clip_grad_val": 0.1,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
@@ -568,8 +571,8 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
-          "init_fn": "orthogonal_",
-          "clip_grad_val": 0.5,
+          "init_fn": "xavier_normal_",
+          "clip_grad_val": 0.1,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
