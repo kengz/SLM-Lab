@@ -35,6 +35,8 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
+          "pos_encoder": "forward",
+          "embed_dim": 32,
           "num_heads": 2,
           "num_hids": 64,
           "num_layers": 1,
@@ -116,7 +118,8 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "pos_encoder": true,
+          "pos_encoder": "forward",
+          "embed_dim": 32,
           "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
@@ -168,7 +171,7 @@
         },
         "net": {
           "num_hids__grid_search": [64, 128, 256],
-          "pos_encoder__grid_search": [true, false]
+          "pos_encoder__grid_search": ["forward", "concat"]
         }
       }]
     }
@@ -209,7 +212,8 @@
         "net": {
           "type": "TransformerNet",
           "shared": true,
-          "pos_encoder": false,
+          "pos_encoder": "forward",
+          "embed_dim": 32,
           "num_heads": 8,
           "num_hids": 256,
           "num_layers": 2,

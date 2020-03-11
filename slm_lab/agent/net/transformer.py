@@ -29,8 +29,8 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 
-class PosEncoder(nn.Module):
-    '''Construct the positional encoding and pass through an expansion layer.'''
+class PosForwardEncoder(nn.Module):
+    '''Positional encoding by forward-passing input embedding'''
     def __init__(self, in_dim, num_hids, dropout):
         super().__init__()
         self.in_embedding = nn.Linear(in_dim, num_hids)
@@ -42,8 +42,8 @@ class PosEncoder(nn.Module):
         return x
 
 
-class PosEmbedding(nn.Module):
-    '''Construct the embedding from input (state) and position embedding.'''
+class PosConcatEncoder(nn.Module):
+    '''Positional encoding by concatenating positional embedding and input embedding'''
 
     def __init__(self, in_dim, num_hids, dropout, max_seq_len=100):
         super().__init__()
@@ -70,10 +70,12 @@ class Transformer(nn.Module):
 
     def __init__(self, in_dim, embed_dim, num_heads, num_hids, num_layers, dropout=0.5, pos_encoder=True):
         super(Transformer, self).__init__()
-        if pos_encoder:
-            self.embedding = PosEncoder(in_dim, embed_dim, dropout)
+        if pos_encoder == 'forward':
+            self.embedding = PosForwardEncoder(in_dim, embed_dim, dropout)
+        elif pos_encoder == 'concat':
+            self.embedding = PosConcatEncoder(in_dim, embed_dim, dropout)
         else:
-            self.embedding = PosEmbedding(in_dim, embed_dim, dropout)
+            raise ValueError(f'pos_encoder must be of: forward, concat')
         encoder_layers = TransformerEncoderLayer(embed_dim, num_heads, num_hids, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, num_layers)
         self.in_dim = in_dim
@@ -104,6 +106,7 @@ class TransformerNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'shared',
             'pos_encoder',
+            'embed_dim',
             'num_heads',
             'num_hids',
             'num_layers',
@@ -123,7 +126,6 @@ class TransformerNet(Net, nn.Module):
         ])
         assert len(self.in_dim) == 2, f'Transformer only works with stacked (sequence) states'
         in_dim = self.in_dim[-1]
-        self.embed_dim = self.num_hids  # set a reasonable embed_dim going into transformer to handle large batch size
         # the transformer encoder feeding to mlp tail
         self.model = Transformer(in_dim=in_dim, embed_dim=self.embed_dim, num_heads=self.num_heads, num_hids=self.num_hids, num_layers=self.num_layers, dropout=self.dropout, pos_encoder=self.pos_encoder)
         # usual tail architecture like MLP
