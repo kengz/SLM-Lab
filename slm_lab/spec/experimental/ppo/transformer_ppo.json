@@ -119,7 +119,7 @@
           "type": "TransformerNet",
           "shared": false,
           "pos_encoder": "forward",
-          "embed_dim": 16,
+          "embed_dim": 32,
           "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
@@ -160,17 +160,14 @@
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1,
       "num_gpus": 0.25
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "training_epoch__grid_search": [10, 15]
-        },
         "net": {
-          "num_hids__grid_search": [64, 128, 256],
+          "embed_dim__grid_search": [8, 16, 24, 32],
           "pos_encoder__grid_search": ["forward", "concat"]
         }
       }]
