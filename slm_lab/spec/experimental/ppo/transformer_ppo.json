@@ -265,7 +265,7 @@
           "minibatch_size__grid_search": [128, 256, 512],
         },
         "net": {
-          "pos_encoder__grid_search": [true, false]
+          "pos_encoder__grid_search": ["forward", "concat"]
         }
       }]
     }
