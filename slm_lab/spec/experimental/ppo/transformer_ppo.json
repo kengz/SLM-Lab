@@ -385,26 +385,23 @@
         },
         "net": {
           "type": "TransformerNet",
-          "shared": false,
-          "num_heads": 5,
+          "shared": true,
+          "pos_encoder": "forward",
+          "embed_dim": 32,
+          "num_heads": 8,
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
-          "use_same_optim": false,
+          "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
           },
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 2e-4,
-          },
-          "critic_optim_spec": {
-            "name": "Lookahead",
-            "optimizer": "RAdam",
-            "lr": 2e-4,
+            "lr": 3e-4,
           },
           "lr_scheduler_spec": null,
           "gpu": true
@@ -415,7 +412,8 @@
       {
         "name": "RoboschoolHopper-v1",
         "frame_op": "stack",
-        "frame_op_len": 16,
+        "frame_op_len": 8,
+        "normalize_state": true,
         "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
@@ -430,8 +428,20 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 1
+      "max_session": 2,
+      "max_trial": 1,
+      "num_gpus": 0.25
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "embed_dim__grid_search": [32, 64, 128],
+          "num_heads__grid_search": [4, 8],
+        }
+      }],
+      "env": [{
+        "frame_op_len__grid_search": [8, 18]
+      }]
     }
   },
   "transformer_ppo_humanoid": {
