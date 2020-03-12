@@ -41,7 +41,7 @@
           "num_hids": 64,
           "num_layers": 1,
           "dropout": 0.0,
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 1.0,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
@@ -126,7 +126,7 @@
           "dropout": 0.0,
           "init_fn": "xavier_normal_",
           "batch_norm": false,
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 1.0,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -217,7 +217,7 @@
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "xavier_normal_",
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 0.5,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -309,7 +309,7 @@
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "xavier_normal_",
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 0.5,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
@@ -396,7 +396,7 @@
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "xavier_normal_",
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 0.5,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -488,7 +488,7 @@
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "xavier_normal_",
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 0.5,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
@@ -572,7 +572,7 @@
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "xavier_normal_",
-          "clip_grad_val": 0.1,
+          "clip_grad_val": 0.5,
           "use_same_optim": false,
           "loss_spec": {
             "name": "MSELoss"
