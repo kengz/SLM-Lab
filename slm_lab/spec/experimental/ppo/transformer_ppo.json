@@ -167,9 +167,9 @@
     "search": {
       "agent": [{
         "net": {
-          "embed_dim__grid_search": [8, 16, 32],
+          "embed_dim__grid_search": [16, 32],
           "num_heads__grid_search": [1, 2, 4],
-          "num_hids__grid_search": [64, 128, 256],
+          "clip_grad_val__grid_search": [0.1, 0.3, 0.5],
         }
       }]
     }
