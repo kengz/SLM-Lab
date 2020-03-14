@@ -35,7 +35,7 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "pos_encoder": "forward",
+          "pos_encoder": "sinusoid",
           "embed_dim": 32,
           "num_heads": 2,
           "num_hids": 64,
@@ -118,7 +118,7 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "pos_encoder": "forward",
+          "pos_encoder": "sinusoid",
           "embed_dim": 16,
           "num_heads": 4,
           "num_hids": 256,
@@ -210,7 +210,7 @@
         "net": {
           "type": "TransformerNet",
           "shared": true,
-          "pos_encoder": "forward",
+          "pos_encoder": "sinusoid",
           "embed_dim": 32,
           "num_heads": 8,
           "num_hids": 256,
@@ -389,7 +389,7 @@
         "net": {
           "type": "TransformerNet",
           "shared": true,
-          "pos_encoder": "forward",
+          "pos_encoder": "sinusoid",
           "embed_dim": 32,
           "num_heads": 8,
           "num_hids": 256,

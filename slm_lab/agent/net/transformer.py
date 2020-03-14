@@ -23,14 +23,14 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        # x = x * math.sqrt(self.d_model)
+        x = x * math.sqrt(self.d_model)
         seq_len = x.shape[1]
         x = x + self.pe[:, :seq_len]
         return self.dropout(x)
 
 
-class PosForwardEncoder(nn.Module):
-    '''Positional encoding by forward-passing input embedding'''
+class SinusoidPosEncoder(nn.Module):
+    '''Positional encoding via sinusoid function, with forward passing'''
     def __init__(self, in_dim, num_hids, dropout):
         super().__init__()
         self.in_embedding = nn.Linear(in_dim, num_hids)
@@ -42,8 +42,8 @@ class PosForwardEncoder(nn.Module):
         return x
 
 
-class PosConcatEncoder(nn.Module):
-    '''Positional encoding by concatenating positional embedding and input embedding'''
+class LearnedPosEncoder(nn.Module):
+    '''Learned positional encoding, concatenated with input embedding'''
 
     def __init__(self, in_dim, num_hids, dropout, max_seq_len=100):
         super().__init__()
@@ -70,10 +70,10 @@ class Transformer(nn.Module):
 
     def __init__(self, in_dim, embed_dim, num_heads, num_hids, num_layers, dropout=0.5, pos_encoder=True):
         super(Transformer, self).__init__()
-        if pos_encoder == 'forward':
-            self.embedding = PosForwardEncoder(in_dim, embed_dim, dropout)
-        elif pos_encoder == 'concat':
-            self.embedding = PosConcatEncoder(in_dim, embed_dim, dropout)
+        if pos_encoder == 'sinusoid':
+            self.embedding = SinusoidPosEncoder(in_dim, embed_dim, dropout)
+        elif pos_encoder == 'learned':
+            self.embedding = LearnedPosEncoder(in_dim, embed_dim, dropout)
         else:
             raise ValueError(f'pos_encoder must be of: forward, concat')
         encoder_layers = TransformerEncoderLayer(embed_dim, num_heads, num_hids, dropout)
