@@ -126,7 +126,7 @@
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "batch_norm": false,
-          "clip_grad_val": 1.0,
+          "clip_grad_val": 2.0,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -167,10 +167,11 @@
     "search": {
       "agent": [{
         "net": {
-          "embed_dim__grid_search": [8, 16],
           "dropout__grid_search": [0.0, 0.01, 0.05],
-          "clip_grad_val__grid_search": [1.0, 2.0],
-        }
+          "actor_optim_spec": {
+            "lr__grid_search": [1e-3, 4e-3],
+            }
+          }
       }]
     }
   },
