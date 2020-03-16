@@ -168,8 +168,9 @@
       "agent": [{
         "net": {
           "dropout__grid_search": [0.0, 0.01, 0.05],
+          "clip_grad_val__grid_search": [1.0, 2.0],
           "actor_optim_spec": {
-            "lr__grid_search": [1e-4, 5e-4, 1e-3],
+            "lr__grid_search": [1e-3, 2e-3, 3e-3],
             }
           }
       }]
