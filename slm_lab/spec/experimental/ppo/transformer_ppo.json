@@ -1,87 +1,4 @@
 {
-  "transformer_ppo_cartpole": {
-    "agent": [
-      {
-        "name": "PPO",
-        "algorithm": {
-          "name": "PPO",
-          "action_pdtype": "default",
-          "action_policy": "default",
-          "explore_var_spec": null,
-          "gamma": 0.99,
-          "lam": 0.95,
-          "clip_eps_spec": {
-            "name": "no_decay",
-            "start_val": 0.2,
-            "end_val": 0.05,
-            "start_step": 0,
-            "end_step": 10000,
-          },
-          "entropy_coef_spec": {
-            "name": "linear_decay",
-            "start_val": 0.01,
-            "end_val": 0.001,
-            "start_step": 1000,
-            "end_step": 5000,
-          },
-          "val_loss_coef": 0.1,
-          "time_horizon": 32,
-          "minibatch_size": 16,
-          "training_epoch": 4
-        },
-        "memory": {
-          "name": "OnPolicyBatchReplay",
-        },
-        "net": {
-          "type": "TransformerNet",
-          "shared": false,
-          "pos_encoder": "sinusoid",
-          "embed_dim": 32,
-          "num_heads": 2,
-          "num_hids": 64,
-          "num_layers": 1,
-          "dropout": 0.0,
-          "clip_grad_val": 1.0,
-          "use_same_optim": false,
-          "loss_spec": {
-            "name": "MSELoss"
-          },
-          "actor_optim_spec": {
-            "name": "Adam",
-            "lr": 0.02
-          },
-          "critic_optim_spec": {
-            "name": "Adam",
-            "lr": 0.02
-          },
-          "lr_scheduler_spec": null,
-          "gpu": false
-        }
-      }
-    ],
-    "env": [
-      {
-        "name": "CartPole-v0",
-        "frame_op": "stack",
-        "frame_op_len": 8,
-        "num_envs": 4,
-        "max_t": null,
-        "max_frame": 100000
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
-      "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 1
-    }
-  },
   "transformer_ppo_lunar": {
     "agent": [
       {
@@ -126,7 +43,7 @@
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "batch_norm": false,
-          "clip_grad_val": 2.0,
+          "clip_grad_val": 0.5,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
@@ -166,13 +83,12 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "time_horizon__grid_search": [128, 256],
+          "training_epoch__grid_search": [10, 15]
+        },
         "net": {
-          "dropout__grid_search": [0.0, 0.01, 0.05],
-          "clip_grad_val__grid_search": [1.0, 2.0],
-          "actor_optim_spec": {
-            "lr__grid_search": [1e-3, 2e-3, 3e-3],
-            }
-          }
+          "dropout__grid_search": [0.0, 0.01, 0.02],
       }]
     }
   },
