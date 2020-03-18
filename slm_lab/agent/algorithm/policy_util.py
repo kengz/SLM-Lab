@@ -24,21 +24,27 @@ ACTION_PDS = {
 }
 
 
-def get_action_type(action_space):
+def get_space_type(space):
     '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
-    if isinstance(action_space, spaces.Box):
-        shape = action_space.shape
+    if isinstance(space, spaces.Box):
+        shape = space.shape
         assert len(shape) == 1
         if shape[0] == 1:
             return 'continuous'
         else:
             return 'multi_continuous'
-    elif isinstance(action_space, spaces.Discrete):
+    elif isinstance(space, spaces.Discrete):
         return 'discrete'
-    elif isinstance(action_space, spaces.MultiDiscrete):
+    elif isinstance(space, spaces.MultiDiscrete):
         return 'multi_discrete'
-    elif isinstance(action_space, spaces.MultiBinary):
+    elif isinstance(space, spaces.MultiBinary):
         return 'multi_binary'
+    elif isinstance(space, spaces.Tuple):
+        # return "Tuple( " + ', '.join([ get_space_type(space[i])
+        #                                for i in range(len(space))]) + ' )'
+        space_type = get_space_type(space[0])
+        assert all( [ get_space_type(s) == space_type for s in space]), [ get_space_type(s) == space_type for s in space]
+        return space_type
     else:
         raise NotImplementedError
 
@@ -60,7 +66,8 @@ def guard_tensor(state, body):
     '''Guard-cast tensor before being input to network'''
     if isinstance(state, LazyFrames):
         state = state.__array__()  # realize data
-    state = torch.from_numpy(state.astype(np.float32))
+    # state = torch.from_numpy(state.astype(np.float32))
+    state = torch.from_numpy(state).float()
     if not body.env.is_venv or util.in_eval_lab_modes():
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
@@ -80,9 +87,11 @@ def calc_pdparam(state, algorithm, body):
     action_pd = ActionPD(logits=pdparam)  # e.g. ActionPD is Categorical
     action = action_pd.sample()
     '''
+    logger.debug('in calc_pdparam {}'.format(type(state)))
     if not torch.is_tensor(state):  # dont need to cast from numpy
         state = guard_tensor(state, body)
         state = state.to(algorithm.net.device)
+    logger.debug('will algorithm.calc_pdparam')
     pdparam = algorithm.calc_pdparam(state)
     return pdparam
 

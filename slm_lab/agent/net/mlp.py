@@ -5,7 +5,9 @@ import numpy as np
 import pydash as ps
 import torch
 import torch.nn as nn
-
+from collections import Iterable
+from slm_lab.lib import logger
+logger = logger.get_logger(__name__)
 
 class MLPNet(Net, nn.Module):
     '''
@@ -87,6 +89,8 @@ class MLPNet(Net, nn.Module):
             'gpu',
         ])
 
+        self.in_dim = self._adapt_input_dims_to_net(self.in_dim)
+
         dims = [self.in_dim] + self.hid_layers
         self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
         # add last layer with no activation
@@ -108,8 +112,27 @@ class MLPNet(Net, nn.Module):
         self.to(self.device)
         self.train()
 
+    def _adapt_input_dims_to_net(self,in_dim):
+        if isinstance(in_dim, int):
+            return in_dim
+        elif isinstance(in_dim, Iterable):
+            flatten_in_dim = 1
+            for dim in in_dim:
+                flatten_in_dim *= dim
+            flatten_in_dim = int(flatten_in_dim)
+            logger.info("flatten_in_dim {}".format(flatten_in_dim))
+            return flatten_in_dim
+
+    def _adapt_input_to_net(self,observation):
+        batch_size = observation.shape[0]
+        logger.debug("observation).shape {}".format(observation.shape))
+        observation = observation.view(batch_size, -1)
+        logger.debug("observation.view(batch_size, -1).shape {}".format(observation.shape))
+        return observation
+
     def forward(self, x):
         '''The feedforward step'''
+        x = self._adapt_input_to_net(x)
         x = self.model(x)
         if hasattr(self, 'model_tails'):
             outs = []
@@ -120,6 +143,7 @@ class MLPNet(Net, nn.Module):
             return self.model_tail(x)
 
 
+# TODO add _adapt_input_dims_to_net
 class HydraMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
@@ -231,11 +255,30 @@ class HydraMLPNet(Net, nn.Module):
         self.to(self.device)
         self.train()
 
+    def _adapt_input_dims_to_net(self,in_dim):
+        if isinstance(in_dim, int):
+            return in_dim
+        elif isinstance(in_dim, Iterable):
+            flatten_in_dim = 1
+            for dim in in_dim:
+                flatten_in_dim *= dim
+            flatten_in_dim = int(flatten_in_dim)
+            logger.info("flatten_in_dim {}".format(flatten_in_dim))
+            return flatten_in_dim
+
+    def _adapt_input_to_net(self,observation):
+        batch_size = observation.shape[0]
+        logger.debug("observation).shape {}".format(observation.shape))
+        observation = observation.view(batch_size, -1)
+        logger.debug("observation.view(batch_size, -1).shape {}".format(observation.shape))
+        return observation
+
     def build_model_heads(self, in_dim):
         '''Build each model_head. These are stored as Sequential models in model_heads'''
         assert len(self.head_hid_layers) == len(in_dim), 'Hydra head hid_params inconsistent with number in dims'
         model_heads = nn.ModuleList()
         for in_d, hid_layers in zip(in_dim, self.head_hid_layers):
+            in_d = self._adapt_input_dims_to_net(in_d)
             dims = [in_d] + hid_layers
             model_head = net_util.build_fc_model(dims, self.hid_layers_activation)
             model_heads.append(model_head)
@@ -264,6 +307,7 @@ class HydraMLPNet(Net, nn.Module):
         '''The feedforward step'''
         head_xs = []
         for model_head, x in zip(self.model_heads, xs):
+            x = self._adapt_input_to_net(x)
             head_xs.append(model_head(x))
         head_xs = torch.cat(head_xs, dim=-1)
         body_x = self.model_body(head_xs)
@@ -336,6 +380,8 @@ class DuelingMLPNet(MLPNet):
         ])
 
         # Guard against inappropriate algorithms and environments
+        self.in_dim = self._adapt_input_dims_to_net(self.in_dim)
+
         # Build model body
         dims = [self.in_dim] + self.hid_layers
         self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
@@ -349,6 +395,7 @@ class DuelingMLPNet(MLPNet):
 
     def forward(self, x):
         '''The feedforward step'''
+        x = self._adapt_input_to_net(x)
         x = self.model_body(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)

@@ -102,7 +102,7 @@ def test_ppo_sil(spec_file, spec_name):
 
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/sac/sac_cartpole.json', 'sac_cartpole'),
-    ('benchmark/sac/sac_halfcheetah.json', 'sac_halfcheetah'),
+    # ('benchmark/sac/sac_halfcheetah.json', 'sac_halfcheetah'),
 ])
 def test_sac_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
@@ -155,4 +155,41 @@ def test_atari(spec_file, spec_name):
     # ('experimental/misc/random.json', 'random_pendulum'),  # mp EOF error
 ])
 def test_base(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('experimental/ppo/ppo_coin_game.json', 'ppo_coin_game'),
+    ('experimental/ppo/ppo_coin_game.json', 'ppo_coin_game_utilitarian'),
+])
+def test_ppo_coin_game(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('experimental/ppo/ppo_iterated_prisonner_dillema.json', 'ppo_ipd'),
+    ('experimental/ppo/ppo_iterated_prisonner_dillema.json', 'ppo_ipd_utilitarian'),
+])
+def test_ppo_ipd(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('experimental/reinforce/reinforce_coin_game.json', 'reinforce_icoingame'),
+])
+def test_reinforce_coin_game(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('experimental/reinforce/reinforce_guessing_game.json', 'reinforce_guessing_game'),
+])
+def test_reinforce_guessing_game(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('experimental/reinforce/reinforce_iterated_prisonner_dillema.json', 'reinforce_ipd'),
+])
+def test_reinforce_ipd(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

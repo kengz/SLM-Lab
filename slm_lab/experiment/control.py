@@ -2,6 +2,7 @@
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 from slm_lab.agent import Agent, Body
+from slm_lab.agent import world as World
 from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
@@ -10,19 +11,29 @@ from slm_lab.spec import spec_util
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
+from collections.abc import Iterable
 
 
-def make_agent_env(spec, global_nets=None):
-    '''Helper to create agent and env given spec'''
+def make_env_agents_world(spec, global_nets_list=None):
+    '''Helper to create world (with its agents) and env given spec'''
     env = make_env(spec)
-    body = Body(env, spec)
-    agent = Agent(spec, body=body, global_nets=global_nets)
-    return agent, env
+
+    # TODO replace by world and select world type in config. Default is SimpleSingleAgentWorld
+    if "world" not in spec.keys():
+        logger.info("'world' key not in spec. Thus using the default single or multi agent world class.")
+        if len(spec['agent']) > 1:
+            world = World.DefaultMultiAgentWorld(spec, env=env, global_nets_list=global_nets_list)
+        else:
+            world = World.DefaultSingleAgentWorld(spec, env=env, global_nets_list=global_nets_list)
+    else:
+        WorldClass = getattr(World, spec['world']['name'])
+        world = WorldClass(spec, env=env, global_nets_list=global_nets_list)
+    return world, env
 
 
-def mp_run_session(spec, global_nets, mp_dict):
+def mp_run_session(spec, global_nets_list, mp_dict):
     '''Wrap for multiprocessing with shared variable'''
-    session = Session(spec, global_nets)
+    session = Session(spec, global_nets_list)
     metrics = session.run()
     mp_dict[session.index] = metrics
 
@@ -34,7 +45,7 @@ class Session:
     then gather data and analyze it to produce session data.
     '''
 
-    def __init__(self, spec, global_nets=None):
+    def __init__(self, spec, global_nets_list=None):
         self.spec = spec
         self.index = self.spec['meta']['session']
         util.set_random_seed(self.spec)
@@ -42,13 +53,14 @@ class Session:
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
 
-        self.agent, self.env = make_agent_env(self.spec, global_nets)
+        self.world, self.env = make_env_agents_world(self.spec, global_nets_list)
         if ps.get(self.spec, 'meta.rigorous_eval'):
             with util.ctx_lab_mode('eval'):
                 self.eval_env = make_env(self.spec)
         else:
             self.eval_env = self.env
         logger.info(util.self_desc(self))
+        logger.debug("End of Session __init__")
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
@@ -60,54 +72,67 @@ class Session:
         to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame
         return to_ckpt
 
-    def try_ckpt(self, agent, env):
+    def try_ckpt(self, world, env):
         '''Check then run checkpoint log/eval'''
-        body = agent.body
         if self.to_ckpt(env, 'log'):
-            body.ckpt(self.env, 'train')
-            body.log_summary('train')
-            if body.total_reward_ma >= body.best_total_reward_ma:
-                body.best_total_reward_ma = body.total_reward_ma
-                agent.save(ckpt='best')
-            if len(body.train_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
-                body.log_metrics(metrics['scalar'], 'train')
+            for body in world.bodies:
+                body.ckpt(self.env, 'train')
+                body.log_summary('train')
+                if len(body.train_df) > 2:  # need more rows to calculate metrics
+                    metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
+                    body.log_metrics(metrics['scalar'], 'train')
+            # if body.total_reward_ma >= body.best_total_reward_ma:
+            #     body.best_total_reward_ma = body.total_reward_ma
+            if world.total_rewards_ma >= world.best_total_rewards_ma:
+                world.best_total_rewards_ma = world.total_rewards_ma
+                world.save(ckpt='best')
 
-        if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
-            logger.info('Running eval ckpt')
-            analysis.gen_avg_return(agent, self.eval_env)
-            body.ckpt(self.eval_env, 'eval')
-            body.log_summary('eval')
-            if len(body.eval_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
-                body.log_metrics(metrics['scalar'], 'eval')
+            if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
+                logger.info('Running eval ckpt')
+
+                for agent in world.agents:
+                    analysis.gen_avg_return(agent, self.eval_env)
+                for body in world.bodies:
+                    body.ckpt(self.eval_env, 'eval')
+                    body.log_summary('eval')
+                    if len(body.eval_df) > 2:  # need more rows to calculate metrics
+                        metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
+                        body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
+        logger.debug("first reset env")
         state = self.env.reset()
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
-                self.try_ckpt(self.agent, self.env)
+                self.try_ckpt(self.world, self.env)
                 if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
+                    logger.debug("will reset env")
                     state = self.env.reset()
                     done = False
-            self.try_ckpt(self.agent, self.env)
+            self.try_ckpt(self.world, self.env)
             if clock.get() >= clock.max_frame:  # finish
                 break
             clock.tick('t')
+            logger.debug("state {}".format(state))
+            logger.debug("will act")
             with torch.no_grad():
-                action = self.agent.act(state)
+                action = self.world.act(state)
+            logger.debug("will get next state")
+            # logger.info("action {}".format(action))
             next_state, reward, done, info = self.env.step(action)
-            self.agent.update(state, action, reward, next_state, done)
+            logger.debug("will update agent")
+            # logger.info("reward {}".format(reward))
+            self.world.update(state, action, reward, next_state, done)
             state = next_state
 
     def close(self):
         '''Close session and clean up. Save agent, close env.'''
-        self.agent.close()
+        self.world.close()
         self.env.close()
         self.eval_env.close()
         torch.cuda.empty_cache()
@@ -115,10 +140,20 @@ class Session:
 
     def run(self):
         self.run_rl()
-        metrics = analysis.analyze_session(self.spec, self.agent.body.eval_df, 'eval')
-        self.agent.body.log_metrics(metrics['scalar'], 'eval')
+        bodies = self.world.bodies
+        if not isinstance(bodies, list):
+            bodies = [bodies]
+
+        all_metrics = []
+        for body in bodies:
+            metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval')
+            body.log_metrics(metrics['scalar'], 'eval')
+            all_metrics.append(metrics)
+        # TODO manage metrics in multi agent setups
+        if len(all_metrics) == 1:
+            all_metrics = all_metrics[0]
         self.close()
-        return metrics
+        return all_metrics
 
 
 class Trial:
@@ -134,13 +169,13 @@ class Trial:
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='trial')
 
-    def parallelize_sessions(self, global_nets=None):
+    def parallelize_sessions(self, global_nets_list=None):
         mp_dict = mp.Manager().dict()
         workers = []
         spec = deepcopy(self.spec)
         for _s in range(spec['meta']['max_session']):
             spec_util.tick(spec, 'session')
-            w = mp.Process(target=mp_run_session, args=(spec, global_nets, mp_dict))
+            w = mp.Process(target=mp_run_session, args=(spec, global_nets_list, mp_dict))
             w.start()
             workers.append(w)
         for w in workers:
@@ -161,13 +196,13 @@ class Trial:
     def init_global_nets(self):
         session = Session(deepcopy(self.spec))
         session.env.close()  # safety
-        global_nets = net_util.init_global_nets(session.agent.algorithm)
-        return global_nets
+        global_nets_list = net_util.init_global_nets(session.world.algorithms)
+        return global_nets_list
 
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
-        global_nets = self.init_global_nets()
-        session_metrics_list = self.parallelize_sessions(global_nets)
+        global_nets_list = self.init_global_nets()
+        session_metrics_list = self.parallelize_sessions(global_nets_list)
         return session_metrics_list
 
     def close(self):

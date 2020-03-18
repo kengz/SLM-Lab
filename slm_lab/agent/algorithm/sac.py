@@ -46,7 +46,7 @@ class SoftActorCritic(ActorCritic):
             'training_frequency',
             'training_start_step',
         ])
-        if self.body.is_discrete:
+        if self.body.action_space_is_discrete:
             assert self.action_pdtype == 'GumbelSoftmax'
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -75,7 +75,7 @@ class SoftActorCritic(ActorCritic):
         # temperature variable to be learned, and its target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
-        if self.body.is_discrete:
+        if self.body.action_space_is_discrete:
             self.target_entropy = - self.body.action_space.n
         else:
             self.target_entropy = - np.product(self.body.action_space.shape)
@@ -98,7 +98,7 @@ class SoftActorCritic(ActorCritic):
             return policy_util.random(state, self, self.body).cpu().squeeze().numpy()
         else:
             action = self.action_policy(state, self, self.body)
-            if not self.body.is_discrete:
+            if not self.body.action_space_is_discrete:
                 action = self.scale_action(torch.tanh(action))  # continuous action bound
             return action.cpu().squeeze().numpy()
 
@@ -110,7 +110,7 @@ class SoftActorCritic(ActorCritic):
 
     def guard_q_actions(self, actions):
         '''Guard to convert actions to one-hot for input to Q-network'''
-        if self.body.is_discrete:
+        if self.body.action_space_is_discrete:
             # TODO support multi-discrete actions
             actions = F.one_hot(actions.long(), self.body.action_dim).float()
         return actions
@@ -118,7 +118,7 @@ class SoftActorCritic(ActorCritic):
     def calc_log_prob_action(self, action_pd, reparam=False):
         '''Calculate log_probs and actions with option to reparametrize from paper eq. 11'''
         samples = action_pd.rsample() if reparam else action_pd.sample()
-        if self.body.is_discrete:  # this is straightforward using GumbelSoftmax
+        if self.body.action_space_is_discrete:  # this is straightforward using GumbelSoftmax
             actions = samples
             log_probs = action_pd.log_prob(actions)
         else:
@@ -132,7 +132,7 @@ class SoftActorCritic(ActorCritic):
 
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
-        if not self.body.is_discrete and action.dim() == 1:  # handle shape consistency for single continuous action
+        if not self.body.action_space_is_discrete and action.dim() == 1:  # handle shape consistency for single continuous action
             action = action.unsqueeze(dim=-1)
         q_pred = net(state, action).view(-1)
         return q_pred

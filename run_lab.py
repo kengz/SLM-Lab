@@ -17,9 +17,15 @@ import torch.multiprocessing as mp
 
 debug_modules = [
     # 'algorithm',
+    # 'net',
+    # 'agent',
+    # 'experiment',
+    # 'control',
+    # 'experiment.control'
 ]
 debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
+# logger.set_level(debug_level)
 logger = logger.get_logger(__name__)
 
 
@@ -28,6 +34,7 @@ def run_spec(spec, lab_mode):
     os.environ['lab_mode'] = lab_mode
     if lab_mode in TRAIN_MODES:
         spec_util.save(spec)  # first save the new spec
+        spec = spec_util.spec_copy_n(spec)
         if lab_mode == 'dev':
             spec = spec_util.override_dev_spec(spec)
         if lab_mode == 'search':

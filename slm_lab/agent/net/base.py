@@ -52,3 +52,11 @@ class Net(ABC):
         '''Stores the gradient norms for debugging.'''
         norms = [param.grad.norm().item() for param in self.parameters()]
         self.grad_norms = norms
+
+    def _adapt_input_dims_to_net(self,in_dim):
+        """Adapt the input dim for the net to the needed shape"""
+        raise NotImplementedError
+
+    def _adapt_input_to_net(self,observation):
+        """Adapt the input for the net to the needed shape"""
+        raise NotImplementedError

@@ -5,28 +5,44 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
 import time
+from gym.spaces import Discrete, Tuple
 
 logger = logger.get_logger(__name__)
 
 
 def set_gym_space_attr(gym_space):
     '''Set missing gym space attributes for standardization'''
-    if isinstance(gym_space, spaces.Box):
-        setattr(gym_space, 'is_discrete', False)
-    elif isinstance(gym_space, spaces.Discrete):
-        setattr(gym_space, 'is_discrete', True)
-        setattr(gym_space, 'low', 0)
-        setattr(gym_space, 'high', gym_space.n)
-    elif isinstance(gym_space, spaces.MultiBinary):
-        setattr(gym_space, 'is_discrete', True)
-        setattr(gym_space, 'low', np.full(gym_space.n, 0))
-        setattr(gym_space, 'high', np.full(gym_space.n, 2))
-    elif isinstance(gym_space, spaces.MultiDiscrete):
-        setattr(gym_space, 'is_discrete', True)
-        setattr(gym_space, 'low', np.zeros_like(gym_space.nvec))
-        setattr(gym_space, 'high', np.array(gym_space.nvec))
+
+    def set_gym_space(gym_space):
+        if isinstance(gym_space, spaces.Box):
+            setattr(gym_space, 'is_discrete', False)
+        elif isinstance(gym_space, spaces.Discrete):
+            setattr(gym_space, 'is_discrete', True)
+            setattr(gym_space, 'low', 0)
+            setattr(gym_space, 'high', gym_space.n)
+        elif isinstance(gym_space, spaces.MultiBinary):
+            setattr(gym_space, 'is_discrete', True)
+            setattr(gym_space, 'low', np.full(gym_space.n, 0))
+            setattr(gym_space, 'high', np.full(gym_space.n, 2))
+        elif isinstance(gym_space, spaces.MultiDiscrete):
+            setattr(gym_space, 'is_discrete', True)
+            setattr(gym_space, 'low', np.zeros_like(gym_space.nvec))
+            setattr(gym_space, 'high', np.array(gym_space.nvec))
+        elif isinstance(gym_space, spaces.Tuple):
+            # assert all([a_s.shape == gym_space[0].shape for a_s in gym_space])
+            # action_dim = set_gym_space(gym_space[0])
+            for g_s in gym_space:
+                set_gym_space(g_s)
+        else:
+            raise ValueError('gym_space not recognized')
+
+
+    print("isinstance(gym_space, tuple)", isinstance(gym_space, Tuple))
+    if isinstance(gym_space, Tuple):
+        for gym_s in gym_space:
+            set_gym_space(gym_s)
     else:
-        raise ValueError('gym_space not recognized')
+        set_gym_space(gym_space)
 
 
 class Clock:
@@ -133,25 +149,63 @@ class BaseEnv(ABC):
         set_gym_space_attr(action_space)
         return observation_space, action_space
 
-    def _get_observable_dim(self, observation_space):
-        '''Get the observable dim for an agent in env'''
-        state_dim = observation_space.shape
-        if len(state_dim) == 1:
-            state_dim = state_dim[0]
-        return {'state': state_dim}
+    # def _get_observable_dim(self, observation_space, first_recurrence=True):
+    #     '''Get the observable dim for an agent in env'''
+    #     # state_dim = observation_space.shape
+    #     # if len(state_dim) == 1:
+    #     #     state_dim = state_dim[0]
+    #
+    #     if isinstance(observation_space, spaces.Box):
+    #         assert len(observation_space.shape) == 1
+    #         state_dim = observation_space.shape[0]
+    #     elif isinstance(observation_space, (spaces.Discrete, spaces.MultiBinary)):
+    #         state_dim = observation_space.n
+    #     elif isinstance(observation_space, spaces.MultiDiscrete):
+    #         state_dim = observation_space.nvec.tolist()
+    #     elif isinstance(observation_space, spaces.Tuple):
+    #         assert all([a_s.shape == observation_space[0].shape for a_s in observation_space])
+    #         state_dim = self._get_observable_dim(observation_space[0], first_recurrence=False)
+    #     else:
+    #         raise ValueError('observation_space not recognized')
+    #
+    #     if first_recurrence:
+    #         return {'state': state_dim}
+    #     else:
+    #         return state_dim
+    #
+    # def _get_action_dim(self, action_space):
+    #     '''Get the action dim for an action_space for agent to use'''
+    #     if isinstance(action_space, spaces.Box):
+    #         assert len(action_space.shape) == 1
+    #         action_dim = action_space.shape[0]
+    #     elif isinstance(action_space, (spaces.Discrete, spaces.MultiBinary)):
+    #         action_dim = action_space.n
+    #     elif isinstance(action_space, spaces.MultiDiscrete):
+    #         action_dim = action_space.nvec.tolist()
+    #     elif isinstance(action_space, spaces.Tuple):
+    #         assert all([a_s.shape == action_space[0].shape for a_s in action_space])
+    #         action_dim = self._get_action_dim(action_space[0])
+    #     else:
+    #         raise ValueError('action_space not recognized')
+    #     return action_dim
 
-    def _get_action_dim(self, action_space):
+    def _get_space_dim(self, space):
         '''Get the action dim for an action_space for agent to use'''
-        if isinstance(action_space, spaces.Box):
-            assert len(action_space.shape) == 1
-            action_dim = action_space.shape[0]
-        elif isinstance(action_space, (spaces.Discrete, spaces.MultiBinary)):
-            action_dim = action_space.n
-        elif isinstance(action_space, spaces.MultiDiscrete):
-            action_dim = action_space.nvec.tolist()
+        logger.info("space.shape {}".format(space.shape))
+        if isinstance(space, spaces.Box):
+            # TODO investigate why this assert was needed
+            # assert len(space.shape) == 1
+            dim = space.shape
+        elif isinstance(space, (spaces.Discrete, spaces.MultiBinary)):
+            dim = tuple([space.n])
+        elif isinstance(space, spaces.MultiDiscrete):
+            dim = space.nvec.tolist()
+        elif isinstance(space, spaces.Tuple):
+            assert all([a_s.shape == space[0].shape for a_s in space]), [a_s.shape == space[0].shape for a_s in space]
+            dim = self._get_space_dim(space[0])
         else:
             raise ValueError('action_space not recognized')
-        return action_dim
+        return dim
 
     def _infer_frame_attr(self, spec):
         '''Infer frame attributes'''
@@ -166,9 +220,12 @@ class BaseEnv(ABC):
         '''Infer vectorized env attributes'''
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)
 
-    def _is_discrete(self, action_space):
-        '''Check if an action space is discrete'''
-        return util.get_class_name(action_space) != 'Box'
+    def _is_discrete(self, space):
+        '''Check if an space is discrete'''
+
+        logger.info("util.get_class_name(space) {}".format(util.get_class_name(space)))
+        # return util.get_class_name(space) != 'Box'
+        return "Discrete" in util.get_class_name(space)
 
     def _set_clock(self):
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
@@ -177,9 +234,17 @@ class BaseEnv(ABC):
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''
         self.observation_space, self.action_space = self._get_spaces(u_env)
-        self.observable_dim = self._get_observable_dim(self.observation_space)
-        self.action_dim = self._get_action_dim(self.action_space)
-        self.is_discrete = self._is_discrete(self.action_space)
+        # self.observable_dim = self._get_observable_dim(self.observation_space)
+        # self.action_dim = self._get_action_dim(self.action_space)
+        self.observable_dim = self._get_space_dim(self.observation_space)
+        self.action_dim = self._get_space_dim(self.action_space)
+        if not isinstance(self.action_space, spaces.MultiDiscrete):
+            assert len(self.action_dim) == 1, self.action_dim
+            self.action_dim = self.action_dim[0]
+        self.action_space_is_discrete = self._is_discrete(self.action_space)
+        self.observation_space_is_discrete = self._is_discrete(self.observation_space)
+        logger.info("self.action_space_is_discrete {}".format(self.action_space_is_discrete))
+        logger.info("self.observation_space_is_discrete {}".format(self.observation_space_is_discrete))
 
     def _update_total_reward(self, info):
         '''Extract total_reward from info (set in wrapper) into self.total_reward for single and vec env'''

@@ -93,16 +93,24 @@ def get_optim(net, optim_spec):
 
 
 def get_policy_out_dim(body):
-    '''Helper method to construct the policy network out_dim for a body according to is_discrete, action_type'''
+    '''
+    Helper method to construct the policy network out_dim for a body
+    according to is_discrete, action_type
+    '''
     action_dim = body.action_dim
-    if body.is_discrete:
+    logger.info("action_dim {}".format(action_dim))
+    if body.action_space_is_discrete:
         if body.action_type == 'multi_discrete':
             assert ps.is_list(action_dim), action_dim
             policy_out_dim = action_dim
         else:
+            # assert len(action_dim) == 1, action_dim
+            # action_dim = action_dim[0]
             assert ps.is_integer(action_dim), action_dim
             policy_out_dim = action_dim
     else:
+        # assert len(action_dim) == 1, action_dim
+        # action_dim = action_dim[0]
         assert ps.is_integer(action_dim), action_dim
         if action_dim == 1:  # single action, use [loc, scale]
             policy_out_dim = 2
@@ -308,38 +316,42 @@ def get_grad_norms(algorithm):
     return grad_norms
 
 
-def init_global_nets(algorithm):
+def init_global_nets(algorithms):
     '''
     Initialize global_nets for Hogwild using an identical instance of an algorithm from an isolated Session
     in spec.meta.distributed, specify either:
     - 'shared': global network parameter is shared all the time. In this mode, algorithm local network will be replaced directly by global_net via overriding by identify attribute name
     - 'synced': global network parameter is periodically synced to local network after each gradient push. In this mode, algorithm will keep a separate reference to `global_{net}` for each of its network
     '''
-    dist_mode = algorithm.agent.spec['meta']['distributed']
-    assert dist_mode in ('shared', 'synced'), f'Unrecognized distributed mode'
-    global_nets = {}
-    for net_name in algorithm.net_names:
-        optim_name = net_name.replace('net', 'optim')
-        if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
-            continue
-        g_net = getattr(algorithm, net_name)
-        g_net.share_memory()  # make net global
-        if dist_mode == 'shared':  # use the same name to override the local net
-            global_nets[net_name] = g_net
-        else:  # keep a separate reference for syncing
-            global_nets[f'global_{net_name}'] = g_net
-        # if optim is Global, set to override the local optim and its scheduler
-        optim = getattr(algorithm, optim_name)
-        if hasattr(optim, 'share_memory'):
-            optim.share_memory()  # make optim global
-            global_nets[optim_name] = optim
-            if hasattr(optim, 'optimizer'):  # for Lookahead with an inner optimizer
-                global_nets[f'{optim_name}_optimizer'] = optim.optimizer
-            lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
-            lr_scheduler = getattr(algorithm, lr_scheduler_name)
-            global_nets[lr_scheduler_name] = lr_scheduler
-    logger.info(f'Initialized global_nets attr {list(global_nets.keys())} for Hogwild')
-    return global_nets
+    global_nets_list = []
+    for algorithm in algorithms:
+        dist_mode = algorithm.agent.spec['meta']['distributed']
+        assert dist_mode in ('shared', 'synced'), f'Unrecognized distributed mode'
+        global_nets = {}
+        for net_name in algorithm.net_names:
+            optim_name = net_name.replace('net', 'optim')
+            if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
+                continue
+            g_net = getattr(algorithm, net_name)
+            g_net.share_memory()  # make net global
+            if dist_mode == 'shared':  # use the same name to override the local net
+                global_nets[net_name] = g_net
+            else:  # keep a separate reference for syncing
+                global_nets[f'global_{net_name}'] = g_net
+            # if optim is Global, set to override the local optim and its scheduler
+            optim = getattr(algorithm, optim_name)
+            if hasattr(optim, 'share_memory'):
+                optim.share_memory()  # make optim global
+                global_nets[optim_name] = optim
+                if hasattr(optim, 'optimizer'):  # for Lookahead with an inner optimizer
+                    global_nets[f'{optim_name}_optimizer'] = optim.optimizer
+                lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
+                lr_scheduler = getattr(algorithm, lr_scheduler_name)
+                global_nets[lr_scheduler_name] = lr_scheduler
+        logger.info(f'Initialized global_nets attr {list(global_nets.keys())} for Hogwild')
+
+        global_nets_list.append(global_nets)
+    return global_nets_list
 
 
 def set_global_nets(algorithm, global_nets):

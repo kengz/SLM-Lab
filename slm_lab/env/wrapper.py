@@ -6,7 +6,7 @@ from gym import spaces
 from slm_lab.lib import util
 import gym
 import numpy as np
-
+from collections import Iterable
 
 def try_scale_reward(cls, reward):
     '''Env class to scale reward'''
@@ -332,7 +332,10 @@ class TrackReward(gym.Wrapper):
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
-        self.tracked_reward += reward
+        if isinstance(reward, Iterable):
+            self.tracked_reward += sum(reward)
+        else:
+            self.tracked_reward += reward
         # fix shape by inferring from reward
         if np.isscalar(self.total_reward) and not np.isscalar(reward):
             self.total_reward = np.full_like(reward, self.total_reward)
@@ -382,13 +385,19 @@ def wrap_deepmind(env, episode_life=True, stack_len=None, image_downsize=None):
 def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, image_downsize=None, reward_scale=None, normalize_state=False, episode_life=True):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
+
+    # is_a_multi_agent_env = True if hasattr(env, "NUM_AGENTS") and env.NUM_AGENTS > 1 else False
+    # env_observation_space = env.observation_space[0] if is_a_multi_agent_env else env.observation_space
+
+    is_img_obs_env = True if hasattr(env, "_obs_type") and env._obs_type == 'image' else False
+
     if seed is not None:
         env.seed(seed)
     if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
         env = wrap_deepmind(env, episode_life, frame_op_len, image_downsize)
-    elif len(env.observation_space.shape) == 3:  # image-state env
+    elif is_img_obs_env:  # image-state env
         env = PreprocessImage(env, image_downsize)
         if normalize_state:
             env = NormalizeStateEnv(env)

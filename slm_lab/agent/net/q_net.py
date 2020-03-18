@@ -7,10 +7,16 @@ from slm_lab.lib import util
 import pydash as ps
 import torch
 import torch.nn as nn
+from collections import Iterable
+from slm_lab.lib import logger
 
+logger = logger.get_logger(__name__)
 
 class QMLPNet(MLPNet):
     def __init__(self, net_spec, in_dim, out_dim):
+
+        in_dim = self._adapt_input_dims_to_net(in_dim)
+
         state_dim, action_dim = in_dim
         nn.Module.__init__(self)
         Net.__init__(self, net_spec, in_dim, out_dim)
@@ -52,7 +58,24 @@ class QMLPNet(MLPNet):
         self.to(self.device)
         self.train()
 
+    def _adapt_input_dims_to_net(self,in_dim):
+        formated = []
+        for el in in_dim:
+            if isinstance(el, int):
+                formated.append(el)
+            elif isinstance(el, Iterable):
+                flatten_in_dim = 1
+                for dim in el:
+                    flatten_in_dim *= dim
+                flatten_in_dim = int(flatten_in_dim)
+                logger.info("flatten_in_dim {}".format(flatten_in_dim))
+                formated.append(flatten_in_dim)
+        return tuple(formated)
+
     def forward(self, state, action):
+        state = self._adapt_input_to_net(state)
+        action = self._adapt_input_to_net(action)
+
         s_a = torch.cat((state, action), dim=-1)
         s_a = self.model(s_a)
         return self.model_tail(s_a)

@@ -1,11 +1,12 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.lib import math_util, util
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 
+from slm_lab.lib import logger
 logger = logger.get_logger(__name__)
 
 
@@ -91,7 +92,8 @@ class Reinforce(Algorithm):
 
     @lab_api
     def calc_pdparam(self, x, net=None):
-        '''The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.'''
+        '''The pdparam (proba distrib param) will be the logits for discrete prob. dist., or the mean and std for
+        continuous prob. dist.'''
         net = self.net if net is None else net
         pdparam = net(x)
         return pdparam

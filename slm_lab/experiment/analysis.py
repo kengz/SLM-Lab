@@ -21,30 +21,36 @@ logger = logger.get_logger(__name__)
 
 # methods to generate returns (total rewards)
 
-def gen_return(agent, env):
+# TODO currently not supported nor tested
+def gen_return(world, env):
     '''Generate return for an agent and an env in eval mode. eval_env should be a vec env with NUM_EVAL instances'''
     vec_dones = False  # done check for single and vec env
     # swap ref to allow inference based on body.env
-    body_env = agent.body.env
-    agent.body.env = env
+    # body_env = world.bodies.env
+    # world.bodies.env = env
+    body_env = [ b.env for b in world.bodies]
+    for b in world.bodies:
+        b.env = env
     # start eval loop
     state = env.reset()
     while not np.all(vec_dones):
-        action = agent.act(state)
+        action = world.act(state)
         state, reward, done, info = env.step(action)
         vec_dones = np.logical_or(vec_dones, done)  # wait till every vec slot done turns True
-    agent.body.env = body_env  # restore swapped ref
+    # world.bodies.env = body_env  # restore swapped ref
+    for b, swapped_env in zip(world.bodies, body_env):
+        b.env = env
     return np.mean(env.total_reward)
 
-
-def gen_avg_return(agent, env):
+# TODO currently not supported nor tested
+def gen_avg_return(world, env):
     '''Generate average return for agent and an env'''
     with util.ctx_lab_mode('eval'):  # enter eval context
-        agent.algorithm.update()  # set explore_var etc. to end_val under ctx
+        world.algorithm.update()  # set explore_var etc. to end_val under ctx
     with torch.no_grad():
-        ret = gen_return(agent, env)
+        ret = gen_return(world, env)
     # exit eval context, restore variables simply by updating
-    agent.algorithm.update()
+    world.algorithm.update()
     return ret
 
 
@@ -258,9 +264,18 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
     return session_metrics
 
 
-def analyze_trial(trial_spec, session_metrics_list):
+def analyze_trial(trial_spec, session_metrics_list_list):
     '''Analyze trial and save data, then return metrics'''
     info_prepath = trial_spec['meta']['info_prepath']
+
+    # TODO merge mmetric of Multi agent before ! Analysis is be incorrect in multi agent
+    if isinstance(session_metrics_list_list,list) and isinstance(session_metrics_list_list[0],list):
+        session_metrics_list = []
+        for l in session_metrics_list_list:
+            session_metrics_list.extend(l)
+    else:
+        session_metrics_list = session_metrics_list_list
+
     # calculate metrics
     trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
     # plot graphs

@@ -41,8 +41,12 @@ net = RecurrentNet(net_spec, in_dim, out_dim)
 # init net optimizer and its lr scheduler
 optim = net_util.get_optim(net, net.optim_spec)
 lr_scheduler = net_util.get_lr_scheduler(optim, net.lr_scheduler_spec)
-x = torch.rand((batch_size, seq_len, state_dim))
 
+x = torch.rand((batch_size, seq_len, state_dim))
+x = x.to( 'cuda' if torch.cuda.is_available() else 'cpu')
+
+y = torch.rand((batch_size, out_dim))
+y = y.to('cuda' if torch.cuda.is_available() else 'cpu')
 
 def test_init():
     net = RecurrentNet(net_spec, in_dim, out_dim)
@@ -55,12 +59,11 @@ def test_init():
 
 
 def test_forward():
-    y = net.forward(x)
-    assert y.shape == (batch_size, out_dim)
+    y_pred = net.forward(x)
+    assert y_pred.shape == (batch_size, out_dim)
 
 
 def test_train_step():
-    y = torch.rand((batch_size, out_dim))
     clock = Clock(100, 1)
     loss = net.loss_fn(net.forward(x), y)
     net.train_step(loss, optim, lr_scheduler, clock=clock)
@@ -81,8 +84,8 @@ def test_variant(bidirectional, cell_type):
     assert not hasattr(net, 'model_tails')
     assert net.rnn_model.bidirectional == bidirectional
 
-    y = net.forward(x)
-    assert y.shape == (batch_size, out_dim)
+    y_pred = net.forward(x)
+    assert y_pred.shape == (batch_size, out_dim)
 
 
 def test_no_fc():
@@ -95,8 +98,8 @@ def test_no_fc():
     assert hasattr(net, 'model_tail')
     assert not hasattr(net, 'model_tails')
 
-    y = net.forward(x)
-    assert y.shape == (batch_size, out_dim)
+    y_pred = net.forward(x)
+    assert y_pred.shape == (batch_size, out_dim)
 
 
 def test_multitails():
@@ -108,7 +111,7 @@ def test_multitails():
     assert hasattr(net, 'model_tails')
     assert len(net.model_tails) == 2
 
-    y = net.forward(x)
-    assert len(y) == 2
-    assert y[0].shape == (batch_size, 3)
-    assert y[1].shape == (batch_size, 4)
+    y_pred = net.forward(x)
+    assert len(y_pred) == 2
+    assert y_pred[0].shape == (batch_size, 3)
+    assert y_pred[1].shape == (batch_size, 4)

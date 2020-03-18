@@ -7,7 +7,7 @@ from slm_lab.lib.decorator import lab_api
 import gym
 import numpy as np
 import pydash as ps
-import roboschool
+# import roboschool
 
 
 logger = logger.get_logger(__name__)
@@ -39,6 +39,7 @@ class OpenAIEnv(BaseEnv):
             self.u_env = make_gym_venv(name=self.name, num_envs=self.num_envs, seed=seed, frame_op=self.frame_op, frame_op_len=self.frame_op_len, image_downsize=self.image_downsize, reward_scale=self.reward_scale, normalize_state=self.normalize_state, episode_life=episode_life)
         else:
             self.u_env = make_gym_env(name=self.name, seed=seed, frame_op=self.frame_op, frame_op_len=self.frame_op_len, image_downsize=self.image_downsize, reward_scale=self.reward_scale, normalize_state=self.normalize_state, episode_life=episode_life)
+        self.NUM_AGENTS = self.u_env.NUM_AGENTS if hasattr(self.u_env, "NUM_AGENTS") else 1
         if self.name.startswith('Unity'):
             # Unity is always initialized as singleton gym env, but the Unity runtime can be vec_env
             self.num_envs = self.u_env.num_envs
@@ -57,23 +58,80 @@ class OpenAIEnv(BaseEnv):
     def reset(self):
         self.done = False
         state = self.u_env.reset()
+
+        state = self._convert_discrete_state_to_one_hot_numpy(state)
+
         if self.to_render:
-            self.u_env.render()
+            try:
+                self.u_env.render()
+            except NotImplementedError:
+                logger.warning("env.render method is not implemented")
+                self.to_render = False
+
+
+        if self.NUM_AGENTS == 1:  # Adapt to env with single agent
+            state = [state]
+
         return state
 
     @lab_api
     def step(self, action):
-        if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
+
+        if self.NUM_AGENTS == 1:  # Adapt to env with single agent
+            action = action[0]
+
+        if not self.action_space_is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
             action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
+
+        state = self._convert_discrete_state_to_one_hot_numpy(state)
+
         self._update_total_reward(info)
         if self.to_render:
-            self.u_env.render()
+            try:
+                self.u_env.render()
+            except NotImplementedError:
+                logger.warning("env.render method is not implemented")
+                self.to_render = False
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
         self.done = done
+
+        if self.NUM_AGENTS == 1:  # Adapt to env with single agent
+            state = [state]
+            reward = [reward]
+
+        # logger.info(f"state {state} {type(state)}")
+        # logger.info(f"reward {reward} {type(reward)}")
+
         return state, reward, done, info
+
+    def _convert_discrete_state_to_one_hot_numpy(self, state):
+        logger.debug("self.observation_space_is_discrete {}".format(self.observation_space_is_discrete))
+        if self.observation_space_is_discrete:
+            def to_one_hot(array, n_values):
+                return np.eye(n_values)[array.astype(np.int)]
+
+            logger.debug("self.observable_dim {}".format(self.observable_dim))
+            # TODO check support MultiDiscrete
+            assert len(self.observable_dim) ==1
+            observation_space = self.observable_dim[0]
+
+            state = np.array(state)
+            state = to_one_hot(state, observation_space)
+            logger.debug("state after _convert_discrete_state_to_one_hot_numpy {}".format(state.shape))
+        return state
 
     @lab_api
     def close(self):
         self.u_env.close()
+
+
+    def _is_discrete(self, space):
+        '''Check if an space is discrete'''
+        is_a_multi_agent_env = True if hasattr(self.u_env, "NUM_AGENTS") and self.u_env.NUM_AGENTS > 1 else False
+        space = space[0] if is_a_multi_agent_env else space
+
+        logger.debug("util.get_class_name(space) {}".format(util.get_class_name(space)))
+        # return util.get_class_name(space) != 'Box'
+        return "Discrete" in util.get_class_name(space)

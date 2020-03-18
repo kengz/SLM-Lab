@@ -4,7 +4,8 @@ from slm_lab.lib import logger, util
 import gym
 import numpy as np
 import pydash as ps
-import roboschool
+# import roboschool
+from collections import Iterable
 
 
 FILEPATH = 'slm_lab/spec/_random_baseline.json'
@@ -91,7 +92,10 @@ def gen_random_return(env_name, seed):
     total_reward = 0
     while not done:
         _, reward, done, _ = env.step(env.action_space.sample())
-        total_reward += reward
+        if isinstance(reward, Iterable):
+            total_reward += sum(reward)
+        else:
+            total_reward += reward
     return total_reward
 
 
@@ -109,12 +113,13 @@ def get_random_baseline(env_name):
     if env_name in random_baseline:
         baseline = random_baseline[env_name]
     else:
-        try:
-            logger.info(f'Generating random baseline for {env_name}')
-            baseline = gen_random_baseline(env_name, NUM_EVAL)
-        except Exception as e:
-            logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
-            baseline = None
+        # try:
+        logger.info(f'Generating random baseline for {env_name}')
+        baseline = gen_random_baseline(env_name, NUM_EVAL)
+        # except Exception as e:
+        #     logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
+        #     logger.warning(f'exception was {e}')
+        #     baseline = None
         # update immediately
         logger.info(f'Updating new random baseline in {FILEPATH}')
         random_baseline[env_name] = baseline

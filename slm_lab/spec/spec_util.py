@@ -45,17 +45,20 @@ logger = logger.get_logger(__name__)
 
 def check_comp_spec(comp_spec, comp_spec_format):
     '''Base method to check component spec'''
-    for spec_k, spec_format_v in comp_spec_format.items():
-        comp_spec_v = comp_spec[spec_k]
-        if ps.is_list(spec_format_v):
-            v_set = spec_format_v
-            assert comp_spec_v in v_set, f'Component spec value {ps.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
-        else:
-            v_type = spec_format_v
-            assert isinstance(comp_spec_v, v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
-            if isinstance(v_type, tuple) and int in v_type and isinstance(comp_spec_v, float):
-                # cast if it can be int
-                comp_spec[spec_k] = int(comp_spec_v)
+
+    if "copy_n" not in comp_spec.keys():
+
+        for spec_k, spec_format_v in comp_spec_format.items():
+            comp_spec_v = comp_spec[spec_k]
+            if ps.is_list(spec_format_v):
+                v_set = spec_format_v
+                assert comp_spec_v in v_set, f'Component spec value {ps.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
+            else:
+                v_type = spec_format_v
+                assert isinstance(comp_spec_v, v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
+                if isinstance(v_type, tuple) and int in v_type and isinstance(comp_spec_v, float):
+                    # cast if it can be int
+                    comp_spec[spec_k] = int(comp_spec_v)
 
 
 def check_body_spec(spec):
@@ -206,6 +209,7 @@ def override_eval_spec(spec):
 
 
 def override_test_spec(spec):
+    spec = spec_copy_n(spec)
     for agent_spec in spec['agent']:
         # onpolicy freq is episodic
         freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
@@ -266,4 +270,15 @@ def tick(spec, unit):
         os.makedirs(folder_predir, exist_ok=True)
         assert os.path.exists(folder_predir)
         meta_spec[f'{folder}_prepath'] = folder_prepath
+    return spec
+
+# TODO create tests
+def spec_copy_n(spec):
+    for k in spec.keys():
+        if isinstance(spec[k], list):
+            for i in range(len(spec[k])):
+                # If ask to use the same config as another agent
+                if 'copy_n' in spec[k][i].keys():
+                    num_of_agent_to_imitate = spec[k][i]['copy_n']
+                    spec[k][i] = spec[k][num_of_agent_to_imitate]
     return spec

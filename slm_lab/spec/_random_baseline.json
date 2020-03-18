@@ -108,8 +108,8 @@
     "std": 10.84244638829641
   },
   "Adventure-v0": {
-    "mean": -0.47,
-    "std": 0.49909918853871116
+    "mean": -0.47000000000000003,
+    "std": 0.49909918853871105
   },
   "Adventure-v4": {
     "mean": -0.86,
@@ -117,7 +117,7 @@
   },
   "AdventureDeterministic-v0": {
     "mean": -0.89,
-    "std": 0.31288975694324034
+    "std": 0.31288975694324
   },
   "AdventureDeterministic-v4": {
     "mean": -0.9,
@@ -125,7 +125,7 @@
   },
   "AdventureNoFrameskip-v0": {
     "mean": -0.96,
-    "std": 0.19595917942265428
+    "std": 0.195959179422654
   },
   "AdventureNoFrameskip-v4": {
     "mean": -0.89,
@@ -133,7 +133,7 @@
   },
   "Adventure-ram-v0": {
     "mean": -0.52,
-    "std": 0.4995998398718718
+    "std": 0.49959983987187107
   },
   "Adventure-ram-v4": {
     "mean": -0.87,
@@ -141,15 +141,15 @@
   },
   "Adventure-ramDeterministic-v0": {
     "mean": -0.87,
-    "std": 0.33630343441600474
+    "std": 0.336303434416004
   },
   "Adventure-ramDeterministic-v4": {
     "mean": -0.89,
     "std": 0.31288975694324
   },
   "Adventure-ramNoFrameskip-v0": {
-    "mean": -0.94,
-    "std": 0.23748684174075835
+    "mean": -0.9400000000000001,
+    "std": 0.23748684174075801
   },
   "Adventure-ramNoFrameskip-v4": {
     "mean": -0.85,
@@ -253,7 +253,7 @@
   },
   "Amidar-v0": {
     "mean": 2.76,
-    "std": 3.1084401232772687
+    "std": 3.108440123277268
   },
   "Amidar-v4": {
     "mean": 2.0,
@@ -269,7 +269,7 @@
   },
   "AmidarNoFrameskip-v0": {
     "mean": 2.11,
-    "std": 3.3163081883323207
+    "std": 3.316308188332319
   },
   "AmidarNoFrameskip-v4": {
     "mean": 1.8,
@@ -277,7 +277,7 @@
   },
   "Amidar-ram-v0": {
     "mean": 1.73,
-    "std": 2.5878755766071904
+    "std": 2.58787557660719
   },
   "Amidar-ram-v4": {
     "mean": 2.12,
@@ -296,7 +296,7 @@
     "std": 5.9485376354193145
   },
   "Amidar-ramNoFrameskip-v4": {
-    "mean": 1.8399999999999999,
+    "mean": 1.839999999999999,
     "std": 2.6747710182368882
   },
   "Assault-v0": {
@@ -717,7 +717,7 @@
   },
   "Bowling-ramDeterministic-v0": {
     "mean": 22.67,
-    "std": 6.0844966924142545
+    "std": 6.084496692414254
   },
   "Bowling-ramDeterministic-v4": {
     "mean": 23.56,
@@ -732,7 +732,7 @@
     "std": 5.144035380904761
   },
   "Boxing-v0": {
-    "mean": 0.94,
+    "mean": 0.9400000000000001,
     "std": 4.632105352860619
   },
   "Boxing-v4": {
@@ -781,7 +781,7 @@
   },
   "Breakout-v0": {
     "mean": 1.3,
-    "std": 1.2288205727444508
+    "std": 1.2288205727444501
   },
   "Breakout-v4": {
     "mean": 1.25,
@@ -789,7 +789,7 @@
   },
   "BreakoutDeterministic-v0": {
     "mean": 1.54,
-    "std": 1.5389606882568507
+    "std": 1.53896068825685
   },
   "BreakoutDeterministic-v4": {
     "mean": 0.78,
@@ -797,7 +797,7 @@
   },
   "BreakoutNoFrameskip-v0": {
     "mean": 1.4,
-    "std": 1.3038404810405297
+    "std": 1.303840481040529
   },
   "BreakoutNoFrameskip-v4": {
     "mean": 1.26,
@@ -813,7 +813,7 @@
   },
   "Breakout-ramDeterministic-v0": {
     "mean": 1.08,
-    "std": 1.1373653766490344
+    "std": 1.137365376649034
   },
   "Breakout-ramDeterministic-v4": {
     "mean": 1.09,
@@ -821,7 +821,7 @@
   },
   "Breakout-ramNoFrameskip-v0": {
     "mean": 1.09,
-    "std": 1.1497391008398383
+    "std": 1.149739100839838
   },
   "Breakout-ramNoFrameskip-v4": {
     "mean": 1.13,
@@ -1133,7 +1133,7 @@
   },
   "DoubleDunkNoFrameskip-v0": {
     "mean": -17.46,
-    "std": 3.3088366535687435
+    "std": 3.308836653568743
   },
   "DoubleDunkNoFrameskip-v4": {
     "mean": -16.48,
@@ -1141,7 +1141,7 @@
   },
   "DoubleDunk-ram-v0": {
     "mean": -18.0,
-    "std": 3.4525353003264136
+    "std": 3.452535300326413
   },
   "DoubleDunk-ram-v4": {
     "mean": -18.58,
@@ -1261,7 +1261,7 @@
   },
   "FishingDerby-v0": {
     "mean": -94.01,
-    "std": 3.1858907702556283
+    "std": 3.185890770255628
   },
   "FishingDerby-v4": {
     "mean": -93.84,
@@ -1277,7 +1277,7 @@
   },
   "FishingDerbyNoFrameskip-v0": {
     "mean": -93.46,
-    "std": 3.3568437556728794
+    "std": 3.356843755672879
   },
   "FishingDerbyNoFrameskip-v4": {
     "mean": -93.96,
@@ -1285,7 +1285,7 @@
   },
   "FishingDerby-ram-v0": {
     "mean": -94.08,
-    "std": 3.5712182795231104
+    "std": 3.57121827952311
   },
   "FishingDerby-ram-v4": {
     "mean": -94.06,
@@ -1301,7 +1301,7 @@
   },
   "FishingDerby-ramNoFrameskip-v0": {
     "mean": -93.38,
-    "std": 3.3069018733551796
+    "std": 3.306901873355179
   },
   "FishingDerby-ramNoFrameskip-v4": {
     "mean": -94.06,
@@ -1549,7 +1549,7 @@
   },
   "IceHockey-v0": {
     "mean": -10.02,
-    "std": 3.8574084564640025
+    "std": 3.857408456464002
   },
   "IceHockey-v4": {
     "mean": -9.1,
@@ -1565,7 +1565,7 @@
   },
   "IceHockeyNoFrameskip-v0": {
     "mean": -9.84,
-    "std": 3.2240347392669326
+    "std": 3.224034739266932
   },
   "IceHockeyNoFrameskip-v4": {
     "mean": -9.87,
@@ -1573,7 +1573,7 @@
   },
   "IceHockey-ram-v0": {
     "mean": -9.56,
-    "std": 2.8820825803574746
+    "std": 2.882082580357474
   },
   "IceHockey-ram-v4": {
     "mean": -9.63,
@@ -1581,7 +1581,7 @@
   },
   "IceHockey-ramDeterministic-v0": {
     "mean": -10.18,
-    "std": 2.9711277320236498
+    "std": 2.971127732023649
   },
   "IceHockey-ramDeterministic-v4": {
     "mean": -9.21,
@@ -1589,7 +1589,7 @@
   },
   "IceHockey-ramNoFrameskip-v0": {
     "mean": -9.54,
-    "std": 3.0835693603355185
+    "std": 3.083569360335518
   },
   "IceHockey-ramNoFrameskip-v4": {
     "mean": -9.73,
@@ -2077,7 +2077,7 @@
   },
   "Pong-v0": {
     "mean": -20.34,
-    "std": 0.7901898506055365
+    "std": 0.790189850605536
   },
   "Pong-v4": {
     "mean": -20.25,
@@ -2085,7 +2085,7 @@
   },
   "PongDeterministic-v0": {
     "mean": -20.37,
-    "std": 0.7701298591796062
+    "std": 0.7701298591796061
   },
   "PongDeterministic-v4": {
     "mean": -20.51,
@@ -2093,7 +2093,7 @@
   },
   "PongNoFrameskip-v0": {
     "mean": -20.43,
-    "std": 0.7906326580656784
+    "std": 0.7906326580656781
   },
   "PongNoFrameskip-v4": {
     "mean": -20.4,
@@ -2101,7 +2101,7 @@
   },
   "Pong-ram-v0": {
     "mean": -20.21,
-    "std": 0.9412226091632095
+    "std": 0.9412226091632091
   },
   "Pong-ram-v4": {
     "mean": -20.27,
@@ -2109,7 +2109,7 @@
   },
   "Pong-ramDeterministic-v0": {
     "mean": -20.26,
-    "std": 0.8901685233707155
+    "std": 0.8901685233707151
   },
   "Pong-ramDeterministic-v4": {
     "mean": -20.49,
@@ -2117,7 +2117,7 @@
   },
   "Pong-ramNoFrameskip-v0": {
     "mean": -20.45,
-    "std": 0.7794228634059948
+    "std": 0.7794228634059941
   },
   "Pong-ramNoFrameskip-v4": {
     "mean": -20.56,
@@ -2365,15 +2365,15 @@
   },
   "Robotank-v0": {
     "mean": 2.01,
-    "std": 1.6155184926208674
+    "std": 1.615518492620867
   },
   "Robotank-v4": {
     "mean": 2.05,
     "std": 1.499166435056495
   },
   "RobotankDeterministic-v0": {
-    "mean": 1.93,
-    "std": 1.8560980577544928
+    "mean": 1.9300000000000002,
+    "std": 1.856098057754492
   },
   "RobotankDeterministic-v4": {
     "mean": 2.19,
@@ -2381,7 +2381,7 @@
   },
   "RobotankNoFrameskip-v0": {
     "mean": 1.69,
-    "std": 1.4049555153100044
+    "std": 1.404955515310004
   },
   "RobotankNoFrameskip-v4": {
     "mean": 1.78,
@@ -2389,7 +2389,7 @@
   },
   "Robotank-ram-v0": {
     "mean": 1.99,
-    "std": 1.4594176920950355
+    "std": 1.459417692095035
   },
   "Robotank-ram-v4": {
     "mean": 2.09,
@@ -2397,7 +2397,7 @@
   },
   "Robotank-ramDeterministic-v0": {
     "mean": 2.3,
-    "std": 1.6093476939431082
+    "std": 1.609347693943108
   },
   "Robotank-ramDeterministic-v4": {
     "mean": 2.05,
@@ -2405,7 +2405,7 @@
   },
   "Robotank-ramNoFrameskip-v0": {
     "mean": 1.87,
-    "std": 1.3758997056471813
+    "std": 1.3758997056471811
   },
   "Robotank-ramNoFrameskip-v4": {
     "mean": 1.79,
@@ -2653,7 +2653,7 @@
   },
   "Tennis-v0": {
     "mean": -23.92,
-    "std": 0.2712931993250107
+    "std": 0.27129319932501
   },
   "Tennis-v4": {
     "mean": -23.94,
@@ -2661,7 +2661,7 @@
   },
   "TennisDeterministic-v0": {
     "mean": -23.9,
-    "std": 0.29999999999999993
+    "std": 0.29999999999999905
   },
   "TennisDeterministic-v4": {
     "mean": -23.86,
@@ -2669,7 +2669,7 @@
   },
   "TennisNoFrameskip-v0": {
     "mean": -23.96,
-    "std": 0.19595917942265423
+    "std": 0.195959179422654
   },
   "TennisNoFrameskip-v4": {
     "mean": -24.0,
@@ -2677,7 +2677,7 @@
   },
   "Tennis-ram-v0": {
     "mean": -23.95,
-    "std": 0.21794494717703372
+    "std": 0.21794494717703303
   },
   "Tennis-ram-v4": {
     "mean": -23.95,
@@ -2685,7 +2685,7 @@
   },
   "Tennis-ramDeterministic-v0": {
     "mean": -23.95,
-    "std": 0.21794494717703372
+    "std": 0.21794494717703303
   },
   "Tennis-ramDeterministic-v4": {
     "mean": -23.92,
@@ -3173,11 +3173,11 @@
     "std": 0.0
   },
   "UnityPushBlock-v0": {
-    "mean": -1.00,
+    "mean": -1.0,
     "std": 0.0
   },
   "UnityPyramids-v0": {
-    "mean": -1.00,
+    "mean": -1.0,
     "std": 0.0
   },
   "UnityReacher-v0": {
@@ -3187,5 +3187,13 @@
   "UnityWalker-v0": {
     "mean": -5.15,
     "std": 0.0
+  },
+  "IteratedPrisonersDilemma-v0": {
+    "mean": -149.27,
+    "std": 4.961562253967998
+  },
+  "CoinGame-v0": {
+    "mean": 0.01,
+    "std": 3.2326305078062973
   }
 }
