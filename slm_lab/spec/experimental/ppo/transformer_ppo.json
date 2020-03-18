@@ -25,7 +25,7 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 256,
+          "time_horizon": 128,
           "minibatch_size": 256,
           "training_epoch": 10
         },
@@ -77,18 +77,20 @@
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 1,
       "num_gpus": 0.25
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "time_horizon__grid_search": [128, 256],
-          "training_epoch__grid_search": [10, 15]
+          "training_epoch__grid_search": [5, 10]
         },
         "net": {
-          "dropout__grid_search": [0.0, 0.01, 0.02],
+          "dropout__grid_search": [0.0, 0.01, 0.02, 0.03],
+          "actor_optim_spec": {
+            "lr__grid_search": [5e-4, 1e-3]
+          }
         }
       }]
     }
