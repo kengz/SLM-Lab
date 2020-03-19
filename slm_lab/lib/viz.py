@@ -68,7 +68,7 @@ def get_palette(size):
 
 
 def lower_opacity(rgb, opacity):
-    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
+    return rgb.replace('rgb(', 'rgba(').replace('hsl(', 'hsla(').replace(')', f', {opacity})')
 
 
 def plot(*args, **kwargs):
@@ -107,7 +107,7 @@ def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
     envelope_trace = go.Scatter(
         x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
         line={'color': 'rgba(0, 0, 0, 0)'},
-        fill='tozerox', fillcolor=lower_opacity(color, 0.2),
+        fill='tozerox', fillcolor=lower_opacity(color, 0.15),
     )
     data = [main_trace, envelope_trace]
     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
