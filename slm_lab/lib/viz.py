@@ -237,8 +237,8 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
                 },
             )
             fig.add_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
-        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+            fig.update_xaxes(title_text='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()), row=len(y_cols), col=col_idx+1)
+        fig.update_yaxes(title_text=y, rangemode='tozero', row=row_idx+1, col=1)
     fig.layout.update(
         title=f'experiment graph: {experiment_spec["name"]}',
         width=100 + 300 * len(x_cols), height=200 + 300 * len(y_cols))
