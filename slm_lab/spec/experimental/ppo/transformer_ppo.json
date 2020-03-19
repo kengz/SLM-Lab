@@ -83,14 +83,9 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "training_epoch__grid_search": [5, 10]
-        },
         "net": {
+          "num_heads__grid_search": [1, 2, 4],
           "dropout__grid_search": [0.0, 0.01, 0.02, 0.03],
-          "actor_optim_spec": {
-            "lr__grid_search": [5e-4, 1e-3]
-          }
         }
       }]
     }
