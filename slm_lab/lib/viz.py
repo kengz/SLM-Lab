@@ -1,7 +1,7 @@
 # The data visualization module
 # Defines plotting methods for analysis
 from glob import glob
-from plotly import graph_objs as go, io as pio, tools
+from plotly import graph_objs as go, io as pio, subplots
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
 import colorlover as cl
@@ -218,7 +218,7 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     '''
     y_cols = metrics_cols
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols + ['trial'])
-    fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    fig = subplots.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()
     for row_idx, y in enumerate(y_cols):
