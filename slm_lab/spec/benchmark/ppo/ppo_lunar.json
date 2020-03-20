@@ -58,7 +58,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "frame_op": "concat",
-      "frame_op_len": 4,
+      "frame_op_len": 8,
       "max_t": null,
       "max_frame": 300000,
       "num_envs": 8,
