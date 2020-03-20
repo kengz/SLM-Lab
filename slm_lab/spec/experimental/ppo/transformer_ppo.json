@@ -51,9 +51,13 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 7e-4,
+            "lr": 1e-3,
           },
-          "lr_scheduler_spec": null,
+          "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 100000,
+            "gamma": 0.5,
+          },
           "gpu": true
         }
       }
@@ -85,11 +89,8 @@
       "agent": [{
         "net": {
           "clip_grad_val__grid_search": [0.2, 0.4],
-          "dropout__grid_search": [0.0, 0.01, 0.02],
+          "dropout__grid_search": [0.0, 0.01, 0.02, 0.04],
         }
-      }],
-      "env": [{
-        "frame_op_len__grid_search": [4, 8],
       }]
     }
   },
