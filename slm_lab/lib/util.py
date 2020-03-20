@@ -512,7 +512,6 @@ def set_logger(spec, logger, unit=None):
 
 def set_random_seed(spec):
     '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed'''
-    torch.set_num_threads(1)  # prevent multithread slowdown, set again for hogwild
     trial = spec['meta']['trial']
     session = spec['meta']['session']
     random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
