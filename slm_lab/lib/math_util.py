@@ -96,14 +96,14 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     NOTE any standardization is done outside of this method
     '''
     T = len(rewards)
-    assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
+    assert T + 1 == len(v_preds), f'T+1: {T+1} v.s. v_preds.shape: {v_preds.shape}'  # v_preds runs into t+1
     gaes = torch.zeros_like(rewards)
     future_gae = torch.tensor(0.0, dtype=rewards.dtype)
-    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
-    not_dones = 1 - dones
+    not_dones = 1 - dones  # to reset at episode boundary by multiplying 0
+    deltas = rewards + gamma * v_preds[1:] * not_dones - v_preds[:-1]
+    coef = gamma * lam
     for t in reversed(range(T)):
-        delta = rewards[t] + gamma * v_preds[t + 1] * not_dones[t] - v_preds[t]
-        gaes[t] = future_gae = delta + gamma * lam * not_dones[t] * future_gae
+        gaes[t] = future_gae = deltas[t] + coef * not_dones[t] * future_gae
     return gaes
 
 
