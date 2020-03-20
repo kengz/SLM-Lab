@@ -139,3 +139,58 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             'dones'      : dones}
         '''
         return super().sample()
+
+
+class OnPolicyCrossEntropy(OnPolicyReplay):
+    '''
+    Same as OnPolicyReplay with the addition of the cross entropy method.
+
+    We collect a bach of episode with respect to the training_frequency argument and then we keep only the top cross_entropy
+    percent of episodes with respect to the accumulated reward.
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicyCrossEntropy",
+        "cross_entropy" : 1.0,
+    }
+
+    See: Kroese, Dirk P., et al. "Cross-entropy method." Encyclopedia of Operations Research and Management Science (2013): 326-333.
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.399.7005&rep=rep1&type=pdf (section 2)
+    '''
+
+    def __init__(self, memory_spec, body):
+        # set default
+        util.set_attr(self, dict(
+            cross_entropy=1.0,
+        ))
+        util.set_attr(self, memory_spec, [
+            'cross_entropy',
+        ])
+        super().__init__(memory_spec, body)
+
+    def filter_episodes(self, batch, cross_entropy):
+        '''Filter the episodes for the cross_entropy method'''
+        accumulated_reward = [sum(rewards) for rewards in batch['rewards']]
+        percentile = cross_entropy * 100
+        reward_bound = np.percentile(accumulated_reward, percentile)
+        # we save the batch with reward above the bound
+        result = {k: [] for k in self.data_keys}
+        episode_kept = 0
+        for i in range(len(accumulated_reward)):
+            if accumulated_reward[i] >= reward_bound:
+                for k in self.data_keys:
+                    result[k].append(batch[k][i])
+                episode_kept += 1
+        return result
+
+    def sample(self):
+        '''
+        Refer to the parent methods for documentation
+        If the cross entropy parameter is activated, we filter the collected episodes
+        '''
+        batch = {k: getattr(self, k) for k in self.data_keys}
+        self.reset()
+        # we remove the episodes below the cross_entropy percentage
+        if self.cross_entropy < 1.0:
+            batch = self.filter_episodes(batch, self.cross_entropy)
+        return batch
