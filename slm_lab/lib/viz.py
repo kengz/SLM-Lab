@@ -1,7 +1,7 @@
 # The data visualization module
 # Defines plotting methods for analysis
 from glob import glob
-from plotly import graph_objs as go, io as pio, tools
+from plotly import graph_objs as go, io as pio, subplots
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
 import colorlover as cl
@@ -9,7 +9,8 @@ import os
 import pydash as ps
 
 logger = logger.get_logger(__name__)
-
+pio.templates.default = 'none'  # set default white background for plots
+pio.orca.config.timeout = 30  # shutdown orca server after 30s inactivity
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 100
 # warn orca failure only once
@@ -67,7 +68,7 @@ def get_palette(size):
 
 
 def lower_opacity(rgb, opacity):
-    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
+    return rgb.replace('rgb(', 'rgba(').replace('hsl(', 'hsla(').replace(')', f', {opacity})')
 
 
 def plot(*args, **kwargs):
@@ -106,7 +107,7 @@ def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
     envelope_trace = go.Scatter(
         x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
         line={'color': 'rgba(0, 0, 0, 0)'},
-        fill='tozerox', fillcolor=lower_opacity(color, 0.2),
+        fill='tozerox', fillcolor=lower_opacity(color, 0.15),
     )
     data = [main_trace, envelope_trace]
     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
@@ -217,7 +218,7 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     '''
     y_cols = metrics_cols
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols + ['trial'])
-    fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    fig = subplots.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()
     for row_idx, y in enumerate(y_cols):
@@ -236,8 +237,8 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
                 },
             )
             fig.add_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
-        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+            fig.update_xaxes(title_text='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()), row=len(y_cols), col=col_idx+1)
+        fig.update_yaxes(title_text=y, rangemode='tozero', row=row_idx+1, col=1)
     fig.layout.update(
         title=f'experiment graph: {experiment_spec["name"]}',
         width=100 + 300 * len(x_cols), height=200 + 300 * len(y_cols))
