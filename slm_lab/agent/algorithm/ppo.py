@@ -175,8 +175,15 @@ class PPO(ActorCritic):
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
             clock.set_batch_size(len(batch))
-            _pdparams, v_preds = self.calc_pdparam_v(batch)
-            advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
+            with torch.no_grad():
+                states = batch['states']
+                if self.body.env.is_venv:
+                    states = math_util.venv_unpack(states)
+                # NOTE states is massive with batch_size = time_horizon * num_envs. Chunk up so forward pass can fit into device esp. GPU
+                num_chunks = int(len(states) / self.minibatch_size)
+                v_preds_chunks = [self.calc_v(states_chunk, use_cache=False) for states_chunk in torch.chunk(states, num_chunks)]
+                v_preds = torch.cat(v_preds_chunks)
+                advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
             if self.body.env.is_venv:  # unpack if venv for minibatch sampling
