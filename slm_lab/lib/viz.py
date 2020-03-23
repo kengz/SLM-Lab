@@ -10,7 +10,6 @@ import pydash as ps
 
 logger = logger.get_logger(__name__)
 pio.templates.default = 'none'  # set default white background for plots
-pio.orca.config.timeout = 30  # shutdown orca server after 30s inactivity
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 100
 # warn orca failure only once
