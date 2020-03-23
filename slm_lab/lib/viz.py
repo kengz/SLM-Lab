@@ -233,7 +233,7 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
                     'symbol': 'circle-open-dot', 'color': strength_sr, 'opacity': 0.5,
                     # dump first portion of colorscale that is too bright
                     'cmin': min_strength - 0.5 * (max_strength - min_strength), 'cmax': max_strength,
-                    'colorscale': 'YlGnBu', 'reversescale': True
+                    'colorscale': 'YlGnBu', 'reversescale': False
                 },
             )
             fig.add_trace(trace, row_idx + 1, col_idx + 1)
