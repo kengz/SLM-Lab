@@ -1,7 +1,6 @@
 {
   "ppo_ipd": {
-    "world":{"name":"DefaultMultiAgentWorld",
-             "welfare_function":"default_welfare"},
+    "world":{"name":"DefaultMultiAgentWorld"},
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -73,10 +72,13 @@
     }
   },
   "ppo_ipd_utilitarian": {
-    "world":{"name":"WelfareMultiAgentWorld",
-             "welfare_function":"utilitarian_welfare"},
+    "world":{"name":"DefaultMultiAgentWorld"},
     "agent": [{
       "name": "PPO",
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
       "algorithm": {
         "name": "PPO",
         "action_pdtype": "default",

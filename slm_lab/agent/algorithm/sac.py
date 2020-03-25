@@ -36,7 +36,7 @@ class SoftActorCritic(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             training_iter=self.body.env.num_envs,
-            training_start_step=self.body.memory.batch_size,
+            training_start_step=self.memory.batch_size,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -60,11 +60,11 @@ class SoftActorCritic(ActorCritic):
         self.shared = False  # SAC does not share networks
         NetClass = getattr(net, self.net_spec['type'])
         # main actor network
-        self.net = NetClass(self.net_spec, self.body.state_dim, net_util.get_out_dim(self.body))
+        self.net = NetClass(self.net_spec, self.body.observation_dim, net_util.get_out_dim(self.body))
         self.net_names = ['net']
         # two critic Q-networks to mitigate positive bias in q_loss and speed up training, uses q_net.py with prefix Q
         QNetClass = getattr(net, 'Q' + self.net_spec['type'])
-        q_in_dim = [self.body.state_dim, self.body.action_dim]
+        q_in_dim = [self.body.observation_dim, self.body.action_dim]
         self.q1_net = QNetClass(self.net_spec, q_in_dim, 1)
         self.target_q1_net = QNetClass(self.net_spec, q_in_dim, 1)
         self.q2_net = QNetClass(self.net_spec, q_in_dim, 1)
@@ -172,10 +172,10 @@ class SoftActorCritic(ActorCritic):
         return alpha_loss
 
     def try_update_per(self, q_preds, q_targets):
-        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+        if 'Prioritized' in util.get_class_name(self.memory):  # PER
             with torch.no_grad():
                 errors = (q_preds - q_targets).abs().cpu().numpy()
-            self.body.memory.update_priorities(errors)
+            self.memory.update_priorities(errors)
 
     def train_alpha(self, alpha_loss):
         '''Custom method to train the alpha variable'''

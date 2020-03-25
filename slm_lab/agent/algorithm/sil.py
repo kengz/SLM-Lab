@@ -51,11 +51,11 @@ class SIL(ActorCritic):
     }
     '''
 
-    def __init__(self, agent, global_nets=None):
-        super().__init__(agent, global_nets)
+    def __init__(self, agent, global_nets=None, algorithm_spec=None, memory_spec=None, net_spec=None, algo_idx=0):
+        super().__init__(agent, global_nets, algorithm_spec, memory_spec, net_spec, algo_idx)
         # create the extra replay memory for SIL
         MemoryClass = getattr(memory, self.memory_spec['sil_replay_name'])
-        self.body.replay_memory = MemoryClass(self.memory_spec, self.body)
+        self.body.replay_memory = MemoryClass(self.memory_spec, self)
 
     @lab_api
     def init_algorithm_params(self):
@@ -90,8 +90,8 @@ class SIL(ActorCritic):
 
     def sample(self):
         '''Modify the onpolicy sample to also append to replay'''
-        batch = self.body.memory.sample()
-        if self.body.memory.is_episodic:
+        batch = self.memory.sample()
+        if self.memory.is_episodic:
             batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]

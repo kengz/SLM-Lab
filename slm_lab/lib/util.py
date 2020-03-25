@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
 from pprint import pformat
-from slm_lab import ROOT_DIR, EVAL_MODES
+
 import cv2
 import json
 import numpy as np
@@ -20,6 +20,8 @@ import torch
 import torch.multiprocessing as mp
 import ujson
 import yaml
+
+from slm_lab import ROOT_DIR, EVAL_MODES
 
 NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
@@ -488,6 +490,8 @@ def set_cuda_id(spec):
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
     # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
     for agent_spec in spec['agent']:
+        if agent_spec['net'] is None:
+            return
         if not agent_spec['net'].get('gpu'):
             return
     meta_spec = spec['meta']

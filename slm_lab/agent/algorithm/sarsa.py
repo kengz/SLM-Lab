@@ -67,10 +67,11 @@ class SARSA(Algorithm):
 
     @lab_api
     def init_nets(self, global_nets=None):
-        '''Initialize the neural network used to learn the Q function from the spec'''
+        '''Initialize the neural network used to learn the Q function from the spec
+        '''
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
-        in_dim = self.body.state_dim
+        in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
@@ -101,11 +102,11 @@ class SARSA(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batch = self.body.memory.sample()
+        batch = self.memory.sample()
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
-        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.memory.is_episodic)
         return batch
 
     def calc_q_loss(self, batch):

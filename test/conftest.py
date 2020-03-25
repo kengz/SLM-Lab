@@ -76,7 +76,7 @@ def test_memory(request):
     spec = spec_util.get('experimental/misc/base.json', 'base_memory')
     spec_util.tick(spec, 'trial')
     world, env = make_env_agents_world(spec)
-    res = (world.agents[0].body.memory,) + request.param
+    res = (world.agents[0].algorithm.memory,) + request.param
     return res
 
 
@@ -99,7 +99,7 @@ def test_on_policy_episodic_memory(request):
     spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_memory')
     spec_util.tick(spec, 'trial')
     world, env = make_env_agents_world(spec)
-    res = (world.agents[0].body.memory,) + request.param
+    res = (world.agents[0].algorithm.memory,) + request.param
     return res
 
 
@@ -122,7 +122,7 @@ def test_on_policy_batch_memory(request):
     spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_batch_memory')
     spec_util.tick(spec, 'trial')
     world, env = make_env_agents_world(spec)
-    res = (world.agents[0].body.memory,) + request.param
+    res = (world.agents[0].algorithm.memory,) + request.param
     return res
 
 
@@ -145,5 +145,5 @@ def test_prioritized_replay_memory(request):
     spec = spec_util.get('experimental/misc/base.json', 'base_prioritized_replay_memory')
     spec_util.tick(spec, 'trial')
     world, env = make_env_agents_world(spec)
-    res = (world.agents[0].body.memory,) + request.param
+    res = (world.agents[0].algorithm.memory,) + request.param
     return res

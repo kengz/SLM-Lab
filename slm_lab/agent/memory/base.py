@@ -10,12 +10,12 @@ logger = logger.get_logger(__name__)
 class Memory(ABC):
     '''Abstract Memory class to define the API methods'''
 
-    def __init__(self, memory_spec, body):
+    def __init__(self, memory_spec, algorithm):
         '''
         @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
         '''
         self.memory_spec = memory_spec
-        self.body = body
+        self.algorithm = algorithm
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
 

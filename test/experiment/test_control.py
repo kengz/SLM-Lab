@@ -56,4 +56,13 @@ def test_experiment():
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'experiment')
     experiment_df = Experiment(spec).run()
+    # TODO test this manually and implement a better support of experiment analysis with multi agents
+    # print("HEAD")
+    # print(type(experiment_df))
+    # print(len(experiment_df))
+    # print(experiment_df.columns)
+    # print(experiment_df.head())
+    # for c in experiment_df.columns:
+    #     print(c, experiment_df[c].tolist())
+    # assert 0
     assert isinstance(experiment_df, pd.DataFrame)

@@ -35,8 +35,8 @@ class OnPolicyReplay(Memory):
     }
     '''
 
-    def __init__(self, memory_spec, body):
-        super().__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm):
+        super().__init__(memory_spec, algorithm)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
         # Don't want total experiences reset when memory is
         self.is_episodic = True
@@ -72,8 +72,8 @@ class OnPolicyReplay(Memory):
             self.cur_epi_data = {k: [] for k in self.data_keys}
             # If agent has collected the desired number of episodes, it is ready to train
             # length is num of epis due to nested structure
-            if len(self.states) == self.body.agent.algorithm.training_frequency:
-                self.body.agent.algorithm.to_train = 1
+            if len(self.states) == self.algorithm.training_frequency:
+                self.algorithm.to_train = 1
         # Track memory size and num experiences
         self.size += 1
         self.seen_size += 1
@@ -110,8 +110,8 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     * batch_size is training_frequency provided by algorithm_spec
     '''
 
-    def __init__(self, memory_spec, body):
-        super().__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm):
+        super().__init__(memory_spec, algorithm)
         self.is_episodic = False
 
     def add_experience(self, state, action, reward, next_state, done):
@@ -123,8 +123,8 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         self.size += 1
         self.seen_size += 1
         # Decide if agent is to train
-        if len(self.states) == self.body.agent.algorithm.training_frequency:
-            self.body.agent.algorithm.to_train = 1
+        if len(self.states) == self.algorithm.training_frequency:
+            self.algorithm.to_train = 1
 
     def sample(self):
         '''
@@ -158,7 +158,7 @@ class OnPolicyCrossEntropy(OnPolicyReplay):
     http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.399.7005&rep=rep1&type=pdf (section 2)
     '''
 
-    def __init__(self, memory_spec, body):
+    def __init__(self, memory_spec, algorithm):
         # set default
         util.set_attr(self, dict(
             cross_entropy=1.0,
@@ -166,7 +166,7 @@ class OnPolicyCrossEntropy(OnPolicyReplay):
         util.set_attr(self, memory_spec, [
             'cross_entropy',
         ])
-        super().__init__(memory_spec, body)
+        super().__init__(memory_spec, algorithm)
 
     def filter_episodes(self, batch, cross_entropy):
         '''Filter the episodes for the cross_entropy method'''

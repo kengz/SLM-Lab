@@ -125,9 +125,7 @@ class MLPNet(Net, nn.Module):
 
     def _adapt_input_to_net(self,observation):
         batch_size = observation.shape[0]
-        logger.debug("observation).shape {}".format(observation.shape))
         observation = observation.view(batch_size, -1)
-        logger.debug("observation.view(batch_size, -1).shape {}".format(observation.shape))
         return observation
 
     def forward(self, x):
@@ -143,7 +141,6 @@ class MLPNet(Net, nn.Module):
             return self.model_tail(x)
 
 
-# TODO add _adapt_input_dims_to_net
 class HydraMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
@@ -268,9 +265,7 @@ class HydraMLPNet(Net, nn.Module):
 
     def _adapt_input_to_net(self,observation):
         batch_size = observation.shape[0]
-        logger.debug("observation).shape {}".format(observation.shape))
         observation = observation.view(batch_size, -1)
-        logger.debug("observation.view(batch_size, -1).shape {}".format(observation.shape))
         return observation
 
     def build_model_heads(self, in_dim):

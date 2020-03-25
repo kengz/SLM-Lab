@@ -1,7 +1,6 @@
 {
   "reinforce_ipd": {
-    "world":{"name":"DefaultMultiAgentWorld",
-             "welfare_function":"default_welfare"},
+    "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
       "name": "Reinforce",
@@ -16,7 +15,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 20000,
+          "end_step": 20000
         },
         "training_frequency": 1
       },
@@ -40,7 +39,7 @@
           "lr": 0.002
         },
         "lr_scheduler_spec": null
-      },
+      }
 
 
     },
@@ -51,7 +50,7 @@
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
       "max_frame": 200000,
-      "num_envs": 1,
+      "num_envs": 1
     }],
     "body": {
       "product": "outer",
@@ -59,17 +58,17 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 200,
+      "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "reinforce_ipd_utilitarian": {
-    "world":{"name":"WelfareMultiAgentWorld",
-             "welfare_function":"utilitarian_welfare"},
+    "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
       "name": "Reinforce",
+      "welfare_function":"utilitarian_welfare",
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",
@@ -81,7 +80,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 20000,
+          "end_step": 20000
         },
         "training_frequency": 1
       },
@@ -105,7 +104,7 @@
           "lr": 0.002
         },
         "lr_scheduler_spec": null
-      },
+      }
 
 
     },
@@ -116,7 +115,7 @@
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
       "max_frame": 200000,
-      "num_envs": 1,
+      "num_envs": 1
     }],
     "body": {
       "product": "outer",
@@ -124,9 +123,258 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 2000,
+      "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+  "reinforce_ipd_utilitarian_learning_equilibrium": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.99,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.01,
+                "end_val": 0.001,
+                "start_step": 0,
+                "end_step": 20000
+              },
+              "training_frequency": 1
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "MSELoss"
+              },
+              "optim_spec": {
+                "name": "Adam",
+                "lr": 0.002
+              },
+              "lr_scheduler_spec": null
+            }
+          },
+          {
+            "copy_n": 0
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "Reinforce",
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 0,
+          "end_step": 20000
+        },
+        "training_frequency": 1
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002
+        },
+        "lr_scheduler_spec": null
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 200000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+  "reinforce_ipd_learning_equilibrium": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 3,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.99,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.01,
+                "end_val": 0.001,
+                "start_step": 0,
+                "end_step": 20000
+              },
+              "training_frequency": 10
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "MSELoss"
+              },
+              "optim_spec": {
+                "name": "Adam",
+                "lr": 0.002
+              },
+              "lr_scheduler_spec": null
+            }
+          },
+          {
+            "copy_n": 0
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "Reinforce",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 0,
+          "end_step": 20000
+        },
+        "training_frequency": 10
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002
+        },
+        "lr_scheduler_spec": null
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 200000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 1
     }
   }
 }

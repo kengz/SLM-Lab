@@ -87,11 +87,9 @@ def calc_pdparam(state, algorithm, body):
     action_pd = ActionPD(logits=pdparam)  # e.g. ActionPD is Categorical
     action = action_pd.sample()
     '''
-    logger.debug('in calc_pdparam {}'.format(type(state)))
     if not torch.is_tensor(state):  # dont need to cast from numpy
         state = guard_tensor(state, body)
         state = state.to(algorithm.net.device)
-    logger.debug('will algorithm.calc_pdparam')
     pdparam = algorithm.calc_pdparam(state)
     return pdparam
 

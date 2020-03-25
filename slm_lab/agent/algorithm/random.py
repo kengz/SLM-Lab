@@ -22,7 +22,8 @@ class Random(Algorithm):
 
     @lab_api
     def init_nets(self, global_nets=None):
-        '''Initialize the neural network from the spec'''
+        '''Initialize the neural network from the spec
+        '''
         self.net_names = []
 
     @lab_api
@@ -37,7 +38,7 @@ class Random(Algorithm):
 
     @lab_api
     def sample(self):
-        self.body.memory.sample()
+        self.memory.sample()
         batch = np.nan
         return batch
 

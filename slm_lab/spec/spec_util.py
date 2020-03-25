@@ -1,14 +1,14 @@
 # The spec module
 # Manages specification to run things in lab
-from slm_lab import ROOT_DIR
-from slm_lab.lib import logger, util
-from string import Template
 import itertools
 import json
-import numpy as np
 import os
+from string import Template
+
 import pydash as ps
 
+from slm_lab import ROOT_DIR
+from slm_lab.lib import logger, util
 
 SPEC_DIR = 'slm_lab/spec'
 '''
@@ -21,9 +21,9 @@ To change from a value into param range, e.g.
 SPEC_FORMAT = {
     "agent": [{
         "name": str,
-        "algorithm": dict,
-        "memory": dict,
-        "net": dict,
+        "algorithm": (dict, list),
+        "memory": (dict, type(None)),
+        "net": (dict, type(None)),
     }],
     "env": [{
         "name": str,
@@ -55,7 +55,8 @@ def check_comp_spec(comp_spec, comp_spec_format):
                 assert comp_spec_v in v_set, f'Component spec value {ps.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
             else:
                 v_type = spec_format_v
-                assert isinstance(comp_spec_v, v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
+                assert isinstance(comp_spec_v,
+                                  v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
                 if isinstance(v_type, tuple) and int in v_type and isinstance(comp_spec_v, float):
                     # cast if it can be int
                     comp_spec[spec_k] = int(comp_spec_v)
@@ -79,14 +80,16 @@ def check_compatibility(spec):
     '''Check compatibility among spec setups'''
     # TODO expand to be more comprehensive
     if spec['meta'].get('distributed') == 'synced':
-        assert ps.get(spec, 'agent.0.net.gpu') == False, f'Distributed mode "synced" works with CPU only. Set gpu: false.'
+        assert ps.get(spec,
+                      'agent.0.net.gpu') == False, f'Distributed mode "synced" works with CPU only. Set gpu: false.'
 
 
 def check(spec):
     '''Check a single spec for validity'''
     try:
         spec_name = spec.get('name')
-        assert set(spec.keys()) >= set(SPEC_FORMAT.keys()), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
+        assert set(spec.keys()) >= set(
+            SPEC_FORMAT.keys()), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
         for agent_spec in spec['agent']:
             check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
         for env_spec in spec['env']:
@@ -272,13 +275,40 @@ def tick(spec, unit):
         meta_spec[f'{folder}_prepath'] = folder_prepath
     return spec
 
-# TODO create tests
+
+# TODO convert doctest to pytest
 def spec_copy_n(spec):
+    """
+    Explore dicts and lists.
+    If a list of dict is found and if its dicts contain the key 'copy_n'.
+    Then these dicts are overwritten by the dicts at the indexes given by the values of the 'copy_n' keys.
+
+    >>> spec_copy_n({'example':[{'one':'one_v'},{'copy_n':0}]})
+    {'example': [{'one': 'one_v'}, {'one': 'one_v'}]}
+
+    >>> spec_copy_n({'nested':{'example':[{'one':'one_v'},{'copy_n':0}]}})
+    {'nested': {'example': [{'one': 'one_v'}, {'one': 'one_v'}]}}
+
+    >>> spec_copy_n({'nested':[{'example':[{'one':'one_v'},{'copy_n':0}]}]})
+    {'nested': [{'example': [{'one': 'one_v'}, {'one': 'one_v'}]}]}
+    """
     for k in spec.keys():
         if isinstance(spec[k], list):
             for i in range(len(spec[k])):
                 # If ask to use the same config as another agent
-                if 'copy_n' in spec[k][i].keys():
-                    num_of_agent_to_imitate = spec[k][i]['copy_n']
-                    spec[k][i] = spec[k][num_of_agent_to_imitate]
+                if isinstance(spec[k][i], dict):
+                    if 'copy_n' in spec[k][i].keys():
+                        num_of_agent_to_imitate = spec[k][i]['copy_n']
+                        spec[k][i] = spec[k][num_of_agent_to_imitate]
+            for i in range(len(spec[k])):
+                if isinstance(spec[k][i], dict):
+                    spec[k][i] = spec_copy_n(spec[k][i])
+        elif isinstance(spec[k], dict):
+            spec[k] = spec_copy_n(spec[k])
     return spec
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod(verbose=True)

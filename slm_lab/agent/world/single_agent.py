@@ -8,7 +8,7 @@ logger = logger.get_logger(__name__)
 
 class DefaultSingleAgentWorld(DefaultMultiAgentWorld):
     '''
-    SimpleMultiAgent abstraction; implements the API to interface with Env in SLM Lab
+    DefaultSingleAgentWorld abstraction; implements the API to interface with Env in SLM Lab
     Contains algorithm(s), memory(s), body
     '''
 

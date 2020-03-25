@@ -79,7 +79,7 @@ class Reinforce(Algorithm):
         Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
-        in_dim = self.body.state_dim
+        in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
@@ -107,8 +107,8 @@ class Reinforce(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batch = self.body.memory.sample()
-        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
+        batch = self.memory.sample()
+        batch = util.to_torch_batch(batch, self.net.device, self.memory.is_episodic)
         return batch
 
     def calc_pdparam_batch(self, batch):
@@ -127,7 +127,6 @@ class Reinforce(Algorithm):
         advs = rets
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
-        logger.debug(f'advs: {advs}')
         return advs
 
     def calc_policy_loss(self, batch, pdparams, advs):
@@ -136,10 +135,13 @@ class Reinforce(Algorithm):
         actions = batch['actions']
         if self.body.env.is_venv:
             actions = math_util.venv_unpack(actions)
+        logger.debug(f'actions {actions}')
         log_probs = action_pd.log_prob(actions)
+        logger.debug(f'log_probs {log_probs}, advs {advs}')
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
             entropy = action_pd.entropy().mean()
+            logger.debug(f'entropy {entropy}')
             self.body.mean_entropy = entropy  # update logging variable
             policy_loss += (-self.body.entropy_coef * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')

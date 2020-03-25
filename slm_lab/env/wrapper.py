@@ -8,6 +8,11 @@ import gym
 import numpy as np
 from collections import Iterable
 
+from slm_lab.lib import logger, util
+
+
+logger = logger.get_logger(__name__)
+
 def try_scale_reward(cls, reward):
     '''Env class to scale reward'''
     if util.in_eval_lab_modes():  # only trigger on training
@@ -332,10 +337,14 @@ class TrackReward(gym.Wrapper):
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
+
         if isinstance(reward, Iterable):
-            self.tracked_reward += sum(reward)
+            r = np.array(reward)
+            self.tracked_reward += r.sum(axis=tuple(range(1, r.ndim,1)))  # Support mutliagent
+            # self.tracked_reward += sum(reward)
         else:
             self.tracked_reward += reward
+            # self.agents_rewards = [reward]
         # fix shape by inferring from reward
         if np.isscalar(self.total_reward) and not np.isscalar(reward):
             self.total_reward = np.full_like(reward, self.total_reward)
@@ -355,6 +364,7 @@ class TrackReward(gym.Wrapper):
         # reset to 0 on real_done, i.e. multiply with not_real_done
         self.tracked_reward = self.tracked_reward * not_real_done
         info.update({'total_reward': self.total_reward})
+        # logger.info(f"self.total_reward {self.total_reward}")
         return obs, reward, done, info
 
     def reset(self, **kwargs):

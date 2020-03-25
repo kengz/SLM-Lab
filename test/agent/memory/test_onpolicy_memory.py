@@ -75,7 +75,7 @@ class TestOnPolicyBatchMemory:
         '''Tests that memory sets agent training flag correctly'''
         memory = test_on_policy_batch_memory[0]
         memory.reset()
-        memory.body.agent.algorithm.to_train = 0
+        memory.algorithm.to_train = 0
         batch_size = test_on_policy_batch_memory[1]
         experiences = test_on_policy_batch_memory[2]
         size = len(experiences)
@@ -84,7 +84,7 @@ class TestOnPolicyBatchMemory:
                 break
             else:
                 memory.add_experience(*e)
-        assert memory.body.agent.algorithm.to_train == 1
+        assert memory.algorithm.to_train == 1
 
     def test_reset(self, test_on_policy_batch_memory):
         '''Tests memory reset.
@@ -144,14 +144,14 @@ class TestOnPolicyMemory:
         '''Tests that memory sets agent training flag correctly'''
         memory = test_on_policy_episodic_memory[0]
         memory.reset()
-        memory.body.agent.algorithm.to_train = 0
+        memory.algorithm.to_train = 0
         batch_size = test_on_policy_episodic_memory[1]
         experiences = test_on_policy_episodic_memory[2]
         size = len(experiences)
         for e in experiences:
-            assert memory.body.agent.algorithm.to_train == 0
+            assert memory.algorithm.to_train == 0
             memory.add_experience(*e)
-        assert memory.body.agent.algorithm.to_train == 1
+        assert memory.algorithm.to_train == 1
 
     def test_multiple_epis_samples(self, test_on_policy_episodic_memory):
         '''Tests that a sample of batch size is returned with the correct number of episodes'''

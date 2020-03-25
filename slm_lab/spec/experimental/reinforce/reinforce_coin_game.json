@@ -1,7 +1,6 @@
 {
   "reinforce_icoingame": {
-    "world":{"name":"DefaultMultiAgentWorld",
-             "welfare_function":"default_welfare"},
+    "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
       "name": "Reinforce",
@@ -59,17 +58,19 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 200,
+      "eval_frequency": 1000,
       "max_session": 1,
       "max_trial": 1,
     }
   },
   "reinforce_icoingame_utilitarian": {
-    "world":{"name":"WelfareMultiAgentWorld",
-             "welfare_function":"utilitarian_welfare"},
-
+    "world":{"name":"DefaultMultiAgentWorld"},
     "agent": [{
       "name": "Reinforce",
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",
@@ -124,7 +125,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 200,
+      "eval_frequency": 1000,
       "max_session": 1,
       "max_trial": 1,
     }

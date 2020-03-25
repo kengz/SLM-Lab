@@ -103,23 +103,21 @@ class OpenAIEnv(BaseEnv):
 
         # logger.info(f"state {state} {type(state)}")
         # logger.info(f"reward {reward} {type(reward)}")
+        # logger.info(f"info {info}")
 
         return state, reward, done, info
 
     def _convert_discrete_state_to_one_hot_numpy(self, state):
-        logger.debug("self.observation_space_is_discrete {}".format(self.observation_space_is_discrete))
         if self.observation_space_is_discrete:
             def to_one_hot(array, n_values):
                 return np.eye(n_values)[array.astype(np.int)]
 
-            logger.debug("self.observable_dim {}".format(self.observable_dim))
-            # TODO check support MultiDiscrete
+            # TODO check support MultiDiscrete env
             assert len(self.observable_dim) ==1
             observation_space = self.observable_dim[0]
 
             state = np.array(state)
             state = to_one_hot(state, observation_space)
-            logger.debug("state after _convert_discrete_state_to_one_hot_numpy {}".format(state.shape))
         return state
 
     @lab_api
@@ -132,6 +130,6 @@ class OpenAIEnv(BaseEnv):
         is_a_multi_agent_env = True if hasattr(self.u_env, "NUM_AGENTS") and self.u_env.NUM_AGENTS > 1 else False
         space = space[0] if is_a_multi_agent_env else space
 
-        logger.debug("util.get_class_name(space) {}".format(util.get_class_name(space)))
+        # logger.debug("util.get_class_name(space) {}".format(util.get_class_name(space)))
         # return util.get_class_name(space) != 'Box'
         return "Discrete" in util.get_class_name(space)

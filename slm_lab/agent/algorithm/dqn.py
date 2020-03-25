@@ -57,7 +57,7 @@ class VanillaDQN(SARSA):
             action_pdtype='Argmax',
             action_policy='epsilon_greedy',
             explore_var_spec=None,
-            training_start_step=self.body.memory.batch_size,
+            training_start_step=self.memory.batch_size,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -75,10 +75,11 @@ class VanillaDQN(SARSA):
 
     @lab_api
     def init_nets(self, global_nets=None):
-        '''Initialize the neural network used to learn the Q function from the spec'''
+        '''Initialize the neural network used to learn the Q function from the spec
+        '''
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
-        in_dim = self.body.state_dim
+        in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
@@ -104,9 +105,9 @@ class VanillaDQN(SARSA):
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
-        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+        if 'Prioritized' in util.get_class_name(self.memory):  # PER
             errors = (max_q_targets - act_q_preds.detach()).abs().cpu().numpy()
-            self.body.memory.update_priorities(errors)
+            self.memory.update_priorities(errors)
         return q_loss
 
     @lab_api
@@ -117,8 +118,8 @@ class VanillaDQN(SARSA):
     @lab_api
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
-        batch = self.body.memory.sample()
-        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
+        batch = self.memory.sample()
+        batch = util.to_torch_batch(batch, self.net.device, self.memory.is_episodic)
         return batch
 
     @lab_api
@@ -177,7 +178,7 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
-        in_dim = self.body.state_dim
+        in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
@@ -209,9 +210,9 @@ class DQNBase(VanillaDQN):
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
-        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+        if 'Prioritized' in util.get_class_name(self.memory):  # PER
             errors = (max_q_targets - act_q_preds.detach()).abs().cpu().numpy()
-            self.body.memory.update_priorities(errors)
+            self.memory.update_priorities(errors)
         return q_loss
 
     def update_nets(self):

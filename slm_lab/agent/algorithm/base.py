@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
+from slm_lab.agent import algorithm, memory, agent
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -10,16 +12,28 @@ logger = logger.get_logger(__name__)
 class Algorithm(ABC):
     '''Abstract Algorithm class to define the API methods'''
 
-    def __init__(self, agent, global_nets=None):
+    def __init__(self, agent, global_nets=None, algorithm_spec=None, memory_spec=None, net_spec=None, algo_idx=0):
         '''
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
+        :param algo_idx:
         '''
         self.agent = agent
-        self.algorithm_spec = agent.agent_spec['algorithm']
+        self.algo_idx = algo_idx
+        logger.info(f'algorithm_spec {algorithm_spec}')
+
+        self.algorithm_spec = self.agent.agent_spec['algorithm'] if algorithm_spec is None else algorithm_spec
         self.name = self.algorithm_spec['name']
-        self.memory_spec = agent.agent_spec['memory']
-        self.net_spec = agent.agent_spec['net']
+        self.memory_spec = self.agent.agent_spec['memory'] if memory_spec is None else memory_spec
+        self.net_spec = self.agent.agent_spec['net'] if net_spec is None else net_spec
         self.body = self.agent.body
+
+        # Memory
+        if self.memory_spec is not None :
+            MemoryClass = getattr(memory, ps.get(self.memory_spec, 'name'))
+            self.memory = MemoryClass(self.memory_spec, self)
+        else:
+            self.memory = None
+
         self.init_algorithm_params()
         self.init_nets(global_nets)
         logger.info(util.self_desc(self))
@@ -33,7 +47,8 @@ class Algorithm(ABC):
     @abstractmethod
     @lab_api
     def init_nets(self, global_nets=None):
-        '''Initialize the neural network from the spec'''
+        '''Initialize the neural network from the spec
+        '''
         raise NotImplementedError
 
     @lab_api
@@ -88,21 +103,35 @@ class Algorithm(ABC):
 
     @lab_api
     def save(self, ckpt=None):
-        '''Save net models for algorithm given the required property self.net_names'''
+        '''Save net models for algorithm given the required property self.net_names
+        '''
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to save.')
         else:
-            net_util.save_algorithm(self, ckpt=ckpt)
+            net_util.save_algorithm(self, ckpt=ckpt, suffix=self.suffix)
+
+    @property
+    def suffix(self):
+        suffix =''
+        if self.agent.agent_idx != 0:
+            suffix += f"_agent_n{self.agent.agent_idx}"
+        if self.algo_idx != 0:
+            suffix += f"_algo_n{self.algo_idx}"
+        return suffix
 
     @lab_api
     def load(self):
-        '''Load net models for algorithm given the required property self.net_names'''
+        '''Load net models for algorithm given the required property self.net_names
+        '''
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to load.')
         else:
-            net_util.load_algorithm(self)
+            net_util.load_algorithm(self, suffix=self.suffix)
         # set decayable variables to final values
         for k, v in vars(self).items():
             if k.endswith('_scheduler') and hasattr(v, 'end_val'):
                 var_name = k.replace('_scheduler', '')
                 setattr(self.body, var_name, v.end_val)
+
+    def memory_update(self, state, action, welfare, next_state, done):
+        return self.memory.update(state, action, welfare, next_state, done)

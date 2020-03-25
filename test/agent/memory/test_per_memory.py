@@ -69,10 +69,10 @@ class TestPERMemory:
         for e in experiences:
             memory.add_experience(*e)
         batch = memory.sample()
-        assert batch['states'].shape == tuple([batch_size] + list(memory.body.state_dim))
+        assert batch['states'].shape == tuple([batch_size] + list(memory.algorithm.body.observation_dim))
         assert batch['actions'].shape == (batch_size,)
         assert batch['rewards'].shape == (batch_size,)
-        assert batch['next_states'].shape == tuple([batch_size] + list(memory.body.state_dim))
+        assert batch['next_states'].shape == tuple([batch_size] + list(memory.algorithm.body.observation_dim))
         assert batch['dones'].shape == (batch_size,)
         assert batch['priorities'].shape == (batch_size,)
 

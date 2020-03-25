@@ -186,23 +186,23 @@ def save(net, model_path):
     torch.save(net.state_dict(), util.smart_path(model_path))
 
 
-def save_algorithm(algorithm, ckpt=None):
+def save_algorithm(algorithm, ckpt=None, suffix=''):
     '''Save all the nets for an algorithm'''
-    agent = algorithm.agent
-    net_names = algorithm.net_names
-    model_prepath = agent.spec['meta']['model_prepath']
+    # agent = algorithm.agent
+    # net_names = algorithm.net_names
+    model_prepath = algorithm.agent.spec['meta']['model_prepath']
     if ckpt is not None:
         model_prepath = f'{model_prepath}_ckpt-{ckpt}'
-    for net_name in net_names:
+    for net_name in algorithm.net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{model_prepath}_{net_name}_model.pt'
+        model_path = f'{model_prepath}_{net_name}_model{suffix}.pt'
         save(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{model_prepath}_{net_name}_optim.pt'
+            optim_path = f'{model_prepath}_{net_name}_optim{suffix}.pt'
             save(optim, optim_path)
-    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {model_prepath}_*.pt')
+    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {algorithm.net_names} to {model_prepath}_*.pt')
 
 
 def load(net, model_path):
@@ -211,24 +211,24 @@ def load(net, model_path):
     net.load_state_dict(torch.load(util.smart_path(model_path), map_location=device))
 
 
-def load_algorithm(algorithm):
+def load_algorithm(algorithm, suffix=''):
     '''Save all the nets for an algorithm'''
-    agent = algorithm.agent
-    net_names = algorithm.net_names
+    # agent = algorithm.agent
+    # net_names = algorithm.net_names
     if util.in_eval_lab_modes():
         # load specific model in eval mode
-        model_prepath = agent.spec['meta']['eval_model_prepath']
+        model_prepath = algorithm.agent.spec['meta']['eval_model_prepath']
     else:
-        model_prepath = agent.spec['meta']['model_prepath']
-    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {model_prepath}_*.pt')
-    for net_name in net_names:
+        model_prepath = algorithm.agent.spec['meta']['model_prepath']
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {algorithm.net_names} from {model_prepath}_*.pt')
+    for net_name in algorithm.net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{model_prepath}_{net_name}_model.pt'
+        model_path = f'{model_prepath}_{net_name}_model{suffix}.pt'
         load(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{model_prepath}_{net_name}_optim.pt'
+            optim_path = f'{model_prepath}_{net_name}_optim{suffix}.pt'
             load(optim, optim_path)
 
 
@@ -309,10 +309,14 @@ def dev_check_train_step(fn):
 def get_grad_norms(algorithm):
     '''Gather all the net's grad norms of an algorithm for debugging'''
     grad_norms = []
-    for net_name in algorithm.net_names:
-        net = getattr(algorithm, net_name)
-        if net.grad_norms is not None:
-            grad_norms.extend(net.grad_norms)
+    if hasattr(algorithm, "algorithms"): # Support nested algorithm (e.g. in meta-algo)
+        for algo in algorithm.algorithms:
+            grad_norms.extend(get_grad_norms(algo))
+    else:
+        for net_name in algorithm.net_names:
+            net = getattr(algorithm, net_name)
+            if net.grad_norms is not None:
+                grad_norms.extend(net.grad_norms)
     return grad_norms
 
 
@@ -324,33 +328,41 @@ def init_global_nets(algorithms):
     - 'synced': global network parameter is periodically synced to local network after each gradient push. In this mode, algorithm will keep a separate reference to `global_{net}` for each of its network
     '''
     global_nets_list = []
+    print(len(algorithms))
     for algorithm in algorithms:
-        dist_mode = algorithm.agent.spec['meta']['distributed']
-        assert dist_mode in ('shared', 'synced'), f'Unrecognized distributed mode'
-        global_nets = {}
-        for net_name in algorithm.net_names:
-            optim_name = net_name.replace('net', 'optim')
-            if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
-                continue
-            g_net = getattr(algorithm, net_name)
-            g_net.share_memory()  # make net global
-            if dist_mode == 'shared':  # use the same name to override the local net
-                global_nets[net_name] = g_net
-            else:  # keep a separate reference for syncing
-                global_nets[f'global_{net_name}'] = g_net
-            # if optim is Global, set to override the local optim and its scheduler
-            optim = getattr(algorithm, optim_name)
-            if hasattr(optim, 'share_memory'):
-                optim.share_memory()  # make optim global
-                global_nets[optim_name] = optim
-                if hasattr(optim, 'optimizer'):  # for Lookahead with an inner optimizer
-                    global_nets[f'{optim_name}_optimizer'] = optim.optimizer
-                lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
-                lr_scheduler = getattr(algorithm, lr_scheduler_name)
-                global_nets[lr_scheduler_name] = lr_scheduler
-        logger.info(f'Initialized global_nets attr {list(global_nets.keys())} for Hogwild')
+
+        # Support nested algorithms
+        if isinstance(algorithm, list):
+            print("recurcive")
+            global_nets = init_global_nets(algorithms)
+        else:
+            dist_mode = algorithm.agent.spec['meta']['distributed']
+            assert dist_mode in ('shared', 'synced'), f'Unrecognized distributed mode'
+            global_nets = {}
+            for net_name in algorithm.net_names:
+                optim_name = net_name.replace('net', 'optim')
+                if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
+                    continue
+                g_net = getattr(algorithm, net_name)
+                g_net.share_memory()  # make net global
+                if dist_mode == 'shared':  # use the same name to override the local net
+                    global_nets[net_name] = g_net
+                else:  # keep a separate reference for syncing
+                    global_nets[f'global_{net_name}'] = g_net
+                # if optim is Global, set to override the local optim and its scheduler
+                optim = getattr(algorithm, optim_name)
+                if hasattr(optim, 'share_memory'):
+                    optim.share_memory()  # make optim global
+                    global_nets[optim_name] = optim
+                    if hasattr(optim, 'optimizer'):  # for Lookahead with an inner optimizer
+                        global_nets[f'{optim_name}_optimizer'] = optim.optimizer
+                    lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
+                    lr_scheduler = getattr(algorithm, lr_scheduler_name)
+                    global_nets[lr_scheduler_name] = lr_scheduler
+            logger.info(f'Initialized global_nets attr {list(global_nets.keys())} for Hogwild')
 
         global_nets_list.append(global_nets)
+
     return global_nets_list
 
 

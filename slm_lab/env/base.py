@@ -140,6 +140,7 @@ class BaseEnv(ABC):
         self._set_clock()
         self.done = False
         self.total_reward = np.nan
+        self.agents_rewards = [np.nan]
 
     def _get_spaces(self, u_env):
         '''Helper to set the extra attributes to, and get, observation and action spaces'''
@@ -148,46 +149,6 @@ class BaseEnv(ABC):
         set_gym_space_attr(observation_space)
         set_gym_space_attr(action_space)
         return observation_space, action_space
-
-    # def _get_observable_dim(self, observation_space, first_recurrence=True):
-    #     '''Get the observable dim for an agent in env'''
-    #     # state_dim = observation_space.shape
-    #     # if len(state_dim) == 1:
-    #     #     state_dim = state_dim[0]
-    #
-    #     if isinstance(observation_space, spaces.Box):
-    #         assert len(observation_space.shape) == 1
-    #         state_dim = observation_space.shape[0]
-    #     elif isinstance(observation_space, (spaces.Discrete, spaces.MultiBinary)):
-    #         state_dim = observation_space.n
-    #     elif isinstance(observation_space, spaces.MultiDiscrete):
-    #         state_dim = observation_space.nvec.tolist()
-    #     elif isinstance(observation_space, spaces.Tuple):
-    #         assert all([a_s.shape == observation_space[0].shape for a_s in observation_space])
-    #         state_dim = self._get_observable_dim(observation_space[0], first_recurrence=False)
-    #     else:
-    #         raise ValueError('observation_space not recognized')
-    #
-    #     if first_recurrence:
-    #         return {'state': state_dim}
-    #     else:
-    #         return state_dim
-    #
-    # def _get_action_dim(self, action_space):
-    #     '''Get the action dim for an action_space for agent to use'''
-    #     if isinstance(action_space, spaces.Box):
-    #         assert len(action_space.shape) == 1
-    #         action_dim = action_space.shape[0]
-    #     elif isinstance(action_space, (spaces.Discrete, spaces.MultiBinary)):
-    #         action_dim = action_space.n
-    #     elif isinstance(action_space, spaces.MultiDiscrete):
-    #         action_dim = action_space.nvec.tolist()
-    #     elif isinstance(action_space, spaces.Tuple):
-    #         assert all([a_s.shape == action_space[0].shape for a_s in action_space])
-    #         action_dim = self._get_action_dim(action_space[0])
-    #     else:
-    #         raise ValueError('action_space not recognized')
-    #     return action_dim
 
     def _get_space_dim(self, space):
         '''Get the action dim for an action_space for agent to use'''
@@ -252,6 +213,7 @@ class BaseEnv(ABC):
             self.total_reward = info['total_reward']
         else:  # vec env tuple of infos
             self.total_reward = np.array([i['total_reward'] for i in info])
+
 
     @abstractmethod
     @lab_api

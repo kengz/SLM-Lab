@@ -144,7 +144,7 @@ class ActorCritic(Reinforce):
         if critic_net_spec['use_same_optim']:
             critic_net_spec = actor_net_spec
 
-        in_dim = self.body.state_dim
+        in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
         # main actor network, may contain out_dim self.shared == True
         NetClass = getattr(net, actor_net_spec['type'])

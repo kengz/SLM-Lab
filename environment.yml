@@ -40,9 +40,8 @@ dependencies:
     - ray==0.7.0
     - redis==2.10.6
     - xvfbwrapper==0.2.9
-    - gym==0.12.1
+    - gym==0.17.0
     - gym[atari]
     - gym[box2d]
     - gym[classic_control]
-    - roboschool==1.0.46
     - atari-py

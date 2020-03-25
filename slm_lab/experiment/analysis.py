@@ -21,7 +21,7 @@ logger = logger.get_logger(__name__)
 
 # methods to generate returns (total rewards)
 
-# TODO currently not supported nor tested
+# TODO currently not supported (with multi agents) nor tested ?
 def gen_return(world, env):
     '''Generate return for an agent and an env in eval mode. eval_env should be a vec env with NUM_EVAL instances'''
     vec_dones = False  # done check for single and vec env
@@ -40,9 +40,10 @@ def gen_return(world, env):
     # world.bodies.env = body_env  # restore swapped ref
     for b, swapped_env in zip(world.bodies, body_env):
         b.env = env
-    return np.mean(env.total_reward)
+    # return np.mean(env.total_reward)
+    return env.total_reward
 
-# TODO currently not supported nor tested
+# TODO currently not supported (with multi agents) nor tested
 def gen_avg_return(world, env):
     '''Generate average return for agent and an env'''
     with util.ctx_lab_mode('eval'):  # enter eval context
@@ -134,6 +135,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     opt_steps = session_df['opt_step']
 
     final_return_ma = mean_returns[-viz.PLOT_MA_WINDOW:].mean()
+
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
     max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     with warnings.catch_warnings():  # mute np.nanmean warning
@@ -237,6 +239,7 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
     config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    # experiment_df = experiment_df.reindex(experiment_df.columns, axis=1)
     experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
     # insert trial index
     experiment_df.insert(0, 'trial', experiment_df.index.astype(np.int))
@@ -264,32 +267,44 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
     return session_metrics
 
 
-def analyze_trial(trial_spec, session_metrics_list_list):
-    '''Analyze trial and save data, then return metrics'''
+# TODO could improve support of multi agents + world
+def analyze_trial(trial_spec, sessions_agents_metrics):
+    '''Analyze trial and save data, then return metrics
+    :arg sessions_agents_metrics is a list over all session of dicts
+    where each key is an agent or the world and the value is its list of metrics.
+    '''
     info_prepath = trial_spec['meta']['info_prepath']
+    head, tail = os.path.split(info_prepath)
 
-    # TODO merge mmetric of Multi agent before ! Analysis is be incorrect in multi agent
-    if isinstance(session_metrics_list_list,list) and isinstance(session_metrics_list_list[0],list):
-        session_metrics_list = []
-        for l in session_metrics_list_list:
-            session_metrics_list.extend(l)
-    else:
-        session_metrics_list = session_metrics_list_list
+    trial_agents_metrics = {}
+    # For each agents or world
+    for k in sessions_agents_metrics[0].keys():
+        # Agent or world k
+        agent_info_prepath = os.path.join(head, f'{k}_' + tail)
+        # print("agent_info_prepath", agent_info_prepath, "k", k, "head", head)
+        # assert 0
+        sessions_agent_metrics = [el[k] for el in sessions_agents_metrics]
 
-    # calculate metrics
-    trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
-    # plot graphs
-    viz.plot_trial(trial_spec, trial_metrics)
-    viz.plot_trial(trial_spec, trial_metrics, ma=True)
-    # zip files
-    if util.get_lab_mode() == 'train' or trial_spec['meta']['max_trial'] == 1:
-        predir, _, _, _, _, _ = util.prepath_split(info_prepath)
-        zipdir = util.smart_path(predir)
-        shutil.make_archive(zipdir, 'zip', zipdir)
-        logger.info(f'All trial data zipped to {predir}.zip')
-    return trial_metrics
+        # calculate metrics
+        agent_trial_metrics = calc_trial_metrics(sessions_agent_metrics, agent_info_prepath)
+        # plot graphs
+        viz.plot_trial(trial_spec, agent_trial_metrics)
+        viz.plot_trial(trial_spec, agent_trial_metrics, ma=True)
+        # zip files
+        if util.get_lab_mode() == 'train' or trial_spec['meta']['max_trial'] == 1:
+            predir, _, _, _, _, _ = util.prepath_split(agent_info_prepath)
+            zipdir = util.smart_path(predir)
+            shutil.make_archive(zipdir, 'zip', zipdir)
+            logger.info(f'All trial data zipped to {predir}.zip')
+
+        # Unpack data
+        for key in agent_trial_metrics['scalar'].keys():
+            trial_agents_metrics[f'{k}_{key}'] = agent_trial_metrics['scalar'][key]
+
+    return trial_agents_metrics
 
 
+# TODO could improve support of multi agents + world
 def analyze_experiment(spec, trial_data_dict):
     '''Analyze experiment and save data'''
     info_prepath = spec['meta']['info_prepath']

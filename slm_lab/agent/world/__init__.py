@@ -1,3 +1,3 @@
 from .simple_multi_agent import DefaultMultiAgentWorld
 from .single_agent import DefaultSingleAgentWorld
-from .multi_agent_with_welfare_func import WelfareMultiAgentWorld
+# from .multi_agent_with_welfare_func import WelfareMultiAgentWorld

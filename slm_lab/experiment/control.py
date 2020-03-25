@@ -75,23 +75,16 @@ class Session:
     def try_ckpt(self, world, env):
         '''Check then run checkpoint log/eval'''
         if self.to_ckpt(env, 'log'):
-            for body in world.bodies:
-                body.ckpt(self.env, 'train')
-                body.log_summary('train')
-                if len(body.train_df) > 2:  # need more rows to calculate metrics
-                    metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
-                    body.log_metrics(metrics['scalar'], 'train')
-            # if body.total_reward_ma >= body.best_total_reward_ma:
-            #     body.best_total_reward_ma = body.total_reward_ma
+            world.ckpt()
             if world.total_rewards_ma >= world.best_total_rewards_ma:
                 world.best_total_rewards_ma = world.total_rewards_ma
                 world.save(ckpt='best')
 
+            # TODO support eval
             if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
                 logger.info('Running eval ckpt')
 
-                for agent in world.agents:
-                    analysis.gen_avg_return(agent, self.eval_env)
+                analysis.gen_avg_return(world, self.eval_env)
                 for body in world.bodies:
                     body.ckpt(self.eval_env, 'eval')
                     body.log_summary('eval')
@@ -108,25 +101,17 @@ class Session:
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
-                self.try_ckpt(self.world, self.env)
                 if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
-                    logger.debug("will reset env")
                     state = self.env.reset()
                     done = False
             self.try_ckpt(self.world, self.env)
             if clock.get() >= clock.max_frame:  # finish
                 break
             clock.tick('t')
-            logger.debug("state {}".format(state))
-            logger.debug("will act")
             with torch.no_grad():
                 action = self.world.act(state)
-            logger.debug("will get next state")
-            # logger.info("action {}".format(action))
             next_state, reward, done, info = self.env.step(action)
-            logger.debug("will update agent")
-            # logger.info("reward {}".format(reward))
             self.world.update(state, action, reward, next_state, done)
             state = next_state
 
@@ -140,20 +125,9 @@ class Session:
 
     def run(self):
         self.run_rl()
-        bodies = self.world.bodies
-        if not isinstance(bodies, list):
-            bodies = [bodies]
-
-        all_metrics = []
-        for body in bodies:
-            metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval')
-            body.log_metrics(metrics['scalar'], 'eval')
-            all_metrics.append(metrics)
-        # TODO manage metrics in multi agent setups
-        if len(all_metrics) == 1:
-            all_metrics = all_metrics[0]
+        world_and_agents_metrics = self.world.compute_and_log_session_metrics()
         self.close()
-        return all_metrics
+        return world_and_agents_metrics
 
 
 class Trial:
@@ -188,10 +162,10 @@ class Trial:
         if self.spec['meta']['max_session'] == 1:
             spec = deepcopy(self.spec)
             spec_util.tick(spec, 'session')
-            session_metrics_list = [Session(spec).run()]
+            sessions_metrics = [Session(spec).run()]
         else:
-            session_metrics_list = self.parallelize_sessions()
-        return session_metrics_list
+            sessions_metrics = self.parallelize_sessions()
+        return sessions_metrics
 
     def init_global_nets(self):
         session = Session(deepcopy(self.spec))
@@ -210,12 +184,13 @@ class Trial:
 
     def run(self):
         if self.spec['meta'].get('distributed') == False:
-            session_metrics_list = self.run_sessions()
+            sessions_agents_metrics = self.run_sessions()
         else:
-            session_metrics_list = self.run_distributed_sessions()
-        metrics = analysis.analyze_trial(self.spec, session_metrics_list)
+            sessions_agents_metrics = self.run_distributed_sessions()
+        trial_agents_metrics = analysis.analyze_trial(self.spec, sessions_agents_metrics)
         self.close()
-        return metrics['scalar']
+        return trial_agents_metrics
+        # return metrics['scalar']
 
 
 class Experiment:
