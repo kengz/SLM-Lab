@@ -103,6 +103,7 @@ def init_action_pd(ActionPD, pdparam):
             loc, scale = pdparam
         else:
             loc, scale = pdparam.transpose(0, 1)
+        loc = torch.clamp(loc, min=-20, max=20)  # prevent blowing up
         # scale (stdev) must be > 0, log-clamp-exp
         scale = torch.clamp(scale, min=-20, max=2).exp()
         if 'covariance_matrix' in args:  # split output
