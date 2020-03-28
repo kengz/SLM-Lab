@@ -104,9 +104,8 @@ def init_action_pd(ActionPD, pdparam):
         else:
             loc, scale = pdparam.transpose(0, 1)
         # TODO obtain clamp range from env
-        loc = torch.clamp(loc, min=-20, max=20)  # prevent blowing up
         # scale (stdev) must be > 0, log-clamp-exp
-        scale = torch.clamp(scale, min=-20, max=2).exp()
+        scale = torch.clamp(scale, min=1e-8)
         if 'covariance_matrix' in args:  # split output
             # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)

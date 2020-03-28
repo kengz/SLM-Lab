@@ -136,6 +136,7 @@
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.02,
+          "out_layer_activation": "tanh",
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.2,
           "use_same_optim": true,
