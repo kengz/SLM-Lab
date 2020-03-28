@@ -120,8 +120,8 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 1024,
-          "minibatch_size": 256,
+          "time_horizon": 2048,
+          "minibatch_size": 128,
           "training_epoch": 10
         },
         "memory": {
@@ -129,10 +129,10 @@
         },
         "net": {
           "type": "TransformerNet",
-          "shared": true,
+          "shared": false,
           "pos_encoder": "sinusoid",
           "embed_dim": 32,
-          "num_heads": 8,
+          "num_heads": 2,
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.02,
@@ -145,7 +145,7 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 1e-4,
+            "lr": 3e-4,
           },
           "lr_scheduler_spec": null,
           "gpu": true
@@ -158,7 +158,7 @@
         "frame_op": "stack",
         "frame_op_len": 8,
         "normalize_state": true,
-        "num_envs": 16,
+        "num_envs": 8,
         "max_t": null,
         "max_frame": 2e6
       }
