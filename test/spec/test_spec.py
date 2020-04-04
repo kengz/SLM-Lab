@@ -160,8 +160,8 @@ def test_base(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/ppo/ppo_coin_game.json', 'ppo_coin_game'),
-    ('experimental/ppo/ppo_coin_game.json', 'ppo_coin_game_utilitarian'),
+    ('experimental/ppo/coin_ppo.json', 'ppo_coin_game'),
+    ('experimental/ppo/coin_ppo.json', 'ppo_coin_game_utilitarian'),
 ])
 def test_ppo_coin_game(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

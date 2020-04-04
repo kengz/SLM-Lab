@@ -12,16 +12,17 @@ logger = logger.get_logger(__name__)
 class MetaAlgorithm(algorithm.Algorithm):
     ''' Abstract Meta Algorithm class to define the API methods '''
 
-    def __init__(self, agent, global_nets=None, algorithm_spec=None, memory_spec=None, net_spec=None, algo_idx=0):
+    def __init__(self, agent, global_nets=None, algorithm_spec=None,
+                 memory_spec=None, net_spec=None, algo_idx=0):
 
-        super().__init__(agent, global_nets=None, algorithm_spec=None, memory_spec=None, net_spec=None,
+        super().__init__(agent, global_nets=None, algorithm_spec=None,
+                         memory_spec=None, net_spec=None,
                         algo_idx=algo_idx)
         # self.agent = agent
         self.meta_algorithm_spec = agent.agent_spec['algorithm']
         self.algorithms = []
         # TODO manage global nets (needed in distributed training)
         for algo_idx, algorithm_spec in enumerate(self.meta_algorithm_spec['contained_algorithms']):
-            print("algorithm_spec",algorithm_spec)
             AlgorithmClass = getattr(algorithm, algorithm_spec['name'])
             algo = AlgorithmClass(agent,
                                   global_nets[algo_idx] if global_nets is not None else None,
@@ -82,11 +83,17 @@ class MetaAlgorithm(algorithm.Algorithm):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError()
 
+    @property
+    def net(self):
+        raise NotImplementedError()
+
+
 class OneOfNAlgoActived(MetaAlgorithm):
     ''' OneOfNAlgoActived class to define the API methods. This meta-algo apply the curenlty activated algorithm. No
     heuristic are implemented in this class to change the activated algorithm'''
 
-    def __init__(self, agent, global_nets=None, algorithm_spec=None, memory_spec=None, net_spec=None, algo_idx=0):
+    def __init__(self, agent, global_nets=None, algorithm_spec=None,
+                 memory_spec=None, net_spec=None, algo_idx=0):
         '''
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         :param algo_idx:
@@ -118,14 +125,17 @@ class OneOfNAlgoActived(MetaAlgorithm):
         '''Samples a batch from memory'''
         return self.algorithms[self.active_algo_idx].sample()
 
+    @property
+    def net(self):
+        return self.algorithms[self.active_algo_idx].net
+
     @lab_api
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
         losses = []
         for idx, algo in enumerate(self.algorithms):
-            if algo.to_train:
-                logger.debug(f'train {idx}')
-                losses.append(algo.train())
+            losses.append(algo.train())
+        losses = [ el for el in losses if not np.isnan(el)]
         loss = sum(losses) if len(losses) > 0 else np.nan
 
         if not np.isnan(loss):
@@ -139,7 +149,8 @@ class OneOfNAlgoActived(MetaAlgorithm):
         explore_vars = []
         for algo in self.algorithms:
             explore_vars.append(algo.update())
-        explore_var = sum(explore_vars)
+        explore_vars = [el for el in explore_vars if not np.isnan(el)]
+        explore_var = sum(explore_vars) if len(explore_vars) > 0 else np.nan
         return explore_var
 
     @lab_api

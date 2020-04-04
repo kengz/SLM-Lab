@@ -26,6 +26,8 @@ class Net(ABC):
         else:
             self.device = 'cpu'
 
+        self.opt_step = 0
+
     @abstractmethod
     def forward(self):
         '''The forward step for a specific network architecture'''
@@ -45,7 +47,9 @@ class Net(ABC):
         if global_net is not None:
             net_util.copy(global_net, self)
         if clock is not None:
-            clock.tick('opt_step')
+            # clock.tick('opt_step')
+            self.opt_step += 1
+            # TODO check that this is suppo
         return loss
 
     def store_grad_norms(self):

@@ -81,7 +81,7 @@ class Clock:
             self.epi += 1
             self.t = 0
         elif unit == 'opt_step':
-            self.opt_step += self.batch_size
+            self.opt_step += 1  #self.batch_size
         else:
             raise KeyError
 
@@ -141,6 +141,8 @@ class BaseEnv(ABC):
         self.done = False
         self.total_reward = np.nan
         self.agents_rewards = [np.nan]
+
+        self.extra_env_log_info_col = self.get_extra_training_log_info().keys()
 
     def _get_spaces(self, u_env):
         '''Helper to set the extra attributes to, and get, observation and action spaces'''
@@ -232,3 +234,6 @@ class BaseEnv(ABC):
     def close(self):
         '''Method to close and cleanup env'''
         raise NotImplementedError
+
+    def get_extra_training_log_info(self):
+        return {}

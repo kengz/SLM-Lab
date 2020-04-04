@@ -10,9 +10,9 @@ import warnings
 
 
 METRICS_COLS = [
-    'final_return_ma',
-    'strength', 'max_strength', 'final_strength',
-    'sample_efficiency', 'training_efficiency',
+    'final_r_ma',
+    'strength', 'max_strgth', 'final_strgth',
+    'sample_effici.', 'train._effici.',
     'stability', 'consistency',
 ]
 
@@ -130,7 +130,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
         logger.warn('Random baseline unavailable for environment. Please generate separately.')
     else:
         mean_rand_returns = rand_bl['mean']
-    mean_returns = session_df['total_reward']
+    mean_returns = session_df['tot_r']
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
@@ -146,20 +146,20 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
 
     # all the scalar session metrics
     scalar = {
-        'final_return_ma': final_return_ma,
+        'final_r_ma': final_return_ma,
         'strength': str_,
-        'max_strength': max_str,
-        'final_strength': final_str,
-        'sample_efficiency': sample_eff,
-        'training_efficiency': train_eff,
+        'max_strgth': max_str,
+        'final_strgth': final_str,
+        'sample_effici.': sample_eff,
+        'train._effici.': train_eff,
         'stability': sta,
     }
     # all the session local metrics
     local = {
-        'mean_returns': mean_returns,
+        'mean_r': mean_returns,
         'strengths': local_strs,
-        'sample_efficiencies': local_sample_effs,
-        'training_efficiencies': local_train_effs,
+        'sample_effici.': local_sample_effs,
+        'train._effici.': local_train_effs,
         'stabilities': local_stas,
         'frames': frames,
         'opt_steps': opt_steps,
@@ -187,10 +187,10 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
-    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
+    mean_returns_list = [sm['local']['mean_r'] for sm in session_metrics_list]
     local_strs_list = [sm['local']['strengths'] for sm in session_metrics_list]
-    local_se_list = [sm['local']['sample_efficiencies'] for sm in session_metrics_list]
-    local_te_list = [sm['local']['training_efficiencies'] for sm in session_metrics_list]
+    local_se_list = [sm['local']['sample_effici.'] for sm in session_metrics_list]
+    local_te_list = [sm['local']['train._effici.'] for sm in session_metrics_list]
     local_sta_list = [sm['local']['stabilities'] for sm in session_metrics_list]
     frames = session_metrics_list[0]['local']['frames']
     opt_steps = session_metrics_list[0]['local']['opt_steps']
@@ -199,22 +199,22 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
 
     # all the scalar trial metrics
     scalar = {
-        'final_return_ma': mean_scalar['final_return_ma'],
+        'final_r_ma': mean_scalar['final_r_ma'],
         'strength': mean_scalar['strength'],
-        'max_strength': mean_scalar['max_strength'],
-        'final_strength': mean_scalar['final_strength'],
-        'sample_efficiency': mean_scalar['sample_efficiency'],
-        'training_efficiency': mean_scalar['training_efficiency'],
+        'max_strgth': mean_scalar['max_strgth'],
+        'final_strgth': mean_scalar['final_strgth'],
+        'sample_effici.': mean_scalar['sample_effici.'],
+        'train._effici.': mean_scalar['train._effici.'],
         'stability': mean_scalar['stability'],
         'consistency': con,
     }
     assert set(scalar.keys()) == set(METRICS_COLS)
     # for plotting: gather all local series of sessions
     local = {
-        'mean_returns': mean_returns_list,
+        'mean_r': mean_returns_list,
         'strengths': local_strs_list,
-        'sample_efficiencies': local_se_list,
-        'training_efficiencies': local_te_list,
+        'sample_effici.': local_se_list,
+        'train._effici.': local_te_list,
         'stabilities': local_sta_list,
         'consistencies': local_cons,  # this is a list
         'frames': frames,
@@ -260,10 +260,6 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
     util.write(session_df, f'{info_prepath}_session_df_{df_mode}.csv')
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
-    if plot:
-        # plot graph
-        viz.plot_session(session_spec, session_metrics, session_df, df_mode)
-        viz.plot_session(session_spec, session_metrics, session_df, df_mode, ma=True)
     return session_metrics
 
 
@@ -277,19 +273,18 @@ def analyze_trial(trial_spec, sessions_agents_metrics):
     head, tail = os.path.split(info_prepath)
 
     trial_agents_metrics = {}
+    trial_plot_data = {}
     # For each agents or world
     for k in sessions_agents_metrics[0].keys():
         # Agent or world k
         agent_info_prepath = os.path.join(head, f'{k}_' + tail)
-        # print("agent_info_prepath", agent_info_prepath, "k", k, "head", head)
-        # assert 0
+        # Select all identical agents from several sessions
         sessions_agent_metrics = [el[k] for el in sessions_agents_metrics]
 
         # calculate metrics
         agent_trial_metrics = calc_trial_metrics(sessions_agent_metrics, agent_info_prepath)
         # plot graphs
-        viz.plot_trial(trial_spec, agent_trial_metrics)
-        viz.plot_trial(trial_spec, agent_trial_metrics, ma=True)
+        trial_plot_data[k] = agent_trial_metrics
         # zip files
         if util.get_lab_mode() == 'train' or trial_spec['meta']['max_trial'] == 1:
             predir, _, _, _, _, _ = util.prepath_split(agent_info_prepath)
@@ -300,6 +295,10 @@ def analyze_trial(trial_spec, sessions_agents_metrics):
         # Unpack data
         for key in agent_trial_metrics['scalar'].keys():
             trial_agents_metrics[f'{k}_{key}'] = agent_trial_metrics['scalar'][key]
+
+    # plot graphs
+    viz.plot_trial(trial_spec, trial_plot_data)
+    viz.plot_trial(trial_spec, trial_plot_data, ma=True)
 
     return trial_agents_metrics
 

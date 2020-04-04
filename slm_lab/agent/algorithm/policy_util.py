@@ -121,7 +121,7 @@ def init_action_pd(ActionPD, pdparam):
     return action_pd
 
 
-def sample_action(ActionPD, pdparam):
+def sample_action(ActionPD, pdparam, algorithm):
     '''
     Convenience method to sample action(s) from action_pd = ActionPD(pdparam)
     Works with batched pdparam too
@@ -133,8 +133,9 @@ def sample_action(ActionPD, pdparam):
     action = sample_action(body.ActionPD, pdparam)
     '''
     action_pd = init_action_pd(ActionPD, pdparam)
+
     action = action_pd.sample()
-    return action
+    return action, action_pd
 
 
 # action_policy used by agent
@@ -143,8 +144,8 @@ def sample_action(ActionPD, pdparam):
 def default(state, algorithm, body):
     '''Plain policy by direct sampling from a default action probability defined by body.ActionPD'''
     pdparam = calc_pdparam(state, algorithm, body)
-    action = sample_action(body.ActionPD, pdparam)
-    return action
+    action, action_pd = sample_action(body.ActionPD, pdparam, algorithm)
+    return action, action_pd
 
 
 def random(state, algorithm, body):
@@ -154,7 +155,7 @@ def random(state, algorithm, body):
     else:
         _action = [body.action_space.sample()]
     action = torch.tensor(_action)
-    return action
+    return action, None
 
 
 def epsilon_greedy(state, algorithm, body):
@@ -173,8 +174,8 @@ def boltzmann(state, algorithm, body):
     tau = body.explore_var
     pdparam = calc_pdparam(state, algorithm, body)
     pdparam /= tau
-    action = sample_action(body.ActionPD, pdparam)
-    return action
+    action, action_pd = sample_action(body.ActionPD, pdparam)
+    return action, action_pd
 
 
 # multi-body/multi-env action_policy used by agent
@@ -191,56 +192,60 @@ def multi_default(states, algorithm, body_list, pdparam):
     '''
     # assert pdparam has been chunked
     assert pdparam.dim() > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    action_list = []
+    action_list, action_pd_list = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         guard_tensor(states[idx], body)  # for consistency with singleton inner logic
-        action = sample_action(body.ActionPD, sub_pdparam)
+        action, action_pd = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
+        action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a
+    return action_a, action_pd_list
 
 
 def multi_random(states, algorithm, body_list, pdparam):
     '''Apply random policy body-wise.'''
-    action_list = []
+    action_list, action_pd_list = [], []
     for idx, body in body_list:
-        action = random(states[idx], algorithm, body)
+        action, action_pd = random(states[idx], algorithm, body)
         action_list.append(action)
+        action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a
+    return action_a, action_pd_list
 
 
 def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
     '''Apply epsilon-greedy policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    action_list = []
+    action_list, action_pd_list = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         epsilon = body.explore_var
         if epsilon > np.random.rand():
-            action = random(states[idx], algorithm, body)
+            action, action_pd = random(states[idx], algorithm, body)
         else:
             guard_tensor(states[idx], body)  # for consistency with singleton inner logic
-            action = sample_action(body.ActionPD, sub_pdparam)
+            action, action_pd = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
+        action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a
+    return action_a, action_pd_list
 
 
 def multi_boltzmann(states, algorithm, body_list, pdparam):
     '''Apply Boltzmann policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    action_list = []
+    action_list, action_pd_list = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         guard_tensor(states[idx], body)  # for consistency with singleton inner logic
         tau = body.explore_var
         sub_pdparam /= tau
-        action = sample_action(body.ActionPD, sub_pdparam)
+        action, action_pd = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
+        action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a
+    return action_a, action_pd_list
 
 
 # action policy update methods
@@ -281,3 +286,10 @@ class VarScheduler:
         step = clock.get()
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val
+
+# import numpy as np
+
+def kullback_leibler_divergence(a, b):
+    a = np.asarray(a, dtype=np.float)
+    b = np.asarray(b, dtype=np.float)
+    return np.sum(np.where(a != 0, a * np.log(a / b), 0))

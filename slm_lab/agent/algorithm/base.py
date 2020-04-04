@@ -36,6 +36,12 @@ class Algorithm(ABC):
 
         self.init_algorithm_params()
         self.init_nets(global_nets)
+
+        # Extra customizable training log
+        self.algo_temp_info = {} if not hasattr(self, "algo_temp_info") else self.algo_temp_info
+        # TODO clean
+        self.extra_training_log_info_col = {} #self.get_extra_training_log_info().keys()
+
         logger.info(util.self_desc(self))
 
     @abstractmethod
@@ -78,7 +84,7 @@ class Algorithm(ABC):
     def act(self, state):
         '''Standard act method.'''
         raise NotImplementedError
-        return action
+        return action, action_pd
 
     @abstractmethod
     @lab_api
@@ -108,16 +114,12 @@ class Algorithm(ABC):
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to save.')
         else:
-            net_util.save_algorithm(self, ckpt=ckpt, suffix=self.suffix)
+            net_util.save_algorithm(self, ckpt=ckpt, prefix=self.identifier+'_')
 
     @property
-    def suffix(self):
-        suffix =''
-        if self.agent.agent_idx != 0:
-            suffix += f"_agent_n{self.agent.agent_idx}"
-        if self.algo_idx != 0:
-            suffix += f"_algo_n{self.algo_idx}"
-        return suffix
+    def identifier(self):
+        identifier = f"agent_n{self.agent.agent_idx}_algo_n{self.algo_idx}"
+        return identifier
 
     @lab_api
     def load(self):
@@ -126,7 +128,7 @@ class Algorithm(ABC):
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to load.')
         else:
-            net_util.load_algorithm(self, suffix=self.suffix)
+            net_util.load_algorithm(self, prefix=self.identifier+'_')
         # set decayable variables to final values
         for k, v in vars(self).items():
             if k.endswith('_scheduler') and hasattr(v, 'end_val'):
@@ -135,3 +137,13 @@ class Algorithm(ABC):
 
     def memory_update(self, state, action, welfare, next_state, done):
         return self.memory.update(state, action, welfare, next_state, done)
+
+    def get_extra_training_log_info(self):
+        return {}
+
+    def _reset_temp_info(self):
+        for k, v in self.algo_temp_info.items():
+            if isinstance(v, str):
+                self.algo_temp_info[k] = ""
+            else:
+                self.algo_temp_info[k] = 0

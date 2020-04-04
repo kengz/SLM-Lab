@@ -21,3 +21,12 @@
 | ![sac doublependulum](https://user-images.githubusercontent.com/8209263/63994879-07c3c680-caab-11e9-974c-06cdd25bfd68.gif) | ![sac pendulum](https://user-images.githubusercontent.com/8209263/63994880-085c5d00-caab-11e9-850d-049401540e3b.gif) | ![sac reacher](https://user-images.githubusercontent.com/8209263/63994881-098d8a00-caab-11e9-8e19-a3b32d601b10.gif) | ![sac walker](https://user-images.githubusercontent.com/8209263/63994882-0abeb700-caab-11e9-9e19-b59dc5c43393.gif) |
 | Inv.DoublePendulum | InvertedPendulum | Reacher | Walker |
 
+
+
+
+# TODO
+
+- coin game => epi with several steps
+- dans model : juste ..._agent_n1
+- dans info:  session_df_train ou eval : pas par agent
+- add exp replay with coin game

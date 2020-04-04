@@ -1,0 +1,475 @@
+{
+  "coin_ppo": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.5,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.1,
+          "end_val": 0.003,
+          "start_step": 0,
+          "end_step": 200000
+        },
+        "val_loss_coef": 1.0,
+        "time_horizon": 32,
+        "minibatch_size": 16,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "conv_hid_layers": [
+          [16, 3, 1, 1, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "shared": true,
+        "fc_hid_layers": [16],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": false,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 250000
+        },
+        "gpu": true
+      }
+    },
+    {
+      "copy_n":0
+    }],
+    "env": [{
+      "name": "CoinGame-v0",
+      "max_t": null,
+      "max_frame": 250000,
+      "num_envs": 1,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  },
+
+
+
+  "coin_ppo_util": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent": [{
+      "name": "PPO",
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.5,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.1,
+          "end_val": 0.003,
+          "start_step": 0,
+          "end_step": 200000
+        },
+        "val_loss_coef": 1.0,
+        "time_horizon": 32,
+        "minibatch_size": 16,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "conv_hid_layers": [
+          [16, 3, 1, 1, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "shared": true,
+        "fc_hid_layers": [16],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": false,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 250000
+        },
+        "gpu": true
+      }
+    },
+    {
+      "copy_n":0
+    }],
+    "env": [{
+      "name": "CoinGame-v0",
+      "max_t": null,
+      "max_frame": 250000,
+      "num_envs": 1,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+  "coin_ppo_le_self_play": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 10,
+        "min_coop_time": 1,
+        "kl_divergence_puni_thr": 0.5,
+        "contained_algorithms": [
+          {
+            "name": "PPO",
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "algorithm": {
+              "name": "PPO",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.5,
+              "lam": 0.95,
+              "clip_eps_spec": {
+                "name": "linear_decay",
+                "start_val": 0.10,
+                "end_val": 0.01,
+                "start_step": 1000,
+                "end_step": 5000
+              },
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.1,
+                "end_val": 0.003,
+                "start_step": 0,
+                "end_step": 200000
+              },
+              "val_loss_coef": 1.0,
+              "time_horizon": 32,
+              "minibatch_size": 16,
+              "training_epoch": 8
+            },
+            "memory": {
+              "name": "OnPolicyBatchReplay"
+            },
+            "net": {
+              "type": "ConvNet",
+              "conv_hid_layers": [
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "shared": true,
+              "fc_hid_layers": [16],
+              "hid_layers_activation": "relu",
+              "init_fn": "orthogonal_",
+              "normalize": false,
+              "batch_norm": false,
+              "clip_grad_val": 0.5,
+              "use_same_optim": false,
+              "actor_optim_spec": {
+                "name": "Adam",
+                "lr": 2e-3
+              },
+              "critic_optim_spec": {
+                "name": "Adam",
+                "lr": 2e-3
+              },
+              "lr_scheduler_spec": {
+                "name": "LinearToZero",
+                "frame": 250000
+              },
+              "gpu": true
+            }
+          },
+          {
+            "copy_n": 0
+          }
+        ]
+
+      }
+    },
+    {
+      "copy_n":0
+    }],
+    "env": [{
+      "name": "CoinGame-v0",
+      "max_t": null,
+      "max_frame": 250000,
+      "num_envs": 1,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  "coin_ppo_le_with_naive_opponent": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 10,
+        "min_coop_time": 1,
+        "kl_divergence_puni_thr": 0.5,
+        "contained_algorithms": [
+          {
+            "name": "PPO",
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "algorithm": {
+              "name": "PPO",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.5,
+              "lam": 0.95,
+              "clip_eps_spec": {
+                "name": "linear_decay",
+                "start_val": 0.10,
+                "end_val": 0.01,
+                "start_step": 1000,
+                "end_step": 5000
+              },
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.1,
+                "end_val": 0.003,
+                "start_step": 0,
+                "end_step": 200000
+              },
+              "val_loss_coef": 1.0,
+              "time_horizon": 32,
+              "minibatch_size": 16,
+              "training_epoch": 8
+            },
+            "memory": {
+              "name": "OnPolicyBatchReplay"
+            },
+            "net": {
+              "type": "ConvNet",
+              "conv_hid_layers": [
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "shared": true,
+              "fc_hid_layers": [16],
+              "hid_layers_activation": "relu",
+              "init_fn": "orthogonal_",
+              "normalize": false,
+              "batch_norm": false,
+              "clip_grad_val": 0.5,
+              "use_same_optim": false,
+              "actor_optim_spec": {
+                "name": "Adam",
+                "lr": 2e-3
+              },
+              "critic_optim_spec": {
+                "name": "Adam",
+                "lr": 2e-3
+              },
+              "lr_scheduler_spec": {
+                "name": "LinearToZero",
+                "frame": 250000
+              },
+              "gpu": true
+            }
+          },
+          {
+            "copy_n": 0
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.5,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.1,
+          "end_val": 0.003,
+          "start_step": 0,
+          "end_step": 200000
+        },
+        "val_loss_coef": 1.0,
+        "time_horizon": 32,
+        "minibatch_size": 16,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "conv_hid_layers": [
+          [16, 3, 1, 1, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "shared": true,
+        "fc_hid_layers": [16],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": false,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 250000
+        },
+        "gpu": true
+      }
+    }
+    ],
+    "env": [{
+      "name": "CoinGame-v0",
+      "max_t": null,
+      "max_frame": 250000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  }
+}

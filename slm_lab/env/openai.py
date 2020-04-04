@@ -49,6 +49,9 @@ class OpenAIEnv(BaseEnv):
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
+
+        self.extra_env_log_info_col = self.get_extra_training_log_info().keys()
+
         logger.info(util.self_desc(self))
 
     def seed(self, seed):
@@ -77,12 +80,15 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def step(self, action):
 
-        if self.NUM_AGENTS == 1:  # Adapt to env with single agent
+        if self.NUM_AGENTS == 1:  # Support env with single agent
             action = action[0]
 
         if not self.action_space_is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
             action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
+
+        if isinstance(info, dict) and 'extra_info_to_log' in info.keys():
+            self.extra_info_to_log = info['extra_info_to_log']
 
         state = self._convert_discrete_state_to_one_hot_numpy(state)
 
@@ -97,7 +103,7 @@ class OpenAIEnv(BaseEnv):
             done = True
         self.done = done
 
-        if self.NUM_AGENTS == 1:  # Adapt to env with single agent
+        if self.NUM_AGENTS == 1:  # Support env with single agent
             state = [state]
             reward = [reward]
 
@@ -133,3 +139,9 @@ class OpenAIEnv(BaseEnv):
         # logger.debug("util.get_class_name(space) {}".format(util.get_class_name(space)))
         # return util.get_class_name(space) != 'Box'
         return "Discrete" in util.get_class_name(space)
+
+    def get_extra_training_log_info(self):
+        if hasattr(self, "extra_info_to_log"):
+            return self.extra_info_to_log
+        else:
+            return {}

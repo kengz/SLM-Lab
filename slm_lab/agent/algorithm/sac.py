@@ -97,7 +97,7 @@ class SoftActorCritic(ActorCritic):
         if self.body.env.clock.frame < self.training_start_step:
             return policy_util.random(state, self, self.body).cpu().squeeze().numpy()
         else:
-            action = self.action_policy(state, self, self.body)
+            action, _ = self.action_policy(state, self, self.body)
             if not self.body.action_space_is_discrete:
                 action = self.scale_action(torch.tanh(action))  # continuous action bound
             return action.cpu().squeeze().numpy()

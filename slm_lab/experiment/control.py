@@ -13,6 +13,8 @@ import torch
 import torch.multiprocessing as mp
 from collections.abc import Iterable
 
+# from line_profiler import LineProfiler
+
 
 def make_env_agents_world(spec, global_nets_list=None):
     '''Helper to create world (with its agents) and env given spec'''
@@ -31,9 +33,9 @@ def make_env_agents_world(spec, global_nets_list=None):
     return world, env
 
 
-def mp_run_session(spec, global_nets_list, mp_dict):
+def mp_run_session(spec, global_nets_list, mp_dict, trial_idx):
     '''Wrap for multiprocessing with shared variable'''
-    session = Session(spec, global_nets_list)
+    session = Session(spec, global_nets_list, trial_idx)
     metrics = session.run()
     mp_dict[session.index] = metrics
 
@@ -45,15 +47,18 @@ class Session:
     then gather data and analyze it to produce session data.
     '''
 
-    def __init__(self, spec, global_nets_list=None):
+    def __init__(self, spec, global_nets_list=None, trial_idx=None):
         self.spec = spec
         self.index = self.spec['meta']['session']
+        self.trial_idx = trial_idx
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
 
         self.world, self.env = make_env_agents_world(self.spec, global_nets_list)
+        self.world.session_idx = self.index
+        self.world.trial_idx = self.trial_idx
         if ps.get(self.spec, 'meta.rigorous_eval'):
             with util.ctx_lab_mode('eval'):
                 self.eval_env = make_env(self.spec)
@@ -61,6 +66,9 @@ class Session:
             self.eval_env = self.env
         logger.info(util.self_desc(self))
         logger.debug("End of Session __init__")
+
+        from slm_lab.lib.util import Throttle_Temp
+        self.temp_manager = Throttle_Temp()
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
@@ -83,14 +91,9 @@ class Session:
             # TODO support eval
             if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
                 logger.info('Running eval ckpt')
+                world.ckpt('eval')
 
                 analysis.gen_avg_return(world, self.eval_env)
-                for body in world.bodies:
-                    body.ckpt(self.eval_env, 'eval')
-                    body.log_summary('eval')
-                    if len(body.eval_df) > 2:  # need more rows to calculate metrics
-                        metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
-                        body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
@@ -110,10 +113,12 @@ class Session:
                 break
             clock.tick('t')
             with torch.no_grad():
-                action = self.world.act(state)
+                action, _ = self.world.act(state)
             next_state, reward, done, info = self.env.step(action)
             self.world.update(state, action, reward, next_state, done)
             state = next_state
+
+            self.temp_manager()
 
     def close(self):
         '''Close session and clean up. Save agent, close env.'''
@@ -125,7 +130,7 @@ class Session:
 
     def run(self):
         self.run_rl()
-        world_and_agents_metrics = self.world.compute_and_log_session_metrics()
+        world_and_agents_metrics = self.world.compute_and_log_session_metrics(temp_manager=self.temp_manager)
         self.close()
         return world_and_agents_metrics
 
@@ -149,7 +154,7 @@ class Trial:
         spec = deepcopy(self.spec)
         for _s in range(spec['meta']['max_session']):
             spec_util.tick(spec, 'session')
-            w = mp.Process(target=mp_run_session, args=(spec, global_nets_list, mp_dict))
+            w = mp.Process(target=mp_run_session, args=(spec, global_nets_list, mp_dict, self.index))
             w.start()
             workers.append(w)
         for w in workers:
@@ -162,7 +167,7 @@ class Trial:
         if self.spec['meta']['max_session'] == 1:
             spec = deepcopy(self.spec)
             spec_util.tick(spec, 'session')
-            sessions_metrics = [Session(spec).run()]
+            sessions_metrics = [Session(spec, trial_idx=self.index).run()]
         else:
             sessions_metrics = self.parallelize_sessions()
         return sessions_metrics

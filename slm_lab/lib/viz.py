@@ -75,44 +75,93 @@ def plot(*args, **kwargs):
         return iplot(*args, **kwargs)
 
 
-def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
-    '''Plot a series'''
-    x = time_sr.tolist()
-    color = color or get_palette(1)[0]
-    main_trace = go.Scatter(
-        x=x, y=sr, mode='lines', showlegend=False,
-        line={'color': color, 'width': 1},
-    )
-    data = [main_trace]
+# def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
+#     '''Plot a series'''
+#     x = time_sr.tolist()
+#     color = color or get_palette(1)[0]
+#     main_trace = go.Scatter(
+#         x=x, y=sr, mode='lines', showlegend=False,
+#         line={'color': color, 'width': 1},
+#     )
+#     data = [main_trace]
+#     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+#     fig = go.Figure(data, layout)
+#     plot(fig)
+#     return fig
+
+def plot_several_sr(sr_list, time_sr_list, title, y_title, x_title,
+                    color=None, name_list=None):
+    '''Plot several series'''
     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
-    fig = go.Figure(data, layout)
+    fig = go.Figure(layout=layout)
+
+    for idx, (sr, time_sr, name) in enumerate(
+            zip(sr_list, time_sr_list, name_list)):
+
+        x = time_sr.tolist()
+        selected_color = color or get_palette(len(sr_list))[idx]
+        main_trace = go.Scatter(
+            x=x, y=sr, mode='lines', showlegend=True, name=name,
+            line={'color': selected_color, 'width': 1},
+        )
+        fig.add_trace(main_trace)
+
     plot(fig)
     return fig
 
+# def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
+#     '''Plot a list of series using its mean, with error bar using std'''
+#     mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
+#     max_sr = mean_sr + std_sr
+#     min_sr = mean_sr - std_sr
+#     max_y = max_sr.tolist()
+#     min_y = min_sr.tolist()
+#     x = time_sr.tolist()
+#     color = color or get_palette(1)[0]
+#     main_trace = go.Scatter(
+#         x=x, y=mean_sr, mode='lines', showlegend=False,
+#         line={'color': color, 'width': 1},
+#     )
+#     envelope_trace = go.Scatter(
+#         x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
+#         line={'color': 'rgba(0, 0, 0, 0)'},
+#         fill='tozerox', fillcolor=lower_opacity(color, 0.2),
+#     )
+#     data = [main_trace, envelope_trace]
+#     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+#     fig = go.Figure(data, layout)
+#     return fig
 
-def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
+def plot_several_mean_sr(sr_list_list, time_sr_list, title, y_title, x_title,
+                         color=None, name_list=None):
     '''Plot a list of series using its mean, with error bar using std'''
-    mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
-    max_sr = mean_sr + std_sr
-    min_sr = mean_sr - std_sr
-    max_y = max_sr.tolist()
-    min_y = min_sr.tolist()
-    x = time_sr.tolist()
-    color = color or get_palette(1)[0]
-    main_trace = go.Scatter(
-        x=x, y=mean_sr, mode='lines', showlegend=False,
-        line={'color': color, 'width': 1},
-    )
-    envelope_trace = go.Scatter(
-        x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
-        line={'color': 'rgba(0, 0, 0, 0)'},
-        fill='tozerox', fillcolor=lower_opacity(color, 0.2),
-    )
-    data = [main_trace, envelope_trace]
     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
-    fig = go.Figure(data, layout)
-    return fig
+    fig = go.Figure(layout=layout)
 
+
+    for idx, (sr_list, time_sr, name) in enumerate(
+            zip(sr_list_list, time_sr_list, name_list)):
+
+        mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
+        max_sr = mean_sr + std_sr
+        min_sr = mean_sr - std_sr
+        max_y = max_sr.tolist()
+        min_y = min_sr.tolist()
+        x = time_sr.tolist()
+        selected_color = color or get_palette(len(sr_list_list))[idx]
+        main_trace = go.Scatter(
+            x=x, y=mean_sr, mode='lines', showlegend=True, name=name,
+            line={'color': selected_color, 'width': 1},
+        )
+        envelope_trace = go.Scatter(
+            x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
+            line={'color': 'rgba(0, 0, 0, 0)'},
+            fill='tozerox', fillcolor=lower_opacity(selected_color, 0.2),
+        )
+        fig.add_trace(main_trace)
+        fig.add_trace(envelope_trace)
+
+    return fig
 
 def save_image(figure, filepath):
     if os.environ['PY_ENV'] == 'test':
@@ -125,6 +174,19 @@ def save_image(figure, filepath):
 
 
 # analysis plot methods
+from slm_lab.agent.agent import agent
+def add_all_extra_col(name_time_pairs, session_df):
+    already_plotted = [ el[0] for el in name_time_pairs]
+    first_df = [ session_df[k] for k in session_df.keys()][0]
+    for df_col in first_df.columns:
+        if df_col in already_plotted:
+            continue
+        if any(df_col == col for col in agent.BASIC_COLS):
+            continue
+
+        name_time_pairs.append((df_col ,'frame'))
+    return name_time_pairs
+
 
 def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=False):
     '''
@@ -137,36 +199,72 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
     graph_prepath = meta_spec['graph_prepath']
     title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
 
-    local_metrics = session_metrics['local']
+    # local_metrics = session_metrics['local']
     name_time_pairs = [
-        ('mean_returns', 'frames'),
+        ('mean_r', 'frames'),
         ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
+        ('sample_effici.', 'frames'),
+        ('train._effici.', 'opt_steps'),
         ('stabilities', 'frames'),
     ]
     for name, time in name_time_pairs:
-        sr = local_metrics[name]
+        str_list = []
+        time_sr_list = []
+        name_list = []
+
+        for k in session_metrics.keys():
+            local_metrics = session_metrics[k]['local']
+
+            if name in local_metrics.keys():
+                sr = local_metrics[name]
+                if ma:
+                    sr = calc_sr_ma(sr)
+
+                str_list.append(sr)
+                time_sr_list.append(local_metrics[time])
+                name_list.append(k)
+
         if ma:
-            sr = calc_sr_ma(sr)
             name = f'{name}_ma'  # for labeling
-        fig = plot_sr(
-            sr, local_metrics[time], title, name, time)
+
+        fig = plot_several_sr(
+            str_list, time_sr_list, title, name, time, name_list=name_list)
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
+        if name in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
-    if ma:
-        return
+
+    # if ma:
+    #     return
     # training plots from session_df
     name_time_pairs = [
         ('loss', 'frame'),
-        ('explore_var', 'frame'),
+        ('expl_var', 'frame'),
         ('entropy', 'frame'),
     ]
+    name_time_pairs = add_all_extra_col(name_time_pairs, session_df)
     for name, time in name_time_pairs:
-        fig = plot_sr(
-            session_df[name], session_df[time], title, name, time)
+        str_list = []
+        time_sr_list = []
+        name_list = []
+
+        for k in session_df.keys():
+            s_df = session_df[k]
+
+            if name in s_df.columns:
+                sr = s_df[name]
+                if ma:
+                    sr = calc_sr_ma(sr)
+
+                str_list.append(sr)
+                time_sr_list.append(s_df[time])
+                name_list.append(k)
+
+        if ma:
+            name = f'{name}_ma'  # for labeling
+
+        fig = plot_several_sr(
+            str_list, time_sr_list, title, name, time, name_list=name_list)
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
@@ -181,32 +279,65 @@ def plot_trial(trial_spec, trial_metrics, ma=False):
     graph_prepath = meta_spec['graph_prepath']
     title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
 
-    local_metrics = trial_metrics['local']
+    # local_metrics = trial_metrics['local']
     name_time_pairs = [
-        ('mean_returns', 'frames'),
+        ('mean_r', 'frames'),
         ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
+        ('sample_effici.', 'frames'),
+        ('train._effici.', 'opt_steps'),
         ('stabilities', 'frames'),
         ('consistencies', 'frames'),
     ]
     for name, time in name_time_pairs:
         if name == 'consistencies':
-            sr = local_metrics[name]
+            sr_list = []
+            time_list = []
+            name_list = []
+            for k in trial_metrics.keys():
+                local_metrics = trial_metrics[k]['local']
+
+                if name in local_metrics.keys():
+                    sr = local_metrics[name]
+                    if ma:
+                        sr = calc_sr_ma(sr)
+                        # name = f'{name}_ma'  # for labeling
+
+                    sr_list.append(sr)
+                    time_list.append(local_metrics[time])
+                    name_list.append(k)
             if ma:
-                sr = calc_sr_ma(sr)
                 name = f'{name}_ma'  # for labeling
-            fig = plot_sr(
-                sr, local_metrics[time], title, name, time)
+
+            fig = plot_several_sr(
+                sr_list, time_list, title, name, time, name_list=name_list)
+
         else:
-            sr_list = local_metrics[name]
+            sr_list_list = []
+            time_list = []
+            name_list = []
+
+            for k in trial_metrics.keys():
+                local_metrics = trial_metrics[k]['local']
+
+                if name in local_metrics.keys():
+                    sr_list = local_metrics[name]
+                    if ma:
+                        sr_list = [calc_sr_ma(sr) for sr in sr_list]
+                        # name = f'{name}_ma'  # for labeling
+
+                    sr_list_list.append(sr_list)
+                    time_list.append(local_metrics[time])
+                    name_list.append(k)
+
             if ma:
-                sr_list = [calc_sr_ma(sr) for sr in sr_list]
                 name = f'{name}_ma'  # for labeling
-            fig = plot_mean_sr(
-                sr_list, local_metrics[time], title, name, time)
+
+            fig = plot_several_mean_sr(
+                sr_list_list, time_list, title, name, time, name_list=name_list)
+
+
         save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
+        if name in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
 
@@ -290,10 +421,10 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
         for idx, scale in frame_scales:
             local_metrics_list[idx]['frames'] = local_metrics_list[idx]['frames'] * scale
     name_time_pairs = name_time_pairs or [
-        ('mean_returns', 'frames'),
+        ('mean_r', 'frames'),
         ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
+        ('sample_effici.', 'frames'),
+        ('train._effici.', 'opt_steps'),
         ('stabilities', 'frames')
     ]
     for name, time in name_time_pairs:
@@ -305,7 +436,7 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
             name = f'{name}_ma'  # for labeling
         fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette, showlegend)
         save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
+        if name in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
             prepath = graph_prepath.replace('/graph/', '/')
             save_image(fig, f'{prepath}_multi_trial_graph_{name}_vs_{time}.png')
 

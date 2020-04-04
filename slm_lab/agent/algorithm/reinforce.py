@@ -100,9 +100,17 @@ class Reinforce(Algorithm):
 
     @lab_api
     def act(self, state):
+        # print("state act", state)
         body = self.body
-        action = self.action_policy(state, self, body)
-        return action.cpu().squeeze().numpy()  # squeeze to handle scalar
+        action, action_pd = self.action_policy(state, self, body)
+        # print("act", action)
+        # print("prob", action_pd.probs.tolist())
+        return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
+
+    # def get_action_pd(self, state):
+    #     body = self.body
+    #     _, action_pd = self.action_policy(state, self, body)
+    #     return action_pd
 
     @lab_api
     def sample(self):
@@ -155,9 +163,9 @@ class Reinforce(Algorithm):
         if self.to_train == 1:
             batch = self.sample()
             clock.set_batch_size(len(batch))
-            pdparams = self.calc_pdparam_batch(batch)
+            pd_param = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
-            loss = self.calc_policy_loss(batch, pdparams, advs)
+            loss = self.calc_policy_loss(batch, pd_param, advs)
             self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
             # reset
             self.to_train = 0

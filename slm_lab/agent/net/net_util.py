@@ -186,21 +186,24 @@ def save(net, model_path):
     torch.save(net.state_dict(), util.smart_path(model_path))
 
 
-def save_algorithm(algorithm, ckpt=None, suffix=''):
+def save_algorithm(algorithm, ckpt=None, prefix=''):
     '''Save all the nets for an algorithm'''
     # agent = algorithm.agent
     # net_names = algorithm.net_names
     model_prepath = algorithm.agent.spec['meta']['model_prepath']
+    head, tail = os.path.split(model_prepath)
+    model_prepath = os.path.join(head, prefix + tail)
+
     if ckpt is not None:
         model_prepath = f'{model_prepath}_ckpt-{ckpt}'
     for net_name in algorithm.net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{model_prepath}_{net_name}_model{suffix}.pt'
+        model_path = f'{model_prepath}_{net_name}_model.pt'
         save(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{model_prepath}_{net_name}_optim{suffix}.pt'
+            optim_path = f'{model_prepath}_{net_name}_optim.pt'
             save(optim, optim_path)
     logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {algorithm.net_names} to {model_prepath}_*.pt')
 
@@ -211,7 +214,7 @@ def load(net, model_path):
     net.load_state_dict(torch.load(util.smart_path(model_path), map_location=device))
 
 
-def load_algorithm(algorithm, suffix=''):
+def load_algorithm(algorithm, prefix=''):
     '''Save all the nets for an algorithm'''
     # agent = algorithm.agent
     # net_names = algorithm.net_names
@@ -220,15 +223,18 @@ def load_algorithm(algorithm, suffix=''):
         model_prepath = algorithm.agent.spec['meta']['eval_model_prepath']
     else:
         model_prepath = algorithm.agent.spec['meta']['model_prepath']
+
+    head, tail = os.path.split(model_prepath)
+    model_prepath = os.path.join(head, prefix + tail)
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {algorithm.net_names} from {model_prepath}_*.pt')
     for net_name in algorithm.net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{model_prepath}_{net_name}_model{suffix}.pt'
+        model_path = f'{model_prepath}_{net_name}_model.pt'
         load(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{model_prepath}_{net_name}_optim{suffix}.pt'
+            optim_path = f'{model_prepath}_{net_name}_optim.pt'
             load(optim, optim_path)
 
 

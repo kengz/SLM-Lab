@@ -36,3 +36,4 @@ class ObservableAgentInterface(object):
     @abstractmethod
     def algorithm(self):
         raise NotImplementedError
+

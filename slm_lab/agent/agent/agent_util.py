@@ -13,14 +13,14 @@ def get_from_current_agents(agent, key, default=None):
 # TODO write tests for get_from_other_agents and (especially on the use of the OrderedDict)
 def get_from_other_agents(agent, key, default):
     values = []
-    for k, observed_agent_dict in agent.world.shared_dict[str(agent.agent_idx)].items():
+    for k, observed_agent_dict in agent.other_ag_observations.items():
         values.append(ps.get(observed_agent_dict, key, default))
     return values
 
-def remove_current_agent_idx(agent, list_value):
-    if len(list_value) > agent.agent_idx:
-        list_value.pop(agent.agent_idx)
-    return list_value
+# def remove_current_agent_idx(agent, list_value):
+#     if len(list_value) > agent.agent_idx:
+#         list_value.pop(agent.agent_idx)
+#     return list_value
 
 
 ##### Welfare functions ######

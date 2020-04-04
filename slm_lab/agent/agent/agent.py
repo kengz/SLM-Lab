@@ -11,10 +11,14 @@ import pandas as pd
 import pydash as ps
 import torch
 import warnings
+import copy
 from collections import Iterable, OrderedDict
 
 
 logger = logger.get_logger(__name__)
+
+BASIC_COLS = ['epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'tot_r', 'tot_r_ma', # ma for mean average
+            'loss', 'lr', 'expl_var', 'entp_coef', 'entropy', 'grad_norm']
 
 class Agent(observability.ObservableAgentInterface):
     '''
@@ -38,6 +42,7 @@ class Agent(observability.ObservableAgentInterface):
 
         ###### Set components ######
 
+
         # Body
         body = Body(env, spec, aeb=(agent_idx, 0, 0))
         body.agent = self
@@ -51,7 +56,10 @@ class Agent(observability.ObservableAgentInterface):
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self._algorithm = AlgorithmClass(self, global_nets)
 
+        self.body.init_part2()
+
         # World co-living agents awareness
+        self.other_ag_observations = OrderedDict()
         self.observed_agent_mode = ps.get(self.agent_spec, 'observing_other_agents.name', default=None)
         if self. observed_agent_mode is None:
             self.observed_agents = None
@@ -110,10 +118,10 @@ class Agent(observability.ObservableAgentInterface):
 
     def _observe_other_agents(self):
         if self.observed_agent_mode is not None:
-            observations = OrderedDict()
+            self.other_ag_observations = OrderedDict()
             for observed_agent in self.observed_agents:
                 if observed_agent.agent_idx != self.agent_idx:
-                    observations[str(observed_agent.agent_idx)] = {
+                    self.other_ag_observations[str(observed_agent.agent_idx)] = {
                                                                     "state": observed_agent.state,
                                                                     "action": observed_agent.action,
                                                                     "reward": observed_agent.reward,
@@ -121,7 +129,6 @@ class Agent(observability.ObservableAgentInterface):
                                                                     "done": observed_agent.done,
                                                                     "algorithm": observed_agent.algorithm,
                                                                   }
-            self.world.shared_dict[str(self.agent_idx)] = observations
 
     @lab_api
     def save(self, ckpt=None):
@@ -207,18 +214,6 @@ class Body:
         self.reward = np.nan
         self.welfare = np.nan
 
-        # dataframes to track data for analysis.analyze_session
-        # track training data per episode
-        # TODO add current active algo in df
-        self.train_df = pd.DataFrame(columns=[
-            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', # ma for mean average
-            'loss', 'lr',
-            'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
-        # track eval data within run_eval. the same as train_df except for reward
-        if ps.get(self.spec, 'meta.rigorous_eval'):
-            self.eval_df = self.train_df.copy()
-        else:
-            self.eval_df = self.train_df
 
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
@@ -238,6 +233,22 @@ class Body:
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
         self.tb_add_graph = False
+
+    def init_part2(self):
+        # dataframes to track data for analysis.analyze_session
+        # track training data per episode
+        cols = copy.deepcopy(BASIC_COLS)
+        if self.agent is not None :
+            cols += self.agent.algorithm.extra_training_log_info_col
+        if self.env is not None:
+            print("self.env.extra_env_log_info_col", self.env.extra_env_log_info_col)
+            cols += self.env.extra_env_log_info_col
+        self.train_df = pd.DataFrame(columns=cols)
+        # track eval data within run_eval. the same as train_df except for reward
+        if ps.get(self.spec, 'meta.rigorous_eval'):
+            self.eval_df = self.train_df.copy()
+        else:
+            self.eval_df = self.train_df
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
@@ -271,27 +282,36 @@ class Body:
             grad_norms = net_util.get_grad_norms(self.agent.algorithm) if self.agent is not None else []
             self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
-        row = pd.Series({
+        row_dict = {
             # epi and frame are always measured from training env
             'epi': self.env.clock.epi,
             # t and reward are measured from a given env or eval_env
             't': env.clock.t,
             'wall_t': wall_t,
-            'opt_step': self.env.clock.opt_step,
+            # 'opt_step': self.env.clock.opt_step,
+            'opt_step': self.agent.algorithm.net.opt_step if self.agent is not None else -1,
             'frame': frame,
             'fps': fps,
             # 'reward': total_reward,
             # 'reward_ma': np.nan,  # update outside
-            'total_reward': total_reward,
-            'total_reward_ma': np.nan,  # update outside
+            'tot_r': total_reward,
+            'tot_r_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
-            'explore_var': self.explore_var,
-            'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            # 'explore_var': self.explore_var,
+            'expl_var': self.explore_var,
+            # 'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'entp_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
             'entropy': self.mean_entropy,
             'grad_norm': self.mean_grad_norm,
-        }, dtype=np.float32)
-        assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
+        }
+        if self.agent is not None :
+            row_dict.update(self.agent.algorithm.get_extra_training_log_info())
+        if self.env is not None:
+            row_dict.update(self.env.get_extra_training_log_info())
+
+        row = pd.Series(row_dict, dtype=np.float32)
+        # assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
 
     def ckpt(self, env, df_mode):
@@ -301,10 +321,17 @@ class Body:
         @param str:df_mode 'train' or 'eval'
         '''
         row = self.calc_df_row(env)
+
         df = getattr(self, f'{df_mode}_df')
+
+        # Dynamicaly add new columns
+        for col in row.index:
+            if col not in df.columns:
+                logger.info(f"Add col {col} in {df_mode}_df")
+                df[col] = [np.nan] * len(df)
+
         df.loc[len(df)] = row  # append efficiently to df
-        # df.iloc[-1]['total_reward_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
-        df.iloc[-1]['total_reward_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
+        df.iloc[-1]['tot_r_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['tot_r'].mean()
         self.total_reward_ma = total_reward_ma
 
     def get_mean_lr(self, algorithm=None):
@@ -336,13 +363,13 @@ class Body:
         prefix = f'T{trial_index}S{session_index}Ag{self.aeb[0]} {spec_name}'
         return prefix
 
-    def log_metrics(self, metrics, df_mode):
-        '''Log session metrics'''
-        # prefix = self.get_log_prefix()
-        row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
-        # msg = f'{prefix} [{df_mode}_df metrics] {row_str}'
-        msg = f'[{df_mode} metrics] {row_str}'
-        logger.info(msg)
+    # def log_metrics(self, metrics, df_mode):
+    #     '''Log session metrics'''
+    #     # prefix = self.get_log_prefix()
+    #     row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
+    #     # msg = f'{prefix} [{df_mode}_df metrics] {row_str}'
+    #     msg = f'[{df_mode} metrics] {row_str}'
+    #     logger.info(msg)
 
     def log_summary(self, df_mode):
         '''
