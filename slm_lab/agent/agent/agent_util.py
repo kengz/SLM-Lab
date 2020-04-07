@@ -15,6 +15,7 @@ def get_from_other_agents(agent, key, default):
     values = []
     for k, observed_agent_dict in agent.other_ag_observations.items():
         values.append(ps.get(observed_agent_dict, key, default))
+        # print("values", values)
     return values
 
 # def remove_current_agent_idx(agent, list_value):
@@ -31,10 +32,12 @@ def default_welfare(agent, current_agent_reward):
 
 
 def utilitarian_welfare(agent, current_agent_reward):
+    # print("utilitarian_welfare")
     other_agents_rewards = get_from_other_agents(agent, key='reward', default=[])
 
     welfare = current_agent_reward + sum(other_agents_rewards)
-    # print(agent.agent_idx,"current_agent_reward",current_agent_reward, "welfare", welfare)
+    # print(agent.agent_idx,"current_agent_reward",current_agent_reward, "welfare", welfare,
+    #       "sum(other_agents_rewards)", sum(other_agents_rewards))
     return welfare
 
 

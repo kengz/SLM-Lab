@@ -186,7 +186,8 @@
         "name": "LE",
         "punishement_time": 5.0,
         "min_coop_time": 1.0,
-        "kl_divergence_puni_thr": 1.0,
+        "defection_detection_mode":"network_weights",
+        "defection_carac_threshold": 0.01,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -233,6 +234,9 @@
               },
               "gpu": true
             }
+          },
+          {
+            "copy_n": 0
           },
           {
             "copy_n": 0
@@ -286,7 +290,8 @@
         "name": "LE",
         "punishement_time": 4.0,
         "min_coop_time": 1.0,
-        "kl_divergence_puni_thr": 1.0,
+        "defection_detection_mode":"network_weights",
+        "defection_carac_threshold": 0.01,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -333,6 +338,9 @@
               },
               "gpu": true
             }
+          },
+          {
+            "copy_n": 0
           },
           {
             "copy_n": 0

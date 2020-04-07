@@ -741,7 +741,6 @@ def debug_image(im):
 
 import psutil
 import time
-from loguru import logger
 
 
 class Throttle_Temp():
@@ -765,19 +764,15 @@ class Throttle_Temp():
         temps_infos = psutil.sensors_temperatures()
         temps = [[i.current for i in v] for k, v in temps_infos.items()]
         flattte_temps = []
-        # hysteresys = 0
         slept = 0
 
         for t in temps:
             flattte_temps.extend(t)
         if len(flattte_temps) > 0:
             max_current_temp = max(flattte_temps)
-            if max_current_temp > self.temp_limit and self.verbose:
-                logger.info("max_current_temp {}".format(max_current_temp))
 
             self.pid.update(max_current_temp)
             self.sleep_time = self.pid.output + self.base_sleep
-            # print("AVANT sleep_time", self.sleep_time, max_current_temp)
             if self.sleep_time > 2*self.base_sleep:
                 self.sleep_time = 2*self.base_sleep
             elif self.sleep_time < 0.0:
@@ -797,10 +792,8 @@ class Throttle_Temp():
                     for t in temps:
                         flattte_temps.extend(t)
                     max_current_temp = max(flattte_temps)
-                    # self.sleep_time += (max_current_temp - self.temp_limit) / 10
                     self.pid.update(max_current_temp)
                     self.sleep_time = self.pid.output + self.base_sleep
-                    # print("PENDANT sleep_time", self.sleep_time, max_current_temp)
 
 
 class PID:

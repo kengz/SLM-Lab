@@ -133,7 +133,10 @@ class OneOfNAlgoActived(MetaAlgorithm):
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
         losses = []
+        # initial_rd_state = np.random.get_state()
         for idx, algo in enumerate(self.algorithms):
+            if self.agent.world.deterministic:
+                self.agent.world._set_rd_state(self.agent.world.rd_seed)
             losses.append(algo.train())
         losses = [ el for el in losses if not np.isnan(el)]
         loss = sum(losses) if len(losses) > 0 else np.nan

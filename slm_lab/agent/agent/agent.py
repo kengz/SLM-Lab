@@ -101,22 +101,23 @@ class Agent(observability.ObservableAgentInterface):
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
 
-        self._observe_other_agents()
-
         self.body.reward = reward
         welfare = self.welfare_function(self, reward)
-        self.body.welfare = welfare
+        self.body.welfare = welfare # TODO useless line ?
+
         self.body.update(state, action, welfare, next_state, done)
         if util.in_eval_lab_modes():  # eval does not update agent for training
             return
         self.algorithm.memory_update(state, action, welfare, next_state, done)
+
+    def train(self):
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
             self.body.loss = loss
         explore_var = self.algorithm.update()
         return loss, explore_var
 
-    def _observe_other_agents(self):
+    def observe_other_agents(self):
         if self.observed_agent_mode is not None:
             self.other_ag_observations = OrderedDict()
             for observed_agent in self.observed_agents:

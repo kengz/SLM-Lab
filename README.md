@@ -10,6 +10,67 @@
 </p>
 
 
+# Quick start 
+
+### Installation
+
+```
+# No need to create a virtual env, the installation of SLM-Lab will create one.
+# (optionnal) mkdir dev-slm-lab 
+# (optionnal) cd dev-slm-lab 
+
+# Install SLM-Lab (the multi-agent fork)
+git clone https://github.com/Manuscrit/SLM-Lab.git 
+cd SLM-Lab 
+git checkout support_multi_agents_with_awareness
+git pull 
+# The next step will create a new conda environment named 'lab'
+./bin/setup
+cd ..
+conda activate lab
+
+# Install Gym (the fork with the new multi-agent environments)
+git clone https://github.com/Manuscrit/gym.git
+cd gym
+pip install -e .
+cd ..
+```
+
+
+### Run experiments
+```
+cd SLM-Lab
+
+# Run an experiment defined in a conf file 
+# One conf file can contain the configuration of multiple experiments
+
+# Run
+python run_lab.py {path to conf file} {name of the exp to run in the conf file} {run mode} 
+
+# Examples:
+# Run in dev mode (add tensorboard log and live env rendering)
+python run_lab.py slm_lab/spec/experimental/le/ipd_rf.json ipd_rf_util dev 
+
+# Run in training mode (quicker than the dev mode)
+python run_lab.py slm_lab/spec/experimental/le/ipd_rf.json ipd_rf_util train 
+
+# Run a serie of experiments
+./slm_lab/spec/experimental/le/run_coin_exp.sh
+
+# Visualize saved experiments (Not currently supported !)
+python run_lab.py data/ipd_rf_util_2020_04_06_134225/ipd_rf.json ipd_rf_util enjoy@ipd_rf_util_t0_s8
+```
+
+
+# TODO
+
+- Add support for saving and loading a session (broken by adding multi agent support)
+- World class is redundant with Session class ?
+- change session_df (train or eval) by agent => by world (one dataframe for all agents at the same time ?)
+- check vectorized env
+
+# Demo
+
 |||||
 |:---:|:---:|:---:|:---:|
 | ![ppo beamrider](https://user-images.githubusercontent.com/8209263/63994698-689ecf00-caaa-11e9-991f-0a5e9c2f5804.gif) | ![ppo breakout](https://user-images.githubusercontent.com/8209263/63994695-650b4800-caaa-11e9-9982-2462738caa45.gif) | ![ppo kungfumaster](https://user-images.githubusercontent.com/8209263/63994690-60469400-caaa-11e9-9093-b1cd38cee5ae.gif) | ![ppo mspacman](https://user-images.githubusercontent.com/8209263/63994685-5cb30d00-caaa-11e9-8f35-78e29a7d60f5.gif) |
@@ -23,10 +84,3 @@
 
 
 
-
-# TODO
-
-- coin game => epi with several steps
-- dans model : juste ..._agent_n1
-- dans info:  session_df_train ou eval : pas par agent
-- add exp replay with coin game

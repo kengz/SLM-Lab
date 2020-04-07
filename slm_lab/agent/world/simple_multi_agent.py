@@ -1,9 +1,10 @@
+import copy
+import os
+import random
 from copy import deepcopy
 
 import numpy as np
 import torch
-import copy
-import os
 
 from slm_lab.agent.agent.agent import Agent, Body
 from slm_lab.experiment import analysis
@@ -26,6 +27,14 @@ class DefaultMultiAgentWorld:
     def __init__(self, spec, env, global_nets_list=None):
 
         self.spec = spec
+
+        util.set_attr(self, dict(
+            deterministic=True,
+        ))
+        util.set_attr(self, self.spec, [
+            'deterministic',
+        ])
+
         self.agents = []
         self.env = env
         self.best_total_rewards_ma = -np.inf
@@ -35,11 +44,18 @@ class DefaultMultiAgentWorld:
 
         for i, agent_spec in enumerate(deepcopy(spec['agent'])):
             self._create_one_agent(i, agent_spec, global_nets_list[i]
-                                            if global_nets_list is not None else None)
-
+            if global_nets_list is not None else None)
 
         self.body = Body(self.env, self.spec)
         self.body.init_part2()
+
+        if self.deterministic:
+            if torch.cuda.is_available():
+                torch.backends.cudnn.benchmark = False
+                torch.backends.cudnn.deterministic = True
+            self.rd_seed = np.random.randint(1e9)
+            self._set_rd_state(self.rd_seed)
+        self.world_shared_rd_seed = None
 
     def _create_one_agent(self, agent_idx, agent_spec, global_nets):
         a_spec = deepcopy(self.spec)
@@ -85,19 +101,35 @@ class DefaultMultiAgentWorld:
 
         loss, explore_var = [], []
         assert len(self.agents) == len(state) == len(action) == len(reward) == len(next_state)
+
+        for agent in self.agents:
+            agent.observe_other_agents()
+
         for agent, s, a, r, n_s in zip(self.agents, state, action, reward, next_state):
-            logger.debug(f"Update agent {agent.agent_idx}")
-            l, e_v = agent.update(s, a, r, n_s, done)
+            agent.update(s, a, r, n_s, done)
+
+        if self.deterministic:
+            self.rd_seed = np.random.randint(1e9)
+        for agent in self.agents:
+            if self.deterministic:
+                self._set_rd_state(self.rd_seed)
+            l, e_v = agent.train()
             loss.append(torch.tensor([l]))
             explore_var.append(torch.tensor([e_v]))
 
-        if not any( [np.isnan(l) for l in loss]):  # set for log_summary()
+        if not any([np.isnan(l) for l in loss]):  # set for log_summary()
             sum_loss_over_agents = torch.cat(loss, dim=0).sum()
             sum_explore_var_over_agents = torch.cat(explore_var, dim=0).sum()
             self.body.loss = sum_loss_over_agents
             self.body.explore_var = sum_explore_var_over_agents
             if util.in_eval_lab_modes():
                 return sum_loss_over_agents, sum_explore_var_over_agents
+
+    def _set_rd_state(self, seed):
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
 
     @lab_api
     def save(self, ckpt=None):
@@ -131,12 +163,12 @@ class DefaultMultiAgentWorld:
                 train_metrics = {"obj": f"agent_n{idx}"}
 
             object_to_analyse.body.ckpt(self.env, df_mode)
-            train_metrics.update( object_to_analyse.body.log_summary(df_mode))
+            train_metrics.update(object_to_analyse.body.log_summary(df_mode))
 
             # print only one time some columns
             if idx > len(self.agents) - 1:
                 one_time_dict = {"trial": self.trial_idx,
-                                 "session":self.session_idx}
+                                 "session": self.session_idx}
                 for col in col_to_print_one_time:
                     one_time_dict[col] = train_metrics[col]
                 one_time_print_table.append(one_time_dict)
@@ -180,14 +212,14 @@ class DefaultMultiAgentWorld:
         for item in my_dict:
             # myList.append([str(item[col] if item[col] is not None else '') for col in col_list])
             formated_row_values = []
-            for col in col_list :
+            for col in col_list:
                 if col not in item.keys():
                     str_value = ""
                 elif item[col] is None:
                     str_value = ""
                 elif isinstance(item[col], str):
                     str_value = item[col]
-                else :
+                else:
                     str_value = "{:g}".format(item[col])
                 formated_row_values.append(str_value)
             myList.append(formated_row_values)
@@ -250,7 +282,6 @@ class DefaultMultiAgentWorld:
                 temp_manager()
             viz.plot_session(self.agents[0].spec, session_metrics_dict,
                              session_df_dict, df_mode, ma=True)
-
 
         return session_metrics
 

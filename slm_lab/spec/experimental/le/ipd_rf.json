@@ -165,7 +165,8 @@
         "name": "LE",
         "punishement_time": 10,
         "min_coop_time": 1,
-        "kl_divergence_puni_thr": 0.5,
+        "defection_detection_mode":"network_weights",
+        "defection_carac_threshold": 0.01,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -206,6 +207,9 @@
           },
           {
             "copy_n": 0
+          },
+          {
+            "copy_n": 0
           }
         ]
 
@@ -229,7 +233,7 @@
       "distributed": false,
       "eval_frequency": 100,
       "log_frequency": 100,
-      "max_session": 10,
+      "max_session": 1,
       "max_trial": 1
     }
   },
@@ -249,14 +253,13 @@
       "memory": null,
       "net": null,
       "welfare_function":"utilitarian_welfare",
-      "observing_other_agents":{
-        "name":"FullyObservable"
-      },
+      "observing_other_agents":{"name":"FullyObservable"},
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
         "min_coop_time": 1,
-        "kl_divergence_puni_thr": 0.5,
+        "defection_detection_mode":"network_weights",
+        "defection_carac_threshold": 0.01,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -297,6 +300,9 @@
           },
           {
             "copy_n": 0
+          },
+          {
+            "copy_n": 0
           }
         ]
 
@@ -304,6 +310,7 @@
     },
     {
       "name": "Reinforce",
+      "observing_other_agents":{"name":"FullyObservable"},
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",
@@ -356,7 +363,7 @@
       "distributed": false,
       "eval_frequency": 100,
       "log_frequency": 100,
-      "max_session": 10,
+      "max_session": 1,
       "max_trial": 1
     }
   }
