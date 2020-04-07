@@ -101,13 +101,10 @@ class PPO(ActorCritic):
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
-        self.body.explore_var = self.explore_var_scheduler.start_val
         # extra variable decays for PPO
         self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
-        self.body.clip_eps = self.clip_eps_scheduler.start_val
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
-            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
@@ -132,7 +129,7 @@ class PPO(ActorCritic):
 
         3. H = E[ entropy ]
         '''
-        clip_eps = self.body.clip_eps
+        clip_eps = self.clip_eps_scheduler.val
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
         states = batch['states']
         actions = batch['actions']
@@ -160,7 +157,7 @@ class PPO(ActorCritic):
         # H entropy regularization
         entropy = action_pd.entropy().mean()
         self.body.mean_entropy = entropy  # update logging variable
-        ent_penalty = -self.body.entropy_coef * entropy
+        ent_penalty = -self.entropy_coef_scheduler.val * entropy
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
@@ -213,8 +210,8 @@ class PPO(ActorCritic):
 
     @lab_api
     def update(self):
-        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.entropy_coef_spec is not None:
-            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
-        self.body.clip_eps = self.clip_eps_scheduler.update(self, self.body.env.clock)
+            self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        self.clip_eps_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var

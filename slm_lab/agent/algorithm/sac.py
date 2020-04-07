@@ -245,4 +245,4 @@ class SoftActorCritic(ActorCritic):
     @lab_api
     def update(self):
         '''Override parent method to do nothing'''
-        return self.body.explore_var
+        return None

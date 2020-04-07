@@ -51,5 +51,4 @@ class Random(Algorithm):
 
     @lab_api
     def update(self):
-        self.body.explore_var = np.nan
-        return self.body.explore_var
+        return np.nan

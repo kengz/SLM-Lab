@@ -283,9 +283,7 @@
       "memory": null,
       "net": null,
       "welfare_function":"utilitarian_welfare",
-      "observing_other_agents":{
-        "name":"FullyObservable"
-      },
+      "observing_other_agents":{"name":"FullyObservable"},
       "algorithm": {
         "name": "LE",
         "punishement_time": 4.0,
@@ -351,6 +349,8 @@
     },
     {
       "name": "Reinforce",
+      "observing_other_agents":{"name":"FullyObservable"},
+
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",

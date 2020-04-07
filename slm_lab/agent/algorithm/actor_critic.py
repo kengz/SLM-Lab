@@ -304,7 +304,7 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def update(self):
-        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.entropy_coef_spec is not None:
-            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
-        return self.body.explore_var
+            self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        return self.explore_var_scheduler.val

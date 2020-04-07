@@ -153,5 +153,5 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
-        return self.body.explore_var
+        self.explore_var_scheduler.update(self, self.body.env.clock)
+        return self.explore_var_scheduler.val

@@ -87,6 +87,13 @@ class MetaAlgorithm(algorithm.Algorithm):
     def net(self):
         raise NotImplementedError()
 
+    @property
+    def explore_var_scheduler(self):
+        raise NotImplementedError()
+
+    @property
+    def entropy_coef_scheduler(self):
+        raise NotImplementedError()
 
 class OneOfNAlgoActived(MetaAlgorithm):
     ''' OneOfNAlgoActived class to define the API methods. This meta-algo apply the curenlty activated algorithm. No
@@ -133,13 +140,34 @@ class OneOfNAlgoActived(MetaAlgorithm):
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
         losses = []
-        # initial_rd_state = np.random.get_state()
+        mean_entropy_active_algo = np.nan
+        # explore_var_active_algo = None
+        # entropy_coef_active_algo = None
+
         for idx, algo in enumerate(self.algorithms):
             if self.agent.world.deterministic:
                 self.agent.world._set_rd_state(self.agent.world.rd_seed)
             losses.append(algo.train())
+
+            # Manage the fact that each algo overwrite some values directly in the agent body
+            # TODO improve this
+            if idx == self.active_algo_idx:
+                mean_entropy_active_algo = self.agent.body.mean_entropy
+                # explore_var_active_algo = self.agent.body.explore_var
+                # entropy_coef_active_algo = self.agent.body.entropy_coef
+
+
+        self.agent.body.mean_entropy = mean_entropy_active_algo
+        # self.agent.body.explore_var = explore_var_active_algo
+        # self.agent.body.entropy_coef = entropy_coef_active_algo
+        #
+        # explore_var_scheduler
+        # entropy_coef_scheduler
+        # clip_eps_scheduler
+
         losses = [ el for el in losses if not np.isnan(el)]
         loss = sum(losses) if len(losses) > 0 else np.nan
+
 
         if not np.isnan(loss):
             logger.debug(f"{self.active_algo_idx} loss {loss}")
@@ -159,3 +187,12 @@ class OneOfNAlgoActived(MetaAlgorithm):
     @lab_api
     def memory_update(self, state, action, welfare, next_state, done):
         return self.algorithms[self.active_algo_idx].memory_update(state, action, welfare, next_state, done)
+
+    @property
+    def explore_var_scheduler(self):
+        return self.algorithms[self.active_algo_idx].explore_var_scheduler
+
+    @property
+    def entropy_coef_scheduler(self):
+        return self.algorithms[self.active_algo_idx].entropy_coef_scheduler
+

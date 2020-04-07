@@ -1,14 +1,8 @@
 # SLM Lab <br> ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/kengz/slm-lab) [![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
-
-
 <p align="center">
   <i>Modular Deep Reinforcement Learning framework in PyTorch.</i>
   <br><br>
-  <b>Documentation:</b><br>
-  <a href="https://slm-lab.gitbook.io/slm-lab/">https://slm-lab.gitbook.io/slm-lab/</a>
-  <br><br>
 </p>
-
 
 # Quick start 
 
@@ -60,6 +54,11 @@ python run_lab.py slm_lab/spec/experimental/le/ipd_rf.json ipd_rf_util train
 # Visualize saved experiments (Not currently supported !)
 python run_lab.py data/ipd_rf_util_2020_04_06_134225/ipd_rf.json ipd_rf_util enjoy@ipd_rf_util_t0_s8
 ```
+### Full documentation (of the original repo)
+<p align="center">
+  <a href="https://slm-lab.gitbook.io/slm-lab/">https://slm-lab.gitbook.io/slm-lab/</a>
+  <br><br>
+</p>
 
 
 # TODO

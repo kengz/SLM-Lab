@@ -403,6 +403,7 @@
     },
     {
       "name": "PPO",
+      "observing_other_agents":{"name":"FullyObservable"},
       "algorithm": {
         "name": "PPO",
         "action_pdtype": "default",

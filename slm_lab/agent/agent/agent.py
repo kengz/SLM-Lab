@@ -300,9 +300,15 @@ class Body:
             'loss': self.loss,
             'lr': self.get_mean_lr(),
             # 'explore_var': self.explore_var,
-            'expl_var': self.explore_var,
+            'expl_var': self.agent.algorithm.explore_var_scheduler.val if
+                            self.agent is not None and
+                            hasattr(self.agent.algorithm, 'explore_var_scheduler')
+                            else np.nan,
             # 'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'entp_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'entp_coef': self.agent.algorithm.entropy_coef_scheduler.val if
+                            self.agent is not None and
+                            hasattr(self.agent.algorithm, 'entropy_coef_scheduler')
+                            else np.nan,
             'entropy': self.mean_entropy,
             'grad_norm': self.mean_grad_norm,
         }

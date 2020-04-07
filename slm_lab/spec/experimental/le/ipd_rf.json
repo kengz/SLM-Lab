@@ -233,7 +233,7 @@
       "distributed": false,
       "eval_frequency": 100,
       "log_frequency": 100,
-      "max_session": 1,
+      "max_session": 10,
       "max_trial": 1
     }
   },
@@ -363,7 +363,7 @@
       "distributed": false,
       "eval_frequency": 100,
       "log_frequency": 100,
-      "max_session": 1,
+      "max_session": 10,
       "max_trial": 1
     }
   }
