@@ -201,8 +201,8 @@
           },
           "entropy_coef_spec": {
             "name": "no_decay",
-            "start_val": 0.0,
-            "end_val": 0.0,
+            "start_val": 0.01,
+            "end_val": 0.01,
             "start_step": 0,
             "end_step": 0
           },
