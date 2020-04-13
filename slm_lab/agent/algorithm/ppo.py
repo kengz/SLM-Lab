@@ -147,9 +147,9 @@ class PPO(ActorCritic):
             old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
-        # ratios = torch.exp(log_probs - old_log_probs)
+        ratios = torch.exp(log_probs - old_log_probs)
         # NOTE prevent any edge case where prob ratio blows up
-        ratios = torch.exp(torch.clamp(log_probs - old_log_probs, max=8.0))
+        # ratios = torch.exp(torch.clamp(log_probs - old_log_probs, max=8.0))
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
