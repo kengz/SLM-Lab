@@ -20,6 +20,7 @@ import torch
 import torch.multiprocessing as mp
 import ujson
 import yaml
+import random
 
 from slm_lab import ROOT_DIR, EVAL_MODES
 
@@ -519,11 +520,21 @@ def set_random_seed(spec):
     torch.set_num_threads(1)  # prevent multithread slowdown, set again for hogwild
     trial = spec['meta']['trial']
     session = spec['meta']['session']
+
+    if torch.cuda.is_available():
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+
     random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
+
+    random.seed(random_seed)
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
+    # torch.cuda.manual_seed(seed)
+
     spec['meta']['random_seed'] = random_seed
+    print(f"trial {trial} session {session} util.set_random_seed {random_seed}")
     return random_seed
 
 

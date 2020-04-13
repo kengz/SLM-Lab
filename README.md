@@ -19,7 +19,16 @@ cd SLM-Lab
 git checkout support_multi_agents_with_awareness
 git pull 
 # The next step will create a new conda environment named 'lab'
-./bin/setup
+./bin/setup 
+# DEBUG: Or sudo ./bin/setup is you get "permission denied"
+# DEBUG 2: If you get "conda: command not found": check that the downladed Miniconda file is not empty
+#   If it is empty (size ~0) then run:
+#       rm Miniconda3-latest-Linux-x86_64.sh
+#       wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+#       bash Miniconda3-latest-Linux-x86_64.sh -b
+#       echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bashrc
+#       source ~/.bashrc
+#       ./bin/setup
 cd ..
 conda activate lab
 

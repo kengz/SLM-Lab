@@ -150,14 +150,14 @@ class OneOfNAlgoActived(MetaAlgorithm):
             losses.append(algo.train())
 
             # Manage the fact that each algo overwrite some values directly in the agent body
-            # TODO improve this
-            if idx == self.active_algo_idx:
-                mean_entropy_active_algo = self.agent.body.mean_entropy
+            # # TODO improve this
+            # if idx == self.active_algo_idx:
+            #     mean_entropy_active_algo = self.agent.body.mean_entropy
                 # explore_var_active_algo = self.agent.body.explore_var
                 # entropy_coef_active_algo = self.agent.body.entropy_coef
 
 
-        self.agent.body.mean_entropy = mean_entropy_active_algo
+        # self.agent.body.mean_entropy = mean_entropy_active_algo
         # self.agent.body.explore_var = explore_var_active_algo
         # self.agent.body.entropy_coef = entropy_coef_active_algo
         #
@@ -196,3 +196,21 @@ class OneOfNAlgoActived(MetaAlgorithm):
     def entropy_coef_scheduler(self):
         return self.algorithms[self.active_algo_idx].entropy_coef_scheduler
 
+    def get_log_values(self):
+        for idx, algo in enumerate(self.algorithms):
+            if idx > 0:
+                for k, v in algo.get_log_values().items():
+                    k_meta = f'{k}_alg{idx}'
+                    assert k_meta not in self.to_log.keys()
+                    self.to_log[k_meta] = v
+            else:
+                self.to_log.update(algo.get_log_values())
+
+        self._reset_temp_info()
+        extra_training_info_to_log = self.to_log
+        self.to_log = {}
+        return extra_training_info_to_log
+
+    def log_grad_norm(self):
+        for algo in self.algorithms:
+            algo.log_grad_norm()

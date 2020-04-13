@@ -49,12 +49,12 @@ class DefaultMultiAgentWorld:
         self.body = Body(self.env, self.spec)
         self.body.init_part2()
 
-        if self.deterministic:
-            if torch.cuda.is_available():
-                torch.backends.cudnn.benchmark = False
-                torch.backends.cudnn.deterministic = True
-            self.rd_seed = np.random.randint(1e9)
-            self._set_rd_state(self.rd_seed)
+        # if self.deterministic:
+        #     # if torch.cuda.is_available():
+        #     #     torch.backends.cudnn.benchmark = False
+        #     #     torch.backends.cudnn.deterministic = True
+        #     self.rd_seed = np.random.randint(1e9)
+        #     self._set_rd_state(self.rd_seed)
         self.world_shared_rd_seed = None
 
     def _create_one_agent(self, agent_idx, agent_spec, global_nets):
@@ -126,10 +126,15 @@ class DefaultMultiAgentWorld:
                 return sum_loss_over_agents, sum_explore_var_over_agents
 
     def _set_rd_state(self, seed):
+        if torch.cuda.is_available():
+            torch.backends.cudnn.benchmark = False
+            torch.backends.cudnn.deterministic = True
+
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
+        # torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
     @lab_api
     def save(self, ckpt=None):
@@ -207,7 +212,12 @@ class DefaultMultiAgentWorld:
         Author: Thierry Husson - Use it as you want but don't blame me.
         """
         if not col_list:
-            col_list = list(my_dict[0].keys() if my_dict else [])
+            col_list = []
+            if my_dict:
+                for one_dict in my_dict:
+                    for el in list(one_dict.keys() if my_dict else []):
+                        if el not in col_list:
+                            col_list.append(el)
         myList = [col_list]  # 1st row = header
         for item in my_dict:
             # myList.append([str(item[col] if item[col] is not None else '') for col in col_list])

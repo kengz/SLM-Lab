@@ -7,11 +7,12 @@ from slm_lab.lib import logger, util
 import colorlover as cl
 import os
 import pydash as ps
+import copy
 
 logger = logger.get_logger(__name__)
 
 # moving-average window size for plotting
-PLOT_MA_WINDOW = 100
+PLOT_MA_WINDOW = 10
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`'))
 if util.is_jupyter():
@@ -75,20 +76,6 @@ def plot(*args, **kwargs):
         return iplot(*args, **kwargs)
 
 
-# def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
-#     '''Plot a series'''
-#     x = time_sr.tolist()
-#     color = color or get_palette(1)[0]
-#     main_trace = go.Scatter(
-#         x=x, y=sr, mode='lines', showlegend=False,
-#         line={'color': color, 'width': 1},
-#     )
-#     data = [main_trace]
-#     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
-#     fig = go.Figure(data, layout)
-#     plot(fig)
-#     return fig
-
 def plot_several_sr(sr_list, time_sr_list, title, y_title, x_title,
                     color=None, name_list=None):
     '''Plot several series'''
@@ -109,28 +96,6 @@ def plot_several_sr(sr_list, time_sr_list, title, y_title, x_title,
     plot(fig)
     return fig
 
-# def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
-#     '''Plot a list of series using its mean, with error bar using std'''
-#     mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
-#     max_sr = mean_sr + std_sr
-#     min_sr = mean_sr - std_sr
-#     max_y = max_sr.tolist()
-#     min_y = min_sr.tolist()
-#     x = time_sr.tolist()
-#     color = color or get_palette(1)[0]
-#     main_trace = go.Scatter(
-#         x=x, y=mean_sr, mode='lines', showlegend=False,
-#         line={'color': color, 'width': 1},
-#     )
-#     envelope_trace = go.Scatter(
-#         x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
-#         line={'color': 'rgba(0, 0, 0, 0)'},
-#         fill='tozerox', fillcolor=lower_opacity(color, 0.2),
-#     )
-#     data = [main_trace, envelope_trace]
-#     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
-#     fig = go.Figure(data, layout)
-#     return fig
 
 def plot_several_mean_sr(sr_list_list, time_sr_list, title, y_title, x_title,
                          color=None, name_list=None):
@@ -243,6 +208,9 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('entropy', 'frame'),
     ]
     name_time_pairs = add_all_extra_col(name_time_pairs, session_df)
+    if ma:
+        ma_exlusion = ['opt_step']
+        name_time_pairs = [el for el in name_time_pairs if all([excluded not in el[0] for excluded in ma_exlusion])]
     for name, time in name_time_pairs:
         str_list = []
         time_sr_list = []
@@ -268,33 +236,39 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
-def plot_trial(trial_spec, trial_metrics, ma=False):
+def plot_trial(trial_spec=None, trial_metrics=None, ma=False,
+               prepath=None, graph_prepath=None, title=None, name_time_pairs=None):
     '''
     Plot the trial graphs:
     - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
     - consistencies (no error bar)
     '''
-    meta_spec = trial_spec['meta']
-    prepath = meta_spec['prepath']
-    graph_prepath = meta_spec['graph_prepath']
-    title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
+    meta_spec = trial_spec['meta'] if trial_spec is not None else None
+    prepath = meta_spec['prepath'] if prepath is None else prepath
+    graph_prepath = meta_spec['graph_prepath'] if graph_prepath is None else graph_prepath
+    title = (f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
+             if title is None else title)
 
     # local_metrics = trial_metrics['local']
-    name_time_pairs = [
-        ('mean_r', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_effici.', 'frames'),
-        ('train._effici.', 'opt_steps'),
-        ('stabilities', 'frames'),
-        ('consistencies', 'frames'),
-    ]
+    if name_time_pairs is None:
+        name_time_pairs = [
+            ('mean_r', 'frames'),
+            ('strengths', 'frames'),
+            ('sample_effici.', 'frames'),
+            ('train._effici.', 'opt_steps'),
+            ('stabilities', 'frames'),
+            ('consistencies', 'frames'),
+        ]
     for name, time in name_time_pairs:
         if name == 'consistencies':
             sr_list = []
             time_list = []
             name_list = []
             for k in trial_metrics.keys():
-                local_metrics = trial_metrics[k]['local']
+                if 'local' in trial_metrics[k].keys():
+                    local_metrics = trial_metrics[k]['local']
+                else:
+                    local_metrics = trial_metrics[k]
 
                 if name in local_metrics.keys():
                     sr = local_metrics[name]
@@ -317,7 +291,10 @@ def plot_trial(trial_spec, trial_metrics, ma=False):
             name_list = []
 
             for k in trial_metrics.keys():
-                local_metrics = trial_metrics[k]['local']
+                if 'local' in trial_metrics[k].keys():
+                    local_metrics = trial_metrics[k]['local']
+                else:
+                    local_metrics = trial_metrics[k]
 
                 if name in local_metrics.keys():
                     sr_list = local_metrics[name]

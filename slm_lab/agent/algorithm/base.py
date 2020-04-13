@@ -39,8 +39,7 @@ class Algorithm(ABC):
 
         # Extra customizable training log
         self.algo_temp_info = {} if not hasattr(self, "algo_temp_info") else self.algo_temp_info
-        # TODO clean
-        self.extra_training_log_info_col = {} #self.get_extra_training_log_info().keys()
+        self.to_log = {}
 
         logger.info(util.self_desc(self))
 
@@ -138,12 +137,22 @@ class Algorithm(ABC):
     def memory_update(self, state, action, welfare, next_state, done):
         return self.memory.update(state, action, welfare, next_state, done)
 
-    def get_extra_training_log_info(self):
-        return {}
+    def get_log_values(self):
+        self.to_log['opt_step']=self.net.opt_step
+
+        to_log = self.to_log
+        self.to_log = {}
+        self._reset_temp_info()
+        return to_log
+
 
     def _reset_temp_info(self):
         for k, v in self.algo_temp_info.items():
             if isinstance(v, str):
                 self.algo_temp_info[k] = ""
             else:
-                self.algo_temp_info[k] = 0
+                self.algo_temp_info[k] = np.nan
+
+    def log_grad_norm(self):
+        grad_norms = net_util.get_grad_norms(self)
+        self.to_log['grad_norm'] = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)

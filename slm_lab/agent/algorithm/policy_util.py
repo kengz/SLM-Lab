@@ -73,7 +73,6 @@ def guard_tensor(state, body):
         state = state.unsqueeze(dim=0)
     return state
 
-
 def calc_pdparam(state, algorithm, body):
     '''
     Prepare the state and run algorithm.calc_pdparam to get pdparam for action_pd
@@ -139,7 +138,6 @@ def sample_action(ActionPD, pdparam, algorithm):
 
 
 # action_policy used by agent
-
 
 def default(state, algorithm, body):
     '''Plain policy by direct sampling from a default action probability defined by body.ActionPD'''

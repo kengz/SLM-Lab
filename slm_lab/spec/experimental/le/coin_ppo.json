@@ -12,21 +12,21 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
-          "end_val": 0.01,
-          "start_step": 1000,
-          "end_step": 5000
+          "start_val": 0.05,
+          "end_val": 0.005,
+          "start_step": 10000,
+          "end_step": 80000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.1,
           "end_val": 0.003,
           "start_step": 0,
-          "end_step": 200000
+          "end_step": 100000
         },
         "val_loss_coef": 1.0,
-        "time_horizon": 32,
-        "minibatch_size": 16,
+        "time_horizon": 128,
+        "minibatch_size": 32,
         "training_epoch": 8
       },
       "memory": {
@@ -48,17 +48,17 @@
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 8e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 8e-4
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 250000
+          "frame": 100000
         },
-        "gpu": true
+        "gpu": false
       }
     },
     {
@@ -67,8 +67,8 @@
     "env": [{
       "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 250000,
-      "num_envs": 1,
+      "max_frame": 100000,
+      "num_envs": 1
     }],
     "body": {
       "product": "outer",
@@ -76,9 +76,10 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
-      "max_session": 1,
+      "eval_frequency": 400,
+      "log_frequency": 400,
+      "max_session": 10,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -102,21 +103,21 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
-          "end_val": 0.01,
-          "start_step": 1000,
-          "end_step": 5000
+          "start_val": 0.05,
+          "end_val": 0.005,
+          "start_step": 10000,
+          "end_step": 80000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.1,
           "end_val": 0.003,
           "start_step": 0,
-          "end_step": 200000
+          "end_step": 100000
         },
         "val_loss_coef": 1.0,
-        "time_horizon": 32,
-        "minibatch_size": 16,
+        "time_horizon": 128,
+        "minibatch_size": 32,
         "training_epoch": 8
       },
       "memory": {
@@ -138,17 +139,17 @@
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 8e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 8e-4
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 250000
+          "frame": 100000
         },
-        "gpu": true
+        "gpu": false
       }
     },
     {
@@ -157,8 +158,8 @@
     "env": [{
       "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 250000,
-      "num_envs": 1,
+      "max_frame": 100000,
+      "num_envs": 1
     }],
     "body": {
       "product": "outer",
@@ -166,9 +167,10 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
-      "max_session": 1,
+      "eval_frequency": 400,
+      "log_frequency": 400,
+      "max_session": 10,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -196,9 +198,9 @@
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
-        "min_coop_time": 1,
+        "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_carac_threshold": 0.1,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -215,21 +217,21 @@
               "lam": 0.95,
               "clip_eps_spec": {
                 "name": "linear_decay",
-                "start_val": 0.10,
-                "end_val": 0.01,
-                "start_step": 1000,
-                "end_step": 5000
+                "start_val": 0.05,
+                "end_val": 0.005,
+                "start_step": 10000,
+                "end_step": 80000
               },
               "entropy_coef_spec": {
                 "name": "linear_decay",
                 "start_val": 0.1,
                 "end_val": 0.003,
                 "start_step": 0,
-                "end_step": 200000
+                "end_step": 100000
               },
               "val_loss_coef": 1.0,
-              "time_horizon": 32,
-              "minibatch_size": 16,
+              "time_horizon": 128,
+              "minibatch_size": 32,
               "training_epoch": 8
             },
             "memory": {
@@ -251,17 +253,17 @@
               "use_same_optim": false,
               "actor_optim_spec": {
                 "name": "Adam",
-                "lr": 2e-3
+                "lr": 8e-4
               },
               "critic_optim_spec": {
                 "name": "Adam",
-                "lr": 2e-3
+                "lr": 8e-4
               },
               "lr_scheduler_spec": {
                 "name": "LinearToZero",
-                "frame": 250000
+                "frame": 100000
               },
-              "gpu": true
+              "gpu": false
             }
           },
           {
@@ -280,8 +282,8 @@
     "env": [{
       "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 250000,
-      "num_envs": 1,
+      "max_frame": 100000,
+      "num_envs": 1
     }],
     "body": {
       "product": "outer",
@@ -289,9 +291,10 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
-      "max_session": 1,
+      "eval_frequency": 400,
+      "log_frequency": 400,
+      "max_session": 10,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -323,9 +326,9 @@
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
-        "min_coop_time": 1,
+        "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_carac_threshold": 0.1,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -342,21 +345,21 @@
               "lam": 0.95,
               "clip_eps_spec": {
                 "name": "linear_decay",
-                "start_val": 0.10,
-                "end_val": 0.01,
-                "start_step": 1000,
-                "end_step": 5000
+                "start_val": 0.05,
+                "end_val": 0.005,
+                "start_step": 10000,
+                "end_step": 80000
               },
               "entropy_coef_spec": {
                 "name": "linear_decay",
                 "start_val": 0.1,
                 "end_val": 0.003,
                 "start_step": 0,
-                "end_step": 200000
+                "end_step": 100000
               },
               "val_loss_coef": 1.0,
-              "time_horizon": 32,
-              "minibatch_size": 16,
+              "time_horizon": 128,
+              "minibatch_size": 32,
               "training_epoch": 8
             },
             "memory": {
@@ -378,17 +381,17 @@
               "use_same_optim": false,
               "actor_optim_spec": {
                 "name": "Adam",
-                "lr": 2e-3
+                "lr": 8e-4
               },
               "critic_optim_spec": {
                 "name": "Adam",
-                "lr": 2e-3
+                "lr": 8e-4
               },
               "lr_scheduler_spec": {
                 "name": "LinearToZero",
-                "frame": 250000
+                "frame": 100000
               },
-              "gpu": true
+              "gpu": false
             }
           },
           {
@@ -413,21 +416,21 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
-          "end_val": 0.01,
-          "start_step": 1000,
-          "end_step": 5000
+          "start_val": 0.05,
+          "end_val": 0.005,
+          "start_step": 10000,
+          "end_step": 80000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.1,
           "end_val": 0.003,
           "start_step": 0,
-          "end_step": 200000
+          "end_step": 100000
         },
         "val_loss_coef": 1.0,
-        "time_horizon": 32,
-        "minibatch_size": 16,
+        "time_horizon": 128,
+        "minibatch_size": 32,
         "training_epoch": 8
       },
       "memory": {
@@ -449,24 +452,24 @@
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 8e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 8e-4
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 250000
+          "frame": 100000
         },
-        "gpu": true
+        "gpu": false
       }
     }
     ],
     "env": [{
       "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 250000,
+      "max_frame": 100000,
       "num_envs": 1
     }],
     "body": {
@@ -475,9 +478,10 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
-      "max_session": 1,
+      "eval_frequency": 400,
+      "log_frequency": 400,
+      "max_session": 10,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   }

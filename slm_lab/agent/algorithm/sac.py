@@ -226,6 +226,7 @@ class SoftActorCritic(ActorCritic):
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            self.to_log["loss"] = loss.item()
             return loss.item()
         else:
             return np.nan

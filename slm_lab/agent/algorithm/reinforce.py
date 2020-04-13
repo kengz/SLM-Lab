@@ -106,11 +106,6 @@ class Reinforce(Algorithm):
         # print("prob", action_pd.probs.tolist())
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
-    # def get_action_pd(self, state):
-    #     body = self.body
-    #     _, action_pd = self.action_policy(state, self, body)
-    #     return action_pd
-
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
@@ -149,7 +144,8 @@ class Reinforce(Algorithm):
         if self.entropy_coef_spec:
             entropy = action_pd.entropy().mean()
             logger.debug(f'entropy {entropy}')
-            self.body.mean_entropy = entropy  # update logging variable
+            self.to_log["entropy"] = entropy.item()
+            self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
             policy_loss += (-self.entropy_coef_scheduler.val * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
@@ -169,6 +165,7 @@ class Reinforce(Algorithm):
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            self.to_log["loss"] = loss.item()
             return loss.item()
         else:
             return np.nan
@@ -178,4 +175,4 @@ class Reinforce(Algorithm):
         self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler.update(self, self.body.env.clock)
-        return self.body.explore_var
+        return self.explore_var_scheduler.val

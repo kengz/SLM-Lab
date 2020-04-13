@@ -129,6 +129,7 @@ class SIL(ActorCritic):
         return sil_policy_loss, sil_val_loss
 
     def train(self):
+        # TODO maybe a template in base and a _train in each algo implementation
         clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
@@ -146,6 +147,7 @@ class SIL(ActorCritic):
             sil_loss = total_sil_loss / self.training_iter
             loss = super_loss + sil_loss
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            self.to_log["loss"] = loss.item()
             return loss.item()
         else:
             return np.nan

@@ -15,14 +15,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000
+          "end_step": 2500
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000
+          "end_step": 2500
         },
         "val_loss_coef": 1.0,
         "time_horizon": 32,
@@ -56,7 +56,7 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 5000,
       "num_envs": 1
     }],
     "body": {
@@ -94,14 +94,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000
+          "end_step": 2500
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000
+          "end_step": 2500
         },
         "val_loss_coef": 1.0,
         "time_horizon": 32,
@@ -135,7 +135,7 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 5000,
       "num_envs": 1
     }],
     "body": {
@@ -174,9 +174,9 @@
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
-        "min_coop_time": 1,
+        "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_carac_threshold": 0.1,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -196,14 +196,14 @@
                 "start_val": 0.10,
                 "end_val": 0.01,
                 "start_step": 1000,
-                "end_step": 5000
+                "end_step": 2500
               },
               "entropy_coef_spec": {
                 "name": "linear_decay",
                 "start_val": 0.01,
                 "end_val": 0.001,
                 "start_step": 1000,
-                "end_step": 5000
+                "end_step": 2500
               },
               "val_loss_coef": 1.0,
               "time_horizon": 32,
@@ -247,7 +247,7 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 5000,
       "num_envs": 1
     }],
     "body": {
@@ -290,9 +290,9 @@
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
-        "min_coop_time": 1,
+        "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_carac_threshold": 0.1,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -312,14 +312,14 @@
                 "start_val": 0.10,
                 "end_val": 0.01,
                 "start_step": 1000,
-                "end_step": 5000
+                "end_step": 2500
               },
               "entropy_coef_spec": {
                 "name": "linear_decay",
                 "start_val": 0.01,
                 "end_val": 0.001,
                 "start_step": 1000,
-                "end_step": 5000
+                "end_step": 2500
               },
               "val_loss_coef": 1.0,
               "time_horizon": 32,
@@ -372,14 +372,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000
+          "end_step": 2500
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000
+          "end_step": 2500
         },
         "val_loss_coef": 1.0,
         "time_horizon": 32,
@@ -411,7 +411,7 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 5000,
       "num_envs": 1
     }],
     "body": {

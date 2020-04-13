@@ -49,7 +49,9 @@ class Net(ABC):
         if clock is not None:
             # clock.tick('opt_step')
             self.opt_step += 1
-            # TODO check that this is suppo
+            # TODO check that this is supported
+        optim.zero_grad()
+
         return loss
 
     def store_grad_norms(self):

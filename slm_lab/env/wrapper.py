@@ -340,6 +340,7 @@ class TrackReward(gym.Wrapper):
 
         if isinstance(reward, Iterable):
             r = np.array(reward)
+            ## TODO useless sum ?
             self.tracked_reward += r.sum(axis=tuple(range(1, r.ndim,1)))  # Support mutliagent
             # self.tracked_reward += sum(reward)
         else:

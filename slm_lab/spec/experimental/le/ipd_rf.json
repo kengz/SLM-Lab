@@ -15,7 +15,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 5000
+          "end_step": 2500
         },
         "training_frequency": 1
       },
@@ -58,8 +58,8 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
+      "eval_frequency": 200,
+      "log_frequency": 200,
       "max_session": 10,
       "max_trial": 1
     }
@@ -91,7 +91,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 5000
+          "end_step": 2500
         },
         "training_frequency": 1
       },
@@ -134,8 +134,8 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
+      "eval_frequency": 200,
+      "log_frequency": 200,
       "max_session": 10,
       "max_trial": 1
     }
@@ -164,9 +164,9 @@
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
-        "min_coop_time": 1,
+        "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_carac_threshold": 0.1,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -181,7 +181,7 @@
                 "start_val": 0.01,
                 "end_val": 0.001,
                 "start_step": 0,
-                "end_step": 5000
+                "end_step": 2500
               },
               "training_frequency": 1
             },
@@ -231,8 +231,8 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
+      "eval_frequency": 200,
+      "log_frequency": 200,
       "max_session": 10,
       "max_trial": 1
     }
@@ -257,9 +257,9 @@
       "algorithm": {
         "name": "LE",
         "punishement_time": 10,
-        "min_coop_time": 1,
+        "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_carac_threshold": 0.1,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -274,7 +274,7 @@
                 "start_val": 0.01,
                 "end_val": 0.001,
                 "start_step": 0,
-                "end_step": 5000
+                "end_step": 2500
               },
               "training_frequency": 10
             },
@@ -322,7 +322,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 5000
+          "end_step": 2500
         },
         "training_frequency": 10
       },
@@ -361,8 +361,8 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
-      "log_frequency": 100,
+      "eval_frequency": 200,
+      "log_frequency": 200,
       "max_session": 10,
       "max_trial": 1
     }

@@ -55,6 +55,7 @@ class OpenAIEnv(BaseEnv):
         logger.info(util.self_desc(self))
 
     def seed(self, seed):
+        print("OpenAIEnv set seed", seed)
         self.u_env.seed(seed)
 
     @lab_api

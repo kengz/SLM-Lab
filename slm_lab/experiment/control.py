@@ -13,11 +13,9 @@ import torch
 import torch.multiprocessing as mp
 from collections.abc import Iterable
 
-# from line_profiler import LineProfiler
-
-
 def make_env_agents_world(spec, global_nets_list=None):
     '''Helper to create world (with its agents) and env given spec'''
+
     env = make_env(spec)
 
     # TODO replace by world and select world type in config. Default is SimpleSingleAgentWorld
@@ -95,6 +93,8 @@ class Session:
 
                 analysis.gen_avg_return(world, self.eval_env)
 
+    # import line_profiler
+    # @profile
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
@@ -150,24 +150,38 @@ class Trial:
 
     def parallelize_sessions(self, global_nets_list=None):
         mp_dict = mp.Manager().dict()
-        workers = []
+
         spec = deepcopy(self.spec)
-        for _s in range(spec['meta']['max_session']):
-            spec_util.tick(spec, 'session')
-            w = mp.Process(target=mp_run_session, args=(spec, global_nets_list, mp_dict, self.index))
-            w.start()
-            workers.append(w)
-        for w in workers:
-            w.join()
+
+        n_sessions_done = 0
+        while n_sessions_done < spec['meta']['max_session']:
+            do_n_sessions = min(spec['meta']['max_concurrent_session'],
+                                spec['meta']['max_session'] - n_sessions_done)
+            workers = []
+            for _s in range(do_n_sessions):
+                spec_util.tick(spec, 'session')
+                w = mp.Process(target=mp_run_session, args=(spec, global_nets_list, mp_dict, self.index))
+                w.start()
+                workers.append(w)
+            for w in workers:
+                w.join()
+                n_sessions_done +=1
+
         session_metrics_list = [mp_dict[idx] for idx in sorted(mp_dict.keys())]
         return session_metrics_list
 
     def run_sessions(self):
         logger.info('Running sessions')
-        if self.spec['meta']['max_session'] == 1:
+
+        if 'max_concurrent_session' not in self.spec['meta'].keys():
+            self.spec['meta']['max_concurrent_session'] = self.spec['meta']['max_session']
+
+        if self.spec['meta']['max_concurrent_session'] == 1:
             spec = deepcopy(self.spec)
-            spec_util.tick(spec, 'session')
-            sessions_metrics = [Session(spec, trial_idx=self.index).run()]
+            sessions_metrics = []
+            for _ in range(self.spec['meta']['max_session']):
+                spec_util.tick(spec, 'session')
+                sessions_metrics.append(Session(spec, trial_idx=self.index).run())
         else:
             sessions_metrics = self.parallelize_sessions()
         return sessions_metrics

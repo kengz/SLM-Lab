@@ -15,7 +15,7 @@ logger = logger.get_logger(__name__)
 def compare_two_identical_net(net1, net2, fn=lambda x: x):
     aggregated_value = 0
     for (n1, p1), (n2, p2) in zip(net1.named_parameters(), net2.named_parameters()):
-        aggregated_value += fn(p1.data - p2.data).sum()
+        aggregated_value += fn(p1.data - p2.data).abs().sum()
     return aggregated_value
 
 
@@ -100,6 +100,12 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         return self.algorithms[self.coop_algo_idx].act(state)
 
     def detect_defection(self, state, action, welfare, next_state, done):
+        if not isinstance(self.defection_carac_tot, torch.Tensor) and np.isnan(self.defection_carac_tot):
+            self.defection_carac_tot = 0
+            self.defection_carac_steps = 0
+            self.algo_temp_info['log_defection_carac_tot'] = 0
+            self.algo_temp_info['log_defection_carac_steps'] = 0
+
         if self.defection_detection_mode == self.all_defection_detection_modes[0]:
             return self.defection_from_network_weights(state, action, welfare, next_state, done)
         elif self.defection_detection_mode == self.all_defection_detection_modes[1]:
@@ -120,8 +126,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                        other_ag_rewards, other_ag_next_states,
                                                        other_ag_algorithms)):
 
+            coop_net_simul_opponent = self.punish_algo_idx + idx +1
             # TODO is not currently shared between agents because it is only computed in update (agent sequential)
-            # Recompute welfare using the currentl agent welfare function
+            # Recompute welfare using the currently agent welfare function
             w = self.agent.welfare_function(algo.agent, r)
             if not self.is_fully_init:
                 logger.info("LE algo finishing init by copying weight from opponent network")
@@ -130,12 +137,12 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 else:
                     net_from = algo.net
                 copy_weights_between_networks(copy_from_net = net_from,
-                                                  copy_to_net= self.algorithms[self.punish_algo_idx + idx].net)
+                                                  copy_to_net= self.algorithms[coop_net_simul_opponent].net)
 
-            self.algorithms[self.punish_algo_idx + idx].memory_update(
+            self.algorithms[coop_net_simul_opponent].memory_update(
                 s, a, w, n_s, done)
 
-            diff = compare_two_identical_net(self.algorithms[self.punish_algo_idx + idx].net,
+            diff = compare_two_identical_net(self.algorithms[coop_net_simul_opponent].net,
                                                   algo.net)
             self.defection_carac_tot += diff
             self.defection_carac_steps += 1
@@ -178,13 +185,16 @@ class LE(meta_algorithm.OneOfNAlgoActived):
     @lab_api
     def memory_update(self, state, action, welfare, next_state, done):
 
+        # start at the last step before the end of min_coop_time
         if self.remeaning_punishing_time <= - (self.min_coop_time-1):
             self.detect_defection(state, action, welfare, next_state, done)
 
-
-
         assert (self.remeaning_punishing_time > 0) == (self.active_algo_idx == self.punish_algo_idx)
         assert (self.remeaning_punishing_time <= 0) == (self.active_algo_idx == self.coop_algo_idx)
+
+        if np.isnan(self.algo_temp_info['log_punishement_time']):
+            self.algo_temp_info['log_punishement_time'] = 0
+            self.algo_temp_info['log_coop_time'] = 0
 
         if self.remeaning_punishing_time > 0:
             other_agents_rewards = agent_util.get_from_other_agents(self.agent, key="reward", default=[])
@@ -196,12 +206,13 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         outputs = self.algorithms[self.active_algo_idx].memory_update(state, action, welfare, next_state, done)
 
         if done:
-
+            # print("self.defection_carac_tot", self.defection_carac_tot)
             if self.remeaning_punishing_time <= - (self.min_coop_time - 1):
-                if self.defection_carac_tot / (self.defection_carac_steps + 1e-6) > self.defection_carac_threshold:
+                if self.defection_carac_tot / (self.defection_carac_steps + self.epsilon) > self.defection_carac_threshold:
                     self.detected_defection = True
-                self.defection_carac_tot = 0
-                self.defection_carac_steps = 0
+
+            self.defection_carac_tot = np.nan
+            self.defection_carac_steps = np.nan
 
             if self.remeaning_punishing_time > - self.min_coop_time:
                 self.remeaning_punishing_time -= 1
@@ -217,36 +228,44 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 self.active_algo_idx = self.coop_algo_idx
         return outputs
 
-    def get_extra_training_log_info(self):
-        extra_training_info_to_log = {
+    def get_log_values(self):
+        self.to_log = {
             "d_carac": round(float((self.algo_temp_info['log_defection_carac_tot'] /
                             (self.algo_temp_info['log_defection_carac_steps'] + self.epsilon))),4)
         }
 
         if self.algo_temp_info['log_coop_time'] == 0 and self.algo_temp_info['log_punishement_time'] == 0:
-            extra_training_info_to_log["coop_frac"] = 0.5
+            self.to_log["coop_frac"] = 0.5
         else:
-            extra_training_info_to_log["coop_frac"] = round(float((self.algo_temp_info['log_coop_time'] /
-                                                                  (self.algo_temp_info['log_punishement_time'] +
-                                                                   self.algo_temp_info['log_coop_time']))),2)
+            self.to_log["coop_frac"] = round(float((self.algo_temp_info['log_coop_time'] /
+                                                    (self.algo_temp_info['log_punishement_time'] +
+                                                                   self.algo_temp_info['log_coop_time']))), 2)
 
+        # Log actions prod distrib
         if self.agent.body.action_space_is_discrete:
             action_pd_coop = list(copy.deepcopy(self.action_pd_coop))
             action_pd_punish = list(copy.deepcopy(self.action_pd_punish))
             for act_idx in range(self.agent.body.action_dim):
                 n_action_i = sum([el[act_idx] for el in action_pd_coop])
-                extra_training_info_to_log[f'ca{act_idx}'] = round(float(n_action_i /
-                                                                     (len(action_pd_coop) + self.epsilon)),2)
+                self.to_log[f'ca{act_idx}'] = round(float(n_action_i /
+                                                          (len(action_pd_coop) + self.epsilon)), 2)
             for act_idx in range(self.agent.body.action_dim):
                 n_action_i = sum([el[act_idx] for el in action_pd_punish])
-                extra_training_info_to_log[f'pa{act_idx}'] = round(float(n_action_i /
-                                                                     (len(action_pd_punish) + self.epsilon)),2)
+                self.to_log[f'pa{act_idx}'] = round(float(n_action_i /
+                                                          (len(action_pd_punish) + self.epsilon)), 2)
         else:
             raise NotImplementedError()
 
 
-        for algo in self.algorithms:
-            extra_training_info_to_log.update(algo.get_extra_training_log_info())
+        return super().get_log_values()
 
-        self._reset_temp_info()
-        return extra_training_info_to_log
+        # for idx, algo in enumerate(self.algorithms):
+        #     for k, v in algo.get_extra_training_log_info().items():
+        #         k_meta = f'{k}_alg{idx}'
+        #         assert k_meta not in self.to_log.keys()
+        #         self.to_log[k_meta] = v
+        #
+        # self._reset_temp_info()
+        # extra_training_info_to_log = self.to_log
+        # self.to_log = {}
+        # return extra_training_info_to_log

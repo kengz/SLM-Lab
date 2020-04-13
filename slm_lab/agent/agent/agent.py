@@ -17,8 +17,8 @@ from collections import Iterable, OrderedDict
 
 logger = logger.get_logger(__name__)
 
-BASIC_COLS = ['epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'tot_r', 'tot_r_ma', # ma for mean average
-            'loss', 'lr', 'expl_var', 'entp_coef', 'entropy', 'grad_norm']
+# ma for mean average
+BASIC_COLS = ['epi', 't', 'wall_t', 'frame', 'fps', 'tot_r', 'tot_r_ma', 'lr']
 
 class Agent(observability.ObservableAgentInterface):
     '''
@@ -112,8 +112,6 @@ class Agent(observability.ObservableAgentInterface):
 
     def train(self):
         loss = self.algorithm.train()
-        if not np.isnan(loss):  # set for log_summary()
-            self.body.loss = loss
         explore_var = self.algorithm.update()
         return loss, explore_var
 
@@ -200,13 +198,13 @@ class Body:
         self.a, self.e, self.b = self.aeb = aeb
 
         # variables set during init_algorithm_params
-        self.explore_var = np.nan  # action exploration: epsilon or tau
-        self.entropy_coef = np.nan  # entropy for exploration
+        # self.explore_var = np.nan  # action exploration: epsilon or tau
+        # self.entropy_coef = np.nan  # entropy for exploration
 
         # debugging/logging variables, set in train or loss function
-        self.loss = np.nan
-        self.mean_entropy = np.nan
-        self.mean_grad_norm = np.nan
+        # self.loss = np.nan
+        # self.mean_entropy = np.nan
+        # self.mean_grad_norm = np.nan
 
         # total_reward_ma from eval for model checkpoint saves
         self.best_total_reward_ma = -np.inf
@@ -215,14 +213,10 @@ class Body:
         self.reward = np.nan
         self.welfare = np.nan
 
-
         # the specific agent-env interface variables for a body
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
         self.observation_dim = self.env.observable_dim
-        # self.state_dim = self.observable_dim['state']
-        # DONE remove state_dim, only use observable_dim
-        # self.observation_dim = self.observation_dim
         logger.info("self.observable_dim {}".format(self.observation_dim))
         self.action_dim = self.env.action_dim
         self.action_space_is_discrete = self.env.action_space_is_discrete
@@ -236,14 +230,15 @@ class Body:
         self.tb_add_graph = False
 
     def init_part2(self):
+        # TODO merge in init
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
         cols = copy.deepcopy(BASIC_COLS)
-        if self.agent is not None :
-            cols += self.agent.algorithm.extra_training_log_info_col
-        if self.env is not None:
-            print("self.env.extra_env_log_info_col", self.env.extra_env_log_info_col)
-            cols += self.env.extra_env_log_info_col
+        # if self.agent is not None :
+        #     cols += self.agent.algorithm.extra_training_log_info_col
+        # if self.env is not None:
+        #     print("self.env.extra_env_log_info_col", self.env.extra_env_log_info_col)
+        #     cols += self.env.extra_env_log_info_col
         self.train_df = pd.DataFrame(columns=cols)
         # track eval data within run_eval. the same as train_df except for reward
         if ps.get(self.spec, 'meta.rigorous_eval'):
@@ -269,19 +264,32 @@ class Body:
         with warnings.catch_warnings():  # mute np.nanmean warning
             warnings.filterwarnings('ignore')
             if isinstance(env.total_reward, Iterable):
+                # print("env.total_reward", env.total_reward)
+                ## TODO useless mean ?
                 total_reward = np.nanmean(env.total_reward,
                                       axis=tuple(range(1, env.total_reward.ndim, 1)))  # guard for vec env
+                # print("total_reward",total_reward)
+
                 if self.agent is None:
                     total_reward = total_reward.sum()
+                    # print("world")
                 else:
                     total_reward = total_reward[self.agent.agent_idx]
+                #     print("self.agent.agent_idx",self.agent.agent_idx)
+                # print("total_reward 2",total_reward)
+
             else:
                 total_reward = np.nanmean(env.total_reward)
 
         # update debugging variables
+        # TODO to be added by algo
+        # if net_util.to_check_train_step():
+        #     grad_norms = net_util.get_grad_norms(self.agent.algorithm) if self.agent is not None else []
+        #     self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
         if net_util.to_check_train_step():
-            grad_norms = net_util.get_grad_norms(self.agent.algorithm) if self.agent is not None else []
-            self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+            if self.agent is not None:
+                self.agent.algorithm.log_grad_norm()
+
 
         row_dict = {
             # epi and frame are always measured from training env
@@ -290,30 +298,30 @@ class Body:
             't': env.clock.t,
             'wall_t': wall_t,
             # 'opt_step': self.env.clock.opt_step,
-            'opt_step': self.agent.algorithm.net.opt_step if self.agent is not None else -1,
+            'opt_step': np.nan, #self.agent.algorithm.net.opt_step if self.agent is not None else -1,
             'frame': frame,
             'fps': fps,
             # 'reward': total_reward,
             # 'reward_ma': np.nan,  # update outside
             'tot_r': total_reward,
             'tot_r_ma': np.nan,  # update outside
-            'loss': self.loss,
+            # 'loss': self.loss,
             'lr': self.get_mean_lr(),
             # 'explore_var': self.explore_var,
-            'expl_var': self.agent.algorithm.explore_var_scheduler.val if
-                            self.agent is not None and
-                            hasattr(self.agent.algorithm, 'explore_var_scheduler')
-                            else np.nan,
-            # 'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'entp_coef': self.agent.algorithm.entropy_coef_scheduler.val if
-                            self.agent is not None and
-                            hasattr(self.agent.algorithm, 'entropy_coef_scheduler')
-                            else np.nan,
-            'entropy': self.mean_entropy,
-            'grad_norm': self.mean_grad_norm,
+            # 'expl_var': self.agent.algorithm.explore_var_scheduler.val if
+            #                 self.agent is not None and
+            #                 hasattr(self.agent.algorithm, 'explore_var_scheduler')
+            #                 else np.nan,
+            # # 'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            # 'entp_coef': self.agent.algorithm.entropy_coef_scheduler.val if
+            #                 self.agent is not None and
+            #                 hasattr(self.agent.algorithm, 'entropy_coef_scheduler')
+            #                 else np.nan,
+            # 'entropy': self.mean_entropy,
+            # 'grad_norm': self.mean_grad_norm,
         }
         if self.agent is not None :
-            row_dict.update(self.agent.algorithm.get_extra_training_log_info())
+            row_dict.update(self.agent.algorithm.get_log_values())
         if self.env is not None:
             row_dict.update(self.env.get_extra_training_log_info())
 
@@ -330,7 +338,6 @@ class Body:
         row = self.calc_df_row(env)
 
         df = getattr(self, f'{df_mode}_df')
-
         # Dynamicaly add new columns
         for col in row.index:
             if col not in df.columns:

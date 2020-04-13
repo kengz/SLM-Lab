@@ -158,6 +158,8 @@ class PPO(ActorCritic):
         entropy = action_pd.entropy().mean()
         self.body.mean_entropy = entropy  # update logging variable
         ent_penalty = -self.entropy_coef_scheduler.val * entropy
+        self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
+
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
@@ -204,6 +206,7 @@ class PPO(ActorCritic):
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            self.to_log["loss"] = loss.item()
             return loss.item()
         else:
             return np.nan
@@ -214,4 +217,4 @@ class PPO(ActorCritic):
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler.update(self, self.body.env.clock)
         self.clip_eps_scheduler.update(self, self.body.env.clock)
-        return self.body.explore_var
+        return self.explore_var_scheduler.val
