@@ -10,7 +10,7 @@ import pytest
 def test_spec():
     spec = spec_util.get('experimental/misc/base.json', 'base_case_openai')
     spec_util.tick(spec, 'trial')
-    spec = spec_util.override_test_spec(spec)
+    spec = spec_util.override_spec(spec, 'test')
     return spec
 
 

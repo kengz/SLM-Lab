@@ -21,11 +21,10 @@ logger = logger.get_logger(__name__)
 
 def run_spec(spec, lab_mode):
     '''Run a spec in lab_mode'''
-    os.environ['lab_mode'] = lab_mode
+    os.environ['lab_mode'] = lab_mode  # set lab_mode
+    spec = spec_util.override_spec(spec, lab_mode)  # conditionally override spec
     if lab_mode in TRAIN_MODES:
         spec_util.save(spec)  # first save the new spec
-        if lab_mode == 'dev':
-            spec = spec_util.override_dev_spec(spec)
         if lab_mode == 'search':
             spec_util.tick(spec, 'experiment')
             Experiment(spec).run()
@@ -33,7 +32,6 @@ def run_spec(spec, lab_mode):
             spec_util.tick(spec, 'trial')
             Trial(spec).run()
     elif lab_mode in EVAL_MODES:
-        spec = spec_util.override_enjoy_spec(spec)
         Session(spec).run()
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}')

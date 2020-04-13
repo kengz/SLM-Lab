@@ -188,24 +188,18 @@ def get_param_specs(spec):
     return specs
 
 
-def override_dev_spec(spec):
+def _override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
 
 
-def override_enjoy_spec(spec):
+def _override_enjoy_spec(spec):
     spec['meta']['max_session'] = 1
     return spec
 
 
-def override_eval_spec(spec):
-    spec['meta']['max_session'] = 1
-    # evaluate by episode is set in env clock init in env/base.py
-    return spec
-
-
-def override_test_spec(spec):
+def _override_test_spec(spec):
     for agent_spec in spec['agent']:
         # onpolicy freq is episodic
         freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
@@ -223,6 +217,18 @@ def override_test_spec(spec):
     spec['meta']['eval_frequency'] = 10
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
+    return spec
+
+
+def override_spec(spec, mode):
+    '''Override spec based on the (lab_)mode, do nothing otherwise.'''
+    overrider = {
+        'dev': _override_dev_spec,
+        'enjoy': _override_enjoy_spec,
+        'test': _override_test_spec,
+    }.get(mode)
+    if overrider is not None:
+        overrider(spec)
     return spec
 
 
