@@ -36,7 +36,7 @@
           "type": "TransformerNet",
           "shared": false,
           "pos_encoder": "sinusoid",
-          "embed_dim": 256,
+          "embed_dim": 32,
           "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
