@@ -37,7 +37,7 @@
           "shared": false,
           "pos_encoder": "sinusoid",
           "embed_dim": 32,
-          "num_heads": 4,
+          "num_heads": 1,
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.02,
@@ -84,9 +84,8 @@
     "search": {
       "agent": [{
         "net": {
-          "num_hids__grid_search": [128, 256],
-          "embed_dim__grid_search": [16, 32, 64],
-          "num_heads__grid_search": [1, 2],
+          "shared__grid_search": [true, false],
+          "num_hids__grid_search": [256, 512],
         }
       }]
     }
