@@ -176,8 +176,8 @@
     "search": {
       "agent": [{
         "net": {
-          "embed_dim__grid_search": [16, 32, 64],
-          "num_heads__grid_search": [1, 2, 4],
+          "embed_dim__grid_search": [32, 64],
+          "num_heads__grid_search": [2, 4],
         }
       }]
     }
