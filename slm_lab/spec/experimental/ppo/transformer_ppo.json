@@ -84,7 +84,8 @@
     "search": {
       "agent": [{
         "net": {
-          "clip_grad_val__grid_search": [0.2, 0.4],
+          "embed_dim__grid_search": [32, 64, 128],
+          "num_heads__grid_search": [2, 4],
           "dropout__grid_search": [0.0, 0.01, 0.02, 0.04],
         }
       }]
