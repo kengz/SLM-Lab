@@ -220,10 +220,10 @@
           "shared": false,
           "pos_encoder": "sinusoid",
           "embed_dim": 32,
-          "num_heads": 4,
+          "num_heads": 1,
           "num_hids": 256,
           "num_layers": 2,
-          "dropout": 0.0,
+          "dropout": 0.02,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
           "use_same_optim": true,
@@ -268,7 +268,6 @@
       "agent": [{
         "net": {
           "embed_dim__grid_search": [32, 64],
-          "num_heads__grid_search": [2, 4],
         }
       }]
     }
