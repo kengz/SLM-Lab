@@ -51,7 +51,7 @@ class Clock:
         last_row = train_df.iloc[-1]
         last_clock_vals = ps.pick(last_row, *['epi', 't', 'wall_t', 'opt_step', 'frame'])
         util.set_attr(self, last_clock_vals)
-        self.start_wall_t += self.wall_t
+        self.start_wall_t -= self.wall_t  # offset elapsed wall_t
 
     def get(self, unit='frame'):
         return getattr(self, unit)
