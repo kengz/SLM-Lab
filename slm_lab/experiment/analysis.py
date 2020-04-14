@@ -245,7 +245,7 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
 def analyze_session(session_spec, session_df, df_mode, plot=True):
     '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: body.eval_df and body.train_df'''
     info_prepath = session_spec['meta']['info_prepath']
-    session_df = session_df.drop_duplicates('frame')  # ensure uniqueness by frame
+    session_df = session_df.copy()  # prevent modification
     assert len(session_df) > 2, f'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
     util.write(session_df, util.get_session_df_path(session_spec, df_mode))
     # calculate metrics

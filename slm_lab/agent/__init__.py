@@ -186,6 +186,7 @@ class Body:
         df = getattr(self, f'{df_mode}_df')
         df.loc[len(df)] = row  # append efficiently to df
         df.iloc[-1]['total_reward_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
+        df.drop_duplicates('frame', inplace=True)  # remove any duplicates by the same frame
         self.total_reward_ma = total_reward_ma
 
     def get_mean_lr(self):
