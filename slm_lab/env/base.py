@@ -122,8 +122,7 @@ class BaseEnv(ABC):
             'max_t',
             'max_frame',
         ])
-        # override if env is for eval
-        if util.in_eval_lab_modes():
+        if util.get_lab_mode() == 'eval':  # override if env is for eval
             self.num_envs = ps.get(spec, 'meta.rigorous_eval')
         self.to_render = util.to_render()
         self._infer_frame_attr(spec)

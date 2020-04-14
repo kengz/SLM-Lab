@@ -104,8 +104,7 @@ class Body:
             'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
 
-        if ps.get(self.spec, 'meta.resume'):
-            # in train@ resume mode, override from saved train_df if exists
+        if ps.get(self.spec, 'meta.resume') and util.in_train_lab_modes():
             train_df_filepath = util.get_session_df_path(self.spec, 'train')
             if os.path.exists(train_df_filepath):
                 self.train_df = util.read(train_df_filepath)

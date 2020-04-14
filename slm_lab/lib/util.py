@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
 from pprint import pformat
-from slm_lab import ROOT_DIR, EVAL_MODES
+from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 import cv2
 import json
 import numpy as np
@@ -248,6 +248,11 @@ def insert_folder(prepath, folder):
 def in_eval_lab_modes():
     '''Check if lab_mode is one of EVAL_MODES'''
     return get_lab_mode() in EVAL_MODES
+
+
+def in_train_lab_modes():
+    '''Check if lab_mode is one of TRAIN_MODES'''
+    return get_lab_mode() in TRAIN_MODES
 
 
 def is_jupyter():
