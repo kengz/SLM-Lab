@@ -86,13 +86,12 @@ def test_is_jupyter():
 
 def test_prepath_split():
     prepath = 'data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0'
-    predir, prefolder, prename, spec_name, experiment_ts, ckpt = util.prepath_split(prepath)
+    predir, prefolder, prename, spec_name, experiment_ts = util.prepath_split(prepath)
     assert predir == 'data/dqn_pong_2018_12_02_082510'
     assert prefolder == 'dqn_pong_2018_12_02_082510'
     assert prename == 'dqn_pong_t0_s0'
     assert spec_name == 'dqn_pong'
     assert experiment_ts == '2018_12_02_082510'
-    assert ckpt == None
 
 
 def test_set_attr():

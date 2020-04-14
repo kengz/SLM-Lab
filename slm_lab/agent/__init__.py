@@ -109,10 +109,7 @@ class Body:
             train_df_filepath = util.get_session_df_path(self.spec, 'train')
             if os.path.exists(train_df_filepath):
                 self.train_df = util.read(train_df_filepath)
-                # since train_df exists, load the last clock values from train_df
-                last_row = self.train_df.iloc[-1]
-                last_clock_vals = ps.pick(last_row, *['epi', 't', 'wall_t', 'opt_step', 'frame'])
-                util.set_attr(self.env.clock, last_clock_vals)
+                self.env.clock.load(self.train_df)
 
         # track eval data within run_eval. the same as train_df except for reward
         if ps.get(self.spec, 'meta.rigorous_eval'):

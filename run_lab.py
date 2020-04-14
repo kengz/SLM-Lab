@@ -27,12 +27,13 @@ def get_spec(spec_file, spec_name, lab_mode, pre_):
             predir = pre_
             if predir == 'latest':
                 predir = sorted(glob(f'data/{spec_name}*/'))[-1]  # get the latest predir with spec_name
-            _, _, _, _, experiment_ts, _ = util.prepath_split(predir)  # get experiment_ts to resume train spec
+            _, _, _, _, experiment_ts = util.prepath_split(predir)  # get experiment_ts to resume train spec
+            logger.info(f'Resolved to train@{predir}')
             spec = spec_util.get(spec_file, spec_name, experiment_ts)
     elif lab_mode in EVAL_MODES:
         prename = pre_
         assert prename is not None, 'enjoy mode must specify a `enjoy@{prename}`'
-        spec = spec_util.get_eval_spec(spec_file, prename)
+        spec = util.read(f'{prename}_spec.json')
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}')
     return spec

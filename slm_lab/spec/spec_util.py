@@ -132,11 +132,8 @@ def extend_meta_spec(spec, experiment_ts=None):
         'resume': experiment_ts is not None,
         'experiment_ts': experiment_ts or util.get_ts(),
         'prepath': None,
-        # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
-        'ckpt': None,
         'git_sha': util.get_git_sha(),
         'random_seed': None,
-        'eval_model_prepath': None,
     }
     spec['meta'].update(extended_meta_spec)
     return spec
@@ -153,29 +150,15 @@ def get(spec_file, spec_name, experiment_ts=None):
 
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     '''
-    spec_file = spec_file.replace(SPEC_DIR, '')  # cleanup
-    if 'data/' in spec_file:
-        assert spec_name in spec_file, 'spec_file in data/ must be lab-generated and contains spec_name'
-        spec = util.read(spec_file)
-    else:
-        spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
-        spec_dict = util.read(spec_file)
-        assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
-        spec = spec_dict[spec_name]
-        # fill-in info at runtime
-        spec['name'] = spec_name
-        spec = extend_meta_spec(spec, experiment_ts)
+    spec_file = spec_file.replace(SPEC_DIR, '')  # guard
+    spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
+    spec_dict = util.read(spec_file)
+    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
+    spec = spec_dict[spec_name]
+    # fill-in info at runtime
+    spec['name'] = spec_name
+    spec = extend_meta_spec(spec, experiment_ts)
     check(spec)
-    return spec
-
-
-def get_eval_spec(spec_file, prename):
-    '''Get spec for eval mode'''
-    predir, _, _, _, _, _ = util.prepath_split(spec_file)
-    prepath = f'{predir}/{prename}'
-    spec = util.prepath_to_spec(prepath)
-    spec['meta']['ckpt'] = 'eval'
-    spec['meta']['eval_model_prepath'] = util.insert_folder(prepath, 'model')
     return spec
 
 
@@ -253,6 +236,9 @@ def tick(spec, unit):
     spec_util.tick(spec, 'session')
     session = Session(spec)
     '''
+    if util.get_lab_mode() == 'enjoy':  # don't tick in enjoy mode
+        return spec
+
     meta_spec = spec['meta']
     if unit == 'experiment':
         meta_spec['experiment_ts'] = util.get_ts()

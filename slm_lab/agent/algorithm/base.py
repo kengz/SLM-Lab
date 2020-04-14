@@ -45,7 +45,7 @@ class Algorithm(ABC):
         assert hasattr(self, 'net_names')
         for net_name in self.net_names:
             assert net_name.endswith('net'), f'Naming convention: net_name must end with "net"; got {net_name}'
-        if util.in_eval_lab_modes():
+        if self.agent.spec['meta']['resume']:
             self.load()
             logger.info(f'Loaded algorithm models for lab_mode: {util.get_lab_mode()}')
         else:
