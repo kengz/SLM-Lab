@@ -245,12 +245,12 @@ def insert_folder(prepath, folder):
     return '/'.join(split_path)
 
 
-def in_eval_lab_modes():
+def in_eval_lab_mode():
     '''Check if lab_mode is one of EVAL_MODES'''
     return get_lab_mode() in EVAL_MODES
 
 
-def in_train_lab_modes():
+def in_train_lab_mode():
     '''Check if lab_mode is one of TRAIN_MODES'''
     return get_lab_mode() in TRAIN_MODES
 

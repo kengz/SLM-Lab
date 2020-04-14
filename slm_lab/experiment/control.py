@@ -52,7 +52,7 @@ class Session:
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
-        if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
+        if mode == 'eval' and util.in_eval_lab_mode():  # avoid double-eval: eval-ckpt in eval mode
             return False
         clock = env.clock
         frame = clock.get()

@@ -61,7 +61,7 @@ def guard_tensor(state, body):
     if isinstance(state, LazyFrames):
         state = state.__array__()  # realize data
     state = torch.from_numpy(state.astype(np.float32))
-    if not body.env.is_venv or util.in_eval_lab_modes():
+    if not body.env.is_venv or util.in_eval_lab_mode():
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
     return state
@@ -142,7 +142,7 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action using gym.action_space.sample(), with the same format as default()'''
-    if body.env.is_venv and util.in_train_lab_modes():
+    if body.env.is_venv and util.in_train_lab_mode():
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
         _action = [body.action_space.sample()]
@@ -269,7 +269,7 @@ class VarScheduler:
 
     def update(self, algorithm, clock):
         '''Get an updated value for var'''
-        if (util.in_eval_lab_modes()) or self._updater_name == 'no_decay':
+        if (util.in_eval_lab_mode()) or self._updater_name == 'no_decay':
             return self.end_val
         step = clock.get()
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)

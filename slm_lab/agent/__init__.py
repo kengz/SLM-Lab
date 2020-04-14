@@ -47,7 +47,7 @@ class Agent:
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         self.body.update(state, action, reward, next_state, done)
-        if util.in_eval_lab_modes():  # eval does not update agent for training
+        if util.in_eval_lab_mode():  # eval does not update agent for training
             return
         self.body.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
@@ -59,7 +59,7 @@ class Agent:
     @lab_api
     def save(self, ckpt=None):
         '''Save agent'''
-        if util.in_eval_lab_modes():  # eval does not save new models
+        if util.in_eval_lab_mode():  # eval does not save new models
             return
         self.algorithm.save(ckpt=ckpt)
 
@@ -105,7 +105,7 @@ class Body:
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
 
         # in train@ mode, override from saved train_df if exists
-        if util.in_train_lab_modes() and self.spec['meta']['resume']:
+        if util.in_train_lab_mode() and self.spec['meta']['resume']:
             train_df_filepath = util.get_session_df_path(self.spec, 'train')
             if os.path.exists(train_df_filepath):
                 self.train_df = util.read(train_df_filepath)
