@@ -5,7 +5,6 @@ from slm_lab.env.wrapper import LazyFrames
 from slm_lab.lib import distribution, logger, math_util, util
 from torch import distributions
 import numpy as np
-import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)

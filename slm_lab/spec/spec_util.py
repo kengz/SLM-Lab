@@ -5,7 +5,6 @@ from slm_lab.lib import logger, util
 from string import Template
 import itertools
 import json
-import numpy as np
 import os
 import pydash as ps
 

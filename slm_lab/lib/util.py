@@ -330,9 +330,9 @@ def prepath_split(prepath):
 
 def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
-    tidxs = re.findall('_t(\d+)', prepath)
+    tidxs = re.findall(r'_t(\d+)', prepath)
     trial_index = int(tidxs[0]) if tidxs else None
-    sidxs = re.findall('_s(\d+)', prepath)
+    sidxs = re.findall(r'_s(\d+)', prepath)
     session_index = int(sidxs[0]) if sidxs else None
     return trial_index, session_index
 
@@ -378,7 +378,6 @@ def read(data_path, **kwargs):
 
 def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
-    ext = get_file_ext(data_path)
     data = pd.read_csv(data_path, **kwargs)
     return data
 
@@ -591,7 +590,6 @@ def write(data, data_path):
 def write_as_df(data, data_path):
     '''Submethod to write data as DataFrame'''
     df = cast_df(data)
-    ext = get_file_ext(data_path)
     df.to_csv(data_path, index=False)
     return data_path
 

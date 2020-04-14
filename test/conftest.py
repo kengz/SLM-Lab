@@ -1,5 +1,4 @@
 from slm_lab.experiment.control import make_agent_env
-from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd

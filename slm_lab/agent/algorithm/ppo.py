@@ -1,5 +1,4 @@
 from copy import deepcopy
-from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.net import net_util
@@ -7,7 +6,6 @@ from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import math
 import numpy as np
-import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
