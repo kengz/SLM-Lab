@@ -29,7 +29,7 @@ class Random(Algorithm):
     def act(self, state):
         '''Random action'''
         body = self.body
-        if body.env.is_venv and util.in_train_lab_mode():
+        if body.env.is_venv:
             action = np.array([body.action_space.sample() for _ in range(body.env.num_envs)])
         else:
             action = body.action_space.sample()
