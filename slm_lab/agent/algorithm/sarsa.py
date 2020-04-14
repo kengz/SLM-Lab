@@ -5,7 +5,6 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
@@ -79,7 +78,7 @@ class SARSA(Algorithm):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, net=None):
@@ -134,8 +133,6 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()

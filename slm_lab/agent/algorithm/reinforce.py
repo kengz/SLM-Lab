@@ -87,7 +87,7 @@ class Reinforce(Algorithm):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, net=None):
@@ -145,8 +145,6 @@ class Reinforce(Algorithm):
 
     @lab_api
     def train(self):
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()

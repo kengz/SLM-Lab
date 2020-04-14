@@ -1,7 +1,6 @@
 from slm_lab.lib import logger, util, viz
 from slm_lab.spec import random_baseline
 import numpy as np
-import os
 import pandas as pd
 import pydash as ps
 import shutil
@@ -246,9 +245,9 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
 def analyze_session(session_spec, session_df, df_mode, plot=True):
     '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: body.eval_df and body.train_df'''
     info_prepath = session_spec['meta']['info_prepath']
-    session_df = session_df.copy()
+    session_df = session_df.copy()  # prevent modification
     assert len(session_df) > 2, f'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
-    util.write(session_df, f'{info_prepath}_session_df_{df_mode}.csv')
+    util.write(session_df, util.get_session_df_path(session_spec, df_mode))
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
     if plot:
@@ -272,7 +271,7 @@ def analyze_trial(trial_spec, session_metrics_list):
     viz.pio.orca.shutdown_server()
     # zip files
     if util.get_lab_mode() == 'train':
-        predir, _, _, _, _, _ = util.prepath_split(info_prepath)
+        predir, _, _, _, _ = util.prepath_split(info_prepath)
         zipdir = util.smart_path(predir)
         shutil.make_archive(zipdir, 'zip', zipdir)
         logger.info(f'All trial data zipped to {predir}.zip')
@@ -291,7 +290,7 @@ def analyze_experiment(spec, trial_data_dict):
     # manually shut down orca server to avoid zombie processes
     viz.pio.orca.shutdown_server()
     # zip files
-    predir, _, _, _, _, _ = util.prepath_split(info_prepath)
+    predir, _, _, _, _ = util.prepath_split(info_prepath)
     zipdir = util.smart_path(predir)
     shutil.make_archive(zipdir, 'zip', zipdir)
     logger.info(f'All experiment data zipped to {predir}.zip')

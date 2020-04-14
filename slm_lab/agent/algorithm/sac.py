@@ -90,7 +90,7 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
         self.alpha_lr_scheduler = net_util.get_lr_scheduler(self.alpha_optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
 
     @lab_api
     def act(self, state):
@@ -187,8 +187,6 @@ class SoftActorCritic(ActorCritic):
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             for _ in range(self.training_iter):

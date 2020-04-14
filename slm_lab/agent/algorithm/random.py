@@ -1,7 +1,7 @@
 # The random agent algorithm
 # For basic dev purpose
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 
@@ -29,7 +29,7 @@ class Random(Algorithm):
     def act(self, state):
         '''Random action'''
         body = self.body
-        if body.env.is_venv and not util.in_eval_lab_modes():
+        if body.env.is_venv:
             action = np.array([body.action_space.sample() for _ in range(body.env.num_envs)])
         else:
             action = body.action_space.sample()

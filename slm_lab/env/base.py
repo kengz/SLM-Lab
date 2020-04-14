@@ -46,6 +46,13 @@ class Clock:
         self.batch_size = 1  # multiplier to accurately count opt steps
         self.opt_step = 0  # count the number of optimizer updates
 
+    def load(self, train_df):
+        '''Load clock from the last row of body.train_df'''
+        last_row = train_df.iloc[-1]
+        last_clock_vals = ps.pick(last_row, *['epi', 't', 'wall_t', 'opt_step', 'frame'])
+        util.set_attr(self, last_clock_vals)
+        self.start_wall_t -= self.wall_t  # offset elapsed wall_t
+
     def get(self, unit='frame'):
         return getattr(self, unit)
 
@@ -115,8 +122,7 @@ class BaseEnv(ABC):
             'max_t',
             'max_frame',
         ])
-        # override if env is for eval
-        if util.in_eval_lab_modes():
+        if util.get_lab_mode() == 'eval':  # override if env is for eval
             self.num_envs = ps.get(spec, 'meta.rigorous_eval')
         self.to_render = util.to_render()
         self._infer_frame_attr(spec)
