@@ -234,6 +234,12 @@ def get_prepath(spec, unit='experiment'):
     return prepath
 
 
+def get_session_df_path(session_spec, df_mode):
+    '''Method to return standard filepath for session_df (agent.body.train_df/eval_df) for saving and loading'''
+    info_prepath = session_spec['meta']['info_prepath']
+    return f'{info_prepath}_session_df_{df_mode}.csv'
+
+
 def get_ts(pattern=FILE_TS_FORMAT):
     '''
     Get current ts, defaults to format used for filename

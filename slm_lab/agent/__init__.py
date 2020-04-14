@@ -103,6 +103,17 @@ class Body:
         self.train_df = pd.DataFrame(columns=[
             'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
+
+        if ps.get(self.spec, 'meta.resume'):
+            # in train@ resume mode, override from saved train_df if exists
+            train_df_filepath = util.get_session_df_path(self.spec, 'train')
+            if os.path.exists(train_df_filepath):
+                self.train_df = util.read(train_df_filepath)
+                # since train_df exists, load the last clock values from train_df
+                last_row = self.train_df.iloc[-1]
+                last_clock_vals = ps.pick(last_row, *['epi', 't', 'wall_t', 'opt_step', 'frame'])
+                util.set_attr(self.env.clock, last_clock_vals)
+
         # track eval data within run_eval. the same as train_df except for reward
         if ps.get(self.spec, 'meta.rigorous_eval'):
             self.eval_df = self.train_df.copy()

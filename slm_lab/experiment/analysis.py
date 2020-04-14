@@ -248,7 +248,7 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
     info_prepath = session_spec['meta']['info_prepath']
     session_df = session_df.copy()
     assert len(session_df) > 2, f'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
-    util.write(session_df, f'{info_prepath}_session_df_{df_mode}.csv')
+    util.write(session_df, util.get_session_df_path(session_spec, df_mode))
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
     if plot:
