@@ -168,8 +168,6 @@ class PPO(ActorCritic):
         return policy_loss
 
     def train(self):
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net

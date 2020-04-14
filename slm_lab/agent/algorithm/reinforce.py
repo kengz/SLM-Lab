@@ -145,8 +145,6 @@ class Reinforce(Algorithm):
 
     @lab_api
     def train(self):
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()

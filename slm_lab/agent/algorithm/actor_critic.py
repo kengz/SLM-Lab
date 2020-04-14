@@ -278,8 +278,6 @@ class ActorCritic(Reinforce):
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()

@@ -130,8 +130,6 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)

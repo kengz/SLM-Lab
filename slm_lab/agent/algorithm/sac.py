@@ -187,8 +187,6 @@ class SoftActorCritic(ActorCritic):
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             for _ in range(self.training_iter):

@@ -76,8 +76,6 @@ class Algorithm(ABC):
     @lab_api
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
-        if util.in_eval_lab_modes():
-            return np.nan
         raise NotImplementedError
 
     @abstractmethod

@@ -142,7 +142,7 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action using gym.action_space.sample(), with the same format as default()'''
-    if body.env.is_venv and not util.in_eval_lab_modes():
+    if body.env.is_venv and util.in_train_lab_modes():
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
         _action = [body.action_space.sample()]
