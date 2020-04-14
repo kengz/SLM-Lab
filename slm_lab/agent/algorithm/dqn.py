@@ -87,7 +87,7 @@ class VanillaDQN(SARSA):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
@@ -185,7 +185,7 @@ class DQNBase(VanillaDQN):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
 
