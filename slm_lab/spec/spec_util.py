@@ -116,8 +116,12 @@ def check_all():
     return True
 
 
-def extend_meta_spec(spec):
-    '''Extend meta spec with information for lab functions'''
+def extend_meta_spec(spec, experiment_ts=None):
+    '''
+    Extend meta spec with information for lab functions
+    @param dict:spec
+    @param str:experiment_ts Use this experiment_ts if given; used for resuming training
+    '''
     extended_meta_spec = {
         'rigorous_eval': ps.get(spec, 'meta.rigorous_eval', 0),
         # reset lab indices to -1 so that they tick to 0
@@ -125,7 +129,8 @@ def extend_meta_spec(spec):
         'trial': -1,
         'session': -1,
         'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
-        'experiment_ts': util.get_ts(),
+        'resume': experiment_ts is not None,
+        'experiment_ts': experiment_ts or util.get_ts(),
         'prepath': None,
         # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
         'ckpt': None,
@@ -137,10 +142,13 @@ def extend_meta_spec(spec):
     return spec
 
 
-def get(spec_file, spec_name):
+def get(spec_file, spec_name, experiment_ts=None):
     '''
     Get an experiment spec from spec_file, spec_name.
     Auto-check spec.
+    @param str:spec_file
+    @param str:spec_name
+    @param str:experiment_ts Use this experiment_ts if given; used for resuming training
     @example
 
     spec = spec_util.get('demo.json', 'dqn_cartpole')
@@ -156,7 +164,7 @@ def get(spec_file, spec_name):
         spec = spec_dict[spec_name]
         # fill-in info at runtime
         spec['name'] = spec_name
-        spec = extend_meta_spec(spec)
+        spec = extend_meta_spec(spec, experiment_ts)
     check(spec)
     return spec
 
