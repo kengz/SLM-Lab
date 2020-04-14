@@ -84,8 +84,7 @@
     "search": {
       "agent": [{
         "net": {
-          "shared__grid_search": [true, false],
-          "num_hids__grid_search": [256, 512],
+          "num_layers__grid_search": [1, 2, 3],
         }
       }]
     }
@@ -175,8 +174,8 @@
     "search": {
       "agent": [{
         "net": {
-          "embed_dim__grid_search": [32, 64],
-          "num_heads__grid_search": [2, 4],
+          "embed_dim__grid_search": [16, 32],
+          "num_heads__grid_search": [1, 2],
         }
       }]
     }
@@ -266,7 +265,8 @@
     "search": {
       "agent": [{
         "net": {
-          "embed_dim__grid_search": [32, 64],
+          "embed_dim__grid_search": [16, 32],
+          "num_heads__grid_search": [1, 2],
         }
       }]
     }
