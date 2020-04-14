@@ -422,12 +422,15 @@ def run_cmd_wait(proc):
         return output
 
 
-def self_desc(cls):
+def self_desc(cls, omit=None):
     '''Method to get self description, used at init.'''
     desc_list = [f'{get_class_name(cls)}:']
+    omit_list = ps.compact(cast_list(omit))
     for k, v in get_class_attr(cls).items():
-        if k == 'spec':
-            desc_v = v['name']
+        if k in omit_list:
+            continue
+        if k == 'spec':  # spec components are described at their object level; for session, only desc spec.meta
+            desc_v = pformat(v['meta'])
         elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
             desc_v = pformat(v)
         else:
