@@ -162,7 +162,7 @@ class ActorCritic(Reinforce):
             self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
             self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, net=None):
@@ -278,8 +278,6 @@ class ActorCritic(Reinforce):
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()

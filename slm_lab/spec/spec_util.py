@@ -5,7 +5,6 @@ from slm_lab.lib import logger, util
 from string import Template
 import itertools
 import json
-import numpy as np
 import os
 import pydash as ps
 
@@ -116,8 +115,12 @@ def check_all():
     return True
 
 
-def extend_meta_spec(spec):
-    '''Extend meta spec with information for lab functions'''
+def extend_meta_spec(spec, experiment_ts=None):
+    '''
+    Extend meta spec with information for lab functions
+    @param dict:spec
+    @param str:experiment_ts Use this experiment_ts if given; used for resuming training
+    '''
     extended_meta_spec = {
         'rigorous_eval': ps.get(spec, 'meta.rigorous_eval', 0),
         # reset lab indices to -1 so that they tick to 0
@@ -125,49 +128,36 @@ def extend_meta_spec(spec):
         'trial': -1,
         'session': -1,
         'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
-        'experiment_ts': util.get_ts(),
+        'resume': experiment_ts is not None,
+        'experiment_ts': experiment_ts or util.get_ts(),
         'prepath': None,
-        # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
-        'ckpt': None,
         'git_sha': util.get_git_sha(),
         'random_seed': None,
-        'eval_model_prepath': None,
     }
     spec['meta'].update(extended_meta_spec)
     return spec
 
 
-def get(spec_file, spec_name):
+def get(spec_file, spec_name, experiment_ts=None):
     '''
     Get an experiment spec from spec_file, spec_name.
     Auto-check spec.
+    @param str:spec_file
+    @param str:spec_name
+    @param str:experiment_ts Use this experiment_ts if given; used for resuming training
     @example
 
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     '''
-    spec_file = spec_file.replace(SPEC_DIR, '')  # cleanup
-    if 'data/' in spec_file:
-        assert spec_name in spec_file, 'spec_file in data/ must be lab-generated and contains spec_name'
-        spec = util.read(spec_file)
-    else:
-        spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
-        spec_dict = util.read(spec_file)
-        assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
-        spec = spec_dict[spec_name]
-        # fill-in info at runtime
-        spec['name'] = spec_name
-        spec = extend_meta_spec(spec)
+    spec_file = spec_file.replace(SPEC_DIR, '')  # guard
+    spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
+    spec_dict = util.read(spec_file)
+    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
+    spec = spec_dict[spec_name]
+    # fill-in info at runtime
+    spec['name'] = spec_name
+    spec = extend_meta_spec(spec, experiment_ts)
     check(spec)
-    return spec
-
-
-def get_eval_spec(spec_file, prename):
-    '''Get spec for eval mode'''
-    predir, _, _, _, _, _ = util.prepath_split(spec_file)
-    prepath = f'{predir}/{prename}'
-    spec = util.prepath_to_spec(prepath)
-    spec['meta']['ckpt'] = 'eval'
-    spec['meta']['eval_model_prepath'] = util.insert_folder(prepath, 'model')
     return spec
 
 
@@ -188,24 +178,18 @@ def get_param_specs(spec):
     return specs
 
 
-def override_dev_spec(spec):
+def _override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
 
 
-def override_enjoy_spec(spec):
+def _override_enjoy_spec(spec):
     spec['meta']['max_session'] = 1
     return spec
 
 
-def override_eval_spec(spec):
-    spec['meta']['max_session'] = 1
-    # evaluate by episode is set in env clock init in env/base.py
-    return spec
-
-
-def override_test_spec(spec):
+def _override_test_spec(spec):
     for agent_spec in spec['agent']:
         # onpolicy freq is episodic
         freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
@@ -226,6 +210,18 @@ def override_test_spec(spec):
     return spec
 
 
+def override_spec(spec, mode):
+    '''Override spec based on the (lab_)mode, do nothing otherwise.'''
+    overrider = {
+        'dev': _override_dev_spec,
+        'enjoy': _override_enjoy_spec,
+        'test': _override_test_spec,
+    }.get(mode)
+    if overrider is not None:
+        overrider(spec)
+    return spec
+
+
 def save(spec, unit='experiment'):
     '''Save spec to proper path. Called at Experiment or Trial init.'''
     prepath = util.get_prepath(spec, unit)
@@ -239,6 +235,9 @@ def tick(spec, unit):
     spec_util.tick(spec, 'session')
     session = Session(spec)
     '''
+    if util.get_lab_mode() == 'enjoy':  # don't tick in enjoy mode
+        return spec
+
     meta_spec = spec['meta']
     if unit == 'experiment':
         meta_spec['experiment_ts'] = util.get_ts()

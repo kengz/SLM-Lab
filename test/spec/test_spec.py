@@ -7,7 +7,7 @@ import pytest
 # helper method to run all tests in test_spec
 def run_trial_test(spec_file, spec_name=False):
     spec = spec_util.get(spec_file, spec_name)
-    spec = spec_util.override_test_spec(spec)
+    spec = spec_util.override_spec(spec, 'test')
     spec_util.tick(spec, 'trial')
     trial = Trial(spec)
     trial_metrics = trial.run()

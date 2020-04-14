@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
 from pprint import pformat
-from slm_lab import ROOT_DIR, EVAL_MODES
+from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 import cv2
 import json
 import numpy as np
@@ -86,12 +86,6 @@ def cast_list(val):
         return [val]
 
 
-def clear_periodic_ckpt(prepath):
-    '''Clear periodic (with -epi) ckpt files in prepath'''
-    if '-epi' in prepath:
-        run_cmd(f'rm {prepath}*')
-
-
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
@@ -126,16 +120,6 @@ def epi_done(done):
     Only return True for singleton done since vectorized env does not have a natural episode boundary
     '''
     return np.isscalar(done) and done
-
-
-def find_ckpt(prepath):
-    '''Find the ckpt-lorem-ipsum in a string and return lorem-ipsum'''
-    if 'ckpt' in prepath:
-        ckpt_str = ps.find(prepath.split('_'), lambda s: s.startswith('ckpt'))
-        ckpt = ckpt_str.replace('ckpt-', '')
-    else:
-        ckpt = None
-    return ckpt
 
 
 def frame_mod(frame, frequency, num_envs):
@@ -227,11 +211,14 @@ def get_prepath(spec, unit='experiment'):
         prename += t_str
     elif unit == 'session':
         prename += f'{t_str}{s_str}'
-    ckpt = meta_spec['ckpt']
-    if ckpt is not None:
-        prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'
     return prepath
+
+
+def get_session_df_path(session_spec, df_mode):
+    '''Method to return standard filepath for session_df (agent.body.train_df/eval_df) for saving and loading'''
+    info_prepath = session_spec['meta']['info_prepath']
+    return f'{info_prepath}_session_df_{df_mode}.csv'
 
 
 def get_ts(pattern=FILE_TS_FORMAT):
@@ -258,9 +245,14 @@ def insert_folder(prepath, folder):
     return '/'.join(split_path)
 
 
-def in_eval_lab_modes():
+def in_eval_lab_mode():
     '''Check if lab_mode is one of EVAL_MODES'''
     return get_lab_mode() in EVAL_MODES
+
+
+def in_train_lab_mode():
+    '''Check if lab_mode is one of TRAIN_MODES'''
+    return get_lab_mode() in TRAIN_MODES
 
 
 def is_jupyter():
@@ -323,13 +315,9 @@ def prepath_split(prepath):
     prename: dqn_pong_t0_s0
     spec_name: dqn_pong
     experiment_ts: 2018_12_02_082510
-    ckpt: ckpt-best of dqn_pong_t0_s0_ckpt-best if available
     '''
     prepath = prepath.strip('_')
     tail = prepath.split('data/')[-1]
-    ckpt = find_ckpt(tail)
-    if ckpt is not None:  # separate ckpt
-        tail = tail.replace(f'_ckpt-{ckpt}', '')
     if '/' in tail:  # tail = prefolder/prename
         prefolder, prename = tail.split('/', 1)
     else:
@@ -337,41 +325,16 @@ def prepath_split(prepath):
     predir = f'data/{prefolder}'
     spec_name = RE_FILE_TS.sub('', prefolder).strip('_')
     experiment_ts = RE_FILE_TS.findall(prefolder)[0]
-    return predir, prefolder, prename, spec_name, experiment_ts, ckpt
+    return predir, prefolder, prename, spec_name, experiment_ts
 
 
 def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
-    tidxs = re.findall('_t(\d+)', prepath)
+    tidxs = re.findall(r'_t(\d+)', prepath)
     trial_index = int(tidxs[0]) if tidxs else None
-    sidxs = re.findall('_s(\d+)', prepath)
+    sidxs = re.findall(r'_s(\d+)', prepath)
     session_index = int(sidxs[0]) if sidxs else None
     return trial_index, session_index
-
-
-def prepath_to_spec(prepath):
-    '''
-    Given a prepath, read the correct spec recover the meta_spec that will return the same prepath for eval lab modes
-    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
-    '''
-    predir, _, prename, _, experiment_ts, ckpt = prepath_split(prepath)
-    sidx_res = re.findall('_s\d+', prename)
-    if sidx_res:  # replace the _s0 if any
-        prename = prename.replace(sidx_res[0], '')
-    spec_path = f'{predir}/{prename}_spec.json'
-    # read the spec of prepath
-    spec = read(spec_path)
-    # recover meta_spec
-    trial_index, session_index = prepath_to_idxs(prepath)
-    meta_spec = spec['meta']
-    meta_spec['experiment_ts'] = experiment_ts
-    meta_spec['ckpt'] = ckpt
-    meta_spec['experiment'] = 0
-    meta_spec['trial'] = trial_index
-    meta_spec['session'] = session_index
-    check_prepath = get_prepath(spec, unit='session')
-    assert check_prepath in prepath, f'{check_prepath}, {prepath}'
-    return spec
 
 
 def read(data_path, **kwargs):
@@ -415,7 +378,6 @@ def read(data_path, **kwargs):
 
 def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
-    ext = get_file_ext(data_path)
     data = pd.read_csv(data_path, **kwargs)
     return data
 
@@ -441,30 +403,15 @@ def read_as_plain(data_path, **kwargs):
     return data
 
 
-def run_cmd(cmd):
-    '''Run shell command'''
-    print(f'+ {cmd}')
-    proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-    return proc
-
-
-def run_cmd_wait(proc):
-    '''Wait on a running process created by util.run_cmd and print its stdout'''
-    for line in proc.stdout:
-        print(line.decode(), end='')
-    output = proc.communicate()[0]
-    if proc.returncode != 0:
-        raise subprocess.CalledProcessError(proc.args, proc.returncode, output)
-    else:
-        return output
-
-
-def self_desc(cls):
+def self_desc(cls, omit=None):
     '''Method to get self description, used at init.'''
     desc_list = [f'{get_class_name(cls)}:']
+    omit_list = ps.compact(cast_list(omit))
     for k, v in get_class_attr(cls).items():
-        if k == 'spec':
-            desc_v = v['name']
+        if k in omit_list:
+            continue
+        if k == 'spec':  # spec components are described at their object level; for session, only desc spec.meta
+            desc_v = pformat(v['meta'])
         elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
             desc_v = pformat(v)
         else:
@@ -643,7 +590,6 @@ def write(data, data_path):
 def write_as_df(data, data_path):
     '''Submethod to write data as DataFrame'''
     df = cast_df(data)
-    ext = get_file_ext(data_path)
     df.to_csv(data_path, index=False)
     return data_path
 

@@ -22,7 +22,7 @@ class Algorithm(ABC):
         self.body = self.agent.body
         self.init_algorithm_params()
         self.init_nets(global_nets)
-        logger.info(util.self_desc(self))
+        logger.info(util.self_desc(self, omit=['algorithm_spec', 'name', 'memory_spec', 'net_spec', 'body']))
 
     @abstractmethod
     @lab_api
@@ -37,19 +37,20 @@ class Algorithm(ABC):
         raise NotImplementedError
 
     @lab_api
-    def post_init_nets(self):
-        '''
-        Method to conditionally load models.
-        Call at the end of init_nets() after setting self.net_names
-        '''
+    def end_init_nets(self):
+        '''Checkers and conditional loaders called at the end of init_nets()'''
+        # check all nets naming
         assert hasattr(self, 'net_names')
         for net_name in self.net_names:
             assert net_name.endswith('net'), f'Naming convention: net_name must end with "net"; got {net_name}'
-        if util.in_eval_lab_modes():
+
+        # load algorithm if is in train@ resume or enjoy mode
+        lab_mode = util.get_lab_mode()
+        if self.agent.spec['meta']['resume'] or lab_mode == 'enjoy':
             self.load()
-            logger.info(f'Loaded algorithm models for lab_mode: {util.get_lab_mode()}')
+            logger.info(f'Loaded algorithm models for lab_mode: {lab_mode}')
         else:
-            logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
+            logger.info(f'Initialized algorithm models for lab_mode: {lab_mode}')
 
     @lab_api
     def calc_pdparam(self, x, net=None):
@@ -76,8 +77,6 @@ class Algorithm(ABC):
     @lab_api
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
-        if util.in_eval_lab_modes():
-            return np.nan
         raise NotImplementedError
 
     @abstractmethod

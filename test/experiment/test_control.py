@@ -27,7 +27,7 @@ def test_trial(test_spec):
 def test_trial_demo():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec_util.save(spec, unit='experiment')
-    spec = spec_util.override_test_spec(spec)
+    spec = spec_util.override_spec(spec, 'test')
     spec_util.tick(spec, 'trial')
     trial_metrics = Trial(spec).run()
     assert isinstance(trial_metrics, dict)
@@ -53,7 +53,7 @@ def test_demo_performance():
 def test_experiment():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec_util.save(spec, unit='experiment')
-    spec = spec_util.override_test_spec(spec)
+    spec = spec_util.override_spec(spec, 'test')
     spec_util.tick(spec, 'experiment')
     experiment_df = Experiment(spec).run()
     assert isinstance(experiment_df, pd.DataFrame)

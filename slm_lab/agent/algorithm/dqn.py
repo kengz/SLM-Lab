@@ -1,11 +1,9 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, math_util, util
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
@@ -87,7 +85,7 @@ class VanillaDQN(SARSA):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
@@ -130,8 +128,6 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        if util.in_eval_lab_modes():
-            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
@@ -187,7 +183,7 @@ class DQNBase(VanillaDQN):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
-        self.post_init_nets()
+        self.end_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
 
