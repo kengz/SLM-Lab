@@ -31,9 +31,9 @@ def get_spec(spec_file, spec_name, lab_mode, pre_):
             logger.info(f'Resolved to train@{predir}')
             spec = spec_util.get(spec_file, spec_name, experiment_ts)
     elif lab_mode in EVAL_MODES:
-        prename = pre_
-        assert prename is not None, 'enjoy mode must specify a `enjoy@{prename}`'
-        spec = util.read(f'{prename}_spec.json')
+        session_spec_file = pre_
+        assert session_spec_file is not None, 'enjoy mode must specify a `enjoy@{session_spec_file}`'
+        spec = util.read(f'{session_spec_file}')
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}')
     return spec
