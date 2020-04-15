@@ -177,9 +177,8 @@
     },
     "search": {
       "agent": [{
-        "net": {
-          "embed_dim__grid_search": [16, 32],
-          "num_heads__grid_search": [1, 2],
+        "algorithm": {
+          "time_horizon__grid_search": [1024, 2048]
         }
       }]
     }
@@ -359,9 +358,8 @@
     },
     "search": {
       "agent": [{
-        "net": {
-          "embed_dim__grid_search": [32, 64],
-          "num_heads__grid_search": [2, 4],
+        "algorithm": {
+          "time_horizon__grid_search": [1024, 2048]
         }
       }]
     }
