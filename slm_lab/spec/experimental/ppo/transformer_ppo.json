@@ -264,6 +264,13 @@
       "max_session": 2,
       "max_trial": 1,
       "num_gpus": 0.25
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "embed_dim__grid_search": [16, 32],
+        }
+      }]
     }
   },
   "transformer_ppo_hopper": {
@@ -286,8 +293,8 @@
           },
           "entropy_coef_spec": {
             "name": "no_decay",
-            "start_val": 0.01,
-            "end_val": 0.01,
+            "start_val": 0.0,
+            "end_val": 0.0,
             "start_step": 0,
             "end_step": 0
           },
@@ -304,10 +311,10 @@
           "shared": false,
           "pos_encoder": "sinusoid",
           "embed_dim": 32,
-          "num_heads": 1,
+          "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
-          "dropout": 0.02,
+          "dropout": 0.0,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
           "use_same_optim": true,
@@ -473,7 +480,7 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 256,
+          "time_horizon": 512,
           "minibatch_size": 2048,
           "training_epoch": 15
         },
@@ -483,22 +490,19 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
+          "pos_encoder": "sinusoid",
+          "embed_dim": 64,
           "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
-          "use_same_optim": false,
+          "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
           },
           "actor_optim_spec": {
-            "name": "Lookahead",
-            "optimizer": "RAdam",
-            "lr": 3e-4,
-          },
-          "critic_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
             "lr": 3e-4,
@@ -512,10 +516,11 @@
       {
         "name": "RoboschoolHumanoid-v1",
         "frame_op": "stack",
-        "frame_op_len": 24,
+        "frame_op_len": 8,
+        "normalize_state": true,
         "num_envs": 32,
         "max_t": null,
-        "max_frame": 5e7
+        "max_frame": 4e6
       }
     ],
     "body": {
@@ -524,12 +529,13 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 1
-    }
+      "max_session": 2,
+      "max_trial": 1,
+      "num_gpus": 0.25
+    },
   },
   "transformer_ppo_humanoidflagrun": {
     "agent": [
