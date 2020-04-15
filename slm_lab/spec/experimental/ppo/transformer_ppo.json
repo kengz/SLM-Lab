@@ -268,7 +268,7 @@
     "search": {
       "agent": [{
         "net": {
-          "embed_dim__grid_search": [16, 32],
+          "dropout__grid_search": [0.0, 0.02],
         }
       }]
     }
