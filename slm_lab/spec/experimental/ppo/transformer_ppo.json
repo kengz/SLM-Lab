@@ -392,7 +392,7 @@
             "end_step": 0
           },
           "val_loss_coef": 1.0,
-          "time_horizon": 2048,
+          "time_horizon": 1024,
           "minibatch_size": 128,
           "training_epoch": 10
         },
@@ -402,25 +402,22 @@
         "net": {
           "type": "TransformerNet",
           "shared": false,
-          "num_heads": 5,
+          "pos_encoder": "sinusoid",
+          "embed_dim": 32,
+          "num_heads": 4,
           "num_hids": 256,
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
           "clip_grad_val": 0.5,
-          "use_same_optim": false,
+          "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
           },
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 2e-4,
-          },
-          "critic_optim_spec": {
-            "name": "Lookahead",
-            "optimizer": "RAdam",
-            "lr": 2e-4,
+            "lr": 3e-4,
           },
           "lr_scheduler_spec": null,
           "gpu": true
@@ -431,7 +428,7 @@
       {
         "name": "RoboschoolAtlasForwardWalk-v1",
         "frame_op": "stack",
-        "frame_op_len": 16,
+        "frame_op_len": 8,
         "normalize_state": true,
         "num_envs": 8,
         "max_t": null,
