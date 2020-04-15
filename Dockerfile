@@ -1,8 +1,6 @@
 # run instructions:
-# build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v4.0.0 .
-# start container: docker run --name lab -dt kengz/slm_lab
-# enter container: docker exec -it lab bash
-# remove container (forced): docker rm lab -f
+# build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v4.2.0 .
+# start container: docker run --rm -it kengz/slm_lab:v4.2.0
 # list image: docker images -a
 # push image: docker push kengz/slm_lab
 # prune: docker system prune
@@ -20,7 +18,7 @@ RUN apt-get update && \
     python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb && \
     rm -rf /var/lib/apt/lists/*
 
-RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+RUN curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
     echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bashrc && \
