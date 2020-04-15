@@ -51,12 +51,12 @@
           "actor_optim_spec": {
             "name": "Lookahead",
             "optimizer": "RAdam",
-            "lr": 1e-2,
+            "lr": 5e-3,
           },
           "lr_scheduler_spec": {
             "name": "MultiStepLR",
-            "milestones": [100000, 200000],
-            "gamma": 0.2,
+            "milestones": [50000, 100000, 15000, 200000, 25000],
+            "gamma": 0.3,
           },
           "gpu": true
         }
