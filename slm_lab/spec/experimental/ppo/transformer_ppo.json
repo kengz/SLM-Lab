@@ -483,7 +483,7 @@
           "val_loss_coef": 1.0,
           "time_horizon": 512,
           "minibatch_size": 1024,
-          "training_epoch": 15
+          "training_epoch": 10
         },
         "memory": {
           "name": "OnPolicyBatchReplay",
@@ -519,7 +519,7 @@
         "frame_op": "stack",
         "frame_op_len": 8,
         "normalize_state": true,
-        "num_envs": 32,
+        "num_envs": 16,
         "max_t": null,
         "max_frame": 4e6
       }
@@ -535,8 +535,15 @@
       "rigorous_eval": 0,
       "max_session": 2,
       "max_trial": 1,
-      "num_gpus": 0.25
+      "num_gpus": 0.5
     },
+    "search": {
+      "agent": [{
+        "net": {
+          "dropout__grid_search": [0.0, 0.02],
+        }
+      }]
+    }
   },
   "transformer_ppo_humanoidflagrun": {
     "agent": [
