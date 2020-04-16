@@ -497,7 +497,7 @@
           "num_layers": 2,
           "dropout": 0.0,
           "init_fn": "orthogonal_",
-          "clip_grad_val": 0.5,
+          "clip_grad_val": 0.2,
           "use_same_optim": true,
           "loss_spec": {
             "name": "MSELoss"
