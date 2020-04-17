@@ -31,4 +31,5 @@ jobs:
          auto-activate-base: false
     - name: Run tests
       run: |
+        conda activate lab
         python setup.py test
