@@ -30,6 +30,7 @@ jobs:
          python-version: 3.7
          auto-activate-base: false
     - name: Log Conda dependencies
+      shell: bash -l {0}
       run: |
         conda activate lab
         conda list
