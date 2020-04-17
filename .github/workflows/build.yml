@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/cache@v1
       with:
-        path: ~/miniconda3
+        path: /usr/share/miniconda
         key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
         restore-keys: |
           ${{ runner.os }}-conda-
@@ -33,7 +33,3 @@ jobs:
       run: |
         conda activate lab
         conda list
-    # - name: Run tests
-    #   run: |
-    #     conda activate lab
-    #     python setup.py test
