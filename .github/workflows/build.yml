@@ -29,6 +29,10 @@ jobs:
          environment-file: environment.yml
          python-version: 3.7
          auto-activate-base: false
+    - name: Log Conda dependencies
+      run: |
+        conda activate lab
+        conda list
     # - name: Run tests
     #   run: |
     #     conda activate lab
