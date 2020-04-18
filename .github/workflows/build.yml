@@ -24,7 +24,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-conda-
     - name: Setup Conda dependencies
-      uses: goanpeca/setup-miniconda@v1.1.2
+      uses: goanpeca/setup-miniconda@v1
       with:
          activate-environment: lab
          environment-file: environment.yml
