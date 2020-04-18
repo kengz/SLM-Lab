@@ -16,9 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/cache@v1
+    - name: Cache Conda
+      uses: actions/cache@v1
       with:
-        path: /usr/share/miniconda
+        path: /usr/share/miniconda/envs/lab
         key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
         restore-keys: |
           ${{ runner.os }}-conda-
