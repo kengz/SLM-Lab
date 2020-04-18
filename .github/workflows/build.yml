@@ -39,7 +39,6 @@ jobs:
         python setup.py test
     - name: Codeclimate test coverage
       uses: marsam/codeclimate-action@master
-      shell: bash -l {0}
       with:
         command: echo 'Uploading test coverage'
         reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
