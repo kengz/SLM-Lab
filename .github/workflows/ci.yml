@@ -30,6 +30,16 @@ jobs:
       run: |
         conda info
         conda list
+
+    - name: Setup flake8 annotations
+      uses: rbialon/flake8-annotations@v1
+    - name: Lint with flake8
+      shell: bash -l {0}
+      run: |
+        pip install flake8
+        # exit-zero treats all errors as warnings.
+        flake8 . --ignore=E501 --count --exit-zero --statistics
+
     - name: Run tests
       shell: bash -l {0}
       run: |
