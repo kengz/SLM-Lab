@@ -29,8 +29,12 @@ jobs:
          environment-file: environment.yml
          python-version: 3.7
          auto-activate-base: false
-    - name: Conda Info
+    - name: Conda info
       shell: bash -l {0}
       run: |
         conda info
         conda list
+    - name: Run tests
+      shell: bash -l {0}
+      run: |
+        python setup.py test
