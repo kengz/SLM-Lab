@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache Conda
+      uses: actions/cache@v1
+      with:
+        path: /usr/share/miniconda/envs/lab
+        key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-conda-
+    - name: Setup Conda dependencies
+      uses: goanpeca/setup-miniconda@v1
+      with:
+         activate-environment: lab
+         environment-file: environment.yml
+         python-version: 3.7
+         auto-activate-base: false
+    - name: Conda info
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+
+    - name: Setup flake8 annotations
+      uses: rbialon/flake8-annotations@v1
+    - name: Lint with flake8
+      shell: bash -l {0}
+      run: |
+        pip install flake8
+        # exit-zero treats all errors as warnings.
+        flake8 . --ignore=E501 --count --exit-zero --statistics
+
+    - name: Run tests
+      shell: bash -l {0}
+      run: |
+        python setup.py test
+    - name: Codeclimate test coverage
+      uses: marsam/codeclimate-action@master
+      with:
+        command: echo 'Uploading test coverage'
+        reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}

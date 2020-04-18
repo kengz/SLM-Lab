@@ -1,5 +1,5 @@
 #!/bin/bash --login
-# This script runs the same sequence as the CircleCI build
+# This script runs the same sequence as the Docker build
 # Run this as:
 # bin/setup
 
