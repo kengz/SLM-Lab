@@ -49,6 +49,7 @@ class Reinforce(Algorithm):
             action_pdtype='default',
             action_policy='default',
             center_return=False,
+            normalize_return=False,
             explore_var_spec=None,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
@@ -57,6 +58,7 @@ class Reinforce(Algorithm):
             'action_pdtype',
             'action_policy',
             'center_return',  # center by the mean
+            'normalize_return', # divide by std
             'explore_var_spec',
             'gamma',  # the discount factor
             'entropy_coef_spec',
@@ -126,6 +128,8 @@ class Reinforce(Algorithm):
         rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
         if self.center_return:
             rets = math_util.center_mean(rets)
+        if self.normalize_return:
+            rets = math_util.normalize_var(rets)
         advs = rets
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)

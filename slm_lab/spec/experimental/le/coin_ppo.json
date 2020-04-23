@@ -79,7 +79,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":2,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -170,7 +170,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":2,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -294,7 +294,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":2,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -481,7 +481,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":2,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   }

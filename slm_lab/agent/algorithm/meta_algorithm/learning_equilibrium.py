@@ -213,15 +213,10 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self.percentile = 95
             self.data_queue = []
 
-            self.length_of_history = 20
-            self.warmup_length = 200
+            self.length_of_history = 200
+            self.warmup_length = 0 # 200
             self.n_steps_in_bstrap_replts = 20  # 20
-            self.n_bootstrapped_replications = 200  # 50
-
-            # self.length_of_history = 400
-            # self.warmup_length = 200
-            # self.n_steps_in_bstrap_replts = 10  # 20
-            # self.n_bootstrapped_replications = 200  # 50
+            self.n_bootstrapped_replications = 50  # 50
 
             self.last_computed_w = None
 
@@ -266,7 +261,6 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                  self.hash_fn(s),
                                                  self.hash_fn(a),
                                                  self.hash_fn(s)+self.hash_fn(a)])
-                # print(list(self.data_queue[opp_idx]))
                 self.n_steps_since_start += 1
                 if self.debug:
                     logger.info(f"update queues {self.agent.agent_idx}")
@@ -275,15 +269,15 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 # if self.remeaning_punishing_time <= 0:
                 computed_w = self.agent.welfare_function(algo.agent, r)
                 # assert w == r + my_r, f"w {w} r {r} my_r {my_r}"
-                assert computed_w == r + my_r, f"w {w} r {r} my_r {my_r}"
-                assert self.last_computed_w == w
+                # assert computed_w == r + my_r, f"w {w} r {r} my_r {my_r}"
+                # assert self.last_computed_w == w
                 # print(my_r, r, w, self.last_computed_w)
                 self.last_computed_w = computed_w
 
+                # if self.active_algo_idx != self.punish_algo_idx:
                 self.algorithms[coop_net_simul_opponent_idx].memory_update(s, a, computed_w, n_s, done)
 
 
-            # else:
             #     train = False
 
 
@@ -301,7 +295,6 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                            size=(self.n_bootstrapped_replications,
                                                                  self.n_steps_in_bstrap_replts))
                     bstrap_replts_data = data_array[bstrap_idx]
-                # print("bstrap_replts_data",bstrap_replts_data.shape)
                 # Sum log_likelihood over u steps
                 if not self.new_improved_perf:
                     log_lik_cooperate = np.array([[el[0] for el in one_replicat]
@@ -332,9 +325,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     log_lik_check_coop = log_lik_cooperate - log_lik_defect
                 assert len(log_lik_check_coop) == self.n_bootstrapped_replications
                 percentile_value = np.percentile(log_lik_check_coop, self.percentile, interpolation="linear")
-                percentile_value_after = np.percentile(log_lik_check_coop, self.percentile+2.5, interpolation="linear")
-                percentile_value_before = np.percentile(log_lik_check_coop, self.percentile-2.5, interpolation="linear")
-                percentile_value_before_b = np.percentile(log_lik_check_coop, self.percentile-5, interpolation="linear")
+                # percentile_value_after = np.percentile(log_lik_check_coop, self.percentile+2.5, interpolation="linear")
+                # percentile_value_before = np.percentile(log_lik_check_coop, self.percentile-2.5, interpolation="linear")
+                # percentile_value_before_b = np.percentile(log_lik_check_coop, self.percentile-5, interpolation="linear")
 
                 self.to_log.update({
                     "log_lik_check_coop_std":log_lik_check_coop.std(),

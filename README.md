@@ -37,6 +37,13 @@ git clone https://github.com/Manuscrit/gym.git
 cd gym
 pip install -e .
 cd ..
+
+# Install dependencies to plot graphs
+conda install -c plotly plotly-orca
+# If you are working on a Virtual Machine (without X11) then:
+sudo apt-get update 
+sudo apt-get install xorg
+# Maybe also: sudo apt-get install openbox
 ```
 
 
@@ -59,6 +66,9 @@ python run_lab.py slm_lab/spec/experimental/le/ipd_rf.json ipd_rf_util train
 
 # Run a serie of experiments
 ./slm_lab/spec/experimental/le/run_coin_exp.sh
+
+# Run in a Virtual Machine (without IHM) and create graphs
+xvfb-run -a python run_lab.py slm_lab/spec/experimental/le/ipd_rf.json ipd_rf_util dev 
 
 # Visualize saved experiments (Not currently supported !)
 python run_lab.py data/ipd_rf_util_2020_04_06_134225/ipd_rf.json ipd_rf_util enjoy@ipd_rf_util_t0_s8

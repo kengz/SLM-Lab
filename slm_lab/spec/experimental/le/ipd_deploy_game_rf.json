@@ -31,15 +31,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -55,8 +57,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -72,15 +74,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -96,8 +100,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -165,15 +169,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -189,8 +195,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -224,15 +230,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -248,8 +256,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -265,15 +273,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -289,8 +299,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -359,15 +369,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -383,8 +395,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -418,15 +430,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -442,8 +456,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -459,15 +473,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 1
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -483,8 +499,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null
               }
@@ -560,15 +576,17 @@
                       "action_pdtype": "default",
                       "action_policy": "default",
                       "explore_var_spec": null,
-                      "gamma": 0.99,
-                      "entropy_coef_spec": {
+                      "gamma": 0.0,
+                      "center_return":true,
+                      "normalize_return":true,
+                     "entropy_coef_spec": {
                         "name": "linear_decay",
-                        "start_val": 0.01,
-                        "end_val": 0.01,
+                        "start_val": 2.0,
+                        "end_val": 0.5,
                         "start_step": 0,
-                        "end_step": 2500
+                        "end_step": 2000
                       },
-                      "training_frequency": 1
+                      "training_frequency": 24
                     },
                     "memory": {
                       "name": "OnPolicyReplay"
@@ -584,8 +602,8 @@
                         "name": "MSELoss"
                       },
                       "optim_spec": {
-                        "name": "Adam",
-                        "lr": 0.0002
+                        "name": "SGD",
+                        "lr": 0.008
                       },
                       "lr_scheduler_spec": null
                     }
@@ -673,15 +691,17 @@
                       "action_pdtype": "default",
                       "action_policy": "default",
                       "explore_var_spec": null,
-                      "gamma": 0.99,
-                      "entropy_coef_spec": {
+                      "gamma": 0.0,
+                      "center_return":true,
+                      "normalize_return":true,
+                     "entropy_coef_spec": {
                         "name": "linear_decay",
-                        "start_val": 0.01,
-                        "end_val": 0.01,
+                        "start_val": 2.0,
+                        "end_val": 0.5,
                         "start_step": 0,
-                        "end_step": 2500
+                        "end_step": 2000
                       },
-                      "training_frequency": 10
+                      "training_frequency": 24
                     },
                     "memory": {
                       "name": "OnPolicyReplay"
@@ -697,8 +717,8 @@
                         "name": "MSELoss"
                       },
                       "optim_spec": {
-                        "name": "Adam",
-                        "lr": 0.0002
+                        "name": "SGD",
+                        "lr": 0.008
                       },
                       "lr_scheduler_spec": null,
                       "gpu": false
@@ -739,15 +759,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 10
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -763,8 +785,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null,
                 "gpu": false
@@ -778,15 +800,17 @@
                 "action_pdtype": "default",
                 "action_policy": "default",
                 "explore_var_spec": null,
-                "gamma": 0.99,
-                "entropy_coef_spec": {
+                "gamma": 0.0,
+                "center_return":true,
+                "normalize_return":true,
+               "entropy_coef_spec": {
                   "name": "linear_decay",
-                  "start_val": 0.01,
-                  "end_val": 0.01,
+                  "start_val": 2.0,
+                  "end_val": 0.5,
                   "start_step": 0,
-                  "end_step": 2500
+                  "end_step": 2000
                 },
-                "training_frequency": 10
+                "training_frequency": 24
               },
               "memory": {
                 "name": "OnPolicyReplay"
@@ -802,8 +826,8 @@
                   "name": "MSELoss"
                 },
                 "optim_spec": {
-                  "name": "Adam",
-                  "lr": 0.0002
+                  "name": "SGD",
+                  "lr": 0.008
                 },
                 "lr_scheduler_spec": null,
                 "gpu": false

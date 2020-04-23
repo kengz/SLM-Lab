@@ -10,6 +10,10 @@ def center_mean(v):
     return v - v.mean()
 
 
+def normalize_var(v):
+    '''Normalize an array by its std'''
+    return v / v.std()
+
 def normalize(v):
     '''Method to normalize a rank-1 np array'''
     v_min = v.min()
