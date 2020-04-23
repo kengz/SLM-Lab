@@ -1,10 +1,3 @@
-from slm_lab.agent.agent import agent_util, observability
-from slm_lab.agent import algorithm, memory, agent
-from slm_lab.agent.algorithm import policy_util
-from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util, viz
-from slm_lab.lib.decorator import lab_api
-from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import os
 import pandas as pd
@@ -12,7 +5,18 @@ import pydash as ps
 import torch
 import warnings
 import copy
+
 from collections import Iterable, OrderedDict
+from torch.utils.tensorboard import SummaryWriter
+
+from slm_lab.agent.agent import agent_util, observability
+from slm_lab.agent import algorithm, memory, agent
+from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.net import net_util
+from slm_lab.lib import logger, util, viz
+from slm_lab.lib.decorator import lab_api
+
+
 
 
 logger = logger.get_logger(__name__)
@@ -42,19 +46,20 @@ class Agent(observability.ObservableAgentInterface):
 
         ###### Set components ######
 
-
+        # Welfare function (set if define in agent (can be overwritten by algorithms)
+        self.welfare_function = getattr(agent_util, ps.get(self.agent_spec, 'welfare_function',
+                                                           default="default_welfare"))
         # Body
         body = Body(env, spec, aeb=(agent_idx, 0, 0))
         body.agent = self
         self.body = body
 
-        # # Memory
-        # MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
-        # self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
-
         # Algorithm
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self._algorithm = AlgorithmClass(self, global_nets)
+        self._algorithm = AlgorithmClass(self, global_nets,
+                                         algorithm_spec=ps.get(self.agent_spec, 'algorithm'),
+                                         memory_spec=ps.get(self.agent_spec, 'memory'),
+                                         net_spec=ps.get(self.agent_spec, 'net'))
 
         self.body.init_part2()
 
@@ -78,12 +83,7 @@ class Agent(observability.ObservableAgentInterface):
                     world=self.world)
                 for i in range(len(self.world.agents))]
 
-        # Welfare function
-        # self.welfare_function = (agent_util.default_welfare
-        #                          if "welfare_function" not in self.agent_spec else
-        #                          getattr(agent_util, self.agent_spec['welfare_function']) )
-        self.welfare_function = getattr(agent_util, ps.get(self.agent_spec, 'welfare_function',
-                                                           default="default_welfare"))
+
 
         logger.info("self.name {}".format(self.name))
         logger.info(util.self_desc(self))
@@ -94,8 +94,9 @@ class Agent(observability.ObservableAgentInterface):
     def act(self, state):
         '''Standard act method from algorithm.'''
         with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
-            action = self.algorithm.act(state)
-        return action
+            action, action_pd = self.algorithm.act(state)
+            self.action_pd = action_pd
+        return action, action_pd
 
     @lab_api
     def update(self, state, action, reward, next_state, done):
@@ -103,7 +104,8 @@ class Agent(observability.ObservableAgentInterface):
 
         self.body.reward = reward
         welfare = self.welfare_function(self, reward)
-        self.body.welfare = welfare # TODO useless line ?
+        # self.body.welfare = welfare # TODO useless line ?
+        self._welfare = welfare
 
         self.body.update(state, action, welfare, next_state, done)
         if util.in_eval_lab_modes():  # eval does not update agent for training
@@ -112,6 +114,7 @@ class Agent(observability.ObservableAgentInterface):
 
     def train(self):
         loss = self.algorithm.train()
+        # TODO confusing that agent.train calls algo.update (since agent also has the update method)
         explore_var = self.algorithm.update()
         return loss, explore_var
 
@@ -123,7 +126,9 @@ class Agent(observability.ObservableAgentInterface):
                     self.other_ag_observations[str(observed_agent.agent_idx)] = {
                                                                     "state": observed_agent.state,
                                                                     "action": observed_agent.action,
+                                                                    "action_pd": observed_agent.action_pd,
                                                                     "reward": observed_agent.reward,
+                                                                    "welfare": observed_agent.welfare,
                                                                     "next_state": observed_agent.next_state,
                                                                     "done": observed_agent.done,
                                                                     "algorithm": observed_agent.algorithm,
@@ -160,13 +165,18 @@ class Agent(observability.ObservableAgentInterface):
     def action(self):
         return agent_util.get_from_current_agents(self, key="action")
 
+    # TODO add this in observability API
+    # @property
+    # def action_pd(self):
+    #     return self.action_pd
+
     @property
     def state(self):
         return agent_util.get_from_current_agents(self, key="state")
 
-    @property
-    def welfare(self):
-        return agent_util.get_from_current_agents(self, key="welfare")
+    # @property
+    # def welfare(self):
+    #     return agent_util.get_from_current_agents(self, key="welfare")
 
     @property
     def next_state(self):

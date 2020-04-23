@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 class ObservableAgentInterface(object):
+    _welfare = None
 
     @property
     @abstractmethod
@@ -20,7 +21,11 @@ class ObservableAgentInterface(object):
     @property
     @abstractmethod
     def welfare(self):
-        raise NotImplementedError
+        return self._welfare
+
+    @welfare.setter
+    def welfare(self, value):
+        self._welfare = value
 
     @property
     @abstractmethod

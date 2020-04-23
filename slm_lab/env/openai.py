@@ -1,12 +1,13 @@
-from slm_lab.env.base import BaseEnv
-from slm_lab.env.wrapper import make_gym_env
-from slm_lab.env.vec_env import make_gym_venv
-from slm_lab.env.registration import try_register_env
-from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api
-import gym
 import numpy as np
 import pydash as ps
+
+from slm_lab.env.base import BaseEnv
+from slm_lab.env.registration import try_register_env
+from slm_lab.env.vec_env import make_gym_venv
+from slm_lab.env.wrapper import make_gym_env
+from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api
+
 # import roboschool
 
 
@@ -36,9 +37,21 @@ class OpenAIEnv(BaseEnv):
         seed = ps.get(spec, 'meta.random_seed')
         episode_life = not util.in_eval_lab_modes()
         if self.is_venv:  # make vector environment
-            self.u_env = make_gym_venv(name=self.name, num_envs=self.num_envs, seed=seed, frame_op=self.frame_op, frame_op_len=self.frame_op_len, image_downsize=self.image_downsize, reward_scale=self.reward_scale, normalize_state=self.normalize_state, episode_life=episode_life)
+            self.u_env = make_gym_venv(name=self.name, num_envs=self.num_envs,
+                                       seed=seed, frame_op=self.frame_op,
+                                       frame_op_len=self.frame_op_len,
+                                       image_downsize=self.image_downsize,
+                                       reward_scale=self.reward_scale,
+                                       normalize_state=self.normalize_state,
+                                       episode_life=episode_life)
         else:
-            self.u_env = make_gym_env(name=self.name, seed=seed, frame_op=self.frame_op, frame_op_len=self.frame_op_len, image_downsize=self.image_downsize, reward_scale=self.reward_scale, normalize_state=self.normalize_state, episode_life=episode_life)
+            self.u_env = make_gym_env(name=self.name, seed=seed,
+                                      frame_op=self.frame_op,
+                                      frame_op_len=self.frame_op_len,
+                                      image_downsize=self.image_downsize,
+                                      reward_scale=self.reward_scale,
+                                      normalize_state=self.normalize_state,
+                                      episode_life=episode_life)
         self.NUM_AGENTS = self.u_env.NUM_AGENTS if hasattr(self.u_env, "NUM_AGENTS") else 1
         if self.name.startswith('Unity'):
             # Unity is always initialized as singleton gym env, but the Unity runtime can be vec_env
@@ -71,7 +84,6 @@ class OpenAIEnv(BaseEnv):
             except NotImplementedError:
                 logger.warning("env.render method is not implemented")
                 self.to_render = False
-
 
         if self.NUM_AGENTS == 1:  # Adapt to env with single agent
             state = [state]
@@ -120,7 +132,7 @@ class OpenAIEnv(BaseEnv):
                 return np.eye(n_values)[array.astype(np.int)]
 
             # TODO check support MultiDiscrete env
-            assert len(self.observable_dim) ==1
+            assert len(self.observable_dim) == 1
             observation_space = self.observable_dim[0]
 
             state = np.array(state)
@@ -130,7 +142,6 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def close(self):
         self.u_env.close()
-
 
     def _is_discrete(self, space):
         '''Check if an space is discrete'''

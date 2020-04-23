@@ -138,6 +138,7 @@ def rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, f
     step_per_decay = (end_step - start_step) / frequency
     decay_step = (step - start_step) / step_per_decay
     val = max(np.power(decay_rate, decay_step) * start_val, end_val)
+    # print("step_per_decay, decay_step", step_per_decay, decay_step, end_step, start_step,  frequency, val)
     return val
 
 

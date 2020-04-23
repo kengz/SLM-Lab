@@ -273,17 +273,24 @@ class VarScheduler:
             'end_val',
             'start_step',
             'end_step',
+            'frequency',
+            'decay_rate',
         ])
         self.val = self.start_val
         if not getattr(self, 'end_val', None):
             self.end_val = self.start_val
+        self.kwargs = {}
+        if hasattr(self,"frequency"):
+            self.kwargs["frequency"]= self.frequency
+        if hasattr(self,"decay_rate"):
+            self.kwargs["decay_rate"]= self.decay_rate
 
     def update(self, algorithm, clock):
         '''Get an updated value for var'''
         if (util.in_eval_lab_modes()) or self._updater_name == 'no_decay':
             return self.end_val
         step = clock.get()
-        self.val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
+        self.val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step, **self.kwargs)
         return self.val
 
 # import numpy as np

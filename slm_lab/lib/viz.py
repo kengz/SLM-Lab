@@ -1,20 +1,23 @@
 # The data visualization module
 # Defines plotting methods for analysis
+import os
 from glob import glob
+
+import colorlover as cl
+import numpy as np
+import pydash as ps
 from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
+
 from slm_lab.lib import logger, util
-import colorlover as cl
-import os
-import pydash as ps
-import copy
 
 logger = logger.get_logger(__name__)
 
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 10
 # warn orca failure only once
-orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`'))
+orca_warn_once = ps.once(lambda e: logger.warning(
+    f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`'))
 if util.is_jupyter():
     init_notebook_mode(connected=True)
 
@@ -84,8 +87,13 @@ def plot_several_sr(sr_list, time_sr_list, title, y_title, x_title,
 
     for idx, (sr, time_sr, name) in enumerate(
             zip(sr_list, time_sr_list, name_list)):
-
         x = time_sr.tolist()
+
+        # # Remove Nan
+        # not_nan = [not np.isnan(el) for el in sr]
+        # x = [el for el, keep in zip(x, not_nan) if keep]
+        # sr = [el for el, keep in zip(sr, not_nan) if keep]
+
         selected_color = color or get_palette(len(sr_list))[idx]
         main_trace = go.Scatter(
             x=x, y=sr, mode='lines', showlegend=True, name=name,
@@ -103,16 +111,22 @@ def plot_several_mean_sr(sr_list_list, time_sr_list, title, y_title, x_title,
     layout = create_layout(title=title, y_title=y_title, x_title=x_title)
     fig = go.Figure(layout=layout)
 
-
     for idx, (sr_list, time_sr, name) in enumerate(
             zip(sr_list_list, time_sr_list, name_list)):
-
         mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
         max_sr = mean_sr + std_sr
         min_sr = mean_sr - std_sr
         max_y = max_sr.tolist()
         min_y = min_sr.tolist()
         x = time_sr.tolist()
+
+        # # Remove Nan
+        # not_nan = [not np.isnan(el) for el in mean_sr]
+        # x = [el for el, keep in zip(x, not_nan) if keep]
+        # mean_sr = [el for el, keep in zip(mean_sr, not_nan) if keep]
+        # max_y = [el for el, keep in zip(max_y, not_nan) if keep]
+        # min_y = [el for el, keep in zip(min_y, not_nan) if keep]
+
         selected_color = color or get_palette(len(sr_list_list))[idx]
         main_trace = go.Scatter(
             x=x, y=mean_sr, mode='lines', showlegend=True, name=name,
@@ -128,6 +142,7 @@ def plot_several_mean_sr(sr_list_list, time_sr_list, title, y_title, x_title,
 
     return fig
 
+
 def save_image(figure, filepath):
     if os.environ['PY_ENV'] == 'test':
         return
@@ -140,16 +155,18 @@ def save_image(figure, filepath):
 
 # analysis plot methods
 from slm_lab.agent.agent import agent
+
+
 def add_all_extra_col(name_time_pairs, session_df):
-    already_plotted = [ el[0] for el in name_time_pairs]
-    first_df = [ session_df[k] for k in session_df.keys()][0]
+    already_plotted = [el[0] for el in name_time_pairs]
+    first_df = [session_df[k] for k in session_df.keys()][0]
     for df_col in first_df.columns:
         if df_col in already_plotted:
             continue
         if any(df_col == col for col in agent.BASIC_COLS):
             continue
 
-        name_time_pairs.append((df_col ,'frame'))
+        name_time_pairs.append((df_col, 'frame'))
     return name_time_pairs
 
 
@@ -182,11 +199,22 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
 
             if name in local_metrics.keys():
                 sr = local_metrics[name]
+                x = local_metrics[time]
+
+                # print("len(sr), len(x)", len(sr), len(x), "name",name)
+                # not_nan = [not np.isnan(el) for el in sr]
+                # x[:] = [el for el, keep in zip(x, not_nan) if keep]
+                # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
+                # x = x[[not np.isnan(el) for el in x]]
+                # sr = sr[[not np.isnan(el) for el in sr]]
+                x = x.dropna()
+                sr = sr.dropna()
+
                 if ma:
                     sr = calc_sr_ma(sr)
 
                 str_list.append(sr)
-                time_sr_list.append(local_metrics[time])
+                time_sr_list.append(x)
                 name_list.append(k)
 
         if ma:
@@ -197,7 +225,6 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
         if name in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-
 
     # if ma:
     #     return
@@ -221,11 +248,21 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
 
             if name in s_df.columns:
                 sr = s_df[name]
+                x = s_df[time]
+
+                # not_nan = [not np.isnan(el) for el in sr]
+                # x[:] = [el for el, keep in zip(x, not_nan) if keep]
+                # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
+                # x = x[not_nan]
+                # sr = sr[not_nan]
+                x = x.dropna()
+                sr = sr.dropna()
+
                 if ma:
                     sr = calc_sr_ma(sr)
 
                 str_list.append(sr)
-                time_sr_list.append(s_df[time])
+                time_sr_list.append(x)
                 name_list.append(k)
 
         if ma:
@@ -272,12 +309,22 @@ def plot_trial(trial_spec=None, trial_metrics=None, ma=False,
 
                 if name in local_metrics.keys():
                     sr = local_metrics[name]
+                    x = local_metrics[time]
+
+                    # not_nan = [not np.isnan(el) for el in sr]
+                    # x[:] = [el for el, keep in zip(x, not_nan) if keep]
+                    # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
+                    # x = x[not_nan]
+                    # sr = sr[not_nan]
+                    x = x.dropna()
+                    sr = sr.dropna()
+
                     if ma:
                         sr = calc_sr_ma(sr)
                         # name = f'{name}_ma'  # for labeling
 
                     sr_list.append(sr)
-                    time_list.append(local_metrics[time])
+                    time_list.append(x)
                     name_list.append(k)
             if ma:
                 name = f'{name}_ma'  # for labeling
@@ -298,12 +345,22 @@ def plot_trial(trial_spec=None, trial_metrics=None, ma=False,
 
                 if name in local_metrics.keys():
                     sr_list = local_metrics[name]
+                    x = local_metrics[time]
+
+                    # not_nan = [not np.isnan(el) for el in sr]
+                    # x[:] = [el for el, keep in zip(x, not_nan) if keep]
+                    # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
+                    # x = x[not_nan]
+                    # sr = sr[not_nan]
+                    x = x.dropna()
+                    # sr = sr.dropna()
+
                     if ma:
-                        sr_list = [calc_sr_ma(sr) for sr in sr_list]
+                        sr_list = [calc_sr_ma(sr.dropna()) for sr in sr_list]
                         # name = f'{name}_ma'  # for labeling
 
                     sr_list_list.append(sr_list)
-                    time_list.append(local_metrics[time])
+                    time_list.append(x)
                     name_list.append(k)
 
             if ma:
@@ -311,7 +368,6 @@ def plot_trial(trial_spec=None, trial_metrics=None, ma=False,
 
             fig = plot_several_mean_sr(
                 sr_list_list, time_list, title, name, time, name_list=name_list)
-
 
         save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
         if name in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
@@ -325,7 +381,8 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     '''
     y_cols = metrics_cols
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols + ['trial'])
-    fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True,
+                              print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()
     for row_idx, y in enumerate(y_cols):
@@ -344,7 +401,8 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
                 },
             )
             fig.add_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1,
+                                                   categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
         title=f'experiment graph: {experiment_spec["name"]}',
@@ -374,7 +432,8 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title,
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None, showlegend=True):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None,
+                     frame_scales=None, palette=None, showlegend=True):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually

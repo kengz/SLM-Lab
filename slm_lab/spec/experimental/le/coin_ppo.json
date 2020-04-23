@@ -79,7 +79,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":10,
+      "max_concurrent_session":2,
       "max_trial": 1
     }
   },
@@ -170,7 +170,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":10,
+      "max_concurrent_session":2,
       "max_trial": 1
     }
   },
@@ -200,7 +200,7 @@
         "punishement_time": 10,
         "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.1,
+        "defection_carac_threshold": 0.01,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -294,7 +294,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":10,
+      "max_concurrent_session":2,
       "max_trial": 1
     }
   },
@@ -328,7 +328,7 @@
         "punishement_time": 10,
         "min_coop_time": 0,
         "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.1,
+        "defection_carac_threshold": 0.01,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -348,14 +348,14 @@
                 "start_val": 0.05,
                 "end_val": 0.005,
                 "start_step": 10000,
-                "end_step": 80000
+                "end_step": 160000
               },
               "entropy_coef_spec": {
                 "name": "linear_decay",
                 "start_val": 0.1,
                 "end_val": 0.003,
                 "start_step": 0,
-                "end_step": 100000
+                "end_step": 200000
               },
               "val_loss_coef": 1.0,
               "time_horizon": 128,
@@ -389,7 +389,7 @@
               },
               "lr_scheduler_spec": {
                 "name": "LinearToZero",
-                "frame": 100000
+                "frame": 200000
               },
               "gpu": false
             }
@@ -419,14 +419,14 @@
           "start_val": 0.05,
           "end_val": 0.005,
           "start_step": 10000,
-          "end_step": 80000
+          "end_step": 160000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.1,
           "end_val": 0.003,
           "start_step": 0,
-          "end_step": 100000
+          "end_step": 200000
         },
         "val_loss_coef": 1.0,
         "time_horizon": 128,
@@ -460,7 +460,7 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 100000
+          "frame": 200000
         },
         "gpu": false
       }
@@ -469,7 +469,7 @@
     "env": [{
       "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 100000,
+      "max_frame": 200000,
       "num_envs": 1
     }],
     "body": {
@@ -481,7 +481,7 @@
       "eval_frequency": 400,
       "log_frequency": 400,
       "max_session": 10,
-      "max_concurrent_session":10,
+      "max_concurrent_session":2,
       "max_trial": 1
     }
   }

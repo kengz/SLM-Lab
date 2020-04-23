@@ -146,7 +146,10 @@ class Reinforce(Algorithm):
             logger.debug(f'entropy {entropy}')
             self.to_log["entropy"] = entropy.item()
             self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
-            policy_loss += (-self.entropy_coef_scheduler.val * entropy)
+            entropy_loss = (-self.entropy_coef_scheduler.val * entropy)
+            if policy_loss != 0.0:
+                self.to_log["entropy_over_loss"] = entropy_loss / policy_loss
+            policy_loss += entropy_loss
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 

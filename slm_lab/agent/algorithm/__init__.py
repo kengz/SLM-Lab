@@ -10,3 +10,4 @@ from .sac import *
 from .sarsa import *
 from .sil import *
 from .meta_algorithm import *
+from .ucb import *

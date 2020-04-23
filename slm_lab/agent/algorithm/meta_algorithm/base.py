@@ -1,36 +1,41 @@
-from abc import ABC, abstractmethod
-from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api
+from abc import abstractmethod
+
 import numpy as np
-from slm_lab.agent import algorithm, memory, world
+import pydash as ps
+
+from slm_lab.agent import algorithm
+from slm_lab.lib import logger
+from slm_lab.lib.decorator import lab_api
 
 logger = logger.get_logger(__name__)
+
 
 # TODO add some docs
 
 class MetaAlgorithm(algorithm.Algorithm):
     ''' Abstract Meta Algorithm class to define the API methods '''
 
-    def __init__(self, agent, global_nets=None, algorithm_spec=None,
-                 memory_spec=None, net_spec=None, algo_idx=0):
+    def __init__(self, agent, global_nets, algorithm_spec,
+                 memory_spec, net_spec, algo_idx=0, create_sub_algo=True):
 
-        super().__init__(agent, global_nets=None, algorithm_spec=None,
+        super().__init__(agent, global_nets=None, algorithm_spec=algorithm_spec,
                          memory_spec=None, net_spec=None,
-                        algo_idx=algo_idx)
-        # self.agent = agent
-        self.meta_algorithm_spec = agent.agent_spec['algorithm']
+                         algo_idx=algo_idx)
+        self.meta_algorithm_spec = algorithm_spec
         self.algorithms = []
-        # TODO manage global nets (needed in distributed training)
-        for algo_idx, algorithm_spec in enumerate(self.meta_algorithm_spec['contained_algorithms']):
-            AlgorithmClass = getattr(algorithm, algorithm_spec['name'])
-            algo = AlgorithmClass(agent,
-                                  global_nets[algo_idx] if global_nets is not None else None,
-                                  algorithm_spec=algorithm_spec['algorithm'],
-                                  memory_spec=algorithm_spec['memory'],
-                                  net_spec=algorithm_spec['net'],
-                                  algo_idx=algo_idx)
-            self.algorithms.append(algo)
+        self.algo_idx = algo_idx
+        if create_sub_algo:
+            # TODO manage global nets (needed in distributed training)
+            # TODO why are we not using algorithm_spec instead of agent.agent_spec['algorithm']['contained_algorithms']?
+            for algo_idx, virtual_agent_spec in enumerate(self.meta_algorithm_spec['contained_algorithms']):
+                AlgorithmClass = getattr(algorithm, virtual_agent_spec['name'])
+                algo = AlgorithmClass(agent,
+                                      global_nets[algo_idx] if global_nets is not None else None,
+                                      algorithm_spec=ps.get(virtual_agent_spec, 'algorithm'),
+                                      memory_spec=ps.get(virtual_agent_spec, 'memory', None),
+                                      net_spec=ps.get(virtual_agent_spec, 'net', None),
+                                      algo_idx=algo_idx)
+                self.algorithms.append(algo)
 
     @lab_api
     def save(self, ckpt=None):
@@ -95,12 +100,44 @@ class MetaAlgorithm(algorithm.Algorithm):
     def entropy_coef_scheduler(self):
         raise NotImplementedError()
 
+    def get_log_values(self):
+        for idx, algo in enumerate(self.algorithms):
+            if idx > 0:
+                for k, v in algo.get_log_values().items():
+                    k_meta = f'{k}_alg{idx}'
+                    assert k_meta not in self.to_log.keys()
+                    self.to_log[k_meta] = v
+            else:
+                self.to_log.update(algo.get_log_values())
+
+        self._reset_temp_info()
+        extra_training_info_to_log = self.to_log
+        self.to_log = {}
+        return extra_training_info_to_log
+
+    def log_grad_norm(self):
+        for algo in self.algorithms:
+            algo.log_grad_norm()
+
+    @property
+    def name(self):
+        raise NotImplementedError()
+
+    @name.setter
+    def name(self, value):
+        raise NotImplementedError()
+
+    @property
+    def training_frequency(self):
+        raise NotImplementedError()
+
+
 class OneOfNAlgoActived(MetaAlgorithm):
     ''' OneOfNAlgoActived class to define the API methods. This meta-algo apply the curenlty activated algorithm. No
     heuristic are implemented in this class to change the activated algorithm'''
 
-    def __init__(self, agent, global_nets=None, algorithm_spec=None,
-                 memory_spec=None, net_spec=None, algo_idx=0):
+    def __init__(self, agent, global_nets, algorithm_spec,
+                 memory_spec, net_spec, algo_idx=0):
         '''
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         :param algo_idx:
@@ -140,34 +177,16 @@ class OneOfNAlgoActived(MetaAlgorithm):
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
         losses = []
-        mean_entropy_active_algo = np.nan
-        # explore_var_active_algo = None
-        # entropy_coef_active_algo = None
 
         for idx, algo in enumerate(self.algorithms):
             if self.agent.world.deterministic:
                 self.agent.world._set_rd_state(self.agent.world.rd_seed)
             losses.append(algo.train())
 
-            # Manage the fact that each algo overwrite some values directly in the agent body
-            # # TODO improve this
-            # if idx == self.active_algo_idx:
-            #     mean_entropy_active_algo = self.agent.body.mean_entropy
-                # explore_var_active_algo = self.agent.body.explore_var
-                # entropy_coef_active_algo = self.agent.body.entropy_coef
+        # TODO clip_eps_scheduler
 
-
-        # self.agent.body.mean_entropy = mean_entropy_active_algo
-        # self.agent.body.explore_var = explore_var_active_algo
-        # self.agent.body.entropy_coef = entropy_coef_active_algo
-        #
-        # explore_var_scheduler
-        # entropy_coef_scheduler
-        # clip_eps_scheduler
-
-        losses = [ el for el in losses if not np.isnan(el)]
+        losses = [el for el in losses if not np.isnan(el)]
         loss = sum(losses) if len(losses) > 0 else np.nan
-
 
         if not np.isnan(loss):
             logger.debug(f"{self.active_algo_idx} loss {loss}")
@@ -195,22 +214,3 @@ class OneOfNAlgoActived(MetaAlgorithm):
     @property
     def entropy_coef_scheduler(self):
         return self.algorithms[self.active_algo_idx].entropy_coef_scheduler
-
-    def get_log_values(self):
-        for idx, algo in enumerate(self.algorithms):
-            if idx > 0:
-                for k, v in algo.get_log_values().items():
-                    k_meta = f'{k}_alg{idx}'
-                    assert k_meta not in self.to_log.keys()
-                    self.to_log[k_meta] = v
-            else:
-                self.to_log.update(algo.get_log_values())
-
-        self._reset_temp_info()
-        extra_training_info_to_log = self.to_log
-        self.to_log = {}
-        return extra_training_info_to_log
-
-    def log_grad_norm(self):
-        for algo in self.algorithms:
-            algo.log_grad_norm()

@@ -35,7 +35,3 @@ nb.py
 *.log
 *.meta
 SLM-Env
-
-
-**/le_paper/
-slm_lab/spec/experimental/le/

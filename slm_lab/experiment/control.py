@@ -1,17 +1,18 @@
 # The control module
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
-from slm_lab.agent import Agent, Body
+
+import pydash as ps
+import torch
+import torch.multiprocessing as mp
+
 from slm_lab.agent import world as World
 from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-import pydash as ps
-import torch
-import torch.multiprocessing as mp
-from collections.abc import Iterable
+
 
 def make_env_agents_world(spec, global_nets_list=None):
     '''Helper to create world (with its agents) and env given spec'''
@@ -93,6 +94,7 @@ class Session:
 
                 analysis.gen_avg_return(world, self.eval_env)
 
+    # import memory_profiler
     # import line_profiler
     # @profile
     def run_rl(self):
@@ -104,6 +106,10 @@ class Session:
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
+                # To debug memory leak
+                # from guppy import hpy
+                # h = hpy()
+                # print(h.heap())
                 if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()
@@ -113,7 +119,7 @@ class Session:
                 break
             clock.tick('t')
             with torch.no_grad():
-                action, _ = self.world.act(state)
+                action, action_pd = self.world.act(state)
             next_state, reward, done, info = self.env.step(action)
             self.world.update(state, action, reward, next_state, done)
             state = next_state
@@ -165,7 +171,7 @@ class Trial:
                 workers.append(w)
             for w in workers:
                 w.join()
-                n_sessions_done +=1
+                n_sessions_done += 1
 
         session_metrics_list = [mp_dict[idx] for idx in sorted(mp_dict.keys())]
         return session_metrics_list
@@ -176,7 +182,7 @@ class Trial:
         if 'max_concurrent_session' not in self.spec['meta'].keys():
             self.spec['meta']['max_concurrent_session'] = self.spec['meta']['max_session']
 
-        if self.spec['meta']['max_concurrent_session'] == 1:
+        if min([self.spec['meta']['max_concurrent_session'], self.spec['meta']['max_session']]) == 1:
             spec = deepcopy(self.spec)
             sessions_metrics = []
             for _ in range(self.spec['meta']['max_session']):

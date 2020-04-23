@@ -13,6 +13,8 @@ from slm_lab.lib.decorator import lab_api
 
 logger = logger.get_logger(__name__)
 
+import torch.cuda
+from torch._C import default_generator
 
 class DefaultMultiAgentWorld:
     '''
@@ -31,7 +33,7 @@ class DefaultMultiAgentWorld:
         util.set_attr(self, dict(
             deterministic=True,
         ))
-        util.set_attr(self, self.spec, [
+        util.set_attr(self, self.spec["world"], [
             'deterministic',
         ])
 
@@ -42,20 +44,24 @@ class DefaultMultiAgentWorld:
         self.session_idx = None  # Will be set in the Session __init__
         self.trial_idx = None
 
+        # TODO rename deterministic (use to apply the same rd number to all agents)
+        if self.deterministic:
+            self.rd_seed = np.random.randint(1e9)
         for i, agent_spec in enumerate(deepcopy(spec['agent'])):
+            if self.deterministic:
+                self._set_rd_state(self.rd_seed)
             self._create_one_agent(i, agent_spec, global_nets_list[i]
             if global_nets_list is not None else None)
 
         self.body = Body(self.env, self.spec)
         self.body.init_part2()
 
-        # if self.deterministic:
-        #     # if torch.cuda.is_available():
-        #     #     torch.backends.cudnn.benchmark = False
-        #     #     torch.backends.cudnn.deterministic = True
+        if self.deterministic:
+            if torch.cuda.is_available():
+                torch.backends.cudnn.benchmark = False
+                torch.backends.cudnn.deterministic = True
         #     self.rd_seed = np.random.randint(1e9)
         #     self._set_rd_state(self.rd_seed)
-        self.world_shared_rd_seed = None
 
     def _create_one_agent(self, agent_idx, agent_spec, global_nets):
         a_spec = deepcopy(self.spec)
@@ -125,16 +131,21 @@ class DefaultMultiAgentWorld:
             if util.in_eval_lab_modes():
                 return sum_loss_over_agents, sum_explore_var_over_agents
 
-    def _set_rd_state(self, seed):
-        if torch.cuda.is_available():
-            torch.backends.cudnn.benchmark = False
-            torch.backends.cudnn.deterministic = True
 
+
+    def manual_seed(self,seed):
+        """Without memory leak"""
+        seed = int(seed)
+        # if not torch.cuda._in_bad_fork:
+        #     torch.cuda.manual_seed_all(seed)
+        default_generator.manual_seed(seed)
+
+    def _set_rd_state(self, seed):
         random.seed(seed)
         np.random.seed(seed)
-        torch.manual_seed(seed)
-        # torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
+        self.manual_seed(seed)
+        # # torch.cuda.manual_seed(seed)
+        # torch.cuda.manual_seed_all(seed)
 
     @lab_api
     def save(self, ckpt=None):

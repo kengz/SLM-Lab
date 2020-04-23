@@ -1,0 +1,836 @@
+{
+  "ipd_rf_deploy_game_default_or_util": {
+    "world": {
+      "name": "DefaultMultiAgentWorld",
+      "deterministic":false
+    },
+    "agent": [
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":2
+          },
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "welfare_function": "default_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            },
+            {
+              "name": "Reinforce",
+              "welfare_function": "utilitarian_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            }
+          ]
+        }
+      },
+      {
+        "copy_n": 0
+      }
+    ],
+    "env": [
+      {
+        "name": "IteratedPrisonersDilemma-v0",
+        "max_t": null,
+        "max_frame": 250000,
+        "num_envs": 1
+      }
+    ],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 250,
+      "log_frequency": 250,
+      "max_session": 10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+  "ipd_rf_deploy_game_default_vs_default_or_util": {
+    "world": {
+      "name": "DefaultMultiAgentWorld",
+      "deterministic":false
+    },
+    "agent": [
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":1
+          },
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "welfare_function": "default_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":2
+          },
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "welfare_function": "default_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            },
+            {
+              "name": "Reinforce",
+              "welfare_function": "utilitarian_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "env": [
+      {
+        "name": "IteratedPrisonersDilemma-v0",
+        "max_t": null,
+        "max_frame": 250000,
+        "num_envs": 1
+      }
+    ],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 250,
+      "log_frequency": 250,
+      "max_session": 10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+    "ipd_rf_deploy_game_util_vs_default_or_util": {
+    "world": {
+      "name": "DefaultMultiAgentWorld",
+      "deterministic":false
+    },
+    "agent": [
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":1
+          },
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "welfare_function": "utilitarian_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":2
+          },
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "welfare_function": "default_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            },
+            {
+              "name": "Reinforce",
+              "welfare_function": "utilitarian_welfare",
+              "observing_other_agents": {
+                "name": "FullyObservable"
+              },
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 1
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "env": [
+      {
+        "name": "IteratedPrisonersDilemma-v0",
+        "max_t": null,
+        "max_frame": 250000,
+        "num_envs": 1
+      }
+    ],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 250,
+      "log_frequency": 250,
+      "max_session": 10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+  "ipd_rf_deploy_game_le_self_play": {
+    "world": {
+      "name": "DefaultMultiAgentWorld"
+    },
+    "agent": [
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 1000,
+          "k_choice":1,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":1
+          },
+          "contained_algorithms": [
+            {
+              "name": "LE",
+              "memory": null,
+              "net": null,
+              "algorithm": {
+                "name": "LE",
+                "punishement_time": 10,
+                "min_coop_time": 0,
+                "defection_detection_mode": "network_weights",
+                "defection_carac_threshold": 0.01,
+                "contained_algorithms": [
+                  {
+                    "name": "Reinforce",
+                    "algorithm": {
+                      "name": "Reinforce",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "gamma": 0.99,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.01,
+                        "end_val": 0.01,
+                        "start_step": 0,
+                        "end_step": 2500
+                      },
+                      "training_frequency": 1
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "clip_grad_val": null,
+                      "loss_spec": {
+                        "name": "MSELoss"
+                      },
+                      "optim_spec": {
+                        "name": "Adam",
+                        "lr": 0.0002
+                      },
+                      "lr_scheduler_spec": null
+                    }
+                  },
+                  {
+                    "copy_n": 0
+                  },
+                  {
+                    "copy_n": 0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "copy_n": 0
+      }
+    ],
+    "env": [
+      {
+        "name": "IteratedPrisonersDilemma-v0",
+        "max_t": null,
+        "max_frame": 250000,
+        "num_envs": 1
+      }
+    ],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 250,
+      "log_frequency": 250,
+      "max_session": 10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+  "ipd_rf_deploy_game_le_with_naive_opponent": {
+    "world": {
+      "name": "DefaultMultiAgentWorld"
+    },
+    "agent": [
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":1
+          },
+          "contained_algorithms": [
+            {
+              "name": "LE",
+              "memory": null,
+              "net": null,
+              "algorithm": {
+                "name": "LE",
+                "punishement_time": 10,
+                "min_coop_time": 0,
+                "defection_detection_mode": "network_weights",
+                "defection_carac_threshold": 0.01,
+                "contained_algorithms": [
+                  {
+                    "name": "Reinforce",
+                    "algorithm": {
+                      "name": "Reinforce",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "gamma": 0.99,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.01,
+                        "end_val": 0.01,
+                        "start_step": 0,
+                        "end_step": 2500
+                      },
+                      "training_frequency": 10
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "clip_grad_val": null,
+                      "loss_spec": {
+                        "name": "MSELoss"
+                      },
+                      "optim_spec": {
+                        "name": "Adam",
+                        "lr": 0.0002
+                      },
+                      "lr_scheduler_spec": null,
+                      "gpu": false
+                    }
+                  },
+                  {
+                    "copy_n": 0
+                  },
+                  {
+                    "copy_n": 0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "DeploymentGame",
+        "memory": null,
+        "net": null,
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "DeploymentGame",
+          "redeploy_every_n_epi": 2500,
+          "deploy_algo":{
+            "name":"UCB1",
+            "k_choice":2
+          },
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "welfare_function": "default_welfare",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 10
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null,
+                "gpu": false
+              }
+            },
+            {
+              "name": "Reinforce",
+              "welfare_function": "utilitarian_welfare",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.99,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.01,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 2500
+                },
+                "training_frequency": 10
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": null,
+                "loss_spec": {
+                  "name": "MSELoss"
+                },
+                "optim_spec": {
+                  "name": "Adam",
+                  "lr": 0.0002
+                },
+                "lr_scheduler_spec": null,
+                "gpu": false
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "env": [
+      {
+        "name": "IteratedPrisonersDilemma-v0",
+        "max_t": null,
+        "max_frame": 250000,
+        "num_envs": 1
+      }
+    ],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 250,
+      "log_frequency": 250,
+      "max_session": 10,
+      "max_trial": 1
+    }
+  }
+}

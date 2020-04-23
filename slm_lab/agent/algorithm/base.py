@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
-from slm_lab.agent import algorithm, memory, agent
+
+import numpy as np
+import pydash as ps
+
+from slm_lab.agent import memory
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-import numpy as np
-import pydash as ps
+from slm_lab.agent.agent import agent_util, observability
 
 logger = logger.get_logger(__name__)
 
@@ -12,23 +15,28 @@ logger = logger.get_logger(__name__)
 class Algorithm(ABC):
     '''Abstract Algorithm class to define the API methods'''
 
-    def __init__(self, agent, global_nets=None, algorithm_spec=None, memory_spec=None, net_spec=None, algo_idx=0):
+    def __init__(self, agent, global_nets, algorithm_spec, memory_spec, net_spec, algo_idx=0):
         '''
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         :param algo_idx:
         '''
         self.agent = agent
         self.algo_idx = algo_idx
-        logger.info(f'algorithm_spec {algorithm_spec}')
 
-        self.algorithm_spec = self.agent.agent_spec['algorithm'] if algorithm_spec is None else algorithm_spec
+        # First is for basic algo (read spec in agent), the second is for nested meta algo
+        # TODO only use the second
+        logger.info(f'algorithm_spec {algorithm_spec}')
+        # self.algorithm_spec = self.agent.agent_spec['algorithm'] if algorithm_spec is None else algorithm_spec
+        self.algorithm_spec = algorithm_spec
         self.name = self.algorithm_spec['name']
-        self.memory_spec = self.agent.agent_spec['memory'] if memory_spec is None else memory_spec
-        self.net_spec = self.agent.agent_spec['net'] if net_spec is None else net_spec
+        # self.memory_spec = self.agent.agent_spec['memory'] if memory_spec is None else memory_spec
+        self.memory_spec = memory_spec
+        # self.net_spec = self.agent.agent_spec['net'] if net_spec is None else net_spec
+        self.net_spec = net_spec
         self.body = self.agent.body
 
         # Memory
-        if self.memory_spec is not None :
+        if self.memory_spec is not None:
             MemoryClass = getattr(memory, ps.get(self.memory_spec, 'name'))
             self.memory = MemoryClass(self.memory_spec, self)
         else:
@@ -40,6 +48,12 @@ class Algorithm(ABC):
         # Extra customizable training log
         self.algo_temp_info = {} if not hasattr(self, "algo_temp_info") else self.algo_temp_info
         self.to_log = {}
+
+        # Welfare function can also be changed by algorithm
+        # TODO change this ( set by agent, algo and meta algo...)
+        update_welfare_fn = ps.get(self.algorithm_spec, 'welfare_function', None)
+        if update_welfare_fn is not None:
+            agent.welfare_function = getattr(agent_util, update_welfare_fn)
 
         logger.info(util.self_desc(self))
 
@@ -113,7 +127,7 @@ class Algorithm(ABC):
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to save.')
         else:
-            net_util.save_algorithm(self, ckpt=ckpt, prefix=self.identifier+'_')
+            net_util.save_algorithm(self, ckpt=ckpt, prefix=self.identifier + '_')
 
     @property
     def identifier(self):
@@ -127,7 +141,7 @@ class Algorithm(ABC):
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to load.')
         else:
-            net_util.load_algorithm(self, prefix=self.identifier+'_')
+            net_util.load_algorithm(self, prefix=self.identifier + '_')
         # set decayable variables to final values
         for k, v in vars(self).items():
             if k.endswith('_scheduler') and hasattr(v, 'end_val'):
@@ -138,13 +152,13 @@ class Algorithm(ABC):
         return self.memory.update(state, action, welfare, next_state, done)
 
     def get_log_values(self):
-        self.to_log['opt_step']=self.net.opt_step
+        if hasattr(self, "net"):
+            self.to_log['opt_step'] = self.net.opt_step
 
         to_log = self.to_log
         self.to_log = {}
         self._reset_temp_info()
         return to_log
-
 
     def _reset_temp_info(self):
         for k, v in self.algo_temp_info.items():

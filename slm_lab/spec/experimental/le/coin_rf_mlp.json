@@ -1,5 +1,5 @@
 {
-  "ipd_rf": {
+  "coin_rf": {
     "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
@@ -9,15 +9,15 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.99,
+        "gamma": 0.5,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
+          "start_val": 0.1,
+          "end_val": 0.003,
           "start_step": 0,
-          "end_step": 2500
+          "end_step": 200000
         },
-        "training_frequency": 1
+        "training_frequency": 16
       },
 
 
@@ -28,7 +28,9 @@
 
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -38,18 +40,17 @@
           "name": "Adam",
           "lr": 0.0002
         },
-        "lr_scheduler_spec": null
+        "lr_scheduler_spec": null,
+        "gpu": true
       }
-
-
     },
     {
       "copy_n":0
     }],
     "env": [{
-      "name": "IteratedPrisonersDilemma-v0",
+      "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 250000,
       "num_envs": 1
     }],
     "body": {
@@ -58,9 +59,9 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 20,
-      "log_frequency": 20,
-      "max_session": 10,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
       "max_trial": 1
     }
   },
@@ -71,7 +72,7 @@
 
 
 
-  "ipd_rf_util": {
+  "coin_rf_util": {
     "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
@@ -85,15 +86,15 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.99,
+        "gamma": 0.5,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
+          "start_val": 0.1,
+          "end_val": 0.003,
           "start_step": 0,
-          "end_step": 2500
+          "end_step": 200000
         },
-        "training_frequency": 1
+        "training_frequency": 16
       },
 
 
@@ -104,7 +105,9 @@
 
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -114,7 +117,8 @@
           "name": "Adam",
           "lr": 0.0002
         },
-        "lr_scheduler_spec": null
+        "lr_scheduler_spec": null,
+        "gpu": true
       }
 
 
@@ -123,9 +127,9 @@
       "copy_n":0
     }],
     "env": [{
-      "name": "IteratedPrisonersDilemma-v0",
+      "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 250000,
       "num_envs": 1
     }],
     "body": {
@@ -134,9 +138,9 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 20,
-      "log_frequency": 20,
-      "max_session": 10,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
       "max_trial": 1
     }
   },
@@ -150,21 +154,20 @@
 
 
 
-  "ipd_rf_le_self_play": {
+  "coin_rf_le_self_play": {
     "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
       "name": "LE",
       "memory": null,
       "net": null,
-      "welfare_function":"utilitarian_welfare",
       "observing_other_agents":{
         "name":"FullyObservable"
       },
       "algorithm": {
         "name": "LE",
-        "punishement_time": 10,
-        "min_coop_time": 0,
+        "punishement_time": 5.0,
+        "min_coop_time": 1.0,
         "defection_detection_mode":"network_weights",
         "defection_carac_threshold": 0.01,
         "contained_algorithms": [
@@ -175,15 +178,15 @@
               "action_pdtype": "default",
               "action_policy": "default",
               "explore_var_spec": null,
-              "gamma": 0.99,
+              "gamma": 0.5,
               "entropy_coef_spec": {
                 "name": "linear_decay",
-                "start_val": 0.01,
-                "end_val": 0.001,
+                "start_val": 0.1,
+                "end_val": 0.003,
                 "start_step": 0,
-                "end_step": 2500
+                "end_step": 200000
               },
-              "training_frequency": 1
+              "training_frequency": 16
             },
             "memory": {
               "name": "OnPolicyReplay"
@@ -202,7 +205,8 @@
                 "name": "Adam",
                 "lr": 0.0002
               },
-              "lr_scheduler_spec": null
+              "lr_scheduler_spec": null,
+              "gpu": true
             }
           },
           {
@@ -220,9 +224,9 @@
     }
     ],
     "env": [{
-      "name": "IteratedPrisonersDilemma-v0",
+      "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 250000,
       "num_envs": 1
     }],
     "body": {
@@ -231,9 +235,9 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 20,
-      "log_frequency": 20,
-      "max_session": 10,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
       "max_trial": 1
     }
   },
@@ -245,7 +249,7 @@
 
 
 
-  "ipd_rf_le_with_naive_opponent": {
+  "coin_rf_le_with_naive_opponent": {
     "world":{"name":"DefaultMultiAgentWorld"},
 
     "agent": [{
@@ -253,11 +257,13 @@
       "memory": null,
       "net": null,
       "welfare_function":"utilitarian_welfare",
-      "observing_other_agents":{"name":"FullyObservable"},
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
       "algorithm": {
         "name": "LE",
-        "punishement_time": 10,
-        "min_coop_time": 0,
+        "punishement_time": 4.0,
+        "min_coop_time": 1.0,
         "defection_detection_mode":"network_weights",
         "defection_carac_threshold": 0.01,
         "contained_algorithms": [
@@ -268,15 +274,15 @@
               "action_pdtype": "default",
               "action_policy": "default",
               "explore_var_spec": null,
-              "gamma": 0.99,
+              "gamma": 0.5,
               "entropy_coef_spec": {
                 "name": "linear_decay",
-                "start_val": 0.01,
-                "end_val": 0.001,
+                "start_val": 0.1,
+                "end_val": 0.003,
                 "start_step": 0,
-                "end_step": 2500
+                "end_step": 200000
               },
-              "training_frequency": 10
+              "training_frequency": 16
             },
             "memory": {
               "name": "OnPolicyReplay"
@@ -295,7 +301,8 @@
                 "name": "Adam",
                 "lr": 0.0002
               },
-              "lr_scheduler_spec": null
+              "lr_scheduler_spec": null,
+              "gpu": true
             }
           },
           {
@@ -316,15 +323,15 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.99,
+        "gamma": 0.5,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
+          "start_val": 0.1,
+          "end_val": 0.003,
           "start_step": 0,
-          "end_step": 2500
+          "end_step": 200000
         },
-        "training_frequency": 10
+        "training_frequency": 16
       },
 
 
@@ -335,7 +342,9 @@
 
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -345,14 +354,15 @@
           "name": "Adam",
           "lr": 0.0002
         },
-        "lr_scheduler_spec": null
+        "lr_scheduler_spec": null,
+        "gpu": true
       }
     }
     ],
     "env": [{
-      "name": "IteratedPrisonersDilemma-v0",
+      "name": "CoinGame-v0",
       "max_t": null,
-      "max_frame": 10000,
+      "max_frame": 250000,
       "num_envs": 1
     }],
     "body": {
@@ -361,9 +371,9 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 20,
-      "log_frequency": 20,
-      "max_session": 10,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
       "max_trial": 1
     }
   }

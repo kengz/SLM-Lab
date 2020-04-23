@@ -1,158 +1,7 @@
 {
-  "ipd_rf": {
-    "world":{"name":"DefaultMultiAgentWorld"},
-
-    "agent": [{
-      "name": "Reinforce",
-      "algorithm": {
-        "name": "Reinforce",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 0,
-          "end_step": 2500
-        },
-        "training_frequency": 1
-      },
-
-
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-
-
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "selu",
-        "clip_grad_val": null,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.0002
-        },
-        "lr_scheduler_spec": null
-      }
-
-
-    },
-    {
-      "copy_n":0
-    }],
-    "env": [{
-      "name": "IteratedPrisonersDilemma-v0",
-      "max_t": null,
-      "max_frame": 10000,
-      "num_envs": 1
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 20,
-      "log_frequency": 20,
-      "max_session": 10,
-      "max_trial": 1
-    }
-  },
-
-
-
-
-
-
-
-  "ipd_rf_util": {
-    "world":{"name":"DefaultMultiAgentWorld"},
-
-    "agent": [{
-      "name": "Reinforce",
-      "welfare_function":"utilitarian_welfare",
-            "observing_other_agents":{
-        "name":"FullyObservable"
-      },
-      "algorithm": {
-        "name": "Reinforce",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 0,
-          "end_step": 2500
-        },
-        "training_frequency": 1
-      },
-
-
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-
-
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "selu",
-        "clip_grad_val": null,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.0002
-        },
-        "lr_scheduler_spec": null
-      }
-
-
-    },
-    {
-      "copy_n":0
-    }],
-    "env": [{
-      "name": "IteratedPrisonersDilemma-v0",
-      "max_t": null,
-      "max_frame": 10000,
-      "num_envs": 1
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 20,
-      "log_frequency": 20,
-      "max_session": 10,
-      "max_trial": 1
-    }
-  },
-
-
-
-
-
-
-
-
-
-
-  "ipd_rf_le_self_play": {
-    "world":{"name":"DefaultMultiAgentWorld"},
-
+   "ipd_rf_nopm_le_self_play": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
     "agent": [{
       "name": "LE",
       "memory": null,
@@ -163,10 +12,10 @@
       },
       "algorithm": {
         "name": "LE",
-        "punishement_time": 10,
+        "punishement_time": 1,
         "min_coop_time": 0,
-        "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_detection_mode":"observed_actions",
+        "defection_carac_threshold": 0.0,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -177,13 +26,15 @@
               "explore_var_spec": null,
               "gamma": 0.99,
               "entropy_coef_spec": {
-                "name": "linear_decay",
-                "start_val": 0.01,
-                "end_val": 0.001,
+                "name": "rate_decay",
+                "start_val": 10.0,
+                "end_val": 0.1,
                 "start_step": 0,
-                "end_step": 2500
+                "end_step": 7500,
+                "decay_rate":0.9,
+                "frequency":40,
               },
-              "training_frequency": 1
+              "training_frequency": 10
             },
             "memory": {
               "name": "OnPolicyReplay"
@@ -199,8 +50,8 @@
                 "name": "MSELoss"
               },
               "optim_spec": {
-                "name": "Adam",
-                "lr": 0.0002
+                "name": "SGD",
+                "lr": 0.002
               },
               "lr_scheduler_spec": null
             }
@@ -222,6 +73,140 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
+      "max_frame": 8000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 8,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+  "ipd_rf_nopm_le_with_naive_coop": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{"name":"FullyObservable"},
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.99,
+              "entropy_coef_spec": {
+                "name": "rate_decay",
+                "start_val": 10.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 5000,
+                "decay_rate":0.9,
+                "frequency":40,
+              },
+              "training_frequency": 10
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                256
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "MSELoss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.002
+              },
+              "lr_scheduler_spec": null
+            }
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "Reinforce",
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{"name":"FullyObservable"},
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "entropy_coef_spec": {
+          "name": "rate_decay",
+          "start_val": 10.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 5000,
+          "decay_rate":0.9,
+          "frequency":40,
+        },
+        "training_frequency": 10
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "SGD",
+          "lr": 0.002
+        },
+        "lr_scheduler_spec": null
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
       "max_frame": 10000,
       "num_envs": 1
     }],
@@ -233,7 +218,8 @@
       "distributed": false,
       "eval_frequency": 20,
       "log_frequency": 20,
-      "max_session": 10,
+      "max_session": 1,
+      "max_concurrent_session":4,
       "max_trial": 1
     }
   },
@@ -242,11 +228,9 @@
 
 
 
-
-
-
-  "ipd_rf_le_with_naive_opponent": {
-    "world":{"name":"DefaultMultiAgentWorld"},
+  "ipd_rf_nopm_le_with_naive_opponent": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
 
     "agent": [{
       "name": "LE",
@@ -256,10 +240,10 @@
       "observing_other_agents":{"name":"FullyObservable"},
       "algorithm": {
         "name": "LE",
-        "punishement_time": 10,
+        "punishement_time": 1,
         "min_coop_time": 0,
-        "defection_detection_mode":"network_weights",
-        "defection_carac_threshold": 0.01,
+        "defection_detection_mode":"observed_actions",
+        "defection_carac_threshold": 0.0,
         "contained_algorithms": [
           {
             "name": "Reinforce",
@@ -270,11 +254,13 @@
               "explore_var_spec": null,
               "gamma": 0.99,
               "entropy_coef_spec": {
-                "name": "linear_decay",
-                "start_val": 0.01,
-                "end_val": 0.001,
+                "name": "rate_decay",
+                "start_val": 10.0,
+                "end_val": 0.1,
                 "start_step": 0,
-                "end_step": 2500
+                "end_step": 7500,
+                "decay_rate":0.9,
+                "frequency":40,
               },
               "training_frequency": 10
             },
@@ -292,8 +278,8 @@
                 "name": "MSELoss"
               },
               "optim_spec": {
-                "name": "Adam",
-                "lr": 0.0002
+                "name": "SGD",
+                "lr": 0.002
               },
               "lr_scheduler_spec": null
             }
@@ -318,11 +304,13 @@
         "explore_var_spec": null,
         "gamma": 0.99,
         "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
+          "name": "rate_decay",
+          "start_val": 10.0,
+          "end_val": 0.1,
           "start_step": 0,
-          "end_step": 2500
+          "end_step": 7500,
+          "decay_rate":0.9,
+          "frequency":40,
         },
         "training_frequency": 10
       },
@@ -342,8 +330,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 0.0002
+          "name": "SGD",
+          "lr": 0.002
         },
         "lr_scheduler_spec": null
       }
@@ -363,7 +351,8 @@
       "distributed": false,
       "eval_frequency": 20,
       "log_frequency": 20,
-      "max_session": 10,
+      "max_session": 8,
+      "max_concurrent_session":4,
       "max_trial": 1
     }
   }
