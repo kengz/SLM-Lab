@@ -24,6 +24,7 @@ xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.j
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_util_vs_default_or_util train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_le_self_play train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_le_with_naive_opponent train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_nopm_deploy_game_le_with_naive_opponent train
 
 
 # ./slm_lab/spec/experimental/le/run_coin_exp.sh

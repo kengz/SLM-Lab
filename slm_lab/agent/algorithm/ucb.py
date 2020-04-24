@@ -1,7 +1,8 @@
+import numpy as np
+
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.lib import logger
 from slm_lab.lib.decorator import lab_api
-import numpy as np
 
 logger = logger.get_logger(__name__)
 
@@ -25,12 +26,19 @@ class UCB1(Algorithm):
         self._value_estimates = np.zeros(self.k_choice)
         self.last_action = None
 
+        # Initialize with random priors to break intial symetry
+        # Tuned for the IPD game
+        # TODO should be linked to the env, not hardcoded
+        self._action_attempts = np.random.randint(0, 3, size=self._action_attempts.shape)
+        self._tot_n_attempts = self._action_attempts.sum()
+        self._value_estimates = np.random.uniform(-1, -3, size=self._value_estimates.shape)
+
     @lab_api
     def act(self, state):
         exploration = np.log(self._tot_n_attempts + 1) / self._action_attempts
         exploration[np.isnan(exploration)] = 0
         exploration = np.power(exploration, 1 / self.c)
-        for idx, (v_e,expl) in enumerate(zip(self._value_estimates.tolist(), exploration.tolist())):
+        for idx, (v_e, expl) in enumerate(zip(self._value_estimates.tolist(), exploration.tolist())):
             print("UCB1 idx", idx)
             self.to_log[f"UCB1_{idx}_mean"] = v_e
             self.to_log[f"UCB1_{idx}_expl"] = expl

@@ -149,16 +149,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
     def approximate_policy_from_history(self, opp_idx):
         s_coop_prob_dict = {}
-        # opp_actions = list(self.opponent_actions_queue[opp_idx])
-        # opp_states = list(self.opponent_states_queue[opp_idx])
-        # opp_actions_hash = list(self.opponent_actions_hash_queue[opp_idx])
-        # opp_states_hash = list(self.opponent_states_hash_queue[opp_idx])
         opp_data = list(self.data_queue[opp_idx])
 
         for v in opp_data:
             _, state_hash, action_hash, _ = v
-            # state_hash = self.hash_fn(s)
-            # action_hash = self.hash_fn(a)
+
             if state_hash not in s_coop_prob_dict.keys():
                 s_coop_prob_dict[state_hash] = {"n_occurences": 0}
             s_coop_prob_dict[state_hash]["n_occurences"] += 1
@@ -174,10 +169,6 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             for action_hash in s_coop_prob_dict[state_hash].keys():
                 if action_hash == "n_occurences":
                     continue
-                # s_coop_prob_dict[state_hash]
-                # s_coop_prob_dict[state_hash][action_hash]
-                # s_coop_prob_dict[state_hash][action_hash]["n_occurences"]
-                # s_coop_prob_dict[state_hash]["n_occurences"]
 
                 if not self.new_improved_perf:
                     s_coop_prob_dict[state_hash][action_hash]["a_proba"] = (
@@ -266,21 +257,10 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     logger.info(f"update queues {self.agent.agent_idx}")
 
                 # Update the coop networks simulating the opponents
-                # if self.remeaning_punishing_time <= 0:
                 computed_w = self.agent.welfare_function(algo.agent, r)
-                # assert w == r + my_r, f"w {w} r {r} my_r {my_r}"
-                # assert computed_w == r + my_r, f"w {w} r {r} my_r {my_r}"
-                # assert self.last_computed_w == w
-                # print(my_r, r, w, self.last_computed_w)
                 self.last_computed_w = computed_w
 
-                # if self.active_algo_idx != self.punish_algo_idx:
                 self.algorithms[coop_net_simul_opponent_idx].memory_update(s, a, computed_w, n_s, done)
-
-
-            #     train = False
-
-
 
 
             if done and self.n_steps_since_start >= self.length_of_history + self.warmup_length:
@@ -325,20 +305,12 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     log_lik_check_coop = log_lik_cooperate - log_lik_defect
                 assert len(log_lik_check_coop) == self.n_bootstrapped_replications
                 percentile_value = np.percentile(log_lik_check_coop, self.percentile, interpolation="linear")
-                # percentile_value_after = np.percentile(log_lik_check_coop, self.percentile+2.5, interpolation="linear")
-                # percentile_value_before = np.percentile(log_lik_check_coop, self.percentile-2.5, interpolation="linear")
-                # percentile_value_before_b = np.percentile(log_lik_check_coop, self.percentile-5, interpolation="linear")
 
                 self.to_log.update({
                     "log_lik_check_coop_std":log_lik_check_coop.std(),
                     "log_lik_check_coop_mean":log_lik_check_coop.mean()
                 })
 
-                # print(percentile_value_before_b, percentile_value_before, percentile_value, percentile_value_after)
-                # if (percentile_value - percentile_value_before) > (percentile_value_after -
-                #                                                    percentile_value_before_b)*0.9 :
-                #     print("VAR:::::")
-                #     assert 0
 
                 if self.debug:
                     logger.info(log_lik_check_coop.shape)
