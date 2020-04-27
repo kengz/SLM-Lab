@@ -1,5 +1,5 @@
 {
-   "ipd_rf_nopm_le_self_play": {
+   "ipd_rf_nopm_spl_le_self_play": {
     "world":{"name":"DefaultMultiAgentWorld",
              "deterministic":false},
     "agent": [{
@@ -14,7 +14,7 @@
         "name": "LE",
         "punishement_time": 1,
         "min_coop_time": 0,
-        "defection_detection_mode":"observed_actions",
+        "defection_detection_mode":"spl_observed_actions",
         "defection_carac_threshold": 0.0,
         "contained_algorithms": [
           {
@@ -61,6 +61,43 @@
           },
           {
             "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.2,
+                "end_val": 0.05,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "MSELoss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
           }
         ]
 
@@ -85,7 +122,7 @@
       "eval_frequency": 20,
       "log_frequency": 20,
       "max_session": 10,
-      "max_concurrent_session":4,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },
@@ -94,7 +131,7 @@
 
 
 
-  "ipd_rf_nopm_le_with_naive_coop": {
+  "ipd_rf_nopm_spl_le_with_naive_coop": {
     "world":{"name":"DefaultMultiAgentWorld",
              "deterministic":false},
 
@@ -108,7 +145,7 @@
         "name": "LE",
         "punishement_time": 1,
         "min_coop_time": 0,
-        "defection_detection_mode":"observed_actions",
+        "defection_detection_mode":"spl_observed_actions",
         "defection_carac_threshold": 0.0,
         "contained_algorithms": [
           {
@@ -155,6 +192,43 @@
           },
           {
             "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.2,
+                "end_val": 0.05,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "MSELoss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
           }
         ]
 
@@ -228,7 +302,7 @@
 
 
 
-  "ipd_rf_nopm_le_with_naive_opponent": {
+  "ipd_rf_nopm_spl_le_with_naive_opponent": {
     "world":{"name":"DefaultMultiAgentWorld",
              "deterministic":false},
 
@@ -242,7 +316,7 @@
         "name": "LE",
         "punishement_time": 1,
         "min_coop_time": 0,
-        "defection_detection_mode":"observed_actions",
+        "defection_detection_mode":"spl_observed_actions",
         "defection_carac_threshold": 0.0,
         "contained_algorithms": [
           {
@@ -291,6 +365,43 @@
           },
           {
             "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.2,
+                "end_val": 0.05,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "MSELoss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
           }
         ]
 

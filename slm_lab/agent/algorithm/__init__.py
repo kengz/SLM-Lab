@@ -11,3 +11,4 @@ from .sarsa import *
 from .sil import *
 from .meta_algorithm import *
 from .ucb import *
+from .sup_learn_action_policy import *

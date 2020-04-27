@@ -156,15 +156,18 @@ class PPO(ActorCritic):
 
         # H entropy regularization
         entropy = action_pd.entropy().mean()
+        # print("PPO probs",action_pd.probs[0:5,:])
+        # print("PPO entropy",action_pd.entropy()[0:5])
         self.body.mean_entropy = entropy  # update logging variable
-        ent_penalty = -self.entropy_coef_scheduler.val * entropy
+        # ent_penalty = -self.entropy_coef_scheduler.val * entropy
         self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
 
-        logger.debug(f'ent_penalty: {ent_penalty}')
+        # logger.debug(f'ent_penalty: {ent_penalty}')
 
-        policy_loss = clip_loss + ent_penalty
-        logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
-        return policy_loss
+        # policy_loss = clip_loss + ent_penalty
+        # logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
+        # return policy_loss
+        return clip_loss, entropy
 
     def train(self):
         if util.in_eval_lab_modes():
@@ -183,6 +186,12 @@ class PPO(ActorCritic):
                     if k not in ('advs', 'v_targets'):
                         batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
+            total_clip_loss = torch.tensor(0.0)
+            # total_clip_loss_grad = torch.tensor(0.0)
+            total_entropy = torch.tensor(0.0)
+            # total_ent_loss_grad = torch.tensor(0.0)
+            n_steps = 0
+
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
                 for minibatch in minibatches:
@@ -192,7 +201,13 @@ class PPO(ActorCritic):
                                 minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
-                    policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
+                    # policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
+                    clip_loss, entropy = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
+                    # ent_penalty.retain_grad()
+                    # clip_loss.retain_grad()
+                    ent_penalty = -self.entropy_coef_scheduler.val * entropy
+
+                    policy_loss = clip_loss + ent_penalty
                     val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
@@ -202,6 +217,19 @@ class PPO(ActorCritic):
                         self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
                         loss = policy_loss + val_loss
                     total_loss += loss
+                    total_clip_loss += clip_loss.mean().detach()
+                    total_entropy += entropy.mean().detach()
+                    # total_clip_loss_grad += clip_loss.grad.norm().item()
+                    # total_ent_loss_grad += ent_penalty.grad.norm().item()
+                    n_steps += 1
+
+            print("PPO total_ent_loss", total_entropy/n_steps)
+            self.to_log["entropy"] = total_entropy / n_steps
+            if total_clip_loss != 0.0:
+                self.to_log["entropy_over_loss"] = total_entropy / total_clip_loss
+            # if total_clip_loss_grad != 0.0:
+            #     self.to_log["grad_entropy_over_loss"] = total_ent_loss_grad / total_clip_loss_grad
+
             loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0
