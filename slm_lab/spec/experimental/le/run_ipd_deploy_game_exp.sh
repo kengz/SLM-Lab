@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Run this file
+# conda activate lab
 # ./slm_lab/spec/experimental/le/run_deploy_game_exp.sh
 
-#conda activate lab
 
 python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_default_or_util train
 python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_default_vs_default_or_util train

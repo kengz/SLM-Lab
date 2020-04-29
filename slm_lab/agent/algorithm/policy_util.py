@@ -262,7 +262,7 @@ class VarScheduler:
     },
     '''
 
-    def __init__(self, var_decay_spec=None):
+    def __init__(self, clock, var_decay_spec=None):
         self._updater_name = 'no_decay' if var_decay_spec is None else var_decay_spec['name']
         self._updater = getattr(math_util, self._updater_name)
         util.set_attr(self, dict(
@@ -285,11 +285,13 @@ class VarScheduler:
         if hasattr(self,"decay_rate"):
             self.kwargs["decay_rate"]= self.decay_rate
 
+        self.n_frames_at_init = clock.get('frame')
+
     def update(self, algorithm, clock):
         '''Get an updated value for var'''
         if (util.in_eval_lab_modes()) or self._updater_name == 'no_decay':
             return self.end_val
-        step = clock.get()
+        step = clock.get('frame') - self.n_frames_at_init
         self.val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step, **self.kwargs)
         return self.val
 

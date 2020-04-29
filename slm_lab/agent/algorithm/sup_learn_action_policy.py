@@ -59,10 +59,10 @@ class SupervisedLAPolicy(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
         self.explore_var_scheduler.start_val
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.body.env.clock, self.entropy_coef_spec)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -75,7 +75,7 @@ class SupervisedLAPolicy(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -134,7 +134,8 @@ class SupervisedLAPolicy(Algorithm):
         if self.body.env.is_venv:
             targets = math_util.venv_unpack(targets)
         preds = action_pd.probs
-        targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
+        if targets.dim() == 1:
+            targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
         print("spl preds", preds[0:5,:])
         print("spl targets", targets[0:5,:])
         supervised_learning_loss = self.net.loss_fn(preds, targets).mean()

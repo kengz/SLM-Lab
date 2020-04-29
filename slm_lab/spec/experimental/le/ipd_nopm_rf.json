@@ -84,8 +84,8 @@
       "distributed": false,
       "eval_frequency": 20,
       "log_frequency": 20,
-      "max_session": 10,
-      "max_concurrent_session":4,
+      "max_session": 1,
+      "max_concurrent_session":10,
       "max_trial": 1
     }
   },

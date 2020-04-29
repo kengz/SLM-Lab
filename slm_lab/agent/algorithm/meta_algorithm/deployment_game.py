@@ -26,6 +26,7 @@ class DeploymentGame(MetaAlgorithm):
         :param algo_idx:
         '''
 
+        self.algorithms = [] # To prevent crash
         super().__init__(agent, global_nets,
                          algorithm_spec=algorithm_spec,
                          memory_spec=None,

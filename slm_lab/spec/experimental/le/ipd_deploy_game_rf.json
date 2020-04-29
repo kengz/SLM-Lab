@@ -538,7 +538,8 @@
 
   "ipd_rf_deploy_game_le_self_play": {
     "world": {
-      "name": "DefaultMultiAgentWorld"
+      "name": "DefaultMultiAgentWorld",
+      "deterministic":false
     },
     "agent": [
       {
@@ -654,7 +655,8 @@
 
   "ipd_rf_deploy_game_le_with_naive_opponent": {
     "world": {
-      "name": "DefaultMultiAgentWorld"
+      "name": "DefaultMultiAgentWorld",
+      "deterministic":false
     },
     "agent": [
       {
@@ -853,7 +855,7 @@
       "distributed": false,
       "eval_frequency": 250,
       "log_frequency": 250,
-      "max_session": 10,
+      "max_session": 1,
       "max_trial": 1
     }
   },
@@ -867,8 +869,10 @@
 
 
   "ipd_rf_nopm_deploy_game_le_with_naive_opponent": {
-    "world":{"name":"DefaultMultiAgentWorld",
-             "deterministic":false},
+    "world":{
+      "name":"DefaultMultiAgentWorld",
+      "deterministic":false
+    },
 
     "agent": [{
         "name": "DeploymentGame",

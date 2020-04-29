@@ -59,7 +59,7 @@ class Clock:
         self.epi = 0
         self.start_wall_t = time.time()
         self.wall_t = 0
-        self.batch_size = 1  # multiplier to accurately count opt steps
+        # self.batch_size = 1  # multiplier to accurately count opt steps
         self.opt_step = 0  # count the number of optimizer updates
 
     def get(self, unit='frame'):

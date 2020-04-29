@@ -62,7 +62,7 @@ class SARSA(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
 
     @lab_api
@@ -74,7 +74,7 @@ class SARSA(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)

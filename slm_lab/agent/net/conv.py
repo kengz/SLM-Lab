@@ -52,7 +52,7 @@ class ConvNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, clock):
         '''
         net_spec:
         conv_hid_layers: list containing dimensions of the convolutional hidden layers, each is a list representing hid_layer = out_d, kernel, stride, padding, dilation.
@@ -76,7 +76,7 @@ class ConvNet(Net, nn.Module):
         '''
         assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
-        super().__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim, clock)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -233,10 +233,10 @@ class DuelingConvNet(ConvNet):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, clock):
         assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, in_dim, out_dim)
+        Net.__init__(self, net_spec, in_dim, out_dim, clock)
         # set default
         util.set_attr(self, dict(
             init_fn=None,

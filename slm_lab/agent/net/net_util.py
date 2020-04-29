@@ -339,7 +339,7 @@ def init_global_nets(algorithms):
 
         # Support nested algorithms
         if isinstance(algorithm, list):
-            print("recurcive")
+            logger.info("recurcive init_global_nets")
             global_nets = init_global_nets(algorithms)
         else:
             dist_mode = algorithm.agent.spec['meta']['distributed']

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Run this file
+# conda activate lab
 # ./slm_lab/spec/experimental/le/run_coin_exp.sh
 
-#conda activate lab
 
 #python3 run_lab.py slm_lab/spec/experimental/le/coin_rf.json coin_rf train
 #python3 run_lab.py slm_lab/spec/experimental/le/coin_rf.json coin_rf_util train

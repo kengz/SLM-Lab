@@ -154,6 +154,14 @@ class Algorithm(ABC):
     def get_log_values(self):
         if hasattr(self, "net"):
             self.to_log['opt_step'] = self.net.opt_step
+        if hasattr(self, "lr_scheduler"):
+            lr = self.lr_scheduler.get_lr()
+            if np.isscalar(lr):
+                self.to_log['lr'] = lr
+            else:
+                for idx, lr_i in enumerate(lr):
+                    self.to_log[f'lr_{idx}'] = lr_i
+
 
         to_log = self.to_log
         self.to_log = {}

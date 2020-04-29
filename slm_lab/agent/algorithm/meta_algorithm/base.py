@@ -58,7 +58,10 @@ class MetaAlgorithm(algorithm.Algorithm):
     def init_nets(self, global_nets=None):
         '''Initialize the neural network from the spec
         '''
-        pass
+        # TODO support saving
+        self.net_names = []
+        for algo in self.algorithms:
+            self.net_names.append(algo.net_names)
 
     @abstractmethod
     def memory_update(self, state, action, welfare, next_state, done):

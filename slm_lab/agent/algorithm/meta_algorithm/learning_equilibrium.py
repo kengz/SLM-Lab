@@ -118,7 +118,14 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         self.debug = False
 
+        # Modif/Improvements
         self.new_improved_perf = True
+
+        self.average_d_carac = True
+        self.average_d_carac_len = 20
+        self.defection_carac_queue = deque(maxlen=self.average_d_carac_len)
+
+        self.use_historical_policy_as_target = True
 
     def act(self, state):
         action, action_pd = self.algorithms[self.active_algo_idx].act(state)
@@ -167,12 +174,15 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             v = str(object)
         return v
 
-    def approximate_policy_from_history(self, opp_idx):
+    def approximate_policy_from_history(self, opp_idx, separate_actions=True):
         s_coop_prob_dict = {}
         opp_data = list(self.data_queue[opp_idx])
 
         for v in opp_data:
-            _, state_hash, action_hash, _ = v
+            if self.opp_policy_from_supervised_learning:
+                _, state_hash, action_hash, _, _ = v
+            else:
+                _, state_hash, action_hash, _ = v
 
             if state_hash not in s_coop_prob_dict.keys():
                 s_coop_prob_dict[state_hash] = {"n_occurences": 0}
@@ -181,7 +191,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             if action_hash not in s_coop_prob_dict[state_hash].keys():
                 s_coop_prob_dict[state_hash][action_hash] = {"n_occurences": 0,
                                                              "a_proba": 0,
-                                                             }  # "a": a}
+                                                             } #"a": a}
             s_coop_prob_dict[state_hash][action_hash]["n_occurences"] += 1
 
         results = {}
@@ -190,14 +200,23 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 if action_hash == "n_occurences":
                     continue
 
+                v = (s_coop_prob_dict[state_hash][action_hash]["n_occurences"] /
+                    s_coop_prob_dict[state_hash]["n_occurences"])
+                if v == 0.0:
+                    v = self.epsilon
                 if not self.new_improved_perf:
-                    s_coop_prob_dict[state_hash][action_hash]["a_proba"] = (
-                            s_coop_prob_dict[state_hash][action_hash]["n_occurences"] /
-                            s_coop_prob_dict[state_hash]["n_occurences"]) + self.epsilon
+                    s_coop_prob_dict[state_hash][action_hash]["a_proba"] = v
                 else:
-                    results[state_hash+action_hash] = (
-                            s_coop_prob_dict[state_hash][action_hash]["n_occurences"] /
-                            s_coop_prob_dict[state_hash]["n_occurences"]) + self.epsilon
+                    if not separate_actions:
+                        if state_hash not in results:
+                            if not self.agent.body.action_space_is_discrete:
+                                raise NotImplementedError()
+                            results[state_hash] = np.zeros(shape=self.agent.body.action_dim)
+
+                        a = int(action_hash)
+                        results[state_hash][a] = v
+                    else:
+                        results[state_hash+action_hash] = v
 
         if self.debug:
             logger.info(f"histo_opp_action_pc {self.agent.agent_idx} {s_coop_prob_dict}")
@@ -206,6 +225,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             return (lambda state_action_hash:
                     s_coop_prob_dict[state_action_hash[1]][state_action_hash[2]]["a_proba"])
         else:
+            # print("results",results)
             return results
 
     # @profile
@@ -214,10 +234,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         train = True
 
         if done:
-            self.defection_carac_tot = 0
-            self.defection_carac_steps = 0
-            self.algo_temp_info['log_defection_carac_tot'] = 0
-            self.algo_temp_info['log_defection_carac_steps'] = 0
+            if not self.average_d_carac:
+                self.defection_carac_tot = 0
+                self.defection_carac_steps = 0
+                self.algo_temp_info['log_defection_carac_tot'] = 0
+                self.algo_temp_info['log_defection_carac_steps'] = 0
 
         if not self.is_fully_init:
             self.n_steps_since_start = 0
@@ -287,6 +308,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                                           dtype=np.float32))
 
                 # Store for later
+                self.n_steps_since_start += 1
                 if self.opp_policy_from_history:
                     self.data_queue[opp_idx].append([log_likelihood_opponent_cooporating,
                                                      self.hash_fn(s),
@@ -300,9 +322,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                      self.hash_fn(s)+self.hash_fn(a),
                                                      log_likelihood_approximated_opponent])
 
-                self.n_steps_since_start += 1
-                if self.debug:
-                    logger.info(f"update queues {self.agent.agent_idx}")
+
+
+
 
                 # Update the coop networks simulating the opponents
                 computed_w = self.agent.welfare_function(algo.agent, r)
@@ -311,7 +333,18 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
                 if self.opp_policy_from_supervised_learning:
                     # Update the networks learning the actual opponents policy (with supervised learning)
-                    self.algorithms[approx_net_opponent_policy_idx].memory_update(s, a, None, None, done)
+                    if self.use_historical_policy_as_target:
+                        opp_historical_policy = self.approximate_policy_from_history(opp_idx, separate_actions=False)
+                        one_hot_target = opp_historical_policy[self.hash_fn(s)]
+                        # print("target",one_hot_target)
+                        self.algorithms[approx_net_opponent_policy_idx].memory_update(s, one_hot_target, None, None,
+                                                                                      done)
+                    else:
+                        self.algorithms[approx_net_opponent_policy_idx].memory_update(s, a, None, None, done)
+
+
+
+
 
             if done and self.n_steps_since_start >= self.length_of_history + self.warmup_length:
                 if not self.new_improved_perf:
@@ -334,7 +367,10 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
                 # Get the log_likelihood of the observed actions under the computed opponent policy
                 if self.opp_policy_from_history:
+                    # if "opp_historical_policy" not in locals():
                     opp_historical_policy = self.approximate_policy_from_history(opp_idx)
+                    # else:
+                    #     print("reuse opp_historical_policy")
                     if not self.new_improved_perf:
                         bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy(data)
                                                                          for data in bs_data]
@@ -388,10 +424,19 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                           axis=1)
                         plot_hist(value_list=self.to_plot,
                                   save_to=f"./diff_distrib_{self.agent.agent_idx}__{self.n_steps_since_start}.png")
-                self.defection_carac_tot += -percentile_value
-                self.defection_carac_steps += 1
-                self.algo_temp_info['log_defection_carac_tot'] += -percentile_value
-                self.algo_temp_info['log_defection_carac_steps'] += 1
+
+                if self.average_d_carac:
+                    self.defection_carac_queue.append(-percentile_value)
+                    defection_carac_tot = sum(list(self.defection_carac_queue))
+                    self.defection_carac_tot = defection_carac_tot
+                    self.defection_carac_steps = len(self.defection_carac_queue)
+                    self.algo_temp_info['log_defection_carac_tot'] = defection_carac_tot
+                    self.algo_temp_info['log_defection_carac_steps'] = len(self.defection_carac_queue)
+                else:
+                    self.defection_carac_tot += -percentile_value
+                    self.defection_carac_steps += 1
+                    self.algo_temp_info['log_defection_carac_tot'] += -percentile_value
+                    self.algo_temp_info['log_defection_carac_steps'] += 1
 
         if not self.is_fully_init:
             self.is_fully_init = True

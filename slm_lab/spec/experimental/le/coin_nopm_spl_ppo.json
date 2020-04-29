@@ -60,7 +60,7 @@
               "shared": true,
               "fc_hid_layers": [16],
               "hid_layers_activation": "relu",
-              "init_fn": "kaiming_normal_",
+              "init_fn": "orthogonal_",
               "normalize": false,
               "batch_norm": false,
               "clip_grad_val": 0.5,
@@ -111,23 +111,16 @@
                 [16, 3, 1,1,1],
                 [32,3,1,0,1]
               ],
-              "shared": true,
-              "fc_hid_layers": [
-                16
-              ],
+              "fc_hid_layers": [16],
               "hid_layers_activation": "relu",
-              "init_fn": "kaiming_normal_",
+              "init_fn": "orthogonal_",
               "normalize": false,
               "batch_norm": false,
-              "use_same_optim": false,
+              "clip_grad_val": 0.5,
               "loss_spec": {
                 "name": "MSELoss"
               },
-              "actor_optim_spec": {
-                "name": "Adam",
-                "lr": 8e-4
-              },
-              "critic_optim_spec": {
+              "optim_spec": {
                 "name": "Adam",
                 "lr": 8e-4
               },
@@ -306,11 +299,7 @@
               "loss_spec": {
                 "name": "MSELoss"
               },
-              "actor_optim_spec": {
-                "name": "Adam",
-                "lr": 8e-4
-              },
-              "critic_optim_spec": {
+              "optim_spec": {
                 "name": "Adam",
                 "lr": 8e-4
               },
@@ -402,7 +391,7 @@
       "distributed": false,
       "eval_frequency": 400,
       "log_frequency": 400,
-      "max_session": 1,
+      "max_session": 10,
       "max_concurrent_session":10,
       "max_trial": 1
     }
@@ -545,11 +534,7 @@
               "loss_spec": {
                 "name": "MSELoss"
               },
-              "actor_optim_spec": {
-                "name": "Adam",
-                "lr": 8e-4
-              },
-              "critic_optim_spec": {
+              "optim_spec": {
                 "name": "Adam",
                 "lr": 8e-4
               },
@@ -640,7 +625,7 @@
       "distributed": false,
       "eval_frequency": 400,
       "log_frequency": 400,
-      "max_session": 1,
+      "max_session": 10,
       "max_concurrent_session":10,
       "max_trial": 1
     }

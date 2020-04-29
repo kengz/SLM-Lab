@@ -66,9 +66,9 @@ class SoftActorCritic(ActorCritic):
         QNetClass = getattr(net, 'Q' + self.net_spec['type'])
         q_in_dim = [self.body.observation_dim, self.body.action_dim]
         self.q1_net = QNetClass(self.net_spec, q_in_dim, 1)
-        self.target_q1_net = QNetClass(self.net_spec, q_in_dim, 1)
+        self.target_q1_net = QNetClass(self.net_spec, q_in_dim, 1, self.body.env.clock)
         self.q2_net = QNetClass(self.net_spec, q_in_dim, 1)
-        self.target_q2_net = QNetClass(self.net_spec, q_in_dim, 1)
+        self.target_q2_net = QNetClass(self.net_spec, q_in_dim, 1, self.body.env.clock)
         self.net_names += ['q1_net', 'target_q1_net', 'q2_net', 'target_q2_net']
         net_util.copy(self.q1_net, self.target_q1_net)
         net_util.copy(self.q2_net, self.target_q2_net)

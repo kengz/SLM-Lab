@@ -42,7 +42,7 @@ class MLPNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, clock):
         '''
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
@@ -59,7 +59,7 @@ class MLPNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         nn.Module.__init__(self)
-        super().__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim, clock)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -177,7 +177,7 @@ class HydraMLPNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, clock):
         '''
         Multi state processing heads, single shared body, and multi action tails.
         There is one state and action head per body/environment
@@ -202,7 +202,7 @@ class HydraMLPNet(Net, nn.Module):
            env 1 action      env 2 action
         '''
         nn.Module.__init__(self)
-        super().__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim, clock)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -344,9 +344,9 @@ class DuelingMLPNet(MLPNet):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, clock):
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, in_dim, out_dim)
+        Net.__init__(self, net_spec, in_dim, out_dim, clock)
         # set default
         util.set_attr(self, dict(
             init_fn=None,

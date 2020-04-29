@@ -4,7 +4,6 @@ import os
 from glob import glob
 
 import colorlover as cl
-import numpy as np
 import pydash as ps
 from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
@@ -170,6 +169,29 @@ def add_all_extra_col(name_time_pairs, session_df):
     return name_time_pairs
 
 
+def add_summary_plots(name_time_pairs, session_df):
+    first_df = [session_df[k] for k in session_df.keys()][0]
+
+    all_col = first_df.columns
+    all_col_for_multiple_alg = [col.split("_alg")[0] for col in all_col if "_alg" in col]
+    summary_to_produce = list(set(all_col_for_multiple_alg))
+
+    for summary_name in summary_to_produce:
+        summary_col_list = []
+        for df_col in first_df.columns:
+            if df_col == summary_name:
+                summary_col_list.append(df_col)
+            elif "_alg" in df_col:
+                if df_col.split("_alg")[0] == summary_name:
+                    summary_col_list.append(df_col)
+
+        if len(summary_col_list) > 0:
+            summary_col_list.sort()
+            name_time_pairs.append((summary_col_list, 'frame'))
+
+    return name_time_pairs
+
+
 def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=False):
     '''
     Plot the session graphs:
@@ -189,7 +211,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('train._effici.', 'opt_steps'),
         ('stabilities', 'frames'),
     ]
-    for name, time in name_time_pairs:
+    for col_names_to_select, time in name_time_pairs:
         str_list = []
         time_sr_list = []
         name_list = []
@@ -197,8 +219,8 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         for k in session_metrics.keys():
             local_metrics = session_metrics[k]['local']
 
-            if name in local_metrics.keys():
-                sr = local_metrics[name]
+            if col_names_to_select in local_metrics.keys():
+                sr = local_metrics[col_names_to_select]
                 x = local_metrics[time]
 
                 # print("len(sr), len(x)", len(sr), len(x), "name",name)
@@ -218,13 +240,13 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
                 name_list.append(k)
 
         if ma:
-            name = f'{name}_ma'  # for labeling
+            col_names_to_select = f'{col_names_to_select}_ma'  # for labeling
 
         fig = plot_several_sr(
-            str_list, time_sr_list, title, name, time, name_list=name_list)
-        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-        if name in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
-            save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+            str_list, time_sr_list, title, col_names_to_select, time, name_list=name_list)
+        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{col_names_to_select}_vs_{time}.png')
+        if col_names_to_select in ('mean_r', 'mean_r_ma'):  # save important graphs in prepath directly
+            save_image(fig, f'{prepath}_session_graph_{df_mode}_{col_names_to_select}_vs_{time}.png')
 
     # if ma:
     #     return
@@ -235,35 +257,48 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('entropy', 'frame'),
     ]
     name_time_pairs = add_all_extra_col(name_time_pairs, session_df)
+    name_time_pairs = add_summary_plots(name_time_pairs, session_df)
     if ma:
         ma_exlusion = ['opt_step']
         name_time_pairs = [el for el in name_time_pairs if all([excluded not in el[0] for excluded in ma_exlusion])]
-    for name, time in name_time_pairs:
+    for col_names_to_select, time in name_time_pairs:
         str_list = []
         time_sr_list = []
         name_list = []
 
+        # Work with a list of col to select per plot
+        if not isinstance(col_names_to_select, list):
+            col_names_to_select = [col_names_to_select]
+
         for k in session_df.keys():
             s_df = session_df[k]
 
-            if name in s_df.columns:
-                sr = s_df[name]
-                x = s_df[time]
+            for col in s_df.columns:
+                if col in col_names_to_select:
+                    # if col_names_to_select in s_df.columns:
+                    sr = s_df[col]
+                    x = s_df[time]
 
-                # not_nan = [not np.isnan(el) for el in sr]
-                # x[:] = [el for el, keep in zip(x, not_nan) if keep]
-                # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
-                # x = x[not_nan]
-                # sr = sr[not_nan]
-                x = x.dropna()
-                sr = sr.dropna()
+                    # not_nan = [not np.isnan(el) for el in sr]
+                    # x[:] = [el for el, keep in zip(x, not_nan) if keep]
+                    # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
+                    # x = x[not_nan]
+                    # sr = sr[not_nan]
+                    x = x.dropna()
+                    sr = sr.dropna()
 
-                if ma:
-                    sr = calc_sr_ma(sr)
+                    if ma:
+                        sr = calc_sr_ma(sr)
 
-                str_list.append(sr)
-                time_sr_list.append(x)
-                name_list.append(k)
+                    str_list.append(sr)
+                    time_sr_list.append(x)
+                    name_list.append(k + '_' + col)
+
+        # Use the first one as label in plot
+        if len(col_names_to_select) == 1:
+            name = col_names_to_select[0]
+        elif len(col_names_to_select) > 1:
+            name = "all_" + col_names_to_select[0]
 
         if ma:
             name = f'{name}_ma'  # for labeling

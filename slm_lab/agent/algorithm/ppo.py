@@ -100,11 +100,11 @@ class PPO(ActorCritic):
         self.training_frequency = self.time_horizon  # since all memories stores num_envs by batch in list
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
         # extra variable decays for PPO
-        self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
+        self.clip_eps_scheduler = policy_util.VarScheduler(self.body.env.clock, self.clip_eps_spec)
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.body.env.clock, self.entropy_coef_spec)
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
@@ -217,16 +217,21 @@ class PPO(ActorCritic):
                         self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
                         loss = policy_loss + val_loss
                     total_loss += loss
-                    total_clip_loss += clip_loss.mean().detach()
-                    total_entropy += entropy.mean().detach()
+                    total_clip_loss += clip_loss.detach().norm()
+                    total_entropy += entropy.detach().norm()
                     # total_clip_loss_grad += clip_loss.grad.norm().item()
                     # total_ent_loss_grad += ent_penalty.grad.norm().item()
                     n_steps += 1
 
-            print("PPO total_ent_loss", total_entropy/n_steps)
+            # print("PPO total_ent_loss", total_entropy/n_steps)
             self.to_log["entropy"] = total_entropy / n_steps
+            self.to_log["loss_clip_norm"] = total_clip_loss / n_steps
             if total_clip_loss != 0.0:
-                self.to_log["entropy_over_loss"] = total_entropy / total_clip_loss
+                self.to_log["entropy_over_loss"] = (total_entropy / total_clip_loss).clamp(min=-100, max=100)
+                # if abs(total_entropy / total_clip_loss) < 100:
+                #     self.to_log["entropy_over_loss"] = total_entropy / total_clip_loss
+                # else:
+                #     self.to_log["entropy_over_loss"] = torch.clamp(min=-100, max =100)
             # if total_clip_loss_grad != 0.0:
             #     self.to_log["grad_entropy_over_loss"] = total_ent_loss_grad / total_clip_loss_grad
 
@@ -234,7 +239,7 @@ class PPO(ActorCritic):
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
-            self.to_log["loss"] = loss.item()
+            self.to_log["loss_tot"] = loss.item()
             return loss.item()
         else:
             return np.nan

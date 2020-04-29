@@ -8,7 +8,7 @@ import torch.nn as nn
 class Net(ABC):
     '''Abstract Net class to define the API methods'''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, clock):
         '''
         @param {dict} net_spec is the spec for the net
         @param {int|list} in_dim is the input dimension(s) for the network. Usually use in_dim=body.state_dim
@@ -27,6 +27,7 @@ class Net(ABC):
             self.device = 'cpu'
 
         self.opt_step = 0
+        self.n_frames_at_init = clock.get('frame')
 
     @abstractmethod
     def forward(self):
@@ -36,7 +37,13 @@ class Net(ABC):
     @net_util.dev_check_train_step
     def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
         if lr_scheduler is not None:
-            lr_scheduler.step(epoch=ps.get(clock, 'frame'))
+            n_frame_since_init = clock.get('frame') - self.n_frames_at_init
+            if hasattr(lr_scheduler,"last_epoch"):
+                while lr_scheduler.last_epoch < n_frame_since_init:
+                    lr_scheduler.step()
+            else:
+                lr_scheduler.step(epoch=n_frame_since_init)
+
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
@@ -46,10 +53,10 @@ class Net(ABC):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        if clock is not None:
-            # clock.tick('opt_step')
-            self.opt_step += 1
-            # TODO check that this is supported
+        # if clock is not None:
+        # clock.tick('opt_step')
+        # TODO check that this is supported
+        self.opt_step += 1
         optim.zero_grad()
 
         return loss

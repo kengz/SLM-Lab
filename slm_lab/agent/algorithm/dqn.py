@@ -82,7 +82,7 @@ class VanillaDQN(SARSA):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)

@@ -67,10 +67,10 @@ class Reinforce(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
         self.explore_var_scheduler.start_val
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.body.env.clock, self.entropy_coef_spec)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -83,7 +83,7 @@ class Reinforce(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -152,7 +152,13 @@ class Reinforce(Algorithm):
             self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
             entropy_loss = (-self.entropy_coef_scheduler.val * entropy)
             if policy_loss != 0.0:
-                self.to_log["entropy_over_loss"] = entropy_loss / policy_loss
+                self.to_log["entropy_over_loss"] = (entropy_loss / policy_loss).clamp(min=-100, max=100)
+
+                # if entropy_loss / policy_loss < 100:
+                #     self.to_log["entropy_over_loss"] = entropy_loss / policy_loss
+                # else:
+                #     self.to_log["entropy_over_loss"] = 100
+            self.to_log["loss_policy"] = policy_loss
             policy_loss += entropy_loss
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
@@ -164,7 +170,7 @@ class Reinforce(Algorithm):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
-            clock.set_batch_size(len(batch))
+            # self.clock.set_batch_size(len(batch))
             pd_param = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pd_param, advs)
@@ -172,7 +178,7 @@ class Reinforce(Algorithm):
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
-            self.to_log["loss"] = loss.item()
+            self.to_log["loss_tot"] = loss.item()
             return loss.item()
         else:
             return np.nan

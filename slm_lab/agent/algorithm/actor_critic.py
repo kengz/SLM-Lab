@@ -97,10 +97,10 @@ class ActorCritic(Reinforce):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.body.env.clock, self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # Select appropriate methods to calculate advs and v_targets for training
         if self.lam is not None:
@@ -148,12 +148,12 @@ class ActorCritic(Reinforce):
         out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
         # main actor network, may contain out_dim self.shared == True
         NetClass = getattr(net, actor_net_spec['type'])
-        self.net = NetClass(actor_net_spec, in_dim, out_dim)
+        self.net = NetClass(actor_net_spec, in_dim, out_dim, self.body.env.clock)
         self.net_names = ['net']
         if not self.shared:  # add separate network for critic
             critic_out_dim = 1
             CriticNetClass = getattr(net, critic_net_spec['type'])
-            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim, self.body.env.clock)
             self.net_names.append('critic_net')
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
