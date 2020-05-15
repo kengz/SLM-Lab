@@ -9,6 +9,7 @@ from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
 
 from slm_lab.lib import logger, util
+import numpy as np
 
 logger = logger.get_logger(__name__)
 
@@ -77,6 +78,44 @@ def plot(*args, **kwargs):
     if util.is_jupyter():
         return iplot(*args, **kwargs)
 
+
+def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
+    '''Plot a series'''
+    x = time_sr.tolist()
+    color = color or get_palette(1)[0]
+    main_trace = go.Scatter(
+        x=x, y=sr, mode='lines', showlegend=False,
+        line={'color': color, 'width': 1},
+    )
+    data = [main_trace]
+    layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+    fig = go.Figure(data, layout)
+    plot(fig)
+    return fig
+
+
+def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
+    '''Plot a list of series using its mean, with error bar using std'''
+    mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
+    max_sr = mean_sr + std_sr
+    min_sr = mean_sr - std_sr
+    max_y = max_sr.tolist()
+    min_y = min_sr.tolist()
+    x = time_sr.tolist()
+    color = color or get_palette(1)[0]
+    main_trace = go.Scatter(
+        x=x, y=mean_sr, mode='lines', showlegend=False,
+        line={'color': color, 'width': 1},
+    )
+    envelope_trace = go.Scatter(
+        x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
+        line={'color': 'rgba(0, 0, 0, 0)'},
+        fill='tozerox', fillcolor=lower_opacity(color, 0.15),
+    )
+    data = [main_trace, envelope_trace]
+    layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+    fig = go.Figure(data, layout)
+    return fig
 
 def plot_several_sr(sr_list, time_sr_list, title, y_title, x_title,
                     color=None, name_list=None):
@@ -191,6 +230,18 @@ def add_summary_plots(name_time_pairs, session_df):
 
     return name_time_pairs
 
+def remove_nan(sr,x):
+    not_nan = [not np.isnan(el) for el in sr]
+    sr = sr[not_nan]
+    if len(not_nan) < len(x):
+        not_nan_x = [False] * (len(x) - len(not_nan)) + not_nan
+    elif len(not_nan) > len(x):
+        raise NotImplementedError()
+    else:
+        not_nan_x = not_nan
+    x = x[not_nan_x]
+
+    return sr, x
 
 def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=False):
     '''
@@ -223,14 +274,17 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
                 sr = local_metrics[col_names_to_select]
                 x = local_metrics[time]
 
-                # print("len(sr), len(x)", len(sr), len(x), "name",name)
+                # print("len(sr), len(x)", len(sr), len(x), "name",col_names_to_select, "k", k)
                 # not_nan = [not np.isnan(el) for el in sr]
-                # x[:] = [el for el, keep in zip(x, not_nan) if keep]
-                # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
-                # x = x[[not np.isnan(el) for el in x]]
-                # sr = sr[[not np.isnan(el) for el in sr]]
-                x = x.dropna()
-                sr = sr.dropna()
+                # sr = sr[not_nan]
+                # if len(not_nan) < len(x):
+                #     not_nan_x = [False] * (len(x) - len(not_nan)) + not_nan
+                # elif len(not_nan) > len(x):
+                #     raise NotImplementedError()
+                # else:
+                #     not_nan_x = not_nan
+                # x = x[not_nan_x]
+                sr, x = remove_nan(sr,x)
 
                 if ma:
                     sr = calc_sr_ma(sr)
@@ -280,12 +334,15 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
                     x = s_df[time]
 
                     # not_nan = [not np.isnan(el) for el in sr]
-                    # x[:] = [el for el, keep in zip(x, not_nan) if keep]
-                    # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
-                    # x = x[not_nan]
                     # sr = sr[not_nan]
-                    x = x.dropna()
-                    sr = sr.dropna()
+                    # if len(not_nan) < len(x):
+                    #     not_nan_x = [False] * (len(x) - len(not_nan)) + not_nan
+                    # elif len(not_nan) > len(x):
+                    #     raise NotImplementedError()
+                    # else:
+                    #     not_nan_x = not_nan
+                    # x = x[not_nan_x]
+                    sr, x = remove_nan(sr, x)
 
                     if ma:
                         sr = calc_sr_ma(sr)
@@ -346,17 +403,20 @@ def plot_trial(trial_spec=None, trial_metrics=None, ma=False,
                     sr = local_metrics[name]
                     x = local_metrics[time]
 
+                    # TODO improve this (apply nan with keeping coherent min, max, avg)
+                    # Not removing any nan. Otherwise the mean, avg, max means nothing ?
                     # not_nan = [not np.isnan(el) for el in sr]
-                    # x[:] = [el for el, keep in zip(x, not_nan) if keep]
-                    # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
-                    # x = x[not_nan]
                     # sr = sr[not_nan]
-                    x = x.dropna()
-                    sr = sr.dropna()
+                    # if len(not_nan) < len(x):
+                    #     not_nan_x = [False] * (len(x) - len(not_nan)) + not_nan
+                    # elif len(not_nan) > len(x):
+                    #     raise NotImplementedError()
+                    # else:
+                    #     not_nan_x = not_nan
+                    # x = x[not_nan_x]
 
                     if ma:
                         sr = calc_sr_ma(sr)
-                        # name = f'{name}_ma'  # for labeling
 
                     sr_list.append(sr)
                     time_list.append(x)
@@ -382,17 +442,12 @@ def plot_trial(trial_spec=None, trial_metrics=None, ma=False,
                     sr_list = local_metrics[name]
                     x = local_metrics[time]
 
-                    # not_nan = [not np.isnan(el) for el in sr]
-                    # x[:] = [el for el, keep in zip(x, not_nan) if keep]
-                    # sr[:] = [el for el, keep in zip(sr, not_nan) if keep]
-                    # x = x[not_nan]
-                    # sr = sr[not_nan]
-                    x = x.dropna()
-                    # sr = sr.dropna()
+                    # TODO improve this (apply nan with keeping coherent min, max, avg)
+                    # Not removing any nan. Otherwise the mean, avg, max means nothing ?
 
                     if ma:
-                        sr_list = [calc_sr_ma(sr.dropna()) for sr in sr_list]
-                        # name = f'{name}_ma'  # for labeling
+                        # sr_list = [calc_sr_ma(sr.dropna()) for sr in sr_list]
+                        sr_list = [calc_sr_ma(sr) for sr in sr_list]
 
                     sr_list_list.append(sr_list)
                     time_list.append(x)
@@ -451,6 +506,7 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     return fig
 
 
+# TODO modify to support unctions below
 def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title, palette=None, showlegend=True):
     '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
     palette = palette or get_palette(len(local_metrics_list))

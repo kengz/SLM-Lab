@@ -755,16 +755,16 @@ import time
 
 
 class Throttle_Temp():
-    def __init__(self,temp_limit=80, verbose=False):
+    def __init__(self,temp_limit=80, verbose=False, P=-0.1, I=-0.01, D=-0.01):
         self.sleep_time = 0.2
         self.base_sleep = 2.0
         self.step = 0.2
         self.temp_limit = temp_limit
         self.verbose = verbose
 
-        P = -0.1 #-0.01
-        I = -0.01 #-0.01
-        D = -0.01 #-0.002
+        # P = -0.1 #-0.01
+        # I = -0.01 #-0.01
+        # D = -0.01 #-0.002
 
         self.pid = PID(P, I, D)
         self.pid.SetPoint = temp_limit
@@ -811,12 +811,13 @@ class PID:
     """PID Controller
     """
 
-    def __init__(self, P=0.2, I=0.0, D=0.0, current_time=None):
+    def __init__(self, P=0.2, I=0.0, D=0.0, current_time=None, verbose=False):
 
         self.Kp = P
         self.Ki = I
         self.Kd = D
 
+        self.verbose = verbose
         self.sample_time = 0.00
         self.current_time = current_time if current_time is not None else time.time()
         self.last_time = self.current_time
@@ -857,7 +858,7 @@ class PID:
         delta_error = error - self.last_error
 
         if (delta_time >= self.sample_time):
-            self.PTerm = self.Kp * error
+            self.PTerm =  error
             self.ITerm += error * delta_time
 
             if (self.ITerm < -self.windup_guard):
@@ -869,11 +870,14 @@ class PID:
             if delta_time > 0:
                 self.DTerm = delta_error / delta_time
 
+            if self.verbose:
+                print("PTerm", self.PTerm, "ITerm", self.ITerm, "DTerm", self.DTerm)
+
             # Remember last time and last error for next calculation
             self.last_time = self.current_time
             self.last_error = error
 
-            self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
+            self.output = (self.Kp * self.PTerm) + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
 
     def setKp(self, proportional_gain):
         """Determines how aggressively the PID reacts to the current error with setting Proportional Gain"""

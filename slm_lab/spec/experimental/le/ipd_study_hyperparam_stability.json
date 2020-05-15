@@ -1,0 +1,3536 @@
+{
+   "ipd_study_hyperparams_nopm_le_self_play_mod_lr": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008
+              },
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0008,
+                "momentum":0.975
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008
+              },
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0008,
+                "momentum":0.975
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":10,
+      "max_trial": 1
+    },
+     "search": {
+      "agent": [
+        {
+        "algorithm": {
+          "contained_algorithms": [
+          {
+            "net": {
+              "optim_spec": {
+                  "lr__grid_search": [ 0.008]
+              }
+            }
+          }
+          ]
+        }
+      }]
+    }
+  },
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_le_self_play_mod_lr_008": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":false,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": 5.0,
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "CyclicLR",
+                "base_lr": 0.001,
+                "max_lr": 0.008,
+                "step_size_up": 5000,
+                "step_size_down": 15000
+              }
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.0,
+                "end_val": 0.0,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "loss_spec": {
+                "name": "SmoothL1Loss",
+                "reduction":"none"
+              },
+              "clip_grad_val": 5.0,
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "CyclicLR",
+                "base_lr": 0.001,
+                "max_lr": 0.008,
+                "step_size_up": 5000,
+                "step_size_down": 15000
+              }
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":false,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": 5.0,
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "CyclicLR",
+                "base_lr": 0.001,
+                "max_lr": 0.008,
+                "step_size_up": 5000,
+                "step_size_down": 15000
+              }
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.0,
+                "end_val": 0.0,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "loss_spec": {
+                "name": "SmoothL1Loss",
+                "reduction":"none"
+              },
+              "clip_grad_val": 5.0,
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "CyclicLR",
+                "base_lr": 0.001,
+                "max_lr": 0.008,
+                "step_size_up": 5000,
+                "step_size_down": 15000
+              }
+            }
+          }
+        ]
+
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 8,
+      "max_concurrent_session":10,
+      "max_trial": 1
+    }
+  },
+
+
+
+  "ipd_study_hyperparams_nopm_le_self_play_mod_lr_002": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":true,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0002,
+                "momentum":0.9
+              },
+              "clip_grad_val": 5.0,
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.0,
+                "end_val": 0.0,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.002,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":true,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0008,
+                "momentum":0.9
+              },
+              "clip_grad_val": 5.0,
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.0,
+                "end_val": 0.0,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":10,
+      "max_trial": 1
+    }
+  },
+
+
+
+  "ipd_study_hyperparams_nopm_le_self_play_mod_lr_004": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.004
+              },
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.004,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008
+              },
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+  "ipd_study_hyperparams_nopm_le_self_play_mod_lr_016": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.016
+              },
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                 "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.016,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": null
+            }
+          }
+        ]
+
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+  "ipd_study_hyperparams_nopm_le_self_play_mod_lr_032": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":true,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0032,
+                "momentum":0.9
+              },
+              "clip_grad_val": 5.0,
+              "lr_scheduler_spec": {
+                "name": "LinearToZero",
+                "frame": 20000
+              }
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.0,
+                "end_val": 0.0,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.032,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "LinearToZero",
+                "frame": 20000
+              }
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":true,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.0008,
+                "momentum":0.9
+              },
+              "clip_grad_val": 5.0,
+              "lr_scheduler_spec": {
+                "name": "LinearToZero",
+                "frame": 20000
+              }
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.02,
+                "end_val": 0.0005,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": null,
+              "loss_spec": {
+                "name": "SmoothL1Loss"
+              },
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "LinearToZero",
+                "frame": 20000
+              }
+            }
+          }
+        ]
+
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 8,
+      "max_concurrent_session":10,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_le_with_naive_opponent": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+
+    "agent": [{
+      "name": "LE",
+      "memory": null,
+      "net": null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{"name":"FullyObservable"},
+      "algorithm": {
+        "name": "LE",
+        "punishement_time": 1,
+        "min_coop_time": 0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold": 0.0,
+        "coop_net_ent_diff_as_lr":false,
+        "average_d_carac":true,
+        "contained_algorithms": [
+          {
+            "name": "Reinforce",
+            "algorithm": {
+              "name": "Reinforce",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+              "gamma": 0.0,
+              "center_return":true,
+              "normalize_return":true,
+              "normalize_over_n_batch":10,
+              "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
+                "start_step": 0,
+                "end_step": 7500
+              },
+              "training_frequency": 72
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "clip_grad_val": 5.0,
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "CyclicLR",
+                "base_lr": 0.001,
+                "max_lr": 0.008,
+                "step_size_up": 5000,
+                "step_size_down": 15000
+              }
+            }
+
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "copy_n": 0
+          },
+          {
+            "name": "SupervisedLAPolicy",
+            "algorithm": {
+              "name": "SupervisedLAPolicy",
+              "action_pdtype": "default",
+              "action_policy": "default",
+              "explore_var_spec": null,
+             "entropy_coef_spec": {
+                "name": "linear_decay",
+                "start_val": 0.0,
+                "end_val": 0.0,
+                "start_step": 0,
+                "end_step": 5000
+              },
+              "training_frequency": 24
+            },
+            "memory": {
+              "name": "OnPolicyReplay"
+            },
+            "net": {
+              "type": "MLPNet",
+              "hid_layers": [
+                64
+              ],
+              "hid_layers_activation": "selu",
+              "loss_spec": {
+                "name": "SmoothL1Loss",
+                "reduction":"none"
+              },
+              "clip_grad_val": 5.0,
+              "optim_spec": {
+                "name": "SGD",
+                "lr": 0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec": {
+                "name": "CyclicLR",
+                "base_lr": 0.001,
+                "max_lr": 0.008,
+                "step_size_up": 5000,
+                "step_size_down": 15000
+              }
+            }
+          }
+        ]
+
+      }
+    },
+    {
+      "name": "Reinforce",
+      "observing_other_agents":{"name":"FullyObservable"},
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.0,
+        "center_return":true,
+        "normalize_return":true,
+        "normalize_over_n_batch":10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 2.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 7500
+        },
+        "training_frequency": 72
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "clip_grad_val": 5.0,
+        "optim_spec": {
+          "name": "SGD",
+          "lr": 0.008,
+          "momentum":0.9
+        },
+        "lr_scheduler_spec": {
+          "name": "CyclicLR",
+          "base_lr": 0.001,
+          "max_lr": 0.008,
+          "step_size_up": 5000,
+          "step_size_down": 15000
+        }
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 1,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_with_naive_opponent": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": true,
+          "use_strat_4":false,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SLConstrainedByRL",
+              "memory": null,
+              "net": null,
+              "algorithm": {
+                "name": "SLConstrainedByRL",
+                "penalty_coefficient":1.0,
+                "contained_algorithms": [
+                  {
+                    "name": "SupervisedLAPolicy",
+                    "algorithm": {
+                      "name": "SupervisedLAPolicy",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.0,
+                        "end_val": 0.0,
+                        "start_step": 0,
+                        "end_step": 5000
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "loss_spec": {
+                        "name": "SmoothL1Loss",
+                        "reduction": "none"
+                      },
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.001,
+                        "max_lr": 0.008,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  },
+                  {
+                    "name": "Reinforce",
+                    "algorithm": {
+                      "name": "Reinforce",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "gamma": 0.0,
+                      "center_return": true,
+                      "normalize_return": true,
+                      "normalize_over_n_batch": 10,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 2.0,
+                        "end_val": 0.01,
+                        "start_step": 0,
+                        "end_step": 7500
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.001,
+                        "max_lr": 0.008,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+      "name": "Reinforce",
+      "observing_other_agents":{"name":"FullyObservable"},
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.0,
+        "center_return":true,
+        "normalize_return":true,
+        "normalize_over_n_batch":10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 2.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 7500
+        },
+        "training_frequency": 72
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "clip_grad_val": 5.0,
+        "optim_spec": {
+          "name": "SGD",
+          "lr": 0.008,
+          "momentum":0.9
+        },
+        "lr_scheduler_spec": {
+          "name": "CyclicLR",
+          "base_lr": 0.001,
+          "max_lr": 0.008,
+          "step_size_up": 5000,
+          "step_size_down": 15000
+        }
+      }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_self_play": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": true,
+          "use_strat_4":false,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SLConstrainedByRL",
+              "memory": null,
+              "net": null,
+              "algorithm": {
+                "name": "SLConstrainedByRL",
+                "penalty_coefficient":1.0,
+                "contained_algorithms": [
+                  {
+                    "name": "SupervisedLAPolicy",
+                    "algorithm": {
+                      "name": "SupervisedLAPolicy",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.0,
+                        "end_val": 0.0,
+                        "start_step": 0,
+                        "end_step": 5000
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "loss_spec": {
+                        "name": "SmoothL1Loss",
+                        "reduction": "none"
+                      },
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.001,
+                        "max_lr": 0.008,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  },
+                  {
+                    "name": "Reinforce",
+                    "algorithm": {
+                      "name": "Reinforce",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "gamma": 0.0,
+                      "center_return": true,
+                      "normalize_return": true,
+                      "normalize_over_n_batch": 10,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 2.0,
+                        "end_val": 0.01,
+                        "start_step": 0,
+                        "end_step": 7500
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.001,
+                        "max_lr": 0.008,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+      "copy_n": 0
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_self_play_002": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": true,
+          "use_strat_4":false,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SLConstrainedByRL",
+              "memory": null,
+              "net": null,
+              "algorithm": {
+                "name": "SLConstrainedByRL",
+                "penalty_coefficient":1.0,
+                "contained_algorithms": [
+                  {
+                    "name": "SupervisedLAPolicy",
+                    "algorithm": {
+                      "name": "SupervisedLAPolicy",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.0,
+                        "end_val": 0.0,
+                        "start_step": 0,
+                        "end_step": 5000
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "loss_spec": {
+                        "name": "SmoothL1Loss",
+                        "reduction": "none"
+                      },
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.001,
+                        "max_lr": 0.008,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  },
+                  {
+                    "name": "Reinforce",
+                    "algorithm": {
+                      "name": "Reinforce",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "gamma": 0.0,
+                      "center_return": true,
+                      "normalize_return": true,
+                      "normalize_over_n_batch": 10,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 2.0,
+                        "end_val": 0.01,
+                        "start_step": 0,
+                        "end_step": 7500
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.001,
+                        "max_lr": 0.008,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": true,
+          "use_strat_4":false,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.002,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.00025,
+                  "max_lr": 0.002,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SLConstrainedByRL",
+              "memory": null,
+              "net": null,
+              "algorithm": {
+                "name": "SLConstrainedByRL",
+                "penalty_coefficient":1.0,
+                "contained_algorithms": [
+                  {
+                    "name": "SupervisedLAPolicy",
+                    "algorithm": {
+                      "name": "SupervisedLAPolicy",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.0,
+                        "end_val": 0.0,
+                        "start_step": 0,
+                        "end_step": 5000
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "loss_spec": {
+                        "name": "SmoothL1Loss",
+                        "reduction": "none"
+                      },
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.002,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.00025,
+                        "max_lr": 0.002,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  },
+                  {
+                    "name": "Reinforce",
+                    "algorithm": {
+                      "name": "Reinforce",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "gamma": 0.0,
+                      "center_return": true,
+                      "normalize_return": true,
+                      "normalize_over_n_batch": 10,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 2.0,
+                        "end_val": 0.01,
+                        "start_step": 0,
+                        "end_step": 7500
+                      },
+                      "training_frequency": 72
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        64
+                      ],
+                      "hid_layers_activation": "selu",
+                      "clip_grad_val": 5.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.002,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "CyclicLR",
+                        "base_lr": 0.00025,
+                        "max_lr": 0.002,
+                        "step_size_up": 5000,
+                        "step_size_down": 15000
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.002,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.00025,
+                  "max_lr": 0.002,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_self_play_002_strat4": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4":true,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4":true,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.002,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.00025,
+                  "max_lr": 0.002,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_self_play_032_strat4": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4":true,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4":true,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.032,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.004,
+                  "max_lr": 0.032,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_vs_naive_opp_002_strat4": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4":true,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+        "name": "Reinforce",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "Reinforce",
+          "action_pdtype": "default",
+          "action_policy": "default",
+          "explore_var_spec": null,
+          "gamma": 0.0,
+          "center_return": true,
+          "normalize_return": true,
+          "normalize_over_n_batch": 10,
+          "entropy_coef_spec": {
+            "name": "linear_decay",
+            "start_val": 2.0,
+            "end_val": 0.01,
+            "start_step": 0,
+            "end_step": 7500
+          },
+          "training_frequency": 72
+        },
+        "memory": {
+          "name": "OnPolicyReplay"
+        },
+        "net": {
+          "type": "MLPNet",
+          "hid_layers": [
+            64
+          ],
+          "hid_layers_activation": "selu",
+          "clip_grad_val": 5.0,
+          "optim_spec": {
+            "name": "SGD",
+            "lr": 0.002,
+            "momentum": 0.9
+          },
+          "lr_scheduler_spec": {
+            "name": "CyclicLR",
+            "base_lr": 0.00025,
+            "max_lr": 0.002,
+            "step_size_up": 5000,
+            "step_size_down": 15000
+          }
+        }
+      }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  },
+
+
+
+  "ipd_study_hyperparams_nopm_spl_rl_le_vs_naive_opp_032_strat4": {
+    "world":{"name":"DefaultMultiAgentWorld",
+             "deterministic":false},
+    "agent": [
+      {
+        "name": "TFT-NoPM-spl-rl",
+        "memory": null,
+        "net": null,
+        "welfare_function": "utilitarian_welfare",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "average_d_carac": true,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4":true,
+          "contained_algorithms": [
+            {
+              "name": "Reinforce",
+              "algorithm": {
+                "name": "Reinforce",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "gamma": 0.0,
+                "center_return": true,
+                "normalize_return": true,
+                "normalize_over_n_batch": 10,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 2.0,
+                  "end_val": 0.01,
+                  "start_step": 0,
+                  "end_step": 7500
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+               "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 72
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  64
+                ],
+                "hid_layers_activation": "selu",
+                "loss_spec": {
+                  "name": "SmoothL1Loss",
+                  "reduction":"none"
+                },
+                "clip_grad_val": 5.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum":0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "CyclicLR",
+                  "base_lr": 0.001,
+                  "max_lr": 0.008,
+                  "step_size_up": 5000,
+                  "step_size_down": 15000
+                }
+              }
+            }
+          ]
+        }
+    },
+    {
+        "name": "Reinforce",
+        "observing_other_agents": {
+          "name": "FullyObservable"
+        },
+        "algorithm": {
+          "name": "Reinforce",
+          "action_pdtype": "default",
+          "action_policy": "default",
+          "explore_var_spec": null,
+          "gamma": 0.0,
+          "center_return": true,
+          "normalize_return": true,
+          "normalize_over_n_batch": 10,
+          "entropy_coef_spec": {
+            "name": "linear_decay",
+            "start_val": 2.0,
+            "end_val": 0.01,
+            "start_step": 0,
+            "end_step": 7500
+          },
+          "training_frequency": 72
+        },
+        "memory": {
+          "name": "OnPolicyReplay"
+        },
+        "net": {
+          "type": "MLPNet",
+          "hid_layers": [
+            64
+          ],
+          "hid_layers_activation": "selu",
+          "clip_grad_val": 5.0,
+          "optim_spec": {
+            "name": "SGD",
+            "lr": 0.032,
+            "momentum": 0.9
+          },
+          "lr_scheduler_spec": {
+            "name": "CyclicLR",
+            "base_lr": 0.004,
+            "max_lr": 0.032,
+            "step_size_up": 5000,
+            "step_size_down": 15000
+          }
+        }
+      }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 20,
+      "log_frequency": 20,
+      "max_session": 4,
+      "max_concurrent_session":4,
+      "max_trial": 1
+    }
+  }
+}

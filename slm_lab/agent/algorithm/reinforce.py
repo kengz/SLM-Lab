@@ -5,6 +5,8 @@ from slm_lab.lib import math_util, util
 from slm_lab.agent.net import net_util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+from collections import deque
+import torch
 
 from slm_lab.lib import logger
 logger = logger.get_logger(__name__)
@@ -50,27 +52,34 @@ class Reinforce(Algorithm):
             action_policy='default',
             center_return=False,
             normalize_return=False,
+            normalize_over_n_batch=1,
             explore_var_spec=None,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
+            min_log_prob=False
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
             'center_return',  # center by the mean
             'normalize_return', # divide by std
+            'normalize_over_n_batch',
             'explore_var_spec',
             'gamma',  # the discount factor
             'entropy_coef_spec',
             'policy_loss_coef',
             'training_frequency',
+            'min_log_prob'
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.internal_clock, self.explore_var_spec)
         self.explore_var_scheduler.start_val
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.body.env.clock, self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.internal_clock, self.entropy_coef_spec)
+        self.normalize_over_n_batch = int(self.normalize_over_n_batch)
+        if self.normalize_over_n_batch != 1:
+            self.batchs_values = deque(maxlen=self.normalize_over_n_batch)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -83,7 +92,7 @@ class Reinforce(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -106,6 +115,8 @@ class Reinforce(Algorithm):
         action, action_pd = self.action_policy(state, self, body)
         # print("act", action)
         # print("prob", action_pd.probs.tolist())
+        self.to_log["act_entropy"] = action_pd.entropy().mean().item()
+
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
     @lab_api
@@ -126,10 +137,20 @@ class Reinforce(Algorithm):
     def calc_ret_advs(self, batch):
         '''Calculate plain returns; which is generalized to advantage in ActorCritic'''
         rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        # if not all(rets == rets[0]):
         if self.center_return:
-            rets = math_util.center_mean(rets)
+            if self.normalize_over_n_batch != 1:
+                self.batchs_values.append(rets)
+                mean_rets = torch.cat(list(self.batchs_values), dim=0).mean()
+                rets = rets - mean_rets
+            else:
+                rets = math_util.center_mean(rets)
         if self.normalize_return:
-            rets = math_util.normalize_var(rets)
+            if self.normalize_over_n_batch != 1:
+                std_rets = torch.cat(list(self.batchs_values), dim=0).std()
+                rets = rets / std_rets
+            else:
+                rets = math_util.normalize_var(rets)
         advs = rets
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
@@ -142,15 +163,26 @@ class Reinforce(Algorithm):
         if self.body.env.is_venv:
             actions = math_util.venv_unpack(actions)
         logger.debug(f'actions {actions}')
+        # print(self.algo_idx, "action_pd.probs",action_pd.probs[0])
+        # print(self.algo_idx, "action_pd.probs",action_pd.probs)
+
+        # print("action_pd.log_prob",action_pd.log_prob)
+        # print("action_pd.log_prob()",action_pd.log_prob())
+        # print("action_pd.log_prob(actions)",action_pd.log_prob(actions))
         log_probs = action_pd.log_prob(actions)
+        # print(self.algo_idx, "log_probs",log_probs)
+        if self.min_log_prob != False:
+            log_probs = log_probs.clamp(min=self.min_log_prob)
         logger.debug(f'log_probs {log_probs}, advs {advs}')
+        self.to_log['max_log_probs'] = log_probs.abs().max()
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
-            entropy = action_pd.entropy().mean()
-            logger.debug(f'entropy {entropy}')
-            self.to_log["entropy"] = entropy.item()
-            self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
-            entropy_loss = (-self.entropy_coef_scheduler.val * entropy)
+            self.entropy = action_pd.entropy().mean()
+            logger.debug(f'entropy {self.entropy}')
+            # self.to_log["entropy"] = self.entropy.item()
+            self.to_log["train_entropy"] = self.entropy.item()
+            # self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
+            entropy_loss = (-self.entropy_coef_scheduler.val * self.entropy)
             if policy_loss != 0.0:
                 self.to_log["entropy_over_loss"] = (entropy_loss / policy_loss).clamp(min=-100, max=100)
 
@@ -167,16 +199,33 @@ class Reinforce(Algorithm):
     def train(self):
         if util.in_eval_lab_modes():
             return np.nan
-        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
             # self.clock.set_batch_size(len(batch))
             pd_param = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pd_param, advs)
-            self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+            # TODO use either arg or attribute but not both (auxilary vs loss penalty)
+            if hasattr(self, "auxilary_loss"):
+                if not torch.isnan(self.auxilary_loss):
+                    # print("loss auxilary_loss", loss, self.auxilary_loss)
+                    self.to_log['auxilary_loss']=self.auxilary_loss
+                    loss += self.auxilary_loss
+                    del self.auxilary_loss
+            if hasattr(self, "lr_overwritter"):
+                lr_source = self.lr_overwritter
+                self.to_log['lr'] = self.lr_overwritter
+            else:
+                lr_source = self.lr_scheduler
+            self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
+            if hasattr(self, "lr_overwritter"):
+                del self.lr_overwritter
+            else:
+                self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
+
             # reset
             self.to_train = 0
+            clock = self.body.env.clock
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
             self.to_log["loss_tot"] = loss.item()
             return loss.item()
@@ -185,7 +234,7 @@ class Reinforce(Algorithm):
 
     @lab_api
     def update(self):
-        self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.explore_var_scheduler.update(self, self.internal_clock)
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler.update(self, self.body.env.clock)
+            self.entropy_coef_scheduler.update(self, self.internal_clock)
         return self.explore_var_scheduler.val

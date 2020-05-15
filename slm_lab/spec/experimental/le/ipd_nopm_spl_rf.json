@@ -27,12 +27,13 @@
               "gamma": 0.0,
               "center_return":true,
               "normalize_return":true,
+              "normalize_over_n_batch":10,
              "entropy_coef_spec": {
                 "name": "linear_decay",
                 "start_val": 2.0,
-                "end_val": 0.5,
+                "end_val": 0.01,
                 "start_step": 0,
-                "end_step": 5000
+                "end_step": 7500
               },
               "training_frequency": 24
             },
@@ -46,9 +47,6 @@
               ],
               "hid_layers_activation": "selu",
               "clip_grad_val": null,
-              "loss_spec": {
-                "name": "MSELoss"
-              },
               "optim_spec": {
                 "name": "SGD",
                 "lr": 0.008
@@ -71,8 +69,8 @@
               "explore_var_spec": null,
              "entropy_coef_spec": {
                 "name": "linear_decay",
-                "start_val": 0.2,
-                "end_val": 0.05,
+                "start_val": 0.02,
+                "end_val": 0.0005,
                 "start_step": 0,
                 "end_step": 5000
               },
@@ -89,12 +87,12 @@
               "hid_layers_activation": "selu",
               "clip_grad_val": null,
               "loss_spec": {
-                "name": "MSELoss"
+                "name": "SmoothL1Loss"
               },
               "optim_spec": {
                 "name": "SGD",
-                "lr": 0.008,
-                "momentum":0.9
+                "lr": 0.0008,
+                "momentum":0.975
               },
               "lr_scheduler_spec": null
             }
@@ -110,7 +108,7 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
-      "max_frame": 8000,
+      "max_frame": 20000,
       "num_envs": 1
     }],
     "body": {
@@ -121,8 +119,8 @@
       "distributed": false,
       "eval_frequency": 20,
       "log_frequency": 20,
-      "max_session": 1,
-      "max_concurrent_session":10,
+      "max_session": 8,
+      "max_concurrent_session":4,
       "max_trial": 1
     }
   },
@@ -182,7 +180,7 @@
               },
               "optim_spec": {
                 "name": "SGD",
-                "lr": 0.008
+                "lr": 0.08
               },
               "lr_scheduler_spec": null
             }
@@ -330,13 +328,11 @@
               "center_return":true,
               "normalize_return":true,
               "entropy_coef_spec": {
-                "name": "rate_decay",
-                "start_val": 10.0,
-                "end_val": 1.0,
+                "name": "linear_decay",
+                "start_val": 2.0,
+                "end_val": 0.01,
                 "start_step": 0,
-                "end_step": 5000,
-                "decay_rate":0.9,
-                "frequency":40,
+                "end_step": 7500
               },
               "training_frequency": 24
             },
@@ -419,13 +415,11 @@
         "center_return":true,
         "normalize_return":true,
         "entropy_coef_spec": {
-          "name": "rate_decay",
-          "start_val": 10.0,
-          "end_val": 1.0,
+          "name": "linear_decay",
+          "start_val": 2.0,
+          "end_val": 0.1,
           "start_step": 0,
-          "end_step": 5000,
-          "decay_rate":0.9,
-          "frequency":40,
+          "end_step": 7500
         },
         "training_frequency": 24
       },
@@ -455,7 +449,7 @@
     "env": [{
       "name": "IteratedPrisonersDilemma-v0",
       "max_t": null,
-      "max_frame": 8000,
+      "max_frame": 20000,
       "num_envs": 1
     }],
     "body": {
@@ -466,8 +460,8 @@
       "distributed": false,
       "eval_frequency": 20,
       "log_frequency": 20,
-      "max_session": 10,
-      "max_concurrent_session":10,
+      "max_session": 8,
+      "max_concurrent_session":4,
       "max_trial": 1
     }
   }

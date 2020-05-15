@@ -316,7 +316,7 @@ class Body:
             'tot_r': total_reward,
             'tot_r_ma': np.nan,  # update outside
             # 'loss': self.loss,
-            'lr': self.get_mean_lr(),
+            # 'lr': self.get_mean_lr(),
             # 'explore_var': self.explore_var,
             # 'expl_var': self.agent.algorithm.explore_var_scheduler.val if
             #                 self.agent is not None and
@@ -334,7 +334,9 @@ class Body:
             row_dict.update(self.agent.algorithm.get_log_values())
         if self.env is not None:
             row_dict.update(self.env.get_extra_training_log_info())
-
+        # print("row_dict",row_dict)
+        # for k, v in row_dict.items():
+        #     print(k,v, type(v))
         row = pd.Series(row_dict, dtype=np.float32)
         # assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row

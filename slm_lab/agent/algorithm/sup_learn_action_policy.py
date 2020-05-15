@@ -96,6 +96,8 @@ class SupervisedLAPolicy(Algorithm):
         # print("state act", state)
         body = self.body
         action, action_pd = self.action_policy(state, self, body)
+        self.to_log["act_entropy"] = action_pd.entropy().mean().item()
+
         # print("act", action)
         # print("prob", action_pd.probs.tolist())
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
@@ -131,25 +133,61 @@ class SupervisedLAPolicy(Algorithm):
         '''Calculate the actor's policy loss'''
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
         targets = batch['actions']
+        # penalties = sum(batch['rewards'])
+        # if np.isnan(penalties):
+        #     penalties = 0
+        # self.to_log["penalties"]=penalties
+        # print("penalties", penalties)
         if self.body.env.is_venv:
             targets = math_util.venv_unpack(targets)
         preds = action_pd.probs
         if targets.dim() == 1:
             targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
-        print("spl preds", preds[0:5,:])
-        print("spl targets", targets[0:5,:])
-        supervised_learning_loss = self.net.loss_fn(preds, targets).mean()
+        # print("spl preds", preds[0:5,:])
+        # print("spl targets", targets[0:5,:])
+
+        if isinstance(self.net.loss_fn, torch.nn.SmoothL1Loss):
+            # Used with the SmoothL1Loss loss (Huber loss)  where err < 1 => MSE and err > 1 => MAE
+            # scaling = 2
+            # supervised_learning_loss = self.net.loss_fn(preds * scaling, targets * scaling) / scaling
+            # supervised_learning_loss = supervised_learning_loss.mean()
+            # Manual
+            scale = 2
+            error = (targets - preds)*scale
+            # print("error",error)
+            large_error = error[error > 0.5*scale]
+            medium_error = error[(error <= 0.5*scale) & (error > 0.1*scale)]
+            small_error = error[error <= 0.1*scale]
+            # print("large_error",large_error)
+            # print("medium_error",medium_error)
+            # print("small_error",small_error)
+            MAE_loss = 0
+            MSE_loss = 0
+            if len(large_error) > 0:
+                MAE_loss += abs(large_error).mean()
+            if len(small_error) > 0:
+                MAE_loss +=abs(small_error).mean()/10
+            if len(medium_error) > 0:
+                MSE_loss += (medium_error**2).mean()
+            supervised_learning_loss = MAE_loss + MSE_loss
+        else:
+            supervised_learning_loss = self.net.loss_fn(preds, targets).mean()
+        self.to_log["loss_policy"] = supervised_learning_loss
+        # print("supervised_learning_loss",supervised_learning_loss)
+        # supervised_learning_loss += penalties
 
         if self.entropy_coef_spec:
-            print("spl action_pd.entropy()",action_pd.entropy()[0:5])
-            entropy = action_pd.entropy().mean()
+            # print("spl action_pd.entropy()",action_pd.entropy()[0:5])
+            self.entropy = action_pd.entropy().mean().item()
+            # print("self.entropy", self.entropy)
 
-            logger.debug(f'entropy {entropy}')
-            self.to_log["entropy"] = entropy.item()
+            logger.debug(f'entropy {self.entropy}')
+            # self.to_log["entropy"] = self.entropy.item()
+            self.to_log["train_entropy"] = self.entropy
             self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
-            entropy_loss = (-self.entropy_coef_scheduler.val * entropy)
+            entropy_loss = (-self.entropy_coef_scheduler.val * self.entropy)
             if supervised_learning_loss != 0.0:
-                self.to_log["entropy_over_loss"] = entropy_loss / supervised_learning_loss
+                self.to_log["entropy_over_loss"] = (entropy_loss / supervised_learning_loss).clamp(min=-100, max=100)
             supervised_learning_loss += entropy_loss
         logger.debug(f'supervised_learning_loss: {supervised_learning_loss:g}')
         return supervised_learning_loss
@@ -168,7 +206,7 @@ class SupervisedLAPolicy(Algorithm):
         return y[labels]
 
     @lab_api
-    def train(self):
+    def train(self, loss_penalty=None):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock
@@ -182,11 +220,32 @@ class SupervisedLAPolicy(Algorithm):
 
             loss = self.calc_supervised_learn_loss(batch, pdparams)
 
-            self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+            if loss_penalty is not None:
+                loss += loss_penalty
+                self.to_log["loss_penalty"] = loss_penalty
+                print("loss_penalty", loss_penalty)
+
+            if hasattr(self, "auxilary_loss"):
+                if not np.isnan(self.auxilary_loss):
+                    print("loss auxilary_loss", loss, self.auxilary_loss)
+                    loss += self.auxilary_loss
+                    del self.auxilary_loss
+            if hasattr(self, "lr_overwritter"):
+                lr_source = self.lr_overwritter
+                self.to_log['lr'] = self.lr_overwritter
+            else:
+                lr_source = self.lr_scheduler
+            self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
+            if hasattr(self, "lr_overwritter"):
+                del self.lr_overwritter
+            else:
+                self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
+
+            # self.net.train_step(loss, self.optim, lr_source, clock=clock, global_net=self.global_net)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
-            self.to_log["loss"] = loss.item()
+            self.to_log["loss_tot"] = loss.item()
             return loss.item()
         else:
             return np.nan

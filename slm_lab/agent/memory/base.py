@@ -30,6 +30,6 @@ class Memory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def sample(self):
+    def sample(self, reset=True):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError

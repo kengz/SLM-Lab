@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# Run this file
+# conda activate lab
+# ./slm_lab/spec/experimental/le/run_ipd_study_hyperparam_stability_exp.sh
+
+
+#python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_le_self_play_mod_lr search
+
+#python3 run_lab.py slm_lab/spec/experimental/le/ipd_nopm_spl_rf.json ipd_rf_nopm_spl_le_with_naive_coop train
+#python3 run_lab.py slm_lab/spec/experimental/le/ipd_nopm_spl_rf.json ipd_rf_nopm_spl_le_with_naive_opponent train
+
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_le_self_play_mod_lr_008 train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_le_self_play_mod_lr_002 train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_le_self_play_mod_lr_004 train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_le_self_play_mod_lr_016 train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_le_self_play_mod_lr_032 train
+
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_le_with_naive_opponent train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_with_naive_opponent train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_self_play train
+
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_self_play_002 train
+
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_self_play_002_strat4 train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_self_play_032_strat4 train
+
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_vs_naive_opp_002_strat4 train
+python3 run_lab.py slm_lab/spec/experimental/le/ipd_study_hyperparam_stability.json ipd_study_hyperparams_nopm_spl_rl_le_vs_naive_opp_032_strat4 train
+
+
+
+
+

@@ -8,7 +8,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.agent.agent import agent_util, observability
-
+from slm_lab.env.base import Clock
 logger = logger.get_logger(__name__)
 
 
@@ -22,6 +22,7 @@ class Algorithm(ABC):
         '''
         self.agent = agent
         self.algo_idx = algo_idx
+        self._set_internal_clock()
 
         # First is for basic algo (read spec in agent), the second is for nested meta algo
         # TODO only use the second
@@ -56,6 +57,12 @@ class Algorithm(ABC):
             agent.welfare_function = getattr(agent_util, update_welfare_fn)
 
         logger.info(util.self_desc(self))
+
+
+    def _set_internal_clock(self):
+        # tick with a multiple of num_envs to properly count frames
+        self.clock_speed = 1 * (self.agent.body.env.num_envs or 1)
+        self.internal_clock = Clock(self.agent.body.env.max_frame, self.clock_speed)
 
     @abstractmethod
     @lab_api
@@ -149,18 +156,32 @@ class Algorithm(ABC):
                 setattr(self.body, var_name, v.end_val)
 
     def memory_update(self, state, action, welfare, next_state, done):
+        # TODO Support vectorized env += n vectorized, done ?
+        self.internal_clock.tick(unit='t')
         return self.memory.update(state, action, welfare, next_state, done)
 
     def get_log_values(self):
         if hasattr(self, "net"):
             self.to_log['opt_step'] = self.net.opt_step
-        if hasattr(self, "lr_scheduler"):
-            lr = self.lr_scheduler.get_lr()
-            if np.isscalar(lr):
-                self.to_log['lr'] = lr
-            else:
-                for idx, lr_i in enumerate(lr):
-                    self.to_log[f'lr_{idx}'] = lr_i
+        # if hasattr(self, "lr_scheduler"):
+        #     if hasattr(self, "last_lr_to_log"):
+        #         # if self.last_lr_to_log is None:
+        #         #     pass
+        #         # else:
+        #         self.to_log['lr'] = self.last_lr_to_log
+        #         del self.last_lr_to_log
+        #     elif not hasattr(self, "lr_overwritter"):
+        #         lr = self.lr_scheduler.get_lr()
+        #         if np.isscalar(lr):
+        #             self.to_log['lr'] = lr
+        #         else:
+        #             for idx, lr_i in enumerate(lr):
+        #                 self.to_log[f'lr_{idx}'] = lr_i
+        #     else:
+        #         self.to_log['lr'] = self.lr_overwritter
+
+        if hasattr(self, "entropy_coef_scheduler"):
+            self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
 
 
         to_log = self.to_log

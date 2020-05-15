@@ -78,7 +78,7 @@ class OnPolicyReplay(Memory):
         self.size += 1
         self.seen_size += 1
 
-    def sample(self):
+    def sample(self, reset=True):
         '''
         Returns all the examples from memory in a single batch. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
@@ -91,7 +91,8 @@ class OnPolicyReplay(Memory):
             'dones'      : [[d_epi1], [d_epi2], ...]}
         '''
         batch = {k: getattr(self, k) for k in self.data_keys}
-        self.reset()
+        if reset:
+            self.reset()
         return batch
 
 
@@ -183,13 +184,14 @@ class OnPolicyCrossEntropy(OnPolicyReplay):
                 episode_kept += 1
         return result
 
-    def sample(self):
+    def sample(self, reset=True):
         '''
         Refer to the parent methods for documentation
         If the cross entropy parameter is activated, we filter the collected episodes
         '''
         batch = {k: getattr(self, k) for k in self.data_keys}
-        self.reset()
+        if reset:
+            self.reset()
         # we remove the episodes below the cross_entropy percentage
         if self.cross_entropy < 1.0:
             batch = self.filter_episodes(batch, self.cross_entropy)

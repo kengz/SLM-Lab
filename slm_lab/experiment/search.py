@@ -42,6 +42,30 @@ def build_config_space(spec):
             config_space[key] = tune.sample_from(lambda spec, v=v: np_fn(*v))
     return config_space
 
+# TODO move to utils
+def get_v_in_nested_config(spec, key):
+    bool_list = []
+    if key in spec:
+        bool_list.append(spec[key])
+
+    for k, v in spec.items():
+        if isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict):
+                    bool_list.extend(get_v_in_nested_config(item, key))
+        elif isinstance(v, dict):
+            bool_list.extend(get_v_in_nested_config(v, key))
+
+    # if 'agent' in spec:
+    #     for agent_spec in spec['agent']:
+    #         bool_list.extend(get_v_in_nested_config(agent_spec, key))
+    # if 'net' in spec:
+    #     bool_list.append(spec['net'].get(key))
+    # if 'algorithm' in spec:
+    #     if 'contained_algorithms' in spec['algorithm']:
+    #         for sub_algo_spec in spec['algorithm']['contained_algorithms']:
+    #             bool_list.extend(get_v_in_nested_config(sub_algo_spec, key))
+    return bool_list
 
 def infer_trial_resources(spec):
     '''Infer the resources_per_trial for ray from spec'''
@@ -49,7 +73,8 @@ def infer_trial_resources(spec):
     requested_cpu = meta_spec.get('num_cpus') or meta_spec['max_session']
     num_cpus = min(util.NUM_CPUS, requested_cpu)
 
-    use_gpu = any(agent_spec['net'].get('gpu') for agent_spec in spec['agent'])
+    # use_gpu = any(agent_spec['net'].get('gpu') for agent_spec in spec['agent'])
+    use_gpu = any(get_v_in_nested_config(spec, key='gpu'))
     requested_gpu = meta_spec.get('num_gpus') or meta_spec['max_session'] if use_gpu else 0
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
     num_gpus = min(gpu_count, requested_gpu)

@@ -46,3 +46,23 @@ xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_deploy_game_ppo
 #xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_deploy_game_ppo.json coin_ppo_deploy_game_pm_le_self_play train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_deploy_game_ppo.json coin_deploy_game_ppo_pm_le_with_naive_opponent train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_deploy_game_ppo.json coin_deploy_game_ppo_nopm_spl_le_with_naive_opponent train
+
+
+
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_default_or_util train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_default_vs_default_or_util train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_util_vs_default_or_util train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_le_self_play train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_deploy_game_le_with_naive_opponent train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.json ipd_rf_nopm_deploy_game_le_with_naive_opponent train
+
+
+
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0008 train
+
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0002 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0032 train
+
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0004 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0016 train
+

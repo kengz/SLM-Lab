@@ -275,16 +275,16 @@ def analyze_trial(trial_spec, sessions_agents_metrics):
     trial_agents_metrics = {}
     trial_plot_data = {}
     # For each agents or world
-    for k in sessions_agents_metrics[0].keys():
+    for agent_idx in sessions_agents_metrics[0].keys():
         # Agent or world k
-        agent_info_prepath = os.path.join(head, f'{k}_' + tail)
+        agent_info_prepath = os.path.join(head, f'{agent_idx}_' + tail)
         # Select all identical agents from several sessions
-        sessions_agent_metrics = [el[k] for el in sessions_agents_metrics]
+        sessions_agent_metrics = [el[agent_idx] for el in sessions_agents_metrics]
 
         # calculate metrics
         agent_trial_metrics = calc_trial_metrics(sessions_agent_metrics, agent_info_prepath)
         # plot graphs
-        trial_plot_data[k] = agent_trial_metrics
+        trial_plot_data[agent_idx] = agent_trial_metrics
         # zip files
         if util.get_lab_mode() == 'train' or trial_spec['meta']['max_trial'] == 1:
             predir, _, _, _, _, _ = util.prepath_split(agent_info_prepath)
@@ -294,7 +294,7 @@ def analyze_trial(trial_spec, sessions_agents_metrics):
 
         # Unpack data
         for key in agent_trial_metrics['scalar'].keys():
-            trial_agents_metrics[f'{k}_{key}'] = agent_trial_metrics['scalar'][key]
+            trial_agents_metrics[f'{agent_idx}_{key}'] = agent_trial_metrics['scalar'][key]
 
     # plot graphs
     viz.plot_trial(trial_spec, trial_plot_data)

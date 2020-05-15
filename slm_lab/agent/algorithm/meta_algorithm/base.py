@@ -107,7 +107,13 @@ class MetaAlgorithm(algorithm.Algorithm):
         for idx, algo in enumerate(self.algorithms):
             if idx > 0:
                 for k, v in algo.get_log_values().items():
-                    k_meta = f'{k}_alg{idx}'
+                    k_splitted = k.split("_alg")
+                    original_k = k_splitted[0]
+                    if len(k_splitted) > 1:
+                        nested_algo = "_alg".join(k_splitted[1:])
+                        k_meta = f'{original_k}_alg{idx}_alg{nested_algo}'
+                    else:
+                        k_meta = f'{original_k}_alg{idx}'
                     assert k_meta not in self.to_log.keys()
                     self.to_log[k_meta] = v
             else:

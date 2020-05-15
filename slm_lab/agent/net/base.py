@@ -3,7 +3,7 @@ from slm_lab.agent.net import net_util
 import pydash as ps
 import torch
 import torch.nn as nn
-
+import numpy as np
 
 class Net(ABC):
     '''Abstract Net class to define the API methods'''
@@ -37,12 +37,19 @@ class Net(ABC):
     @net_util.dev_check_train_step
     def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
         if lr_scheduler is not None:
-            n_frame_since_init = clock.get('frame') - self.n_frames_at_init
-            if hasattr(lr_scheduler,"last_epoch"):
-                while lr_scheduler.last_epoch < n_frame_since_init:
-                    lr_scheduler.step()
+            # Overwritte with scalar value
+            if np.isscalar(lr_scheduler):
+                print(lr_scheduler)
+                for param_group in optim.param_groups:
+                    param_group['lr'] = torch.tensor(lr_scheduler).float()
             else:
-                lr_scheduler.step(epoch=n_frame_since_init)
+
+                n_frame_since_init = clock.get('frame') - self.n_frames_at_init
+                if hasattr(lr_scheduler,"last_epoch"):
+                    while lr_scheduler.last_epoch < n_frame_since_init:
+                        lr_scheduler.step()
+                else:
+                    lr_scheduler.step(epoch=n_frame_since_init)
 
         optim.zero_grad()
         loss.backward()
@@ -57,7 +64,7 @@ class Net(ABC):
         # clock.tick('opt_step')
         # TODO check that this is supported
         self.opt_step += 1
-        optim.zero_grad()
+        # optim.zero_grad()
 
         return loss
 

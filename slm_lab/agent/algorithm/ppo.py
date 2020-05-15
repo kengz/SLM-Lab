@@ -100,11 +100,11 @@ class PPO(ActorCritic):
         self.training_frequency = self.time_horizon  # since all memories stores num_envs by batch in list
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.internal_clock, self.explore_var_spec)
         # extra variable decays for PPO
-        self.clip_eps_scheduler = policy_util.VarScheduler(self.body.env.clock, self.clip_eps_spec)
+        self.clip_eps_scheduler = policy_util.VarScheduler(self.internal_clock, self.clip_eps_spec)
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.body.env.clock, self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.internal_clock, self.entropy_coef_spec)
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
@@ -158,9 +158,9 @@ class PPO(ActorCritic):
         entropy = action_pd.entropy().mean()
         # print("PPO probs",action_pd.probs[0:5,:])
         # print("PPO entropy",action_pd.entropy()[0:5])
-        self.body.mean_entropy = entropy  # update logging variable
+        # self.body.mean_entropy = entropy  # update logging variable
         # ent_penalty = -self.entropy_coef_scheduler.val * entropy
-        self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
+        # self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
 
         # logger.debug(f'ent_penalty: {ent_penalty}')
 
@@ -172,11 +172,11 @@ class PPO(ActorCritic):
     def train(self):
         if util.in_eval_lab_modes():
             return np.nan
-        clock = self.body.env.clock
+        # clock = self.internal_clock
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
-            clock.set_batch_size(len(batch))
+            self.internal_clock.set_batch_size(len(batch))
             _pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
@@ -209,12 +209,24 @@ class PPO(ActorCritic):
 
                     policy_loss = clip_loss + ent_penalty
                     val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+
+                    if hasattr(self, "auxilary_loss"):
+                        if not torch.isnan(self.auxilary_loss):
+                            # print("loss auxilary_loss", loss, self.auxilary_loss)
+                            # policy_loss += self.auxilary_loss
+                            # del self.auxilary_loss
+                            self.to_log['auxilary_loss'] = self.auxilary_loss
+                            policy_loss += self.auxilary_loss
+                            del self.auxilary_loss
+                    lr_source = self.lr_overwritter if hasattr(self, "lr_overwritter") else self.lr_scheduler
+                    # critic_lr_source = self.lr_overwritter if hasattr(self, "lr_overwritter") else self.critic_lr_scheduler
+
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
-                        self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                        self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
                     else:
-                        self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
-                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
+                        self.net.train_step(policy_loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
+                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=self.internal_clock, global_net=self.global_critic_net)
                         loss = policy_loss + val_loss
                     total_loss += loss
                     total_clip_loss += clip_loss.detach().norm()
@@ -224,7 +236,8 @@ class PPO(ActorCritic):
                     n_steps += 1
 
             # print("PPO total_ent_loss", total_entropy/n_steps)
-            self.to_log["entropy"] = total_entropy / n_steps
+            self.entropy = total_entropy / n_steps
+            self.to_log["entropy"] = self.entropy
             self.to_log["loss_clip_norm"] = total_clip_loss / n_steps
             if total_clip_loss != 0.0:
                 self.to_log["entropy_over_loss"] = (total_entropy / total_clip_loss).clamp(min=-100, max=100)
@@ -238,6 +251,7 @@ class PPO(ActorCritic):
             loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0
+            clock = self.body.env.clock
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
             self.to_log["loss_tot"] = loss.item()
             return loss.item()
@@ -246,8 +260,8 @@ class PPO(ActorCritic):
 
     @lab_api
     def update(self):
-        self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.explore_var_scheduler.update(self, self.internal_clock)
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler.update(self, self.body.env.clock)
-        self.clip_eps_scheduler.update(self, self.body.env.clock)
+            self.entropy_coef_scheduler.update(self, self.internal_clock)
+        self.clip_eps_scheduler.update(self, self.internal_clock)
         return self.explore_var_scheduler.val
