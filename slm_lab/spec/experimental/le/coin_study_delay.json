@@ -1363,6 +1363,11 @@
         "defection_carac_threshold": 0.0,
         "average_d_carac":true,
         "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr": false,
+        "use_sl_for_simu_coop": false,
+        "use_strat_4":false,
+        "use_strat_5":true,
+        "strat_5_coeff":1.0,
         "contained_algorithms": [
           {
             "name": "PPO",
@@ -1443,8 +1448,8 @@
               "explore_var_spec": null,
               "entropy_coef_spec": {
                 "name": "linear_decay",
-                "start_val": 0.003,
-                "end_val": 0.00006,
+                "start_val": 0.0,
+                "end_val": 0.0,
                 "start_step": 0,
                 "end_step": 100000
               },
@@ -1474,13 +1479,10 @@
               },
               "optim_spec": {
                 "name": "SGD",
-                "lr": 8e-1,
+                "lr": 0.1,
                 "momentum":0.9
               },
-              "lr_scheduler_spec": {
-                "name": "LinearToZero",
-                "frame": 100000
-              },
+              "lr_scheduler_spec": null,
               "gpu": false
             }
           }
@@ -1564,8 +1566,8 @@
       "distributed": false,
       "eval_frequency": 400,
       "log_frequency": 400,
-      "max_session": 10,
-      "max_concurrent_session":10,
+      "max_session": 1,
+      "max_concurrent_session":4,
       "max_trial": 1
     }
   }

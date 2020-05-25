@@ -22,20 +22,29 @@ class MetaAlgorithm(algorithm.Algorithm):
                          memory_spec=None, net_spec=None,
                          algo_idx=algo_idx)
         self.meta_algorithm_spec = algorithm_spec
-        self.algorithms = []
+        # self.algorithms = [None] * len(self.meta_algorithm_spec['contained_algorithms'])
         self.algo_idx = algo_idx
         if create_sub_algo:
-            # TODO manage global nets (needed in distributed training)
-            # TODO why are we not using algorithm_spec instead of agent.agent_spec['algorithm']['contained_algorithms']?
-            for algo_idx, virtual_agent_spec in enumerate(self.meta_algorithm_spec['contained_algorithms']):
-                AlgorithmClass = getattr(algorithm, virtual_agent_spec['name'])
-                algo = AlgorithmClass(agent,
-                                      global_nets[algo_idx] if global_nets is not None else None,
-                                      algorithm_spec=ps.get(virtual_agent_spec, 'algorithm'),
-                                      memory_spec=ps.get(virtual_agent_spec, 'memory', None),
-                                      net_spec=ps.get(virtual_agent_spec, 'net', None),
-                                      algo_idx=algo_idx)
-                self.algorithms.append(algo)
+            self.algorithms = self.deploy_contained_algo(global_nets=global_nets)
+
+    def deploy_contained_algo(self, global_nets=None, idx_selector=None):
+        # TODO manage global nets (needed in distributed training)
+        # TODO why are we not using algorithm_spec instead of agent.agent_spec['algorithm']['contained_algorithms']?
+
+        algorithms = []
+        for algo_idx, virtual_agent_spec in enumerate(self.meta_algorithm_spec['contained_algorithms']):
+            if idx_selector is not None:
+                if algo_idx not in idx_selector:
+                    continue
+            AlgorithmClass = getattr(algorithm, virtual_agent_spec['name'])
+            algo = AlgorithmClass(self.agent,
+                                  global_nets[algo_idx] if global_nets is not None else None,
+                                  algorithm_spec=ps.get(virtual_agent_spec, 'algorithm'),
+                                  memory_spec=ps.get(virtual_agent_spec, 'memory', None),
+                                  net_spec=ps.get(virtual_agent_spec, 'net', None),
+                                  algo_idx=algo_idx)
+            algorithms.append(algo)
+        return algorithms
 
     @lab_api
     def save(self, ckpt=None):

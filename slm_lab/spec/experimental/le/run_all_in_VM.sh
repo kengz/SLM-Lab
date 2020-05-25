@@ -59,10 +59,16 @@ xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_deploy_game_rf.j
 
 
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0008 train
-
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0002 train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0032 train
-
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0004 train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_self_play_0016 train
+
+
+
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_vs_naive_opp_lr_0032 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_vs_naive_opp_lr_0002 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_vs_naive_opp_lr_0008 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_vs_naive_opp_lr_0004 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_study_hyperparam_stability.json coin_ppo_nopm_spl_le_vs_naive_opp_lr_0016 train
 

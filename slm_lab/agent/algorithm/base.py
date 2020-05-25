@@ -26,7 +26,7 @@ class Algorithm(ABC):
 
         # First is for basic algo (read spec in agent), the second is for nested meta algo
         # TODO only use the second
-        logger.info(f'algorithm_spec {algorithm_spec}')
+        # logger.info(f'algorithm_spec {algorithm_spec}')
         # self.algorithm_spec = self.agent.agent_spec['algorithm'] if algorithm_spec is None else algorithm_spec
         self.algorithm_spec = algorithm_spec
         self.name = self.algorithm_spec['name']
@@ -56,7 +56,7 @@ class Algorithm(ABC):
         if update_welfare_fn is not None:
             agent.welfare_function = getattr(agent_util, update_welfare_fn)
 
-        logger.info(util.self_desc(self))
+        # logger.info(util.self_desc(self))
 
 
     def _set_internal_clock(self):

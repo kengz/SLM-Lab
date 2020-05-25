@@ -60,10 +60,45 @@ def get_activation_fn(activation):
 
 def get_loss_fn(cls, loss_spec):
     '''Helper to parse loss param and construct loss_fn for net'''
-    LossClass = getattr(nn, get_nn_name(loss_spec['name']))
-    loss_spec = ps.omit(loss_spec, 'name')
-    loss_fn = LossClass(**loss_spec)
+    if loss_spec['name'] == "CrossEntropyLossSoftTarget":
+        loss_fn = cross_entropy
+
+    elif loss_spec['name'] == "InvSmoothL1Loss":
+        loss_fn = double_smooth_L1_loss
+    else:
+        LossClass = getattr(nn, get_nn_name(loss_spec['name']))
+        loss_spec = ps.omit(loss_spec, 'name')
+        loss_fn = LossClass(**loss_spec)
     return loss_fn
+
+
+def cross_entropy(pred, soft_targets):
+    logsoftmax = torch.nn.LogSoftmax(dim=1)
+    return torch.mean(torch.sum(- soft_targets * logsoftmax(pred), 1))
+
+
+def double_smooth_L1_loss(pred, targets):
+    # Manual
+    scale = 2
+    error = (targets- pred).abs() *scale
+    large_error = error[error > (0.5*scale)]
+    medium_error = error[(error <= 0.5*scale) & (error > 0.1*scale)]
+    small_error = error[error <= 0.1*scale]
+    MAE_loss = 0
+    MSE_loss = 0
+    if len(large_error) > 0:
+        MAE_loss += (abs(large_error) - 0.5).sum()
+    if len(small_error) > 0:
+        MAE_loss +=(abs(small_error)*0.2 - 0.02).sum()
+        # MAE_loss += 0.5*(small_error**2).sum()
+    if len(medium_error) > 0:
+        MSE_loss += 0.5*(medium_error**2).sum()
+    size = 1
+    for i in error.shape:
+        size *= i
+    supervised_learning_loss = (MAE_loss + MSE_loss) / size / scale
+
+    return torch.mean(supervised_learning_loss)
 
 
 def get_lr_scheduler(optim, lr_scheduler_spec):

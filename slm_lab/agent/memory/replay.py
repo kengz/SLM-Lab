@@ -89,10 +89,18 @@ class Replay(Memory):
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         # set self.states, self.actions, ...
+        # if k != 'next_states':  # reuse self.states
+        #     # list add/sample is over 10x faster than np, also simpler to handle
+        #     setattr(self, k, )
+
         for k in self.data_keys:
+            if self.max_size > 0:
+                empty_val = [None] * self.max_size
+            else:
+                empty_val = []
             if k != 'next_states':  # reuse self.states
                 # list add/sample is over 10x faster than np, also simpler to handle
-                setattr(self, k, [None] * self.max_size)
+                setattr(self, k, empty_val)
         self.size = 0
         self.head = -1
         self.ns_buffer.clear()
@@ -109,14 +117,31 @@ class Replay(Memory):
     def add_experience(self, state, action, reward, next_state, done):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
-        self.head = (self.head + 1) % self.max_size
-        self.states[self.head] = state.astype(np.float16)
-        self.actions[self.head] = action
-        self.rewards[self.head] = reward
+        if self.max_size > 0:
+            self.head = (self.head + 1) % self.max_size
+            self.states[self.head] = state.astype(np.float16)
+            self.actions[self.head] = action
+            self.rewards[self.head] = reward
+            self.ns_buffer.append(next_state.astype(np.float16))
+            self.dones[self.head] = done
+        else:
+            self.head += 1
+            self.states.append(state.astype(np.float16))
+            self.actions.append(action)
+            self.rewards.append(reward)
+            self.dones.append(done)
+        # self.states[self.head] = state.astype(np.float16)
+        # self.actions[self.head] = action
+        # self.rewards[self.head] = reward
         self.ns_buffer.append(next_state.astype(np.float16))
-        self.dones[self.head] = done
+        # self.dones[self.head] = done
+        # print("self.head", self.head)
+        # print("state, action, reward, next_state, done",state, action, reward, next_state, done)
+        # print("state, action, reward, next_state, done",self.states[self.head], self.actions[self.head], self.rewards[self.head], next_state, self.dones[self.head])
+        # print("state, action, reward, next_state, done",self.states[-1], self.actions[-1], self.rewards[-1], next_state, self.dones[-1])
+        # print("state, action, reward, next_state, done",len(self.states), len(self.actions), len(self.rewards),next_state, len(self.dones))
         # Actually occupied size of memory
-        if self.size < self.max_size:
+        if self.size < self.max_size or self.max_size < 0:
             self.size += 1
         self.seen_size += 1
         # set to_train using memory counters head, seen_size instead of tick since clock will step by num_envs when on venv; to_train will be set to 0 after training step
@@ -125,7 +150,7 @@ class Replay(Memory):
                                                                and self.head % self.algorithm.training_frequency == 0))
 
     @lab_api
-    def sample(self):
+    def sample(self, batch_idxs=None):
         '''
         Returns a batch of batch_size samples. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
@@ -137,7 +162,10 @@ class Replay(Memory):
             'next_states': next_states,
             'dones'      : dones}
         '''
-        self.batch_idxs = self.sample_idxs(self.batch_size)
+        if batch_idxs is None:
+            self.batch_idxs = self.sample_idxs(self.batch_size)
+        else:
+            self.batch_idxs = batch_idxs
         batch = {}
         for k in self.data_keys:
             if k == 'next_states':
@@ -152,3 +180,12 @@ class Replay(Memory):
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs
+
+
+    def replay_all_history(self):
+        """Drop the last non-complete batch"""
+        for batch_i in range(int(self.size/self.batch_size)):
+            batch_idxs = np.arange(start=batch_i,
+                                    stop=batch_i+self.batch_size,
+                                    step=1)
+            yield self.sample(batch_idxs=batch_idxs)

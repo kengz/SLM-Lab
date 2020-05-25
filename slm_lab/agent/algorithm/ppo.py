@@ -9,6 +9,7 @@ import math
 import numpy as np
 import pydash as ps
 import torch
+from collections import deque
 
 logger = logger.get_logger(__name__)
 
@@ -211,22 +212,40 @@ class PPO(ActorCritic):
                     val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
 
                     if hasattr(self, "auxilary_loss"):
-                        if not torch.isnan(self.auxilary_loss):
-                            # print("loss auxilary_loss", loss, self.auxilary_loss)
-                            # policy_loss += self.auxilary_loss
-                            # del self.auxilary_loss
-                            self.to_log['auxilary_loss'] = self.auxilary_loss
-                            policy_loss += self.auxilary_loss
-                            del self.auxilary_loss
-                    lr_source = self.lr_overwritter if hasattr(self, "lr_overwritter") else self.lr_scheduler
+                        # if not torch.isnan(self.auxilary_loss):
+
+                        # self.to_log['loss_auxilary'] = self.auxilary_loss
+                        # policy_loss += self.auxilary_loss / 2
+                        # val_loss += self.auxilary_loss / 2
+
+                        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+                        coop_entropy = action_pd.entropy().mean()
+                        # ent_diff = (coop_entropy -
+                        #             (self.auxilary_loss * 0.95) + 0.01) ** 2
+                        ent_diff = (coop_entropy -
+                                    (self.auxilary_loss)) ** 2
+                        auxilary_loss = ent_diff * self.strat_5_coeff
+                        self.to_log['loss_auxilary'] = auxilary_loss
+                        policy_loss += auxilary_loss #/ 2
+                        # val_loss += auxilary_loss / 2
+
+                    if hasattr(self, "lr_overwritter"):
+                        lr_source = self.lr_overwritter
+                        self.to_log['lr'] = self.lr_overwritter
+                    else:
+                        lr_source = self.lr_scheduler
+                    # lr_source = self.lr_overwritter if hasattr(self, "lr_overwritter") else self.lr_scheduler
                     # critic_lr_source = self.lr_overwritter if hasattr(self, "lr_overwritter") else self.critic_lr_scheduler
 
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
-                        self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
+                        self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock,
+                                            global_net=self.global_net)
                     else:
-                        self.net.train_step(policy_loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
-                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=self.internal_clock, global_net=self.global_critic_net)
+                        self.net.train_step(policy_loss, self.optim, lr_source, clock=self.internal_clock,
+                                            global_net=self.global_net)
+                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler,
+                                                   clock=self.internal_clock, global_net=self.global_critic_net)
                         loss = policy_loss + val_loss
                     total_loss += loss
                     total_clip_loss += clip_loss.detach().norm()
@@ -235,9 +254,20 @@ class PPO(ActorCritic):
                     # total_ent_loss_grad += ent_penalty.grad.norm().item()
                     n_steps += 1
 
+            if hasattr(self, "auxilary_loss"):
+                if not torch.isnan(self.auxilary_loss):
+                    del self.auxilary_loss
+
+
+            if hasattr(self, "lr_overwritter"):
+                del self.lr_overwritter
+            else:
+                self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
+
+
             # print("PPO total_ent_loss", total_entropy/n_steps)
             self.entropy = total_entropy / n_steps
-            self.to_log["entropy"] = self.entropy
+            self.to_log["entropy_train"] = self.entropy
             self.to_log["loss_clip_norm"] = total_clip_loss / n_steps
             if total_clip_loss != 0.0:
                 self.to_log["entropy_over_loss"] = (total_entropy / total_clip_loss).clamp(min=-100, max=100)

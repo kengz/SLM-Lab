@@ -14,3 +14,7 @@ python3 run_lab.py slm_lab/spec/experimental/le/coin_ppo.json coin_ppo train
 python3 run_lab.py slm_lab/spec/experimental/le/coin_ppo.json coin_ppo_util train
 python3 run_lab.py slm_lab/spec/experimental/le/coin_ppo.json coin_ppo_le_self_play train
 python3 run_lab.py slm_lab/spec/experimental/le/coin_ppo.json coin_ppo_le_with_naive_opponent train
+
+
+
+python3 run_lab.py slm_lab/spec/experimental/le/coin_ppo_bis.json coin_ppo_util train

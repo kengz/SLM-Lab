@@ -68,11 +68,6 @@
   },
 
 
-
-
-
-
-
   "ipd_rf_util": {
     "world":{"name":"DefaultMultiAgentWorld"},
 
@@ -144,15 +139,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
-
-
-
 
   "ipd_rf_le_self_play": {
     "world":{"name":"DefaultMultiAgentWorld"},
@@ -243,12 +229,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
 
 
   "ipd_rf_le_with_naive_opponent": {

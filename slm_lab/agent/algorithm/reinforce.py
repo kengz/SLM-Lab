@@ -115,14 +115,15 @@ class Reinforce(Algorithm):
         action, action_pd = self.action_policy(state, self, body)
         # print("act", action)
         # print("prob", action_pd.probs.tolist())
-        self.to_log["act_entropy"] = action_pd.entropy().mean().item()
+        self.to_log["entropy_act"] = action_pd.entropy().mean().item()
 
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
+    #TODO reset currently doesn't support all memory types
     @lab_api
-    def sample(self):
+    def sample(self, reset=True):
         '''Samples a batch from memory'''
-        batch = self.memory.sample()
+        batch = self.memory.sample(reset=reset)
         batch = util.to_torch_batch(batch, self.net.device, self.memory.is_episodic)
         return batch
 
@@ -180,9 +181,10 @@ class Reinforce(Algorithm):
             self.entropy = action_pd.entropy().mean()
             logger.debug(f'entropy {self.entropy}')
             # self.to_log["entropy"] = self.entropy.item()
-            self.to_log["train_entropy"] = self.entropy.item()
+            self.to_log["entropy_train"] = self.entropy.item()
             # self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
             entropy_loss = (-self.entropy_coef_scheduler.val * self.entropy)
+            # print("self.entropy_coef_scheduler.val", self.entropy_coef_scheduler.val)
             if policy_loss != 0.0:
                 self.to_log["entropy_over_loss"] = (entropy_loss / policy_loss).clamp(min=-100, max=100)
 
@@ -205,13 +207,33 @@ class Reinforce(Algorithm):
             pd_param = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pd_param, advs)
+            # print("agent",self.agent.agent_idx)
+            # print("batch['states'].shape", batch["states"].shape, batch["states"][0,...])
+            # print("batch[rewards']",batch['rewards'][0,...])
+            # print("advs[0]", advs[0])
+            # print("loss", loss)
             # TODO use either arg or attribute but not both (auxilary vs loss penalty)
+            # if hasattr(self, "auxilary_loss"):
+            #     if not torch.isnan(self.auxilary_loss):
+            #         # print("loss auxilary_loss", loss, self.auxilary_loss)
+            #         self.to_log['loss_auxilary']=self.auxilary_loss
+            #         loss += self.auxilary_loss
+            #         del self.auxilary_loss
+
             if hasattr(self, "auxilary_loss"):
-                if not torch.isnan(self.auxilary_loss):
-                    # print("loss auxilary_loss", loss, self.auxilary_loss)
-                    self.to_log['auxilary_loss']=self.auxilary_loss
-                    loss += self.auxilary_loss
-                    del self.auxilary_loss
+                # if not torch.isnan(self.auxilary_loss):
+                action_pd = policy_util.init_action_pd(self.body.ActionPD, pd_param)
+                coop_entropy = action_pd.entropy().mean()
+                ent_diff = (coop_entropy -
+                            (self.auxilary_loss * 0.95) + 0.01) ** 2
+                # ent_diff = (coop_entropy -
+                #             (self.auxilary_loss)) ** 2
+                auxilary_loss = ent_diff * self.strat_5_coeff
+                self.to_log['loss_auxilary'] = auxilary_loss
+                loss += auxilary_loss
+                del self.auxilary_loss
+                del self.strat_5_coeff
+
             if hasattr(self, "lr_overwritter"):
                 lr_source = self.lr_overwritter
                 self.to_log['lr'] = self.lr_overwritter

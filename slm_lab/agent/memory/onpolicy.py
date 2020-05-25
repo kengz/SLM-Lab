@@ -127,7 +127,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         if len(self.states) == self.algorithm.training_frequency:
             self.algorithm.to_train = 1
 
-    def sample(self):
+    def sample(self, reset=True):
         '''
         Returns all the examples from memory in a single batch. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements
@@ -139,7 +139,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             'next_states': next_states,
             'dones'      : dones}
         '''
-        return super().sample()
+        return super().sample(reset=reset)
 
 
 class OnPolicyCrossEntropy(OnPolicyReplay):

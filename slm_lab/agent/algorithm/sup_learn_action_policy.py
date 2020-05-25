@@ -96,16 +96,16 @@ class SupervisedLAPolicy(Algorithm):
         # print("state act", state)
         body = self.body
         action, action_pd = self.action_policy(state, self, body)
-        self.to_log["act_entropy"] = action_pd.entropy().mean().item()
+        self.to_log["entropy_act"] = action_pd.entropy().mean().item()
 
         # print("act", action)
         # print("prob", action_pd.probs.tolist())
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
     @lab_api
-    def sample(self):
+    def sample(self, reset=True):
         '''Samples a batch from memory'''
-        batch = self.memory.sample()
+        batch = self.memory.sample(reset=reset)
         batch = util.to_torch_batch(batch, self.net.device, self.memory.is_episodic)
         return batch
 
@@ -145,31 +145,51 @@ class SupervisedLAPolicy(Algorithm):
             targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
         # print("spl preds", preds[0:5,:])
         # print("spl targets", targets[0:5,:])
-
+        # if isinstance(self.net.loss_fn, torch.nn.CrossEntropyLoss):
+        #     targets = targets.long()
         if isinstance(self.net.loss_fn, torch.nn.SmoothL1Loss):
             # Used with the SmoothL1Loss loss (Huber loss)  where err < 1 => MSE and err > 1 => MAE
-            # scaling = 2
-            # supervised_learning_loss = self.net.loss_fn(preds * scaling, targets * scaling) / scaling
-            # supervised_learning_loss = supervised_learning_loss.mean()
+            scaling = 2
+            supervised_learning_loss = self.net.loss_fn(preds * scaling, targets * scaling) / scaling
+            supervised_learning_loss = supervised_learning_loss.mean()
+
             # Manual
-            scale = 2
-            error = (targets - preds)*scale
-            # print("error",error)
-            large_error = error[error > 0.5*scale]
-            medium_error = error[(error <= 0.5*scale) & (error > 0.1*scale)]
-            small_error = error[error <= 0.1*scale]
-            # print("large_error",large_error)
-            # print("medium_error",medium_error)
-            # print("small_error",small_error)
-            MAE_loss = 0
-            MSE_loss = 0
-            if len(large_error) > 0:
-                MAE_loss += abs(large_error).mean()
-            if len(small_error) > 0:
-                MAE_loss +=abs(small_error).mean()/10
-            if len(medium_error) > 0:
-                MSE_loss += (medium_error**2).mean()
-            supervised_learning_loss = MAE_loss + MSE_loss
+            # scale = 2
+            # error = (targets  - preds).abs() *scale
+            # large_error = error[error > (0.5*scale)]
+            # medium_error = error[(error <= 0.5*scale) & (error > 0.1*scale)]
+            # small_error = error[error <= 0.1*scale]
+            # MAE_loss = 0
+            # MSE_loss = 0
+            # if len(large_error) > 0:
+            #     MAE_loss += (abs(large_error) - 0.5).sum()
+            # if len(small_error) > 0:
+            #     MAE_loss +=(abs(small_error)*0.2 - 0.02).sum()
+            #     # MAE_loss += 0.5*(small_error**2).sum()
+            # if len(medium_error) > 0:
+            #     MSE_loss += 0.5*(medium_error**2).sum()
+            # size = 1
+            # for i in error.shape:
+            #     size *= i
+            # supervised_learning_loss = (MAE_loss + MSE_loss) / size / scale
+
+            # assert supervised_learning_loss_1 == supervised_learning_loss, f"{supervised_learning_loss_1} not equal " \
+            #                                                                f"to {supervised_learning_loss}, len(error)"\
+            #                                                                f"{len(error)}, {len(large_error)}, " \
+            #                                                                f"{len(medium_error)}, {len(small_error)}, "\
+            #                                                                f"MAE_loss {MAE_loss}, MSE_loss {MSE_loss}"\
+            #                                                                f"len(targets) {len(targets)}, error.shape {error.shape}"\
+            #                                                                f"targets.shape {targets.shape}, " \
+            #                                                                f"large_error {large_error.shape},"\
+            #                                                                f"medium_error {medium_error.shape}, " \
+            #                                                                f"small_error {small_error.shape}"
+        # elif isinstance(self.net.loss_fn, torch.nn.CrossEntropyLoss):
+        #     def cross_entropy(pred, soft_targets):
+        #         logsoftmax = torch.nn.LogSoftmax(dim=1)
+        #         return torch.mean(torch.sum(- soft_targets * logsoftmax(pred), 1))
+        #
+        #     supervised_learning_loss = cross_entropy(preds, targets).mean()
+
         else:
             supervised_learning_loss = self.net.loss_fn(preds, targets).mean()
         self.to_log["loss_policy"] = supervised_learning_loss
@@ -183,7 +203,7 @@ class SupervisedLAPolicy(Algorithm):
 
             logger.debug(f'entropy {self.entropy}')
             # self.to_log["entropy"] = self.entropy.item()
-            self.to_log["train_entropy"] = self.entropy
+            self.to_log["entropy_train"] = self.entropy
             self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
             entropy_loss = (-self.entropy_coef_scheduler.val * self.entropy)
             if supervised_learning_loss != 0.0:
