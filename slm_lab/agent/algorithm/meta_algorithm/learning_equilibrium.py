@@ -43,6 +43,7 @@ def plot_hist(value_list, save_to):
 class LE(meta_algorithm.OneOfNAlgoActived):
     """
     Env must returns symmetrical agent states (giving agent 2 state to agent 1 should be fine)
+    The base logging behavior is averaging over one episode.
     """
 
     # TODO add docs
@@ -57,7 +58,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         util.set_attr(self, dict(
             defection_detection_mode="action_pd_kullback_leibler_div",
             punishement_time=10,
-            min_coop_time=0,
+            min_cooperative_epi_after_punishement=0,
             defection_carac_threshold=1.0,
             average_d_carac=True,
             average_d_carac_len=20,
@@ -80,7 +81,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         util.set_attr(self, self.algorithm_spec, [
             'defection_detection_mode',
             'punishement_time',
-            'min_coop_time',
+            'min_cooperative_epi_after_punishement',
             'defection_carac_threshold',
             'opp_policy_from_history',
             'opp_policy_from_supervised_learning',
@@ -157,22 +158,19 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         self.remeaning_punishing_time = 0
         self.detected_defection = False
 
-        self.defection_carac_tot = 0
-        self.defection_carac_steps = 0
+        # Defection metric
+        # self.defection_metric_total = 0
+        # self.defection_metric_steps = 0
+        self.defection_metric = 0
+        if not self.average_d_carac:
+            self.average_d_carac_len = 1
+        self.defection_carac_queue = deque(maxlen=self.average_d_carac_len)
 
         self.action_pd_coop = deque(maxlen=log_len_in_steps)
         self.action_pd_punish = deque(maxlen=log_len_in_steps)
 
-        self.algo_temp_info = {
-            "log_coop_time": 0,
-            "log_punishement_time": 0,
-            "log_defection_carac_tot": 0,
-            "log_defection_carac_steps": 0
-        }
         self.epsilon = 1e-12
-
         self.debug = False
-
         # Modif/Improvements
         self.new_improved_perf = True
 
@@ -194,8 +192,6 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         if self.use_strat_4:
             self.counter = 0
-
-        self.defection_carac_queue = deque(maxlen=self.average_d_carac_len)
 
         if self.use_strat_2:
             self.memory_spec = self.meta_algorithm_spec["meta_algo_memory"]
@@ -240,6 +236,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self.strat_2_epsilon = 1e-3
 
 
+        # Logging
+        self.n_cooperation_steps = 0
+        self.n_punishement_steps = 0
 
 
     def act(self, state):
@@ -262,24 +261,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         return self.algorithms[self.coop_algo_idx].act(state)
 
     def detect_defection(self, state, action, welfare, next_state, done):
-        reset = False
-        if not isinstance(self.defection_carac_tot, torch.Tensor) and np.isnan(self.defection_carac_tot):
-            self.defection_carac_tot = 0
-            self.defection_carac_steps = 0
-            reset = True
+        # if not isinstance(self.defection_metric, torch.Tensor) and np.isnan(self.defection_metric):
+        #     self.defection_metric = 0
 
         if self.defection_detection_mode == self.all_defection_detection_modes[0]:
-            # if self.remeaning_punishing_time <= - (self.min_coop_time - 1):
-            if reset:
-                self.algo_temp_info['log_defection_carac_tot'] = 0
-                self.algo_temp_info['log_defection_carac_steps'] = 0
             return self.defection_from_network_weights(state, action, welfare, next_state, done)
-            # return True
-        elif self.defection_detection_mode == self.all_defection_detection_modes[1]:
-            raise NotImplementedError()
-            # if self.remeaning_punishing_time <= - (self.min_coop_time - 1):
-            #     return self.defection_from_action_pd_kl_div(state, action, welfare, next_state, done)
-            # return True
         elif (self.defection_detection_mode == self.all_defection_detection_modes[2] or
               self.defection_detection_mode == self.all_defection_detection_modes[3]):
             return self.defection_from_observed_actions(state, action, welfare, next_state, done)
@@ -323,57 +309,25 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                      s_coop_prob_dict[state_hash]["n_occurences"])
                 if v == 0.0:
                     v = self.epsilon
-                if not self.new_improved_perf:
-                    s_coop_prob_dict[state_hash][action_hash]["a_proba"] = v
-                else:
-                    if not separate_actions:
-                        if state_hash not in results:
-                            if not self.agent.body.action_space_is_discrete:
-                                raise NotImplementedError()
-                            results[state_hash] = np.zeros(shape=self.agent.body.action_dim)
+                if not separate_actions:
+                    if state_hash not in results:
+                        if not self.agent.body.action_space_is_discrete:
+                            raise NotImplementedError()
+                        results[state_hash] = np.zeros(shape=self.agent.body.action_dim)
 
-                        a = int(action_hash)
-                        results[state_hash][a] = v
-                    else:
-                        results[state_hash + action_hash] = v
+                    a = int(action_hash)
+                    results[state_hash][a] = v
+                else:
+                    results[state_hash + action_hash] = v
 
         if self.debug:
             logger.info(f"histo_opp_action_pc {self.agent.agent_idx} {s_coop_prob_dict}")
 
-        if not self.new_improved_perf:
-            return (lambda state_action_hash:
-                    s_coop_prob_dict[state_action_hash[1]][state_action_hash[2]]["a_proba"])
-        else:
-            # print("results",results)
-            return results
+        return results
 
     def defection_from_observed_actions(self, state, action, welfare, next_state, done):
-        # TODO prob: this only works with 2 agents and with a discrete action space
+        # TODO prob: this currently only works with 2 agents and with a discrete action space
         train = True
-
-        if done:
-            if not self.average_d_carac:
-                self.defection_carac_tot = 0
-                self.defection_carac_steps = 0
-                self.algo_temp_info['log_defection_carac_tot'] = 0
-                self.algo_temp_info['log_defection_carac_steps'] = 0
-
-        # if not self.is_fully_init:
-        #     self.n_steps_since_start = 0
-        #     self.percentile = 95
-        #     self.data_queue = []
-        #
-        #     self.length_of_history = 200
-        #     self.warmup_length = 0  # 200
-        #     self.n_steps_in_bstrap_replts = 20  # 20
-        #     self.n_bootstrapped_replications = 50  # 50
-        #     # if self.use_strat_4:
-        #     #     self.n_steps_in_bstrap_replts = 60  # 20
-        #     #     self.n_bootstrapped_replications = 200  # 50
-        #
-        #     self.last_computed_w = None
-
-        # my_r = agent_util.get_from_current_agents(self.agent, key="reward", default=None)
 
         # Get the observed data
         other_ag_action = agent_util.get_from_other_agents(self.agent, key="action", default=[])
@@ -405,7 +359,6 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             if not (isinstance(algo, LE) and algo.last_used_algo == algo.punish_algo_idx):
                 # The opponent agent not is currenlty in the punish "state"
 
-                # if not self.use_strat_2:
                 (self.log_likelihood_opponent_cooporating,
                  self.opp_coop_a_prob_distrib) = (self.compute_s_a_log_likelihood(s, a,
                                                           algo=self.algorithms[self.coop_net_simul_opponent_idx],
@@ -430,37 +383,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     self.train_simu_coop_from_scratch(opp_idx)
 
             if done and self.n_steps_since_start >= self.length_of_history + self.warmup_length:
-
                 percentile_value = self.compare_log_likelihood_on_sequence(opp_idx)
-
-                # if self.debug:
-                #     logger.info(log_lik_check_coop.shape)
-                #     logger.info(f"log_lik_cooperate {self.agent.agent_idx} {log_lik_cooperate[0:5]}")
-                #     logger.info(f"log_lik_defect { self.agent.agent_idx} {log_lik_defect[0:5]}")
-                #     logger.info(f"log_lik_check_coop {self.agent.agent_idx} {log_lik_check_coop[0:5]}")
-                #     logger.info(
-                #         f"percentile_value {self.agent.agent_idx} {percentile_value} {log_lik_check_coop.min()} {log_lik_check_coop.mean()} {log_lik_check_coop.max()}")
-                #     if self.n_steps_since_start % 500 == 0:
-                #         if not hasattr(self, "to_plot"):
-                #             self.to_plot = np.expand_dims(log_lik_check_coop, axis=1)
-                #         else:
-                #             self.to_plot = np.concatenate([self.to_plot, np.expand_dims(log_lik_check_coop, axis=1)],
-                #                                           axis=1)
-                #         plot_hist(value_list=self.to_plot,
-                #                   save_to=f"./diff_distrib_{self.agent.agent_idx}__{self.n_steps_since_start}.png")
-
-                if self.average_d_carac:
-                    self.defection_carac_queue.append(-percentile_value)
-                    defection_carac_tot = sum(list(self.defection_carac_queue))
-                    self.defection_carac_tot = defection_carac_tot
-                    self.defection_carac_steps = len(list(self.defection_carac_queue))
-                    self.algo_temp_info['log_defection_carac_tot'] = defection_carac_tot
-                    self.algo_temp_info['log_defection_carac_steps'] = len(list(self.defection_carac_queue))
-                else:
-                    self.defection_carac_tot += -percentile_value
-                    self.defection_carac_steps += 1
-                    self.algo_temp_info['log_defection_carac_tot'] += -percentile_value
-                    self.algo_temp_info['log_defection_carac_steps'] += 1
+                self._update_defection_metric(epi_defection_metric=-percentile_value)
 
         if not self.is_fully_init:
             self.is_fully_init = True
@@ -832,23 +756,23 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         return y[labels]
 
     def compare_log_likelihood_on_sequence(self, opp_idx):
-        if not self.new_improved_perf:
-            data_queue_list = list(self.data_queue[opp_idx])
-            bstrap_replts_data = [random.choices(population=data_queue_list,
-                                                 k=self.n_steps_in_bstrap_replts)
-                                  for i in range(self.n_bootstrapped_replications)]
-        else:
-            data_array = np.array(list(self.data_queue[opp_idx]), dtype=np.object)
-            bstrap_idx = np.random.random_integers(0, high=data_array.shape[0] - 1,
-                                                   size=(self.n_bootstrapped_replications,
-                                                         self.n_steps_in_bstrap_replts))
-            bstrap_replts_data = data_array[bstrap_idx]
+        # if not self.new_improved_perf:
+        #     data_queue_list = list(self.data_queue[opp_idx])
+        #     bstrap_replts_data = [random.choices(population=data_queue_list,
+        #                                          k=self.n_steps_in_bstrap_replts)
+        #                           for i in range(self.n_bootstrapped_replications)]
+        # else:
+        data_array = np.array(list(self.data_queue[opp_idx]), dtype=np.object)
+        bstrap_idx = np.random.random_integers(0, high=data_array.shape[0] - 1,
+                                               size=(self.n_bootstrapped_replications,
+                                                     self.n_steps_in_bstrap_replts))
+        bstrap_replts_data = data_array[bstrap_idx]
         # Sum log_likelihood over u steps
-        if not self.new_improved_perf:
-            log_lik_cooperate = np.array([[el[0] for el in one_replicat]
-                                          for one_replicat in bstrap_replts_data]).sum(axis=1)
-        else:
-            log_lik_cooperate = bstrap_replts_data[:, :, 0].sum(axis=1)
+        # if not self.new_improved_perf:
+        #     log_lik_cooperate = np.array([[el[0] for el in one_replicat]
+        #                                   for one_replicat in bstrap_replts_data]).sum(axis=1)
+        # else:
+        log_lik_cooperate = bstrap_replts_data[:, :, 0].sum(axis=1)
 
         # Get the log_likelihood of the observed actions under the computed opponent policy
         if self.opp_policy_from_history:
@@ -856,35 +780,35 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             opp_historical_policy = self.approximate_policy_from_history(opp_idx)
             # else:
             #     print("reuse opp_historical_policy")
-            if not self.new_improved_perf:
-                bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy(data)
-                                                                 for data in bs_data]
-                                                                for bs_data in bstrap_replts_data]))
-                # Sum log_likelihood over u steps
-                log_lik_defect = [sum(e) for e in bstrap_replts_log_lik_defect]
-            else:
-                bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy[data[3]]
-                                                                 for data in bs_data]
-                                                                for bs_data in bstrap_replts_data]))
-                # Sum log_likelihood over u steps
-                log_lik_defect = bstrap_replts_log_lik_defect.sum(axis=1)
+            # if not self.new_improved_perf:
+            #     bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy(data)
+            #                                                      for data in bs_data]
+            #                                                     for bs_data in bstrap_replts_data]))
+            #     # Sum log_likelihood over u steps
+            #     log_lik_defect = [sum(e) for e in bstrap_replts_log_lik_defect]
+            # else:
+            bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy[data[3]]
+                                                             for data in bs_data]
+                                                            for bs_data in bstrap_replts_data]))
+            # Sum log_likelihood over u steps
+            log_lik_defect = bstrap_replts_log_lik_defect.sum(axis=1)
 
         elif self.opp_policy_from_supervised_learning:
             # Sum log_likelihood over u steps
-            if not self.new_improved_perf:
-                log_lik_defect = np.array([[el[4] for el in one_replicat]
-                                           for one_replicat in bstrap_replts_data]).sum(axis=1)
-            else:
-                log_lik_defect = bstrap_replts_data[:, :, 4].sum(axis=1)
+            # if not self.new_improved_perf:
+            #     log_lik_defect = np.array([[el[4] for el in one_replicat]
+            #                                for one_replicat in bstrap_replts_data]).sum(axis=1)
+            # else:
+            log_lik_defect = bstrap_replts_data[:, :, 4].sum(axis=1)
 
         else:
             raise NotImplementedError()
 
         # Defect if in more than 0.95 of the replicates, the actual policy is more likely than the simulated coop policy
-        if not self.new_improved_perf:
-            log_lik_check_coop = np.array(log_lik_cooperate) - np.array(log_lik_defect)
-        else:
-            log_lik_check_coop = log_lik_cooperate - log_lik_defect
+        # if not self.new_improved_perf:
+        #     log_lik_check_coop = np.array(log_lik_cooperate) - np.array(log_lik_defect)
+        # else:
+        log_lik_check_coop = log_lik_cooperate - log_lik_defect
         assert len(log_lik_check_coop) == self.n_bootstrapped_replications
         percentile_value = np.percentile(log_lik_check_coop, self.percentile, interpolation="linear")
         percentile_0_5_value = np.percentile(log_lik_check_coop, 50, interpolation="linear")
@@ -899,109 +823,85 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
     def defection_from_network_weights(self, state, action, welfare, next_state, done):
 
-        # Update the coop networks simulating the opponents
-        other_ag_states = agent_util.get_from_other_agents(self.agent, key="state", default=[])
-        other_ag_action = agent_util.get_from_other_agents(self.agent, key="action", default=[])
-        other_ag_rewards = agent_util.get_from_other_agents(self.agent, key="reward", default=[])
-        other_ag_next_states = agent_util.get_from_other_agents(self.agent, key="next_state", default=[])
-        other_ag_algorithms = agent_util.get_from_other_agents(self.agent, key="algorithm", default=[])
+        if done:
+            # Update the coop networks simulating the opponents
+            other_ag_states = agent_util.get_from_other_agents(self.agent, key="state", default=[])
+            other_ag_action = agent_util.get_from_other_agents(self.agent, key="action", default=[])
+            other_ag_rewards = agent_util.get_from_other_agents(self.agent, key="reward", default=[])
+            other_ag_next_states = agent_util.get_from_other_agents(self.agent, key="next_state", default=[])
+            other_ag_algorithms = agent_util.get_from_other_agents(self.agent, key="algorithm", default=[])
 
-        for idx, (s, a, r, n_s, algo) in enumerate(zip(other_ag_states, other_ag_action,
-                                                       other_ag_rewards, other_ag_next_states,
-                                                       other_ag_algorithms)):
+            for idx, (s, a, r, n_s, algo) in enumerate(zip(other_ag_states, other_ag_action,
+                                                           other_ag_rewards, other_ag_next_states,
+                                                           other_ag_algorithms)):
 
-            coop_net_simul_opponent_idx = self.punish_algo_idx + idx + 1
-            # TODO is not currently shared between agents because it is only computed in update (agent sequential)
+                coop_net_simul_opponent_idx = self.punish_algo_idx + idx + 1
+                # TODO is not currently shared between agents because it is only computed in update (agent sequential)
+                if not self.is_fully_init:
+                    logger.info("LE algo finishing init by copying weight from opponent network")
+                    net_from = algo.algorithms[algo.coop_algo_idx].net if isinstance(algo, meta_algorithm.LE) else algo.net
+                    copy_weights_between_networks(copy_from_net=net_from,
+                                                  copy_to_net=self.algorithms[coop_net_simul_opponent_idx].net)
+
+                # Recompute welfare using the currently agent welfare function
+                # if self.remeaning_punishing_time <= 0:
+                w = self.agent.welfare_function(algo.agent, r)
+                self.algorithms[coop_net_simul_opponent_idx].memory_update(
+                    s, a, w, n_s, done)
+
+                diff = compare_two_identical_net(self.algorithms[coop_net_simul_opponent_idx].net,
+                                                 algo.net)
+
+                self._update_defection_metric(epi_defection_metric=diff)
+
             if not self.is_fully_init:
-                logger.info("LE algo finishing init by copying weight from opponent network")
-                if isinstance(algo, meta_algorithm.LE):
-                    net_from = algo.algorithms[algo.coop_algo_idx].net
-                else:
-                    net_from = algo.net
-                copy_weights_between_networks(copy_from_net=net_from,
-                                              copy_to_net=self.algorithms[coop_net_simul_opponent_idx].net)
-
-            # Recompute welfare using the currently agent welfare function
-            # if self.remeaning_punishing_time <= 0:
-            w = self.agent.welfare_function(algo.agent, r)
-            self.algorithms[coop_net_simul_opponent_idx].memory_update(
-                s, a, w, n_s, done)
-
-            diff = compare_two_identical_net(self.algorithms[coop_net_simul_opponent_idx].net,
-                                             algo.net)
-            self.defection_carac_tot += diff
-            self.defection_carac_steps += 1
-            self.algo_temp_info['log_defection_carac_tot'] += diff
-            self.algo_temp_info['log_defection_carac_steps'] += 1
-
-        if not self.is_fully_init:
-            self.is_fully_init = True
+                self.is_fully_init = True
 
         return True
 
-    def defection_from_action_pd_kl_div(self, state, action, welfare, next_state, done):
-        """Defection is determined by the average of the kullback leibler divergence over an episode"""
+    def _update_defection_metric(self, epi_defection_metric):
+        self.defection_carac_queue.append(epi_defection_metric)
+        self.defection_metric = (sum(self.defection_carac_queue) / (len(self.defection_carac_queue) + self.epsilon))
 
-        other_ag_states = agent_util.get_from_other_agents(self.agent, key="state", default=[])
-        other_ag_algorithms = agent_util.get_from_other_agents(self.agent, key="algorithm", default=[])
-
-        with torch.no_grad():
-            for other_ag_s, other_ag_algo in zip(other_ag_states, other_ag_algorithms):
-
-                _, current_ag_act_prob_distrib = self.act_coop(other_ag_s)
-                if isinstance(other_ag_algo, LE):
-                    _, other_ag_act_prob_distrib = other_ag_algo.act_coop(other_ag_s)
-                else:
-                    _, other_ag_act_prob_distrib = other_ag_algo.act(other_ag_s)
-
-                kl_div = kl_divergence(other_ag_act_prob_distrib, current_ag_act_prob_distrib)
-
-                self.defection_carac_tot += kl_div
-                self.defection_carac_steps += 1
-                self.algo_temp_info['log_defection_carac_tot'] += kl_div
-                self.algo_temp_info['log_defection_carac_steps'] += 1
-        return True
+        self.to_log["defection_metric"] = round(float(self.defection_metric), 4)
 
     @lab_api
     def memory_update(self, state, action, welfare, next_state, done):
 
-        # start at the last step before the end of min_coop_time
+        # start at the last step before the end of min_cooperative_epi_after_punishement
         # TODO remove train var always to True
-        train = self.detect_defection(state, action, welfare, next_state, done)
+        train_current_active_algo = self.detect_defection(state, action, welfare, next_state, done)
 
         assert (self.remeaning_punishing_time > 0) == (self.active_algo_idx == self.punish_algo_idx)
         assert (self.remeaning_punishing_time <= 0) == (self.active_algo_idx == self.coop_algo_idx)
+        assert (self.active_algo_idx == self.punish_algo_idx) or (self.active_algo_idx == self.coop_algo_idx)
 
         # Reset after a log
-        # TODO we may prefer a fixed len of past steps
-        if np.isnan(self.algo_temp_info['log_punishement_time']):
-            self.algo_temp_info['log_punishement_time'] = 0
-            self.algo_temp_info['log_coop_time'] = 0
-
         if self.remeaning_punishing_time > 0:
             other_agents_rewards = agent_util.get_from_other_agents(self.agent, key="reward", default=[])
             welfare = 1 - sum(other_agents_rewards)
-            self.algo_temp_info['log_punishement_time'] += 1
+            self.n_punishement_steps += 1
         else:
-            self.algo_temp_info['log_coop_time'] += 1
+            self.n_cooperation_steps += 1
 
         outputs = None
-        if train:
+        if train_current_active_algo: # This is currently always True
             outputs = self.algorithms[self.active_algo_idx].memory_update(state, action, welfare,
                                                                           next_state, done)
 
         if done:
 
-            if self.remeaning_punishing_time <= - (self.min_coop_time - 1):
-                if self.defection_carac_tot / (
-                        self.defection_carac_steps + self.epsilon) > self.defection_carac_threshold:
+            if self.remeaning_punishing_time <= - (self.min_cooperative_epi_after_punishement - 1):
+                if self.defection_metric > self.defection_carac_threshold:
                     self.detected_defection = True
 
-            # Averaged by episode and then reset when done
-            self.defection_carac_tot = np.nan
-            self.defection_carac_steps = np.nan
+            # Averaged by episode
+            self.to_log["coop_frac"] = round(self.n_cooperation_steps /
+                                            (self.n_punishement_steps + self.n_cooperation_steps), 2)
+            self.n_cooperation_steps = 0
+            self.n_punishement_steps = 0
 
-            if self.remeaning_punishing_time > - self.min_coop_time:
+            if self.remeaning_punishing_time > - self.min_cooperative_epi_after_punishement:
                 self.remeaning_punishing_time -= 1
 
             # Switch from coop to punishement only at the start of epi
@@ -1015,56 +915,27 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 self.active_algo_idx = self.coop_algo_idx
         return outputs
 
+    def _log_actions_proba(self, action_pd, prefix):
+        for act_idx in range(self.agent.body.action_dim):
+            n_action_i = sum([el[act_idx] for el in action_pd])
+            self.to_log[f'{prefix}{act_idx}'] = round(float(n_action_i /
+                                                      (len(action_pd) + self.epsilon)), 2)
+
     def get_log_values(self):
-        self.to_log.update({
-            "d_carac": round(float((self.algo_temp_info['log_defection_carac_tot'] /
-                                    (self.algo_temp_info['log_defection_carac_steps'] + self.epsilon))), 4)
-        })
-
-        # Coop fraction since last log
-        if self.algo_temp_info['log_coop_time'] == 0 and self.algo_temp_info['log_punishement_time'] == 0:
-            self.to_log["coop_frac"] = 0.5
-        else:
-            self.to_log["coop_frac"] = round(float((self.algo_temp_info['log_coop_time'] /
-                                                    (self.algo_temp_info['log_punishement_time'] +
-                                                     self.algo_temp_info['log_coop_time']))), 2)
-
-        # Log actions prod distrib
         if self.agent.body.action_space_is_discrete:
-            if self.defection_detection_mode == self.all_defection_detection_modes[1]:
-                action_pd_coop = list(self.action_pd_coop)
-                action_pd_punish = list(self.action_pd_punish)
-                for act_idx in range(self.agent.body.action_dim):
-                    n_action_i = sum([el[act_idx] for el in action_pd_coop])
-                    self.to_log[f'ca{act_idx}'] = round(float(n_action_i /
-                                                              (len(action_pd_coop) + self.epsilon)), 2)
-                for act_idx in range(self.agent.body.action_dim):
-                    n_action_i = sum([el[act_idx] for el in action_pd_punish])
-                    self.to_log[f'pa{act_idx}'] = round(float(n_action_i /
-                                                              (len(action_pd_punish) + self.epsilon)), 2)
-            else:
-                action_pd_opp = list(self.action_pd_opp)
-                for act_idx in range(self.agent.body.action_dim):
-                    n_action_i = sum([el[act_idx] for el in action_pd_opp])
-                    self.to_log[f'oppa{act_idx}'] = round(float(n_action_i /
-                                                                (len(action_pd_opp) + self.epsilon)), 2)
-
-                # if (self.defection_detection_mode == self.all_defection_detection_modes[0] or
-                #         self.defection_detection_mode == self.all_defection_detection_modes[2]):
-                action_pd_opp_coop = list(self.action_pd_opp_coop)
-                for act_idx in range(self.agent.body.action_dim):
-                    n_action_i = sum([el[act_idx] for el in action_pd_opp_coop])
-                    self.to_log[f'sim_ca{act_idx}'] = round(float(n_action_i /
-                                                                  (len(action_pd_opp_coop) + self.epsilon)), 2)
-
-            if self.defection_detection_mode == self.all_defection_detection_modes[3]:
-                action_pd_approx_opp = list(self.action_pd_opp_approx)
-                for act_idx in range(self.agent.body.action_dim):
-                    n_action_i = sum([el[act_idx] for el in action_pd_approx_opp])
-                    self.to_log[f'spl_ca{act_idx}'] = round(float(n_action_i /
-                                                                  (len(action_pd_approx_opp) + self.epsilon)), 2)
-
+            # Log action actual proba under the cooperative policy
+            self._log_actions_proba(action_pd=list(self.action_pd_coop), prefix="coop_a")
+            # Log action actual proba under the punishement policy
+            self._log_actions_proba(action_pd=list(self.action_pd_punish), prefix="punish_a")
+            # Log action actual proba under the opponent policy
+            self._log_actions_proba(action_pd=list(self.action_pd_opp), prefix="opp_a")
+            # Log action actual proba under the opponent simulated policy
+            self._log_actions_proba(action_pd=list(self.action_pd_opp_coop), prefix="simu_opp_a")
+            # Log action actual proba under the opponent approximated policy
+            if hasattr(self, "action_pd_opp_approx"):
+                self._log_actions_proba(action_pd=list(self.action_pd_opp_approx), prefix="approx_opp_a")
         else:
+            logger.error("Logging of action proba is not implemented for no discrete action")
             raise NotImplementedError()
 
         to_log = super().get_log_values()
