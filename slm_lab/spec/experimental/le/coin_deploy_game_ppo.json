@@ -170,15 +170,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
-
-
-
   "coin_deploy_game_ppo_pm_default_vs_default_or_util": {
     "world":{
       "name":"DefaultMultiAgentWorld",
@@ -426,20 +417,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   "coin_deploy_game_ppo_pm_util_vs_default_or_util": {
     "world":{
       "name":"DefaultMultiAgentWorld",
@@ -687,15 +664,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
-
-
-
   "coin_ppo_deploy_game_pm_le_self_play": {
     "world":{
       "name":"DefaultMultiAgentWorld",
@@ -831,24 +799,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   "coin_deploy_game_ppo_pm_le_with_naive_opponent": {
     "world":{
       "name":"DefaultMultiAgentWorld",
@@ -1060,13 +1010,6 @@
       "max_trial": 1
     }
   },
-
-
-
-
-
-
-
   "coin_deploy_game_ppo_nopm_spl_le_with_naive_opponent": {
     "world":{
       "name":"DefaultMultiAgentWorld",
@@ -1331,11 +1274,5 @@
       "max_trial": 1
     }
   }
-
-
-
-
-
-
 
 }

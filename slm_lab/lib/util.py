@@ -755,7 +755,7 @@ import time
 
 
 class Throttle_Temp():
-    def __init__(self,temp_limit=95, verbose=False, P=-0.1, I=-0.01, D=-0.01):
+    def __init__(self,temp_limit=85, verbose=False, P=-0.1, I=-0.01, D=-0.01):
         self.sleep_time = 0.2
         self.base_sleep = 2.0
         self.step = 0.2

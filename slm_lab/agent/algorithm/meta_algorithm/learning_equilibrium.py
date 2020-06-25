@@ -76,7 +76,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             use_gene_algo=True,
             n_gene_algo=10,
             same_init_weights=False,
-            block_len=None
+            block_len=None,
+            length_of_history=200
         ))
         util.set_attr(self, self.algorithm_spec, [
             'defection_detection_mode',
@@ -102,7 +103,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             "use_gene_algo",
             "n_gene_algo",
             "same_init_weights",
-            "block_len"
+            "block_len",
+            "length_of_history"
         ])
 
         self.all_defection_detection_modes = ["network_weights",
@@ -142,10 +144,10 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self.percentile = 95
             self.data_queue = []
 
-            self.length_of_history = 200
+            # self.length_of_history = 200
             self.warmup_length = 0  # 200
-            self.n_steps_in_bstrap_replts = 20  # 20
-            self.n_bootstrapped_replications = 50  # 50
+            self.n_steps_in_bstrap_replts = 20  # default 20
+            self.n_bootstrapped_replications = 50  # default 50
             # if self.use_strat_4:
             #     self.n_steps_in_bstrap_replts = 60  # 20
             #     self.n_bootstrapped_replications = 200  # 50
@@ -257,9 +259,6 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         return action, action_pd
 
-    def act_coop(self, state):
-        return self.algorithms[self.coop_algo_idx].act(state)
-
     def detect_defection(self, state, action, welfare, next_state, done):
         # if not isinstance(self.defection_metric, torch.Tensor) and np.isnan(self.defection_metric):
         #     self.defection_metric = 0
@@ -344,10 +343,10 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                               other_ag_algorithms)):
 
             if self.opp_policy_from_supervised_learning:
-                self.coop_net_simul_opponent_idx = self.punish_algo_idx + 2 * opp_idx + 1
-                self.approx_net_opponent_policy_idx = self.punish_algo_idx + 2 * opp_idx + 2
+                self.coop_net_simul_opponent_idx = 1 + 2 * opp_idx + 1
+                self.approx_net_opponent_policy_idx = 1 + 2 * opp_idx + 2
             else:
-                self.coop_net_simul_opponent_idx = self.punish_algo_idx + opp_idx + 1
+                self.coop_net_simul_opponent_idx = 1 + opp_idx + 1
 
             if not self.is_fully_init:
                 self.data_queue.append(deque(maxlen=self.length_of_history))
@@ -356,24 +355,29 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     copy_weights_between_networks(copy_from_net=self.algorithms[self.approx_net_opponent_policy_idx].net,
                                                   copy_to_net=self.algorithms[self.coop_net_simul_opponent_idx].net)
 
-            if not (isinstance(algo, LE) and algo.last_used_algo == algo.punish_algo_idx):
+            if not (isinstance(algo, LE) and not isinstance(algo, meta_algorithm.LEExploiter) and
+                    algo.last_used_algo == algo.punish_algo_idx):
                 # The opponent agent not is currenlty in the punish "state"
 
-                (self.log_likelihood_opponent_cooporating,
-                 self.opp_coop_a_prob_distrib) = (self.compute_s_a_log_likelihood(s, a,
-                                                          algo=self.algorithms[self.coop_net_simul_opponent_idx],
-                                                          no_grad = self.use_strat_5))
+                # (self.log_likelihood_opponent_cooporating,
+                #  self.opp_coop_a_prob_distrib) = (self.compute_s_a_log_likelihood(s, a,
+                #                                           algo=self.algorithms[self.coop_net_simul_opponent_idx],
+                #                                           no_grad = self.use_strat_5))
+                #
+                # opp_coop_simu_probs_distrib = algo.agent.action_pd.probs[0, ...].detach()
+                # self.action_pd_opp_coop.append(opp_coop_simu_probs_distrib)
+                #
+                # if self.opp_policy_from_supervised_learning:
+                #     (self.log_likelihood_approximated_opponent,
+                #      self.opp_spl_a_prob_distrib) = self.compute_s_a_log_likelihood(s, a,
+                #                                             algo=self.algorithms[self.approx_net_opponent_policy_idx])
+                #     opp_approx_probs_distrib = algo.agent.action_pd.probs[0, ...].detach()
+                #     self.action_pd_opp.append(opp_approx_probs_distrib)
+                #
+                # self.ipm_store_temp_data(opp_idx, s, a)
+                self.n_steps_since_start += 1
+                self.put_log_likelihood_in_data_buffer(algo, s, a, opp_idx, self.data_queue)
 
-                opp_true_prob_distrib = algo.agent.action_pd.probs[0, ...].detach()
-                self.action_pd_opp.append(opp_true_prob_distrib)
-
-                if self.opp_policy_from_supervised_learning:
-                    (self.log_likelihood_approximated_opponent,
-                     self.opp_spl_a_prob_distrib) = self.compute_s_a_log_likelihood(s, a,
-                                                            algo=self.algorithms[self.approx_net_opponent_policy_idx])
-
-
-                self.ipm_store_temp_data(opp_idx, s, a)
                 self.ipm_memory_update(opp_idx, algo, s, a, r, n_s, done)
                 self.apply_ipm_options_every_steps()
 
@@ -383,13 +387,33 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     self.train_simu_coop_from_scratch(opp_idx)
 
             if done and self.n_steps_since_start >= self.length_of_history + self.warmup_length:
-                percentile_value = self.compare_log_likelihood_on_sequence(opp_idx)
+                percentile_value = self.compare_log_likelihood_on_sequence(opp_idx, self.data_queue)
                 self._update_defection_metric(epi_defection_metric=-percentile_value)
 
         if not self.is_fully_init:
             self.is_fully_init = True
 
         return train
+
+
+    def put_log_likelihood_in_data_buffer(self, algo, s, a, opp_idx, data_queue, log=True):
+        (log_likelihood_opponent_cooporating,
+         self.opp_coop_a_prob_distrib) = (self.compute_s_a_log_likelihood(s, a,
+                                                  algo=self.algorithms[self.coop_net_simul_opponent_idx],
+                                                  no_grad = self.use_strat_5))
+        if log:
+            opp_coop_simu_probs_distrib = algo.agent.action_pd.probs[0, ...].detach()
+            self.action_pd_opp_coop.append(opp_coop_simu_probs_distrib)
+
+        if self.opp_policy_from_supervised_learning:
+            (log_likelihood_approximated_opponent,
+             self.opp_spl_a_prob_distrib) = self.compute_s_a_log_likelihood(s, a,
+                                                    algo=self.algorithms[self.approx_net_opponent_policy_idx])
+            if log:
+                opp_approx_probs_distrib = algo.agent.action_pd.probs[0, ...].detach()
+                self.action_pd_opp.append(opp_approx_probs_distrib)
+
+        self.ipm_store_temp_data(opp_idx, s, a, data_queue, log_likelihood_opponent_cooporating, log_likelihood_approximated_opponent)
 
     def compute_s_a_log_likelihood(self, s, a, algo, no_grad=True):
         """ compute log_likelihood(s,a)_under_algo_policy """
@@ -399,32 +423,47 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 _, a_prob_distrib = algo.act(s)
         else:
             _, a_prob_distrib = algo.act(s)
-        opp_coop_a_probs = a_prob_distrib.probs[0, ...].detach()
-        self.action_pd_opp_coop.append(opp_coop_a_probs)
+        action_probs = a_prob_distrib.probs[0, ...].detach()
+        # self.action_pd_opp_coop.append(action_probs) # Error here this function is not specific to opp coop
 
         if self.debug:
-            logger.info(f"coop_opp_action_pc {self.agent.agent_idx} {opp_coop_a_probs}")
+            logger.info(f"coop_opp_action_pc {self.agent.agent_idx} {action_probs}")
         opponent_observed_action_index = a
-        s_a_log_likelihood_under_algo_policy = np.log(np.array(opp_coop_a_probs[
+        s_a_log_likelihood_under_algo_policy = np.log(np.array(action_probs[
                                                                   opponent_observed_action_index] + self.epsilon
                                                               , dtype=np.float32))
         return s_a_log_likelihood_under_algo_policy, a_prob_distrib
 
-    def ipm_store_temp_data(self, opp_idx, s, a):
-        self.n_steps_since_start += 1
-        if self.opp_policy_from_history:
-            self.data_queue[opp_idx].append([self.log_likelihood_opponent_cooporating,
-                                             self.hash_fn(s),
-                                             self.hash_fn(a),
-                                             self.hash_fn(s) + self.hash_fn(a)])
-        elif self.opp_policy_from_supervised_learning:
-            # if self.use_strat_2:
-            #     self.log_likelihood_opponent_cooporating = None
-            self.data_queue[opp_idx].append([self.log_likelihood_opponent_cooporating,
-                                             self.hash_fn(s),
-                                             self.hash_fn(a),
-                                             self.hash_fn(s) + self.hash_fn(a),
-                                             self.log_likelihood_approximated_opponent])
+    # def ipm_store_temp_data(self, opp_idx, s, a):
+    #     self.n_steps_since_start += 1
+    #     if self.opp_policy_from_history:
+    #         self.data_queue[opp_idx].append([self.log_likelihood_opponent_cooporating,
+    #                                          self.hash_fn(s),
+    #                                          self.hash_fn(a),
+    #                                          self.hash_fn(s) + self.hash_fn(a)])
+    #     elif self.opp_policy_from_supervised_learning:
+    #         # if self.use_strat_2:
+    #         #     self.log_likelihood_opponent_cooporating = None
+    #         self.data_queue[opp_idx].append([self.log_likelihood_opponent_cooporating,
+    #                                          self.hash_fn(s),
+    #                                          self.hash_fn(a),
+    #                                          self.hash_fn(s) + self.hash_fn(a),
+    #                                          self.log_likelihood_approximated_opponent])
+
+    def ipm_store_temp_data(self, opp_idx, s, a, data_queue, log_likelihood_opponent_cooporating, log_likelihood_approximated_opponent):
+        # if self.opp_policy_from_history:
+        #     data_queue[opp_idx].append([log_likelihood_opponent_cooporating,
+        #                                      self.hash_fn(s),
+        #                                      self.hash_fn(a),
+        #                                      self.hash_fn(s) + self.hash_fn(a)])
+        # elif self.opp_policy_from_supervised_learning:
+        #     # if self.use_strat_2:
+        #     #     self.log_likelihood_opponent_cooporating = None
+        data_queue[opp_idx].append([log_likelihood_opponent_cooporating,
+                                         self.hash_fn(s),
+                                         self.hash_fn(a),
+                                         self.hash_fn(s) + self.hash_fn(a),
+                                         log_likelihood_approximated_opponent])
 
     def ipm_memory_update(self, opp_idx, algo, s, a, r, n_s, done):
         # print("ipm_memory_update s, a, w, n_s, done", s, a, r, n_s, done)
@@ -433,19 +472,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         # Update the coop networks simulating the opponents
         computed_w = self.agent.welfare_function(algo.agent, r)
         self.last_computed_w = computed_w
-        # if self.use_sl_for_simu_coop:
-        #     if hasattr(self, "simu_coop_w_n_minus_1"):
-        #         current_net_params = dict(self.algorithms[coop_net_simul_opponent_idx].net.named_parameters())
-        #         penalty = sum((current_net_params[k] - (v + )).abs().sum()
-        #                       for k, v in self.simu_coop_w_n_minus_1.items())
-        #         penalty *= self.penalty_coeff
-        #     else:
-        #         penalty = 0
-        #     self.algorithms[coop_net_simul_opponent_idx].memory_update(s, a, penalty, None, done)
-        #     if self.algorithms[coop_net_simul_opponent_idx].to_train == 1:
-        #         self.simu_coop_w_n_minus_1 = { k:v.clone() for k,v in self.algorithms[
-        #             coop_net_simul_opponent_idx].net.named_parameters()}
-        # else:
+
         if self.opp_policy_from_supervised_learning:
             if self.use_historical_policy_as_target:
                 self.opp_historical_policy = self.approximate_policy_from_history(opp_idx, separate_actions=False)
@@ -755,38 +782,20 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         y = torch.eye(num_classes)
         return y[labels]
 
-    def compare_log_likelihood_on_sequence(self, opp_idx):
-        # if not self.new_improved_perf:
-        #     data_queue_list = list(self.data_queue[opp_idx])
-        #     bstrap_replts_data = [random.choices(population=data_queue_list,
-        #                                          k=self.n_steps_in_bstrap_replts)
-        #                           for i in range(self.n_bootstrapped_replications)]
-        # else:
-        data_array = np.array(list(self.data_queue[opp_idx]), dtype=np.object)
+    def compare_log_likelihood_on_sequence(self, opp_idx, data_queue, log=True):
+
+        data_array = np.array(list(data_queue[opp_idx]), dtype=np.object)
         bstrap_idx = np.random.random_integers(0, high=data_array.shape[0] - 1,
                                                size=(self.n_bootstrapped_replications,
                                                      self.n_steps_in_bstrap_replts))
         bstrap_replts_data = data_array[bstrap_idx]
+
         # Sum log_likelihood over u steps
-        # if not self.new_improved_perf:
-        #     log_lik_cooperate = np.array([[el[0] for el in one_replicat]
-        #                                   for one_replicat in bstrap_replts_data]).sum(axis=1)
-        # else:
         log_lik_cooperate = bstrap_replts_data[:, :, 0].sum(axis=1)
 
         # Get the log_likelihood of the observed actions under the computed opponent policy
         if self.opp_policy_from_history:
-            # if "opp_historical_policy" not in locals():
             opp_historical_policy = self.approximate_policy_from_history(opp_idx)
-            # else:
-            #     print("reuse opp_historical_policy")
-            # if not self.new_improved_perf:
-            #     bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy(data)
-            #                                                      for data in bs_data]
-            #                                                     for bs_data in bstrap_replts_data]))
-            #     # Sum log_likelihood over u steps
-            #     log_lik_defect = [sum(e) for e in bstrap_replts_log_lik_defect]
-            # else:
             bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy[data[3]]
                                                              for data in bs_data]
                                                             for bs_data in bstrap_replts_data]))
@@ -794,68 +803,62 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             log_lik_defect = bstrap_replts_log_lik_defect.sum(axis=1)
 
         elif self.opp_policy_from_supervised_learning:
-            # Sum log_likelihood over u steps
-            # if not self.new_improved_perf:
-            #     log_lik_defect = np.array([[el[4] for el in one_replicat]
-            #                                for one_replicat in bstrap_replts_data]).sum(axis=1)
-            # else:
             log_lik_defect = bstrap_replts_data[:, :, 4].sum(axis=1)
 
         else:
             raise NotImplementedError()
 
         # Defect if in more than 0.95 of the replicates, the actual policy is more likely than the simulated coop policy
-        # if not self.new_improved_perf:
-        #     log_lik_check_coop = np.array(log_lik_cooperate) - np.array(log_lik_defect)
-        # else:
         log_lik_check_coop = log_lik_cooperate - log_lik_defect
         assert len(log_lik_check_coop) == self.n_bootstrapped_replications
         percentile_value = np.percentile(log_lik_check_coop, self.percentile, interpolation="linear")
         percentile_0_5_value = np.percentile(log_lik_check_coop, 50, interpolation="linear")
 
-        self.to_log.update({
-            "percentile_value": percentile_value,
-            "percentile_0_5_value": percentile_0_5_value,
-            "log_lik_check_coop_std": log_lik_check_coop.std(),
-            "log_lik_check_coop_mean": log_lik_check_coop.mean()
-        })
+        if log:
+            self.to_log.update({
+                "percentile_value": percentile_value,
+                "percentile_0_5_value": percentile_0_5_value,
+                "log_lik_check_coop_std": log_lik_check_coop.std(),
+                "log_lik_check_coop_mean": log_lik_check_coop.mean()
+            })
         return percentile_value
 
     def defection_from_network_weights(self, state, action, welfare, next_state, done):
 
-        if done:
-            # Update the coop networks simulating the opponents
-            other_ag_states = agent_util.get_from_other_agents(self.agent, key="state", default=[])
-            other_ag_action = agent_util.get_from_other_agents(self.agent, key="action", default=[])
-            other_ag_rewards = agent_util.get_from_other_agents(self.agent, key="reward", default=[])
-            other_ag_next_states = agent_util.get_from_other_agents(self.agent, key="next_state", default=[])
-            other_ag_algorithms = agent_util.get_from_other_agents(self.agent, key="algorithm", default=[])
+        # Update the coop networks simulating the opponents
+        other_ag_states = agent_util.get_from_other_agents(self.agent, key="state", default=[])
+        other_ag_actions = agent_util.get_from_other_agents(self.agent, key="action", default=[])
+        other_ag_rewards = agent_util.get_from_other_agents(self.agent, key="reward", default=[])
+        other_ag_next_states = agent_util.get_from_other_agents(self.agent, key="next_state", default=[])
+        other_ag_algorithms = agent_util.get_from_other_agents(self.agent, key="algorithm", default=[])
 
-            for idx, (s, a, r, n_s, algo) in enumerate(zip(other_ag_states, other_ag_action,
-                                                           other_ag_rewards, other_ag_next_states,
-                                                           other_ag_algorithms)):
+        for idx, (s, a, r, n_s, algo) in enumerate(zip(other_ag_states, other_ag_actions,
+                                                       other_ag_rewards, other_ag_next_states,
+                                                       other_ag_algorithms)):
 
-                coop_net_simul_opponent_idx = self.punish_algo_idx + idx + 1
-                # TODO is not currently shared between agents because it is only computed in update (agent sequential)
-                if not self.is_fully_init:
-                    logger.info("LE algo finishing init by copying weight from opponent network")
-                    net_from = algo.algorithms[algo.coop_algo_idx].net if isinstance(algo, meta_algorithm.LE) else algo.net
-                    copy_weights_between_networks(copy_from_net=net_from,
-                                                  copy_to_net=self.algorithms[coop_net_simul_opponent_idx].net)
+            coop_net_simul_opponent_idx = self.punish_algo_idx + idx + 1
+            # TODO is not currently shared between agents because it is only computed in update (agent sequential)
+            if not self.is_fully_init:
+                logger.info("LE algo finishing init by copying weight from opponent network")
+                net_from = algo.algorithms[algo.coop_algo_idx].net if isinstance(algo, meta_algorithm.LE) else algo.net
+                copy_weights_between_networks(copy_from_net=net_from,
+                                              copy_to_net=self.algorithms[coop_net_simul_opponent_idx].net)
 
-                # Recompute welfare using the currently agent welfare function
-                # if self.remeaning_punishing_time <= 0:
-                w = self.agent.welfare_function(algo.agent, r)
-                self.algorithms[coop_net_simul_opponent_idx].memory_update(
-                    s, a, w, n_s, done)
+            # Recompute welfare using the currently agent welfare function
+            # if self.remeaning_punishing_time <= 0:
+            w = self.agent.welfare_function(algo.agent, r)
+            # print("s, a, w, n_s, done", s, a, w, n_s, done)
+            self.algorithms[coop_net_simul_opponent_idx].memory_update(
+                s, a, w, n_s, done)
 
+            if done:
                 diff = compare_two_identical_net(self.algorithms[coop_net_simul_opponent_idx].net,
                                                  algo.net)
 
                 self._update_defection_metric(epi_defection_metric=diff)
 
-            if not self.is_fully_init:
-                self.is_fully_init = True
+        if not self.is_fully_init:
+            self.is_fully_init = True
 
         return True
 
@@ -867,6 +870,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
     @lab_api
     def memory_update(self, state, action, welfare, next_state, done):
+
+        # print("state, action, welfare, next_state, done", state, action, welfare, next_state, done)
 
         # start at the last step before the end of min_cooperative_epi_after_punishement
         # TODO remove train var always to True
@@ -929,7 +934,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self._log_actions_proba(action_pd=list(self.action_pd_punish), prefix="punish_a")
             # Log action actual proba under the opponent policy
             self._log_actions_proba(action_pd=list(self.action_pd_opp), prefix="opp_a")
-            # Log action actual proba under the opponent simulated policy
+            # Log action actual proba under the opponent simulated cooperative policy
             self._log_actions_proba(action_pd=list(self.action_pd_opp_coop), prefix="simu_opp_a")
             # Log action actual proba under the opponent approximated policy
             if hasattr(self, "action_pd_opp_approx"):

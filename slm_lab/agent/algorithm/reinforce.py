@@ -110,13 +110,9 @@ class Reinforce(Algorithm):
 
     @lab_api
     def act(self, state):
-        # print("state act", state)
         body = self.body
         action, action_pd = self.action_policy(state, self, body)
-        # print("act", action)
-        # print("prob", action_pd.probs.tolist())
         self.to_log["entropy_act"] = action_pd.entropy().mean().item()
-
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
     #TODO reset currently doesn't support all memory types
@@ -138,7 +134,6 @@ class Reinforce(Algorithm):
     def calc_ret_advs(self, batch):
         '''Calculate plain returns; which is generalized to advantage in ActorCritic'''
         rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
-        # if not all(rets == rets[0]):
         if self.center_return:
             if self.normalize_over_n_batch != 1:
                 self.batchs_values.append(rets)
@@ -164,14 +159,8 @@ class Reinforce(Algorithm):
         if self.body.env.is_venv:
             actions = math_util.venv_unpack(actions)
         logger.debug(f'actions {actions}')
-        # print(self.algo_idx, "action_pd.probs",action_pd.probs[0])
-        # print(self.algo_idx, "action_pd.probs",action_pd.probs)
 
-        # print("action_pd.log_prob",action_pd.log_prob)
-        # print("action_pd.log_prob()",action_pd.log_prob())
-        # print("action_pd.log_prob(actions)",action_pd.log_prob(actions))
         log_probs = action_pd.log_prob(actions)
-        # print(self.algo_idx, "log_probs",log_probs)
         if self.min_log_prob != False:
             log_probs = log_probs.clamp(min=self.min_log_prob)
         logger.debug(f'log_probs {log_probs}, advs {advs}')
@@ -180,18 +169,10 @@ class Reinforce(Algorithm):
         if self.entropy_coef_spec:
             self.entropy = action_pd.entropy().mean()
             logger.debug(f'entropy {self.entropy}')
-            # self.to_log["entropy"] = self.entropy.item()
             self.to_log["entropy_train"] = self.entropy.item()
-            # self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
             entropy_loss = (-self.entropy_coef_scheduler.val * self.entropy)
-            # print("self.entropy_coef_scheduler.val", self.entropy_coef_scheduler.val)
-            if policy_loss != 0.0:
-                self.to_log["entropy_over_loss"] = (entropy_loss / policy_loss).clamp(min=-100, max=100)
-
-                # if entropy_loss / policy_loss < 100:
-                #     self.to_log["entropy_over_loss"] = entropy_loss / policy_loss
-                # else:
-                #     self.to_log["entropy_over_loss"] = 100
+            # if policy_loss != 0.0:
+            self.to_log["entropy_over_loss"] = (entropy_loss / policy_loss + 1e-12).clamp(min=-100, max=100)
             self.to_log["loss_policy"] = policy_loss
             policy_loss += entropy_loss
         logger.debug(f'Actor policy loss: {policy_loss:g}')
@@ -203,31 +184,17 @@ class Reinforce(Algorithm):
             return np.nan
         if self.to_train == 1:
             batch = self.sample()
-            # self.clock.set_batch_size(len(batch))
             pd_param = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pd_param, advs)
-            # print("agent",self.agent.agent_idx)
-            # print("batch['states'].shape", batch["states"].shape, batch["states"][0,...])
-            # print("batch[rewards']",batch['rewards'][0,...])
-            # print("advs[0]", advs[0])
-            # print("loss", loss)
-            # TODO use either arg or attribute but not both (auxilary vs loss penalty)
-            # if hasattr(self, "auxilary_loss"):
-            #     if not torch.isnan(self.auxilary_loss):
-            #         # print("loss auxilary_loss", loss, self.auxilary_loss)
-            #         self.to_log['loss_auxilary']=self.auxilary_loss
-            #         loss += self.auxilary_loss
-            #         del self.auxilary_loss
 
+            # TODO use either arg or attribute but not both (auxilary vs loss penalty)
             if hasattr(self, "auxilary_loss"):
                 # if not torch.isnan(self.auxilary_loss):
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pd_param)
                 coop_entropy = action_pd.entropy().mean()
                 ent_diff = (coop_entropy -
                             (self.auxilary_loss * 0.95) + 0.01) ** 2
-                # ent_diff = (coop_entropy -
-                #             (self.auxilary_loss)) ** 2
                 auxilary_loss = ent_diff * self.strat_5_coeff
                 self.to_log['loss_auxilary'] = auxilary_loss
                 loss += auxilary_loss

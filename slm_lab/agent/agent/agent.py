@@ -24,7 +24,9 @@ logger = logger.get_logger(__name__)
 # ma for mean average
 BASIC_COLS = ['epi', 't', 'wall_t', 'frame', 'fps', 'tot_r', 'tot_r_ma', 'lr']
 
-class Agent(observability.ObservableAgentInterface):
+# class Agent(observability.ObservableAgentInterface):
+class Agent(object):
+
     '''
     Agent abstraction; implements the API to interface with Env in SLM Lab
     Contains algorithm, memory, body
@@ -41,6 +43,7 @@ class Agent(observability.ObservableAgentInterface):
         self.spec = spec
         self.agent_spec = spec['agent']
         self.name = self.agent_spec['name']
+        self.playing_agent = self.agent_spec['playing_agent'] if 'playing_agent' in self.agent_spec.keys() else True
         assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         self.agent_idx = agent_idx
 
@@ -54,34 +57,31 @@ class Agent(observability.ObservableAgentInterface):
         body.agent = self
         self.body = body
 
+
+
+        # World co-living agents awareness
+        # self.other_ag_observations = OrderedDict()
+        self.observed_agent_mode = ps.get(self.agent_spec, 'observing_other_agents.name', default=None)
+        if self. observed_agent_mode is None or self.observed_agent_mode == "NotObservable":
+            # self.observed_agents = None
+            self.observable = False
+        elif self.observed_agent_mode == "FullyObservable":
+            # self.observed_agents = self._observed_agents
+            self.observable = True
+        else:
+            raise NotImplementedError()
+
+        # print("self.observed_agents", len(self.observed_agents()))
+        # assert 0
+
         # Algorithm
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self._algorithm = AlgorithmClass(self, global_nets,
+        self.algorithm = AlgorithmClass(self, global_nets,
                                          algorithm_spec=ps.get(self.agent_spec, 'algorithm'),
                                          memory_spec=ps.get(self.agent_spec, 'memory'),
                                          net_spec=ps.get(self.agent_spec, 'net'))
 
         self.body.init_part2()
-
-        # World co-living agents awareness
-        self.other_ag_observations = OrderedDict()
-        self.observed_agent_mode = ps.get(self.agent_spec, 'observing_other_agents.name', default=None)
-        if self. observed_agent_mode is None:
-            self.observed_agents = None
-        elif self.observed_agent_mode == "FullyObservable":
-            self.observed_agents = self.world.agents
-        else:
-            # TODO add example/conf/class for partialy observed agents
-            ObservedAgentClass = getattr(agent, self.observed_agent_mode, default = None)
-            self.observed_agents = [
-                ObservedAgentClass(
-                    spec=ps.get(self.agent_spec, 'observing_other_agents.spec'),
-                    env=env,
-                    # TODO use global nets for observed agents(in distributed training)
-                    global_nets=None, #global_nets_list[i] if global_nets_list is not None else None,
-                    agent_idx=i,
-                    world=self.world)
-                for i in range(len(self.world.agents))]
 
 
 
@@ -90,27 +90,58 @@ class Agent(observability.ObservableAgentInterface):
         logger.debug("End Agent __init__")
 
 
+    @property
+    def observed_agents(self):
+        # print("self.world.agents", len(self.world.agents))
+        return [ agent for ag_idx, agent in enumerate(self.world.agents)
+                 if ag_idx != self.agent_idx]
+
     @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
         with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
             action, action_pd = self.algorithm.act(state)
+            self.action = action
             self.action_pd = action_pd
-        return action, action_pd
+            self.state = state
+        return self.action, self.action_pd
+
+    @lab_api
+    def act_after_env_step(self):
+        '''Standard act method from algorithm.'''
+        if hasattr(self.algorithm, "act_after_env_step"):
+            with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
+                retro_action = self.algorithm.act_after_env_step()
+            return retro_action
+        else:
+            return {}
 
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
 
         self.body.reward = reward
+
+        # Still usefull to allow for player to modify the reward (give/take reward to other)
         welfare = self.welfare_function(self, reward)
-        # self.body.welfare = welfare # TODO useless line ?
-        self._welfare = welfare
+        self.reward = reward
+        self.welfare = welfare
+        self.next_state = next_state
+        self.done = done
 
         self.body.update(state, action, welfare, next_state, done)
         if util.in_eval_lab_modes():  # eval does not update agent for training
             return
-        self.algorithm.memory_update(state, action, welfare, next_state, done)
+        self.algorithm.memory_update(state, action, self.welfare, next_state, done)
+
+    def set_step_values(self, reward, next_state, done):
+        self.reward = reward
+        self.next_state = next_state
+        self.done = done
+
+    def compute_welfare(self):
+        welfare = self.welfare_function(self, self.reward)
+        self.welfare = welfare
 
     def train(self):
         loss = self.algorithm.train()
@@ -119,20 +150,26 @@ class Agent(observability.ObservableAgentInterface):
         return loss, explore_var
 
     def observe_other_agents(self):
-        if self.observed_agent_mode is not None:
-            self.other_ag_observations = OrderedDict()
-            for observed_agent in self.observed_agents:
-                if observed_agent.agent_idx != self.agent_idx:
-                    self.other_ag_observations[str(observed_agent.agent_idx)] = {
-                                                                    "state": observed_agent.state,
-                                                                    "action": observed_agent.action,
-                                                                    "action_pd": observed_agent.action_pd,
-                                                                    "reward": observed_agent.reward,
-                                                                    "welfare": observed_agent.welfare,
-                                                                    "next_state": observed_agent.next_state,
-                                                                    "done": observed_agent.done,
-                                                                    "algorithm": observed_agent.algorithm,
-                                                                  }
+        pass
+        #TODO this is now useless ?
+        # if self.observed_agent_mode is not None:
+        #     self.other_ag_observations = OrderedDict()
+        #     for observed_agent in self.observed_agents:
+        #         if observed_agent.agent_idx != self.agent_idx and observed_agent.observable:
+        #             # TODO rm str()
+        #             print("oberseved", observed_agent.algorithm)
+        #             self.other_ag_observations[str(observed_agent.agent_idx)] = {
+        #                                                             "state": observed_agent.state,
+        #                                                             "action": observed_agent.action,
+        #                                                             "action_pd": observed_agent.action_pd,
+        #                                                             "reward": observed_agent.reward,
+        #                                                             "welfare": observed_agent.welfare,
+        #                                                             "next_state": observed_agent.next_state,
+        #                                                             "done": observed_agent.done,
+        #                                                             "algorithm": observed_agent.algorithm,
+        #                                                           }
+
+            # print("self.other_ag_observations",self.other_ag_observations)
 
     @lab_api
     def save(self, ckpt=None):
@@ -157,38 +194,38 @@ class Agent(observability.ObservableAgentInterface):
 
         return state, action, reward, next_state, done, info, additional_list_of_dict
 
-    @property
-    def reward(self):
-        return agent_util.get_from_current_agents(self, key="reward")
-
-    @property
-    def action(self):
-        return agent_util.get_from_current_agents(self, key="action")
+    # @property
+    # def reward(self):
+    #     return agent_util.get_from_current_agents(self, key="reward")
+    #
+    # @property
+    # def action(self):
+    #     return agent_util.get_from_current_agents(self, key="action")
 
     # TODO add this in observability API
     # @property
     # def action_pd(self):
     #     return self.action_pd
 
-    @property
-    def state(self):
-        return agent_util.get_from_current_agents(self, key="state")
-
     # @property
-    # def welfare(self):
-    #     return agent_util.get_from_current_agents(self, key="welfare")
-
-    @property
-    def next_state(self):
-        return agent_util.get_from_current_agents(self, key="next_state")
-
-    @property
-    def done(self):
-        return agent_util.get_from_current_agents(self, key="done")
-
-    @property
-    def algorithm(self):
-        return self._algorithm
+    # def state(self):
+    #     return agent_util.get_from_current_agents(self, key="state")
+    #
+    # # @property
+    # # def welfare(self):
+    # #     return agent_util.get_from_current_agents(self, key="welfare")
+    #
+    # @property
+    # def next_state(self):
+    #     return agent_util.get_from_current_agents(self, key="next_state")
+    #
+    # @property
+    # def done(self):
+    #     return agent_util.get_from_current_agents(self, key="done")
+    #
+    # @property
+    # def algorithm(self):
+    #     return self._algorithm
 
 class Body:
     # TODO change the body doc to reflect the new use in a world (as well as in an agent)
@@ -284,7 +321,7 @@ class Body:
                     total_reward = total_reward.sum()
                     # print("world")
                 else:
-                    total_reward = total_reward[self.agent.agent_idx]
+                    total_reward = total_reward[self.agent.agent_idx] if self.agent.playing_agent else np.nan
                 #     print("self.agent.agent_idx",self.agent.agent_idx)
                 # print("total_reward 2",total_reward)
 

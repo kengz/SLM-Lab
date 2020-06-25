@@ -196,28 +196,33 @@ from slm_lab.agent.agent import agent
 
 
 def add_all_extra_col(name_time_pairs, session_df):
+    all_col = []
+    for k in session_df.keys():
+        all_col.extend(session_df[k].columns)
+    all_col = list(set(all_col))
+
     already_plotted = [el[0] for el in name_time_pairs]
-    first_df = [session_df[k] for k in session_df.keys()][0]
-    for df_col in first_df.columns:
+    for df_col in all_col:
         if df_col in already_plotted:
             continue
         if any(df_col == col for col in agent.BASIC_COLS):
             continue
-
         name_time_pairs.append((df_col, 'frame'))
     return name_time_pairs
 
 
 def add_summary_plots(name_time_pairs, session_df):
-    first_df = [session_df[k] for k in session_df.keys()][0]
+    all_col = []
+    for k in session_df.keys():
+        all_col.extend(session_df[k].columns)
+    all_col = list(set(all_col))
 
-    all_col = first_df.columns
     all_col_for_multiple_alg = [col.split("_alg")[0] for col in all_col if "_alg" in col]
     summary_to_produce = list(set(all_col_for_multiple_alg))
 
     for summary_name in summary_to_produce:
         summary_col_list = []
-        for df_col in first_df.columns:
+        for df_col in all_col:
             if df_col == summary_name:
                 summary_col_list.append(df_col)
             elif "_alg" in df_col:

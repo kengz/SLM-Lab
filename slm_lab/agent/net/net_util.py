@@ -172,10 +172,13 @@ def init_layers(net, init_fn_name):
     if init_fn_name is None:
         return
 
-    # get nonlinearity
-    nonlinearity = get_nn_name(net.hid_layers_activation).lower()
-    if nonlinearity == 'leakyrelu':
-        nonlinearity = 'leaky_relu'  # guard name
+    if net.hid_layers_activation is None:
+        nonlinearity = None
+    else:
+        # get nonlinearity
+        nonlinearity = get_nn_name(net.hid_layers_activation).lower()
+        if nonlinearity == 'leakyrelu':
+            nonlinearity = 'leaky_relu'  # guard name
 
     # get init_fn and add arguments depending on nonlinearity
     init_fn = getattr(nn.init, init_fn_name)

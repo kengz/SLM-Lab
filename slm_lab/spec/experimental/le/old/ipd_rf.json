@@ -74,7 +74,7 @@
     "agent": [{
       "name": "Reinforce",
       "welfare_function":"utilitarian_welfare",
-            "observing_other_agents":{
+      "observing_other_agents":{
         "name":"FullyObservable"
       },
       "algorithm": {

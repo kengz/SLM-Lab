@@ -1,0 +1,122 @@
+{
+  "ipd_rf": {
+    "world":{"name":"DefaultMultiAgentWorld"},
+
+    "agent": [{
+      "name": "Reinforce",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.0,
+        "center_return":true,
+        "normalize_return":true,
+         "entropy_coef_spec": {
+            "name": "linear_decay",
+            "start_val": 2.0,
+            "end_val": 0.01,
+            "start_step": 0,
+            "end_step": 20000
+          },
+          "training_frequency": 72
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "LeakyReLU",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "optim_spec": {
+          "name": "SGD",
+          "lr": 0.01,
+          "momentum":0.9
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 20000
+        }
+      }
+
+
+    },
+    {
+      "copy_n":0
+    },
+    {
+      "name": "Planning_Agent",
+      "observing_other_agents":{
+        "name":"NotObservable"
+      },
+      "playing_agent":false,
+      "algorithm": {
+        "name": "Planning_Agent",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "max_reward_strength":3,
+        "cost_param":0.0002,
+        "with_redistribution":false,
+        "gamma":0.0,
+        "value_fn_variant": "exact",
+        "n_players":2,
+        "action_flip_prob":0,
+        "n_planning_eps":-1,
+        "entropy_coef_spec": null,
+        "training_frequency": 72
+      },
+
+
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+
+
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [1],
+        "hid_layers_activation": null,
+        "init_fn": "normal_",
+        "clip_grad_val": null,
+        "optim_spec": {
+          "name": "SGD",
+          "lr": 0.01,
+          "momentum":0.9
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 20000
+        }
+      }
+
+
+    }
+    ],
+    "env": [{
+      "name": "IteratedPrisonersDilemma-v0",
+      "max_t": null,
+      "max_frame": 20000,
+      "num_envs": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 100,
+      "log_frequency": 100,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  }
+}

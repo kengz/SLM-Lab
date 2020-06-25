@@ -40,7 +40,7 @@ class DefaultMultiAgentWorld:
         self.agents = []
         self.env = env
         self.best_total_rewards_ma = -np.inf
-        self.shared_dict = {}
+        # self.shared_dict = {}
         self.session_idx = None  # Will be set in the Session __init__
         self.trial_idx = None
 
@@ -51,7 +51,7 @@ class DefaultMultiAgentWorld:
             if self.deterministic:
                 self._set_rd_state(self.rd_seed)
             self._create_one_agent(i, agent_spec, global_nets_list[i]
-            if global_nets_list is not None else None)
+                if global_nets_list is not None else None)
 
         self.body = Body(self.env, self.spec)
         self.body.init_part2()
@@ -62,6 +62,8 @@ class DefaultMultiAgentWorld:
                 torch.backends.cudnn.deterministic = True
         #     self.rd_seed = np.random.randint(1e9)
         #     self._set_rd_state(self.rd_seed)
+
+        self.playing_agents = [ag.playing_agent for ag in self.agents]
 
     def _create_one_agent(self, agent_idx, agent_spec, global_nets):
         a_spec = deepcopy(self.spec)
@@ -89,7 +91,7 @@ class DefaultMultiAgentWorld:
     def act(self, state):
         '''Standard act method from algorithm.'''
 
-        action_action_pd = [agent.act(s) for agent, s in zip(self.agents, state)]
+        action_action_pd = [agent.act(s) for agent, s in zip(self.agents, state) if agent.playing_agent]
         action = [el[0] for el in action_action_pd]
         action_pd = [el[1] for el in action_action_pd]
         return action, action_pd
@@ -98,30 +100,74 @@ class DefaultMultiAgentWorld:
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         logger.debug(f'action {action}')
-        self.shared_dict.update({"state": state,
-                                 "action": action,
-                                 "reward": reward,
-                                 "next_state": next_state,
-                                 "done": [done] * len(state),
-                                 "frame": [self.env.clock.get(unit="frame")] * len(state)})
+        # TODO remove this unused dict?
+        # self.shared_dict.update({"state": state,
+        #                          "action": action,
+        #                          "reward": reward,
+        #                          "next_state": next_state,
+        #                          "done": [done] * len(state),
+        #                          "frame": [self.env.clock.get(unit="frame")] * len(state)})
 
         loss, explore_var = [], []
-        assert len(self.agents) == len(state) == len(action) == len(reward) == len(next_state)
+        assert sum(self.playing_agents) == len(state) == len(action) == len(reward) == len(next_state), (
+            f"playing {sum(self.playing_agents)} s {len(state)} a {len(action)} "
+            f"r {len(reward)} n_s {len(next_state)}"
+        )
+
+        self.state = state
+        self.action = action
+        self.reward = reward
+        self.next_state = next_state
+
+        playing_pos = 0
+        for idx, (agent, playing) in enumerate(zip(self.agents, self.playing_agents)):
+            if playing:
+                agent.set_step_values(reward[playing_pos], next_state[playing_pos], done)
+                playing_pos += 1
+            else:
+                agent.set_step_values(None, None, done)
+        for idx, (agent, playing) in enumerate(zip(self.agents, self.playing_agents)):
+            agent.compute_welfare()
 
         for agent in self.agents:
-            agent.observe_other_agents()
+            if hasattr(agent, "act_after_env_step"):
+                with torch.no_grad():
+                    outputs = agent.act_after_env_step()
+                    for k,v in outputs.items():
+                        if hasattr(self, k):
+                            setattr(self, k,v)
+                        # if k in locals().keys():
+                        #     locals()[k] = v
 
-        for agent, s, a, r, n_s in zip(self.agents, state, action, reward, next_state):
-            agent.update(s, a, r, n_s, done)
+        state = self.state
+        action = self.action
+        reward = self.reward
+        next_state = self.next_state
 
+        # for agent in self.agents:
+        #     agent.observe_other_agents()
+
+        # Update memory and make it work with non-playing agents as well
+        playing_pos = 0
+        for idx, (agent, playing) in enumerate(zip(self.agents, self.playing_agents)):
+            if playing:
+                agent.update(state[playing_pos], action[playing_pos], reward[playing_pos],
+                             next_state[playing_pos], done)
+                playing_pos += 1
+            else:
+                agent.update(None, None, None, None, done)
+
+        # Train supporting determinisctic similar seed for all agent
         if self.deterministic:
             self.rd_seed = np.random.randint(1e9)
         for agent in self.agents:
             if self.deterministic:
                 self._set_rd_state(self.rd_seed)
             l, e_v = agent.train()
-            loss.append(torch.tensor([l]))
-            explore_var.append(torch.tensor([e_v]))
+            if l is not None:
+                loss.append(torch.tensor([l]))
+            if e_v is not None:
+                explore_var.append(torch.tensor([e_v]))
 
         if not any([np.isnan(l) for l in loss]):  # set for log_summary()
             sum_loss_over_agents = torch.cat(loss, dim=0).sum()

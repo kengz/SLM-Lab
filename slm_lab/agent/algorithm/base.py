@@ -163,26 +163,9 @@ class Algorithm(ABC):
     def get_log_values(self):
         if hasattr(self, "net"):
             self.to_log['opt_step'] = self.net.opt_step
-        # if hasattr(self, "lr_scheduler"):
-        #     if hasattr(self, "last_lr_to_log"):
-        #         # if self.last_lr_to_log is None:
-        #         #     pass
-        #         # else:
-        #         self.to_log['lr'] = self.last_lr_to_log
-        #         del self.last_lr_to_log
-        #     elif not hasattr(self, "lr_overwritter"):
-        #         lr = self.lr_scheduler.get_lr()
-        #         if np.isscalar(lr):
-        #             self.to_log['lr'] = lr
-        #         else:
-        #             for idx, lr_i in enumerate(lr):
-        #                 self.to_log[f'lr_{idx}'] = lr_i
-        #     else:
-        #         self.to_log['lr'] = self.lr_overwritter
 
         if hasattr(self, "entropy_coef_scheduler"):
             self.to_log["entropy_coef"] = self.entropy_coef_scheduler.val
-
 
         to_log = self.to_log
         self.to_log = {}

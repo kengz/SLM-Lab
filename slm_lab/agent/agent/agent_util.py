@@ -7,21 +7,18 @@ import pydash as ps
 logger = logger.get_logger(__name__)
 
 def get_from_current_agents(agent, key, default=None):
-    other_agents_rewards = copy.deepcopy(ps.get(agent.world.shared_dict, key, default))
-    return other_agents_rewards[agent.agent_idx]
+    return getattr(agent,key,default)
 
 # TODO write tests for get_from_other_agents and (especially on the use of the OrderedDict)
 def get_from_other_agents(agent, key, default):
     values = []
-    for k, observed_agent_dict in agent.other_ag_observations.items():
-        values.append(ps.get(observed_agent_dict, key, default))
-        # print("values", values)
+    for observed_agent in agent.observed_agents:
+        if observed_agent.observable:
+            if hasattr(observed_agent,key):
+                values.append(getattr(observed_agent,key))
+            else:
+                values.append(default)
     return values
-
-# def remove_current_agent_idx(agent, list_value):
-#     if len(list_value) > agent.agent_idx:
-#         list_value.pop(agent.agent_idx)
-#     return list_value
 
 
 ##### Welfare functions ######
@@ -32,12 +29,9 @@ def default_welfare(agent, current_agent_reward):
 
 
 def utilitarian_welfare(agent, current_agent_reward):
-    # print("utilitarian_welfare")
     other_agents_rewards = get_from_other_agents(agent, key='reward', default=[])
 
     welfare = current_agent_reward + sum(other_agents_rewards)
-    # print(agent.agent_idx,"current_agent_reward",current_agent_reward, "welfare", welfare,
-    #       "sum(other_agents_rewards)", sum(other_agents_rewards))
     return welfare
 
 
