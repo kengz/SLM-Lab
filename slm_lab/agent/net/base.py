@@ -33,8 +33,6 @@ class Net(ABC):
 
     @net_util.dev_check_train_step
     def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
-        if lr_scheduler is not None:
-            lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
@@ -42,6 +40,8 @@ class Net(ABC):
         if global_net is not None:
             net_util.push_global_grads(self, global_net)
         optim.step()
+        if lr_scheduler is not None:
+            lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         if global_net is not None:
             net_util.copy(global_net, self)
         if clock is not None:

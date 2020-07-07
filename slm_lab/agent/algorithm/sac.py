@@ -180,10 +180,10 @@ class SoftActorCritic(ActorCritic):
 
     def train_alpha(self, alpha_loss):
         '''Custom method to train the alpha variable'''
-        self.alpha_lr_scheduler.step(epoch=self.body.env.clock.frame)
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
+        self.alpha_lr_scheduler.step(epoch=self.body.env.clock.frame)
         self.alpha = self.log_alpha.detach().exp()
 
     def train(self):

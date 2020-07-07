@@ -5,6 +5,7 @@ import gym
 import numpy as np
 import pydash as ps
 import roboschool
+import pybullet_envs
 
 
 FILEPATH = 'slm_lab/spec/_random_baseline.json'

@@ -1,5 +1,5 @@
 {
-  "sac_per_halfcheetah": {
+  "async_sac_halfcheetah": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -10,9 +10,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "PrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.0001,
+        "name": "Replay",
         "batch_size": 256,
         "max_size": 200000,
         "use_cer": true
@@ -22,38 +20,46 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 7e-4
+          "name": "GlobalAdam",
+          "lr": 1e-4
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": false
+        "gpu": true
       }
     }],
     "env": [{
-      "name": "RoboschoolHalfCheetah-v1",
+      "name": "HalfCheetahBulletEnv-v0",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": "shared",
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 6,
       "max_trial": 1
+    },
+    "search": {
+      "env": [{
+        "num_envs__grid_search": [4, 6, 8, 10]
+      }],
+      "meta": {
+        "max_session__grid_search": [4, 6, 8, 10]
+      }
     }
   }
 }
