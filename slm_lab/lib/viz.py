@@ -15,6 +15,8 @@ logger = logger.get_logger(__name__)
 
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 10
+USE_Y_LOG_SCALE = ['lr']
+
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(
     f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`'))
@@ -49,6 +51,7 @@ def create_label(y_col, x_col, title=None, y_title=None, x_title=None, legend_na
 
 def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, layout_kwargs=None):
     '''simplified method to generate Layout'''
+
     layout = go.Layout(
         title=title,
         legend=dict(x=0.0, y=-0.25, orientation='h'),
@@ -58,6 +61,10 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
         margin=go.layout.Margin(l=60, r=30, t=60, b=60),
     )
     layout.update(layout_kwargs)
+
+    if any(selection_mark in y_title for selection_mark in USE_Y_LOG_SCALE):
+        layout.update(yaxis_type="log")
+
     return layout
 
 

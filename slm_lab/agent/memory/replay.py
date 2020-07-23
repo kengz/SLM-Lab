@@ -182,9 +182,10 @@ class Replay(Memory):
         return batch_idxs
 
 
-    def replay_all_history(self):
+    def replay_all_history(self, from_idx=0):
         """Drop the last non-complete batch"""
-        for batch_i in range(int(self.size/self.batch_size)):
+        from_batch = int(from_idx/self.batch_size)
+        for batch_i in range(from_batch,int(self.size/self.batch_size),1):
             batch_idxs = np.arange(start=batch_i,
                                     stop=batch_i+self.batch_size,
                                     step=1)

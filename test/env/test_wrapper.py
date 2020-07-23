@@ -15,11 +15,11 @@ def test_make_gym_env_nostack(name, state_shape, reward_scale):
     env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     env.reset()
     for i in range(5):
-        state, reward, done, info = env.step(env.action_space.sample())
+        state, reward, done, info = env.step(env.action_dim.sample())
 
     assert isinstance(state, np.ndarray)
     assert state.shape == state_shape
-    assert state.shape == env.observation_space.shape
+    assert state.shape == env.observation_dim.shape
     assert isinstance(reward, float)
     assert isinstance(done, bool)
     assert isinstance(info, dict)
@@ -38,7 +38,7 @@ def test_make_gym_env_concat(name, state_shape, reward_scale):
     env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     env.reset()
     for i in range(5):
-        state, reward, done, info = env.step(env.action_space.sample())
+        state, reward, done, info = env.step(env.action_dim.sample())
 
     assert isinstance(state, LazyFrames)
     state = state.__array__()  # realize data
@@ -46,7 +46,7 @@ def test_make_gym_env_concat(name, state_shape, reward_scale):
     # concat multiplies first dim
     stack_shape = (frame_op_len * state_shape[0],) + state_shape[1:]
     assert state.shape == stack_shape
-    assert state.shape == env.observation_space.shape
+    assert state.shape == env.observation_dim.shape
     assert isinstance(reward, float)
     assert isinstance(done, bool)
     assert isinstance(info, dict)
@@ -64,7 +64,7 @@ def test_make_gym_env_stack(name, state_shape, reward_scale):
     env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     env.reset()
     for i in range(5):
-        state, reward, done, info = env.step(env.action_space.sample())
+        state, reward, done, info = env.step(env.action_dim.sample())
 
     assert isinstance(state, LazyFrames)
     state = state.__array__()  # realize data
@@ -72,7 +72,7 @@ def test_make_gym_env_stack(name, state_shape, reward_scale):
     # stack creates new dim
     stack_shape = (frame_op_len, ) + state_shape
     assert state.shape == stack_shape
-    assert state.shape == env.observation_space.shape
+    assert state.shape == env.observation_dim.shape
     assert isinstance(reward, float)
     assert isinstance(done, bool)
     assert isinstance(info, dict)
@@ -90,11 +90,11 @@ def test_make_gym_env_downsize(name, state_shape, image_downsize):
     env = make_gym_env(name, seed, frame_op=frame_op, frame_op_len=frame_op_len, image_downsize=image_downsize)
     env.reset()
     for i in range(5):
-        state, reward, done, info = env.step(env.action_space.sample())
+        state, reward, done, info = env.step(env.action_dim.sample())
 
     assert isinstance(state, np.ndarray)
     assert state.shape == state_shape
-    assert state.shape == env.observation_space.shape
+    assert state.shape == env.observation_dim.shape
     assert isinstance(reward, float)
     assert isinstance(done, bool)
     assert isinstance(info, dict)

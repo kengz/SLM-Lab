@@ -9,7 +9,10 @@ from .reinforce import *
 from .sac import *
 from .sarsa import *
 from .sil import *
+
 from .meta_algorithm import *
+from .supervised_learning import *
+from .supervised_learning_baysian import *
+
 from .ucb import *
-from .sup_learn_action_policy import *
 from .adaptive_mechanism_design import *

@@ -9,7 +9,7 @@ import copy
 from collections import Iterable, OrderedDict
 from torch.utils.tensorboard import SummaryWriter
 
-from slm_lab.agent.agent import agent_util, observability
+from slm_lab.agent.agent import agent_util
 from slm_lab.agent import algorithm, memory, agent
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
@@ -36,6 +36,7 @@ class Agent(object):
             + agents < algorithm + memory + body
 
     '''
+    # TODO separete observability in a clear net way
 
     def __init__(self, spec, env, world, global_nets=None, agent_idx=0):
         logger.debug("Start Agent __init__")
@@ -53,8 +54,8 @@ class Agent(object):
         self.welfare_function = getattr(agent_util, ps.get(self.agent_spec, 'welfare_function',
                                                            default="default_welfare"))
         # Body
-        body = Body(env, spec, aeb=(agent_idx, 0, 0))
-        body.agent = self
+        body = Body(env, spec, aeb=(agent_idx, 0, 0), agent=self)
+        # body.agent = self
         self.body = body
 
 
@@ -81,7 +82,7 @@ class Agent(object):
                                          memory_spec=ps.get(self.agent_spec, 'memory'),
                                          net_spec=ps.get(self.agent_spec, 'net'))
 
-        self.body.init_part2()
+        # self.body.init_part2()
 
 
 
@@ -140,8 +141,7 @@ class Agent(object):
         self.done = done
 
     def compute_welfare(self):
-        welfare = self.welfare_function(self, self.reward)
-        self.welfare = welfare
+        self.welfare = self.welfare_function(self, self.reward)
 
     def train(self):
         loss = self.algorithm.train()
@@ -236,9 +236,9 @@ class Body:
     - acts as non-gradient variable storage for monitoring and analysis
     '''
 
-    def __init__(self, env, spec, aeb=(0, 0, 0)):
+    def __init__(self, env, spec, agent, aeb=(0, 0, 0)):
         # essential reference variables
-        self.agent = None  # set later
+        self.agent = agent  # set later
         self.env = env
         self.spec = spec
         # agent, env, body index for multi-agent-env
@@ -261,11 +261,13 @@ class Body:
         self.welfare = np.nan
 
         # the specific agent-env interface variables for a body
+        # Dims of the full environement in Gym types
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
+        # Dims of the part of the environement relative to this agent in int
         self.observation_dim = self.env.observable_dim
-        logger.info("self.observable_dim {}".format(self.observation_dim))
         self.action_dim = self.env.action_dim
+
         self.action_space_is_discrete = self.env.action_space_is_discrete
         # set the ActionPD class for sampling action
         self.action_type = policy_util.get_space_type(self.action_space)
@@ -276,7 +278,7 @@ class Body:
 
         self.tb_add_graph = False
 
-    def init_part2(self):
+    # def init_part2(self):
         # TODO merge in init
         # dataframes to track data for analysis.analyze_session
         # track training data per episode

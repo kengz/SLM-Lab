@@ -76,9 +76,9 @@ class SoftActorCritic(ActorCritic):
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
         if self.body.action_space_is_discrete:
-            self.target_entropy = - self.body.action_space.n
+            self.target_entropy = - self.body.action_dim.n
         else:
-            self.target_entropy = - np.product(self.body.action_space.shape)
+            self.target_entropy = - np.product(self.body.action_dim.shape)
 
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -104,7 +104,7 @@ class SoftActorCritic(ActorCritic):
 
     def scale_action(self, action):
         '''Scale continuous actions from tanh range'''
-        action_space = self.body.action_space
+        action_space = self.body.action_dim
         low, high = torch.from_numpy(action_space.low), torch.from_numpy(action_space.high)
         return action * (high - low) / 2 + (low + high) / 2
 
@@ -141,7 +141,7 @@ class SoftActorCritic(ActorCritic):
         '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
         next_states = batch['next_states']
         with torch.no_grad():
-            pdparams = self.calc_pdparam(next_states)
+            pdparams = self.proba_distrib_params(next_states)
             action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
             next_log_probs, next_actions = self.calc_log_prob_action(action_pd)
             next_actions = self.guard_q_actions(next_actions)  # non-reparam discrete actions need to be converted into one-hot
@@ -208,7 +208,7 @@ class SoftActorCritic(ActorCritic):
                 self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
 
                 # policy loss
-                action_pd = policy_util.init_action_pd(self.body.ActionPD, self.calc_pdparam(states))
+                action_pd = policy_util.init_action_pd(self.body.ActionPD, self.proba_distrib_params(states))
                 log_probs, reparam_actions = self.calc_log_prob_action(action_pd, reparam=True)
                 policy_loss = self.calc_policy_loss(batch, log_probs, reparam_actions)
                 self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)

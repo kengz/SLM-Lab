@@ -10,7 +10,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.agent import algorithm, memory, world
-from slm_lab.agent.agent import agent_util, observability
+from slm_lab.agent.agent import agent_util
 
 logger = logger.get_logger(__name__)
 

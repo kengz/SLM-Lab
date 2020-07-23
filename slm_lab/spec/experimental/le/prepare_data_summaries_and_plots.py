@@ -11,9 +11,13 @@ import pandas as pd
 def apply_to_all_dir(location, fn_to_apply):
     path_in_location = os.listdir(location)
     for path in path_in_location:
-        if os.path.isdir(path):
+        full_path = os.path.join(location, path)
+        if os.path.isdir(full_path):
             if path[0] != ".":
-                fn_to_apply(path)
+                try:
+                    fn_to_apply(full_path)
+                except Exception as e:
+                    print("Exception", type(e))
 
 
 def find_all_files_with_ext(dir, ext):
@@ -663,3 +667,4 @@ def process_one_dir(dir_path):
 
 if __name__ == "__main__":
     apply_to_all_dir('.', process_one_dir)
+    apply_to_all_dir('.', lambda subdir: apply_to_all_dir(subdir, process_one_dir))

@@ -31,9 +31,9 @@ class Random(Algorithm):
         '''Random action'''
         body = self.body
         if body.env.is_venv and not util.in_eval_lab_modes():
-            action = np.array([body.action_space.sample() for _ in range(body.env.num_envs)])
+            action = np.array([body.action_dim.sample() for _ in range(body.env.num_envs)])
         else:
-            action = body.action_space.sample()
+            action = body.action_dim.sample()
         return action
 
     @lab_api

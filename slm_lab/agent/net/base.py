@@ -4,6 +4,8 @@ import pydash as ps
 import torch
 import torch.nn as nn
 import numpy as np
+from slm_lab.lib import logger
+logger = logger.get_logger(__name__)
 
 class Net(ABC):
     '''Abstract Net class to define the API methods'''
@@ -58,7 +60,9 @@ class Net(ABC):
         # plot_grad_flow(self.named_parameters())
 
         if self.clip_grad_val is not None:
-            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+            tot_total_norm_before_clipping = nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+            if tot_total_norm_before_clipping > self.clip_grad_val:
+                logger.info(f"clipping grad norm from {tot_total_norm_before_clipping} to {self.clip_grad_val}")
         if global_net is not None:
             net_util.push_global_grads(self, global_net)
         optim.step()

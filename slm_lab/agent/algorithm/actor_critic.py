@@ -166,11 +166,11 @@ class ActorCritic(Reinforce):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, net=None):
+    def proba_distrib_params(self, x, net=None):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        out = super().calc_pdparam(x, net=net)
+        out = super().proba_distrib_params(x, net=net)
         if self.shared:
             assert ps.is_list(out), f'Shared output should be a list [pdparam, v]'
             if len(out) == 2:  # single policy
@@ -202,7 +202,7 @@ class ActorCritic(Reinforce):
         states = batch['states']
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
-        pdparam = self.calc_pdparam(states)
+        pdparam = self.proba_distrib_params(states)
         v_pred = self.calc_v(states)  # uses self.v_pred from calc_pdparam if self.shared
         return pdparam, v_pred
 

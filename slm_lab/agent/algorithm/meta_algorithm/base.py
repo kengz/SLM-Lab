@@ -17,15 +17,17 @@ class MetaAlgorithm(algorithm.Algorithm):
 
     def __init__(self, agent, global_nets, algorithm_spec,
                  memory_spec, net_spec, algo_idx=0, create_sub_algo=True):
+        self.agent = agent
+        self.meta_algorithm_spec = algorithm_spec
+        self.algo_idx = algo_idx
+        if create_sub_algo:
+            self.algorithms = self.deploy_contained_algo(global_nets=global_nets)
 
         super().__init__(agent, global_nets=None, algorithm_spec=algorithm_spec,
                          memory_spec=None, net_spec=None,
                          algo_idx=algo_idx)
-        self.meta_algorithm_spec = algorithm_spec
-        # self.algorithms = [None] * len(self.meta_algorithm_spec['contained_algorithms'])
-        self.algo_idx = algo_idx
-        if create_sub_algo:
-            self.algorithms = self.deploy_contained_algo(global_nets=global_nets)
+
+
 
     def deploy_contained_algo(self, global_nets=None, idx_selector=None):
         # TODO manage global nets (needed in distributed training)
@@ -114,21 +116,21 @@ class MetaAlgorithm(algorithm.Algorithm):
 
     def get_log_values(self):
         for idx, algo in enumerate(self.algorithms):
-            if idx > 0:
-                for k, v in algo.get_log_values().items():
-                    k_splitted = k.split("_alg")
-                    original_k = k_splitted[0]
-                    if len(k_splitted) > 1:
-                        nested_algo = "_alg".join(k_splitted[1:])
-                        k_meta = f'{original_k}_alg{idx}_alg{nested_algo}'
-                    else:
-                        k_meta = f'{original_k}_alg{idx}'
-                    assert k_meta not in self.to_log.keys()
-                    self.to_log[k_meta] = v
-            else:
-                self.to_log.update(algo.get_log_values())
+            # if idx > 0:
+            for k, v in algo.get_log_values().items():
+                k_splitted = k.split("_alg")
+                original_k = k_splitted[0]
+                if len(k_splitted) > 1:
+                    nested_algo = "_alg".join(k_splitted[1:])
+                    k_meta = f'{original_k}_alg{idx}_alg{nested_algo}'
+                else:
+                    k_meta = f'{original_k}_alg{idx}'
+                assert k_meta not in self.to_log.keys(), f"k_meta {k_meta} already in to_log.keys()"
+                self.to_log[k_meta] = v
+            # else:
+            #     self.to_log.update(algo.get_log_values())
 
-        self._reset_temp_info()
+        # self._reset_temp_info()
         extra_training_info_to_log = self.to_log
         self.to_log = {}
         return extra_training_info_to_log

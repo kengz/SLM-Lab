@@ -91,7 +91,7 @@ def gen_random_return(env_name, seed):
     done = False
     total_reward = 0
     while not done:
-        _, reward, done, _ = env.step(env.action_space.sample())
+        _, reward, done, _ = env.step(env.action_dim.sample())
         if isinstance(reward, Iterable):
             total_reward += sum(reward)
         else:

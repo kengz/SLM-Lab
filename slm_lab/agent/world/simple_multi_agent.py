@@ -40,7 +40,6 @@ class DefaultMultiAgentWorld:
         self.agents = []
         self.env = env
         self.best_total_rewards_ma = -np.inf
-        # self.shared_dict = {}
         self.session_idx = None  # Will be set in the Session __init__
         self.trial_idx = None
 
@@ -53,15 +52,12 @@ class DefaultMultiAgentWorld:
             self._create_one_agent(i, agent_spec, global_nets_list[i]
                 if global_nets_list is not None else None)
 
-        self.body = Body(self.env, self.spec)
-        self.body.init_part2()
+        self.body = Body(self.env, self.spec, agent=None)
 
         if self.deterministic:
             if torch.cuda.is_available():
                 torch.backends.cudnn.benchmark = False
                 torch.backends.cudnn.deterministic = True
-        #     self.rd_seed = np.random.randint(1e9)
-        #     self._set_rd_state(self.rd_seed)
 
         self.playing_agents = [ag.playing_agent for ag in self.agents]
 
@@ -100,52 +96,14 @@ class DefaultMultiAgentWorld:
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         logger.debug(f'action {action}')
-        # TODO remove this unused dict?
-        # self.shared_dict.update({"state": state,
-        #                          "action": action,
-        #                          "reward": reward,
-        #                          "next_state": next_state,
-        #                          "done": [done] * len(state),
-        #                          "frame": [self.env.clock.get(unit="frame")] * len(state)})
 
-        loss, explore_var = [], []
         assert sum(self.playing_agents) == len(state) == len(action) == len(reward) == len(next_state), (
             f"playing {sum(self.playing_agents)} s {len(state)} a {len(action)} "
             f"r {len(reward)} n_s {len(next_state)}"
         )
 
-        self.state = state
-        self.action = action
-        self.reward = reward
-        self.next_state = next_state
-
-        playing_pos = 0
-        for idx, (agent, playing) in enumerate(zip(self.agents, self.playing_agents)):
-            if playing:
-                agent.set_step_values(reward[playing_pos], next_state[playing_pos], done)
-                playing_pos += 1
-            else:
-                agent.set_step_values(None, None, done)
-        for idx, (agent, playing) in enumerate(zip(self.agents, self.playing_agents)):
-            agent.compute_welfare()
-
-        for agent in self.agents:
-            if hasattr(agent, "act_after_env_step"):
-                with torch.no_grad():
-                    outputs = agent.act_after_env_step()
-                    for k,v in outputs.items():
-                        if hasattr(self, k):
-                            setattr(self, k,v)
-                        # if k in locals().keys():
-                        #     locals()[k] = v
-
-        state = self.state
-        action = self.action
-        reward = self.reward
-        next_state = self.next_state
-
-        # for agent in self.agents:
-        #     agent.observe_other_agents()
+        reward, next_state = self._update_agent_info_wt_feedback_from_env_step(reward, next_state, done)
+        loss, explore_var = [], []
 
         # Update memory and make it work with non-playing agents as well
         playing_pos = 0
@@ -177,7 +135,42 @@ class DefaultMultiAgentWorld:
             if util.in_eval_lab_modes():
                 return sum_loss_over_agents, sum_explore_var_over_agents
 
+    def _update_agent_info_wt_feedback_from_env_step(self, reward, next_state, done):
 
+        self.reward = reward
+        self.next_state = next_state
+
+        self._complement_agent_information_about_step(reward, next_state, done)
+
+        something_changed = False
+        for agent in self.agents:
+            if hasattr(agent, "act_after_env_step"):
+                with torch.no_grad():
+                    outputs = agent.act_after_env_step()
+                    for k, v in outputs.items():
+                        if hasattr(self, k):
+                            something_changed = True
+                            setattr(self, k, v)
+
+        reward = self.reward
+        next_state = self.next_state
+
+        if something_changed:
+            self._complement_agent_information_about_step(reward, next_state, done)
+
+        for agent in self.agents:
+            agent.compute_welfare()
+
+        return reward, next_state
+
+    def _complement_agent_information_about_step(self, reward, next_state, done):
+        playing_pos = 0
+        for idx, (agent, playing) in enumerate(zip(self.agents, self.playing_agents)):
+            if playing:
+                agent.set_step_values(reward[playing_pos], next_state[playing_pos], done)
+                playing_pos += 1
+            else:
+                agent.set_step_values(None, None, done)
 
     def manual_seed(self,seed):
         """Without memory leak"""

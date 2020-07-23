@@ -4,6 +4,7 @@ import itertools
 import json
 import os
 from string import Template
+import copy
 
 import pydash as ps
 
@@ -299,7 +300,7 @@ def spec_copy_n(spec):
                 if isinstance(spec[k][i], dict):
                     if 'copy_n' in spec[k][i].keys():
                         num_of_agent_to_imitate = spec[k][i]['copy_n']
-                        spec[k][i] = spec[k][num_of_agent_to_imitate]
+                        spec[k][i] = copy.deepcopy(spec[k][num_of_agent_to_imitate])
             for i in range(len(spec[k])):
                 if isinstance(spec[k][i], dict):
                     spec[k][i] = spec_copy_n(spec[k][i])

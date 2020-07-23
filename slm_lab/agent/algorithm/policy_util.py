@@ -89,7 +89,7 @@ def calc_pdparam(state, algorithm, body):
     if not torch.is_tensor(state):  # dont need to cast from numpy
         state = guard_tensor(state, body)
         state = state.to(algorithm.net.device)
-    pdparam = algorithm.calc_pdparam(state)
+    pdparam = algorithm.proba_distrib_params(state)
     return pdparam
 
 
@@ -149,9 +149,9 @@ def default(state, algorithm, body):
 def random(state, algorithm, body):
     '''Random action using gym.action_space.sample(), with the same format as default()'''
     if body.env.is_venv and not util.in_eval_lab_modes():
-        _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
+        _action = [body.action_dim.sample() for _ in range(body.env.num_envs)]
     else:
-        _action = [body.action_space.sample()]
+        _action = [body.action_dim.sample()]
     action = torch.tensor(_action)
     return action, None
 

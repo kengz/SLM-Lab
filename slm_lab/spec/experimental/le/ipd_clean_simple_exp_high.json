@@ -33,13 +33,13 @@
         },
         "net":{
           "type":"MLPNet",
-          "hid_layers":[64],
+          "hid_layers":[4],
           "hid_layers_activation":"LeakyReLU",
-          "init_fn":"orthogonal_",
+          "init_fn":"normal_mu_0_std_0.1",
           "clip_grad_val":1.0,
           "optim_spec":{
             "name":"SGD",
-            "lr":0.008,
+            "lr":0.04,
             "momentum":0.9
           },
           "lr_scheduler_spec":{
@@ -68,7 +68,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_trial":1
     }
   },
@@ -106,13 +106,13 @@
         },
         "net":{
           "type":"MLPNet",
-          "hid_layers":[64],
+          "hid_layers":[4],
           "hid_layers_activation":"LeakyReLU",
-          "init_fn":"orthogonal_",
+          "init_fn":"normal_mu_0_std_0.1",
           "clip_grad_val":1.0,
           "optim_spec":{
             "name":"SGD",
-            "lr":0.008,
+            "lr":0.04,
             "momentum":0.9
           },
           "lr_scheduler_spec":{
@@ -141,7 +141,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_trial":1
     }
   },
@@ -208,13 +208,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -252,7 +252,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_trial":1
     }
   },
@@ -319,13 +319,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -371,13 +371,13 @@
         },
         "net":{
           "type":"MLPNet",
-          "hid_layers":[64],
+          "hid_layers":[4],
           "hid_layers_activation":"LeakyReLU",
-          "init_fn":"orthogonal_",
+          "init_fn":"normal_mu_0_std_0.1",
           "clip_grad_val":1.0,
           "optim_spec":{
             "name":"SGD",
-            "lr":0.008,
+            "lr":0.04,
             "momentum":0.9
           },
           "lr_scheduler_spec":{
@@ -403,7 +403,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_trial":1
     }
   },
@@ -472,13 +472,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -514,23 +514,20 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
-                "lr_scheduler_spec":{
-                  "name":"LinearToZero",
-                  "frame":20000
-                }
+                "lr_scheduler_spec":null
               }
             }
           ]
@@ -556,7 +553,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -625,13 +622,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -667,23 +664,20 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
-                "lr_scheduler_spec":{
-                  "name":"LinearToZero",
-                  "frame":20000
-                }
+                "lr_scheduler_spec":null
               }
             }
           ]
@@ -717,13 +711,13 @@
         },
         "net":{
           "type":"MLPNet",
-          "hid_layers":[64],
+          "hid_layers":[4],
           "hid_layers_activation":"LeakyReLU",
-          "init_fn":"orthogonal_",
+          "init_fn":"normal_mu_0_std_0.1",
           "clip_grad_val":1.0,
           "optim_spec":{
             "name":"SGD",
-            "lr":0.008,
+            "lr":0.04,
             "momentum":0.9
           },
           "lr_scheduler_spec":{
@@ -749,7 +743,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -818,13 +812,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -860,17 +854,17 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -940,13 +934,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.01,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -982,17 +976,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.01,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1019,7 +1013,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -1085,13 +1079,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1128,17 +1122,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1181,13 +1175,13 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.002,
+          "lr":0.01,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -1211,7 +1205,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -1277,13 +1271,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1320,17 +1314,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1401,13 +1395,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.12,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1444,17 +1438,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.12,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1482,7 +1476,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -1548,13 +1542,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1591,17 +1585,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1644,13 +1638,13 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.032,
+          "lr":0.12,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -1674,7 +1668,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -1741,13 +1735,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1784,17 +1778,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -1825,7 +1819,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -1891,12 +1885,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -1934,16 +1928,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2014,12 +2008,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.01,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -2057,16 +2051,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.01,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2094,7 +2088,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -2160,12 +2154,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -2203,16 +2197,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2283,12 +2277,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.12,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -2326,16 +2320,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.12,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2363,7 +2357,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -2429,13 +2423,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2472,17 +2466,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2525,13 +2519,13 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.008,
+          "lr":0.04,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -2555,7 +2549,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -2622,12 +2616,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -2665,16 +2659,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2717,16 +2711,16 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "loss_spec":{
-          "name":"SmoothL1Loss"
+          "name":"MSELoss"
         },
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.002,
+          "lr":0.01,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -2750,7 +2744,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -2817,12 +2811,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -2860,16 +2854,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -2912,16 +2906,16 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "loss_spec":{
-          "name":"SmoothL1Loss"
+          "name":"MSELoss"
         },
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.032,
+          "lr":0.12,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -2945,7 +2939,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -3012,13 +3006,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3055,17 +3049,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3096,7 +3090,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -3162,13 +3156,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3205,17 +3199,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3286,12 +3280,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.01,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -3329,16 +3323,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.01,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3366,7 +3360,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -3432,13 +3426,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3475,17 +3469,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3556,12 +3550,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.12,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -3599,16 +3593,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.12,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3636,7 +3630,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -3702,13 +3696,13 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3745,17 +3739,17 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "loss_spec":{
-                "name":"SmoothL1Loss",
+                "name":"MSELoss",
                 "reduction":"none"
               },
               "clip_grad_val":1.0,
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3798,13 +3792,13 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.008,
+          "lr":0.04,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -3828,7 +3822,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -3895,12 +3889,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -3938,16 +3932,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -3990,16 +3984,16 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "loss_spec":{
-          "name":"SmoothL1Loss"
+          "name":"MSELoss"
         },
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.002,
+          "lr":0.01,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -4023,7 +4017,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -4090,12 +4084,12 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "clip_grad_val":1.0,
@@ -4133,16 +4127,16 @@
             },
             "net":{
               "type":"MLPNet",
-              "hid_layers":[64],
+              "hid_layers":[4],
               "hid_layers_activation":"LeakyReLU",
-              "init_fn":"orthogonal_",
+              "init_fn":"normal_mu_0_std_0.1",
               "clip_grad_val":1.0,
               "loss_spec":{
-                "name":"SmoothL1Loss"
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.008,
+                "lr":0.04,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
@@ -4186,16 +4180,16 @@
 
       "net":{
         "type":"MLPNet",
-        "hid_layers":[64],
+        "hid_layers":[4],
         "hid_layers_activation":"LeakyReLU",
-        "init_fn":"orthogonal_",
+        "init_fn":"normal_mu_0_std_0.1",
         "loss_spec":{
-          "name":"SmoothL1Loss"
+          "name":"MSELoss"
         },
         "clip_grad_val":1.0,
         "optim_spec":{
           "name":"SGD",
-          "lr":0.032,
+          "lr":0.12,
           "momentum":0.9
         },
         "lr_scheduler_spec":{
@@ -4219,7 +4213,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -4290,13 +4284,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4332,23 +4326,20 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
-                "lr_scheduler_spec":{
-                  "name":"LinearToZero",
-                  "frame":20000
-                }
+                "lr_scheduler_spec":null
               }
             }
           ]
@@ -4413,13 +4404,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4455,23 +4446,20 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
-                "lr_scheduler_spec":{
-                  "name":"LinearToZero",
-                  "frame":20000
-                }
+                "lr_scheduler_spec":null
               }
             }
           ]
@@ -4494,7 +4482,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -4564,13 +4552,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4606,17 +4594,17 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4687,13 +4675,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4729,17 +4717,17 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4768,7 +4756,7 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
       "max_trial":1
     }
@@ -4838,13 +4826,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4880,17 +4868,17 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -4961,13 +4949,13 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -5003,17 +4991,17 @@
               },
               "net":{
                 "type":"MLPNet",
-                "hid_layers":[64],
+                "hid_layers":[4],
                 "hid_layers_activation":"LeakyReLU",
-                "init_fn":"orthogonal_",
+                "init_fn":"normal_mu_0_std_0.1",
                 "loss_spec":{
-                  "name":"SmoothL1Loss",
+                  "name":"MSELoss",
                   "reduction":"none"
                 },
                 "clip_grad_val":1.0,
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.008,
+                  "lr":0.04,
                   "momentum":0.9
                 },
                 "lr_scheduler_spec":{
@@ -5042,8 +5030,468 @@
       "distributed":false,
       "eval_frequency":20,
       "log_frequency":20,
-      "max_session":10,
+      "max_session":1,
       "max_concurrent_session":10,
+      "max_trial":1
+    }
+  },
+
+  "ipd_mb_mpc_cem_le_self_play":{
+    "world":{
+      "name":"DefaultMultiAgentWorld"
+    },
+    "agent":[
+      {
+        "name":"LE",
+        "memory":null,
+        "net":null,
+        "welfare_function":"utilitarian_welfare",
+        "observing_other_agents":{
+          "name":"FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "average_d_carac": true,
+          "average_d_carac_len": 20,
+          "same_init_weights": true,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4": false,
+          "use_strat_5": false,
+          "strat_5_coeff": 10.0,
+          "use_strat_2": false,
+          "block_len": 4,
+          "meta_algo_memory": {
+            "name": "Replay",
+            "batch_size": 1,
+            "max_size": -1
+          },
+          "meta_algo_loss": {
+            "name": "MSELoss"
+          },
+          "contained_algorithms": [
+            {
+              "name": "PETS",
+              "algorithm": {
+                "name": "PETS",
+                "contained_algorithms": [
+                  {
+                    "name": "SupervisedLAPolicy",
+                    "targets":"rewards",
+                    "inputs":["next_states", "actions"],
+                    "algorithm": {
+                      "name": "SupervisedLAPolicy",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.0,
+                        "end_val": 0.0,
+                        "start_step": 0,
+                        "end_step": 5000
+                      },
+                      "training_frequency": 4
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        4
+                      ],
+                      "hid_layers_activation": "LeakyReLU",
+                      "init_fn": "normal_mu_0_std_0.1",
+                      "loss_spec": {
+                        "name": "MSELoss",
+                        "reduction": "none"
+                      },
+                      "clip_grad_val": 1.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "LinearToZero",
+                        "frame": 20000
+                      }
+                    }
+                  },
+                  {
+                    "name": "SPLearningBayesianPolicy",
+                    "targets":"states",
+                    "algorithm": {
+                      "name": "SPLearningBayesianPolicy",
+                      "action_pdtype": "default",
+                      "action_policy": "default",
+                      "explore_var_spec": null,
+                      "entropy_coef_spec": {
+                        "name": "linear_decay",
+                        "start_val": 0.0,
+                        "end_val": 0.0,
+                        "start_step": 0,
+                        "end_step": 5000
+                      },
+                      "training_frequency": 4
+                    },
+                    "memory": {
+                      "name": "OnPolicyReplay"
+                    },
+                    "net": {
+                      "type": "MLPNet",
+                      "hid_layers": [
+                        4
+                      ],
+                      "hid_layers_activation": "LeakyReLU",
+                      "init_fn": "normal_mu_0_std_0.1",
+                      "loss_spec": {
+                        "name": "MSELoss",
+                        "reduction": "none"
+                      },
+                      "clip_grad_val": 1.0,
+                      "optim_spec": {
+                        "name": "SGD",
+                        "lr": 0.008,
+                        "momentum": 0.9
+                      },
+                      "lr_scheduler_spec": {
+                        "name": "LinearToZero",
+                        "frame": 20000
+                      }
+                    }
+                  },
+                  {
+                    "copy_n": 0
+                  }
+                ]
+              }
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 4
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  4
+                ],
+                "hid_layers_activation": "LeakyReLU",
+                "init_fn": "normal_mu_0_std_0.1",
+                "loss_spec": {
+                  "name": "MSELoss",
+                  "reduction": "none"
+                },
+                "clip_grad_val": 1.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "LinearToZero",
+                  "frame": 20000
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "copy_n":0
+      }
+    ],
+    "env":[
+      {
+        "name":"IteratedPrisonersDilemma-v0",
+        "max_t":null,
+        "max_frame":20000,
+        "num_envs":1
+      }
+    ],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":20,
+      "log_frequency":20,
+      "max_session":1,
+      "max_trial":1
+    }
+  },
+  "ipd_mb_mpc_cem_le_vs_naive_opp":{
+    "world":{
+      "name":"DefaultMultiAgentWorld"
+    },
+    "agent":[
+      {
+        "name":"LE",
+        "memory":null,
+        "net":null,
+        "welfare_function":"utilitarian_welfare",
+        "observing_other_agents":{
+          "name":"FullyObservable"
+        },
+        "algorithm": {
+          "name": "LE",
+          "punishement_time": 1,
+          "min_coop_time": 0,
+          "defection_detection_mode": "spl_observed_actions",
+          "defection_carac_threshold": 0.0,
+          "average_d_carac": true,
+          "average_d_carac_len": 20,
+          "same_init_weights": true,
+          "coop_net_ent_diff_as_lr": false,
+          "use_sl_for_simu_coop": false,
+          "use_strat_4": false,
+          "use_strat_5": false,
+          "strat_5_coeff": 10.0,
+          "use_strat_2": false,
+          "block_len": 4,
+          "meta_algo_memory": {
+            "name": "Replay",
+            "batch_size": 1,
+            "max_size": -1
+          },
+          "meta_algo_loss": {
+            "name": "MSELoss"
+          },
+          "contained_algorithms": [
+            {
+              "name": "PETS",
+              "contained_algorithms": [
+                {
+                  "name": "SupervisedLAPolicy",
+                  "targets":"rewards",
+                  "inputs":["next_states", "actions"],
+                  "algorithm": {
+                    "name": "SupervisedLAPolicy",
+                    "action_pdtype": "default",
+                    "action_policy": "default",
+                    "explore_var_spec": null,
+                    "entropy_coef_spec": {
+                      "name": "linear_decay",
+                      "start_val": 0.0,
+                      "end_val": 0.0,
+                      "start_step": 0,
+                      "end_step": 5000
+                    },
+                    "training_frequency": 4
+                  },
+                  "memory": {
+                    "name": "OnPolicyReplay"
+                  },
+                  "net": {
+                    "type": "MLPNet",
+                    "hid_layers": [
+                      4
+                    ],
+                    "hid_layers_activation": "LeakyReLU",
+                    "init_fn": "normal_mu_0_std_0.1",
+                    "loss_spec": {
+                      "name": "MSELoss",
+                      "reduction": "none"
+                    },
+                    "clip_grad_val": 1.0,
+                    "optim_spec": {
+                      "name": "SGD",
+                      "lr": 0.008,
+                      "momentum": 0.9
+                    },
+                    "lr_scheduler_spec": {
+                      "name": "LinearToZero",
+                      "frame": 20000
+                    }
+                  }
+                },
+                {
+                  "name": "SPLearningBayesianPolicy",
+                  "targets":"states",
+                  "algorithm": {
+                    "name": "SPLearningBayesianPolicy",
+                    "action_pdtype": "default",
+                    "action_policy": "default",
+                    "explore_var_spec": null,
+                    "entropy_coef_spec": {
+                      "name": "linear_decay",
+                      "start_val": 0.0,
+                      "end_val": 0.0,
+                      "start_step": 0,
+                      "end_step": 5000
+                    },
+                    "training_frequency": 4
+                  },
+                  "memory": {
+                    "name": "OnPolicyReplay"
+                  },
+                  "net": {
+                    "type": "MLPNet",
+                    "hid_layers": [
+                      4
+                    ],
+                    "hid_layers_activation": "LeakyReLU",
+                    "init_fn": "normal_mu_0_std_0.1",
+                    "loss_spec": {
+                      "name": "MSELoss",
+                      "reduction": "none"
+                    },
+                    "clip_grad_val": 1.0,
+                    "optim_spec": {
+                      "name": "SGD",
+                      "lr": 0.008,
+                      "momentum": 0.9
+                    },
+                    "lr_scheduler_spec": {
+                      "name": "LinearToZero",
+                      "frame": 20000
+                    }
+                  }
+                },
+                {
+                  "copy_n": 0
+                }
+              ]
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "copy_n": 0
+            },
+            {
+              "name": "SupervisedLAPolicy",
+              "algorithm": {
+                "name": "SupervisedLAPolicy",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": null,
+                "entropy_coef_spec": {
+                  "name": "linear_decay",
+                  "start_val": 0.0,
+                  "end_val": 0.0,
+                  "start_step": 0,
+                  "end_step": 5000
+                },
+                "training_frequency": 4
+              },
+              "memory": {
+                "name": "OnPolicyReplay"
+              },
+              "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                  4
+                ],
+                "hid_layers_activation": "LeakyReLU",
+                "init_fn": "normal_mu_0_std_0.1",
+                "loss_spec": {
+                  "name": "MSELoss",
+                  "reduction": "none"
+                },
+                "clip_grad_val": 1.0,
+                "optim_spec": {
+                  "name": "SGD",
+                  "lr": 0.008,
+                  "momentum": 0.9
+                },
+                "lr_scheduler_spec": {
+                  "name": "LinearToZero",
+                  "frame": 20000
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name":"Reinforce",
+        "observing_other_agents":{
+          "name":"FullyObservable"
+        },
+        "algorithm":{
+          "name":"Reinforce",
+          "action_pdtype":"default",
+          "action_policy":"default",
+          "explore_var_spec":null,
+          "gamma":0.0,
+          "center_return":true,
+          "normalize_return":true,
+          "normalize_over_n_batch":10,
+          "entropy_coef_spec":{
+            "name":"linear_decay",
+            "start_val":2.0,
+            "end_val":0.01,
+            "start_step":0,
+            "end_step":7500
+          },
+          "training_frequency":4
+        },
+        "memory":{
+          "name":"OnPolicyReplay"
+        },
+        "net":{
+          "type":"MLPNet",
+          "hid_layers":[4],
+          "hid_layers_activation":"LeakyReLU",
+          "init_fn":"normal_mu_0_std_0.1",
+          "clip_grad_val":1.0,
+          "optim_spec":{
+            "name":"SGD",
+            "lr":0.04,
+            "momentum":0.9
+          },
+          "lr_scheduler_spec":{
+            "name":"LinearToZero",
+            "frame":20000
+          }
+        }
+      }
+    ],
+    "env":[
+      {
+        "name":"IteratedPrisonersDilemma-v0",
+        "max_t":null,
+        "max_frame":20000,
+        "num_envs":1
+      }
+    ],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":20,
+      "log_frequency":20,
+      "max_session":1,
       "max_trial":1
     }
   }

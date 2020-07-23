@@ -63,8 +63,8 @@ def get_loss_fn(cls, loss_spec):
     if loss_spec['name'] == "CrossEntropyLossSoftTarget":
         loss_fn = cross_entropy
 
-    elif loss_spec['name'] == "InvSmoothL1Loss":
-        loss_fn = double_smooth_L1_loss
+    # elif loss_spec['name'] == "InvSmoothL1Loss":
+    #     loss_fn = double_smooth_L1_loss
     else:
         LossClass = getattr(nn, get_nn_name(loss_spec['name']))
         loss_spec = ps.omit(loss_spec, 'name')
@@ -77,28 +77,45 @@ def cross_entropy(pred, soft_targets):
     return torch.mean(torch.sum(- soft_targets * logsoftmax(pred), 1))
 
 
-def double_smooth_L1_loss(pred, targets):
-    # Manual
-    scale = 2
-    error = (targets- pred).abs() *scale
-    large_error = error[error > (0.5*scale)]
-    medium_error = error[(error <= 0.5*scale) & (error > 0.1*scale)]
-    small_error = error[error <= 0.1*scale]
-    MAE_loss = 0
-    MSE_loss = 0
-    if len(large_error) > 0:
-        MAE_loss += (abs(large_error) - 0.5).sum()
-    if len(small_error) > 0:
-        MAE_loss +=(abs(small_error)*0.2 - 0.02).sum()
-        # MAE_loss += 0.5*(small_error**2).sum()
-    if len(medium_error) > 0:
-        MSE_loss += 0.5*(medium_error**2).sum()
-    size = 1
-    for i in error.shape:
-        size *= i
-    supervised_learning_loss = (MAE_loss + MSE_loss) / size / scale
+# def bayesian_loss(pred, targets):
+#     # TODO create the loss function
+#
+#     half_len = int(len(pred)/2)
+#     mean, logvar = pred[:half_len], pred[half_len:]
+#     inv_var = torch.exp(-logvar)
+#
+#     # train_losses = ((mean - train_targ) ** 2) * inv_var + logvar
+#     train_losses = ((mean - targets) ** 2) * inv_var + logvar
+#     return train_losses.mean(-1).mean(-1).sum()
+#     # Only taking mean over the last 2 dimensions
+#     # The first dimension corresponds to each model in the ensemble
+#
+#     # loss = train_losses
+#     # loss += 0.01 * (self.model.max_logvar.sum() - self.model.min_logvar.sum())
 
-    return torch.mean(supervised_learning_loss)
+
+# def double_smooth_L1_loss(pred, targets):
+#     # Manual
+#     scale = 2
+#     error = (targets- pred).abs() *scale
+#     large_error = error[error > (0.5*scale)]
+#     medium_error = error[(error <= 0.5*scale) & (error > 0.1*scale)]
+#     small_error = error[error <= 0.1*scale]
+#     MAE_loss = 0
+#     MSE_loss = 0
+#     if len(large_error) > 0:
+#         MAE_loss += (abs(large_error) - 0.5).sum()
+#     if len(small_error) > 0:
+#         MAE_loss +=(abs(small_error)*0.2 - 0.02).sum()
+#         # MAE_loss += 0.5*(small_error**2).sum()
+#     if len(medium_error) > 0:
+#         MSE_loss += 0.5*(medium_error**2).sum()
+#     size = 1
+#     for i in error.shape:
+#         size *= i
+#     supervised_learning_loss = (MAE_loss + MSE_loss) / size / scale
+#
+#     return torch.mean(supervised_learning_loss)
 
 
 def get_lr_scheduler(optim, lr_scheduler_spec):
@@ -181,15 +198,25 @@ def init_layers(net, init_fn_name):
             nonlinearity = 'leaky_relu'  # guard name
 
     # get init_fn and add arguments depending on nonlinearity
-    init_fn = getattr(nn.init, init_fn_name)
     if 'kaiming' in init_fn_name:  # has 'nonlinearity' as arg
+        init_fn = getattr(nn.init, init_fn_name)
         assert nonlinearity in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {nonlinearity}'
         init_fn = partial(init_fn, nonlinearity=nonlinearity)
     elif 'orthogonal' in init_fn_name or 'xavier' in init_fn_name:  # has 'gain' as arg
+        init_fn = getattr(nn.init, init_fn_name)
         gain = nn.init.calculate_gain(nonlinearity)
         init_fn = partial(init_fn, gain=gain)
+    elif "normal" in init_fn_name:
+        splitted = init_fn_name.split('_')
+        init_fn_name = "normal_"
+        mean = float(splitted[2])
+        std = float(splitted[4])
+        init_fn = getattr(nn.init, init_fn_name)
+        init_fn = partial(init_fn, mean=mean, std=std)
     else:
         pass
+
+
 
     # finally, apply init_params to each layer in its modules
     net.apply(partial(init_params, init_fn=init_fn))

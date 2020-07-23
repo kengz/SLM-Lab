@@ -16,7 +16,7 @@ def test_make_gym_venv_nostack(name, num_envs, state_shape, reward_scale):
     venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     venv.reset()
     for i in range(5):
-        state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
+        state, reward, done, info = venv.step([venv.action_dim.sample()] * num_envs)
 
     assert isinstance(state, np.ndarray)
     assert state.shape == (num_envs,) + state_shape
@@ -41,7 +41,7 @@ def test_make_gym_concat(name, num_envs, state_shape, reward_scale):
     venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     venv.reset()
     for i in range(5):
-        state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
+        state, reward, done, info = venv.step([venv.action_dim.sample()] * num_envs)
 
     assert isinstance(state, np.ndarray)
     stack_shape = (num_envs, frame_op_len * state_shape[0],) + state_shape[1:]
@@ -67,7 +67,7 @@ def test_make_gym_stack(name, num_envs, state_shape, reward_scale):
     venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, reward_scale=reward_scale)
     venv.reset()
     for i in range(5):
-        state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
+        state, reward, done, info = venv.step([venv.action_dim.sample()] * num_envs)
 
     assert isinstance(state, np.ndarray)
     stack_shape = (num_envs, frame_op_len,) + state_shape
@@ -92,7 +92,7 @@ def test_make_gym_venv_downsize(name, num_envs, state_shape, image_downsize):
     venv = make_gym_venv(name, num_envs, seed, frame_op=frame_op, frame_op_len=frame_op_len, image_downsize=image_downsize)
     venv.reset()
     for i in range(5):
-        state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
+        state, reward, done, info = venv.step([venv.action_dim.sample()] * num_envs)
 
     assert isinstance(state, np.ndarray)
     assert state.shape == (num_envs,) + state_shape

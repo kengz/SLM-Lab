@@ -101,7 +101,7 @@ class Reinforce(Algorithm):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, net=None):
+    def proba_distrib_params(self, x, net=None):
         '''The pdparam (proba distrib param) will be the logits for discrete prob. dist., or the mean and std for
         continuous prob. dist.'''
         net = self.net if net is None else net
@@ -128,7 +128,7 @@ class Reinforce(Algorithm):
         states = batch['states']
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
-        pdparam = self.calc_pdparam(states)
+        pdparam = self.proba_distrib_params(states)
         return pdparam
 
     def calc_ret_advs(self, batch):

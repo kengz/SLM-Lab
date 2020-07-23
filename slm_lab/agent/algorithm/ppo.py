@@ -141,7 +141,7 @@ class PPO(ActorCritic):
         # L^CLIP
         log_probs = action_pd.log_prob(actions)
         with torch.no_grad():
-            old_pdparams = self.calc_pdparam(states, net=self.old_net)
+            old_pdparams = self.proba_distrib_params(states, net=self.old_net)
             old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
