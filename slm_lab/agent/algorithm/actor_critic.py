@@ -82,6 +82,7 @@ class ActorCritic(Reinforce):
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
+            normalize_inputs=False
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -95,6 +96,7 @@ class ActorCritic(Reinforce):
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
+            'normalize_inputs'
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)

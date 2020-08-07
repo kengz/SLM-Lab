@@ -56,7 +56,8 @@ class Reinforce(Algorithm):
             explore_var_spec=None,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
-            min_log_prob=False
+            min_log_prob=False,
+            normalize_inputs=False
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -69,7 +70,8 @@ class Reinforce(Algorithm):
             'entropy_coef_spec',
             'policy_loss_coef',
             'training_frequency',
-            'min_log_prob'
+            'min_log_prob',
+            'normalize_inputs'
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -105,6 +107,16 @@ class Reinforce(Algorithm):
         '''The pdparam (proba distrib param) will be the logits for discrete prob. dist., or the mean and std for
         continuous prob. dist.'''
         net = self.net if net is None else net
+
+        if self.normalize_inputs:
+            # print("x", x.min(), x.max())
+            assert x.min() >= 0.0
+            assert x.max() <= 1.0
+            x = (x - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert x.min() >= -1.0
+            assert x.max() <= 1.0
+
         pdparam = net(x)
         return pdparam
 

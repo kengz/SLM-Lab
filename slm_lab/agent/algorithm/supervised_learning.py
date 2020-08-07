@@ -47,6 +47,7 @@ class SupervisedLAPolicy(Algorithm):
             policy_loss_coef=1.0,
             targets='actions',
             inputs=['states'],
+            normalize_inputs=False,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -60,6 +61,7 @@ class SupervisedLAPolicy(Algorithm):
             'training_frequency',
             'targets',
             'inputs',
+            'normalize_inputs',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -115,6 +117,16 @@ class SupervisedLAPolicy(Algorithm):
         '''The pdparam (proba distrib param) will be the logits for discrete prob. dist., or the mean and std for
         continuous prob. dist.'''
         net = self.net if net is None else net
+
+        if self.normalize_inputs:
+            # print("x", x.min(), x.max())
+            assert x.min() >= 0.0
+            assert x.max() <= 1.0
+            x = (x - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert x.min() >= -1.0
+            assert x.max() <= 1.0
+
         pdparam = net(x)
         return pdparam
 

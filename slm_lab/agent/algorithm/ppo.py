@@ -76,6 +76,7 @@ class PPO(ActorCritic):
             entropy_coef_spec=None,
             minibatch_size=4,
             val_loss_coef=1.0,
+            normalize_inputs=False
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -90,6 +91,7 @@ class PPO(ActorCritic):
             'minibatch_size',
             'time_horizon',  # training_frequency = actor * horizon
             'training_epoch',
+            'normalize_inputs'
         ])
         self.to_train = 0
         # guard

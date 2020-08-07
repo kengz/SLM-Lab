@@ -65,6 +65,11 @@ def get_loss_fn(cls, loss_spec):
 
     # elif loss_spec['name'] == "InvSmoothL1Loss":
     #     loss_fn = double_smooth_L1_loss
+    elif loss_spec['name'] == "CrossEntropyLoss":
+        import torch.nn.functional as F
+        # loss_fn = (lambda input, target: F.cross_entropy(input, target.argmax(dim=1)))
+        # Since the softmax is already applied
+        loss_fn = (lambda input, target: F.nll_loss(torch.log(input), target.argmax(dim=1)))
     else:
         LossClass = getattr(nn, get_nn_name(loss_spec['name']))
         loss_spec = ps.omit(loss_spec, 'name')
