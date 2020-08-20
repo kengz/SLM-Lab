@@ -166,7 +166,8 @@ class Reinforce(Algorithm):
 
     def calc_policy_loss(self, batch, pdparams, advs):
         '''Calculate the actor's policy loss'''
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        # action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        action_pd = policy_util.init_action_pd(self.ActionPD, pdparams)
         actions = batch['actions']
         if self.body.env.is_venv:
             actions = math_util.venv_unpack(actions)
@@ -180,11 +181,10 @@ class Reinforce(Algorithm):
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
             self.entropy = action_pd.entropy().mean()
-            logger.debug(f'entropy {self.entropy}')
             self.to_log["entropy_train"] = self.entropy.item()
             entropy_loss = (-self.entropy_coef_scheduler.val * self.entropy)
             # if policy_loss != 0.0:
-            self.to_log["entropy_over_loss"] = (entropy_loss / policy_loss + 1e-12).clamp(min=-100, max=100)
+            self.to_log["entropy_over_loss"] = (entropy_loss / (policy_loss + 1e-12)).clamp(min=-100, max=100)
             self.to_log["loss_policy"] = policy_loss
             policy_loss += entropy_loss
         logger.debug(f'Actor policy loss: {policy_loss:g}')
@@ -203,7 +203,8 @@ class Reinforce(Algorithm):
             # TODO use either arg or attribute but not both (auxilary vs loss penalty)
             if hasattr(self, "auxilary_loss"):
                 # if not torch.isnan(self.auxilary_loss):
-                action_pd = policy_util.init_action_pd(self.body.ActionPD, pd_param)
+                # action_pd = policy_util.init_action_pd(self.body.ActionPD, pd_param)
+                action_pd = policy_util.init_action_pd(self.ActionPD, pd_param)
                 coop_entropy = action_pd.entropy().mean()
                 ent_diff = (coop_entropy -
                             (self.auxilary_loss * 0.95) + 0.01) ** 2
@@ -236,6 +237,7 @@ class Reinforce(Algorithm):
     @lab_api
     def update(self):
         self.explore_var_scheduler.update(self, self.internal_clock)
+        self.to_log['explore_var'] = self.explore_var_scheduler.val
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler.update(self, self.internal_clock)
         return self.explore_var_scheduler.val

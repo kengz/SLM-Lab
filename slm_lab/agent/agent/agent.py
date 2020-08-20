@@ -15,7 +15,7 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util, viz
 from slm_lab.lib.decorator import lab_api
-
+import slm_lab
 
 
 
@@ -54,6 +54,7 @@ class Agent(object):
         self.welfare_function = getattr(agent_util, ps.get(self.agent_spec, 'welfare_function',
                                                            default="default_welfare"))
         # Body
+        print("self", self)
         body = Body(env, spec, aeb=(agent_idx, 0, 0), agent=self)
         # body.agent = self
         self.body = body
@@ -146,8 +147,11 @@ class Agent(object):
     def train(self):
         loss = self.algorithm.train()
         # TODO confusing that agent.train calls algo.update (since agent also has the update method)
-        explore_var = self.algorithm.update()
-        return loss, explore_var
+        # explore_var = self.algorithm.update()
+        # return loss, explore_var
+
+        self.algorithm.update()
+        return loss, None
 
     def observe_other_agents(self):
         pass
@@ -194,38 +198,6 @@ class Agent(object):
 
         return state, action, reward, next_state, done, info, additional_list_of_dict
 
-    # @property
-    # def reward(self):
-    #     return agent_util.get_from_current_agents(self, key="reward")
-    #
-    # @property
-    # def action(self):
-    #     return agent_util.get_from_current_agents(self, key="action")
-
-    # TODO add this in observability API
-    # @property
-    # def action_pd(self):
-    #     return self.action_pd
-
-    # @property
-    # def state(self):
-    #     return agent_util.get_from_current_agents(self, key="state")
-    #
-    # # @property
-    # # def welfare(self):
-    # #     return agent_util.get_from_current_agents(self, key="welfare")
-    #
-    # @property
-    # def next_state(self):
-    #     return agent_util.get_from_current_agents(self, key="next_state")
-    #
-    # @property
-    # def done(self):
-    #     return agent_util.get_from_current_agents(self, key="done")
-    #
-    # @property
-    # def algorithm(self):
-    #     return self._algorithm
 
 class Body:
     # TODO change the body doc to reflect the new use in a world (as well as in an agent)
@@ -239,6 +211,8 @@ class Body:
     def __init__(self, env, spec, agent, aeb=(0, 0, 0)):
         # essential reference variables
         self.agent = agent  # set later
+        self.is_world_body = self.agent is None
+
         self.env = env
         self.spec = spec
         # agent, env, body index for multi-agent-env
@@ -262,8 +236,13 @@ class Body:
 
         # the specific agent-env interface variables for a body
         # Dims of the full environement in Gym types
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
+        if not self.is_world_body and isinstance(self.agent.world, slm_lab.agent.world.DefaultMultiAgentWorld):
+            self.observation_space = self.env.observation_space[self.agent.agent_idx]
+            self.action_space = self.env.action_space[self.agent.agent_idx]
+        else:
+            self.observation_space = self.env.observation_space
+            self.action_space = self.env.action_space
+
         # Dims of the part of the environement relative to this agent in int
         self.observation_dim = self.env.observable_dim
         self.action_dim = self.env.action_dim
@@ -271,10 +250,11 @@ class Body:
         self.action_space_is_discrete = self.env.action_space_is_discrete
         # set the ActionPD class for sampling action
         self.action_type = policy_util.get_space_type(self.action_space)
-        self.action_pdtype = ps.get(spec, f'agent.{self.a}.algorithm.action_pdtype')
-        if self.action_pdtype in (None, 'default'):
-            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
-        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
+        # self.action_pdtype = ps.get(spec, f'agent.{self.a}.algorithm.action_pdtype')
+        # print("agent self.action_pdtype", self.action_pdtype, spec)
+        # if self.action_pdtype in (None, 'default'):
+        #     self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+        # self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
         self.tb_add_graph = False
 

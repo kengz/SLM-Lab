@@ -176,14 +176,16 @@ class SupervisedLAPolicy(Algorithm):
 
     def supervised_learning_loss(self, batch, pdparams):
         '''Calculate the actor's policy loss'''
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        print(f"pdparams {pdparams[0,...]}")
+        action_pd = policy_util.init_action_pd(self.ActionPD, pdparams)
         targets = batch[self.targets]
         if self.body.env.is_venv:
             targets = math_util.venv_unpack(targets)
 
         preds = action_pd.probs # use proba as predictions, not the sampled actions
         if targets.dim() == 1:
-            targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
+            # targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
+            targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space.n)
 
         if isinstance(self.net.loss_fn, torch.nn.SmoothL1Loss):
             # Used with the SmoothL1Loss loss (Huber loss)  where err < 1 => MSE and err > 1 => MAE
@@ -203,6 +205,8 @@ class SupervisedLAPolicy(Algorithm):
                     min=-100, max=100)
             supervised_learning_loss += entropy_loss
         logger.debug(f'supervised_learning_loss: {supervised_learning_loss:g}')
+        print(f'self.algo_idx {self.algo_idx} supervised_learning_loss: {supervised_learning_loss:g} , '
+              f'preds {preds[0,...]}')
         return supervised_learning_loss
 
     def one_hot_embedding(self, labels, num_classes):

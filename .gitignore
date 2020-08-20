@@ -35,3 +35,5 @@ nb.py
 *.log
 *.meta
 SLM-Env
+
+nohup.out

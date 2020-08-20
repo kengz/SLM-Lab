@@ -9,6 +9,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.agent.agent import agent_util
 from slm_lab.env.base import Clock
+from slm_lab.agent.algorithm import policy_util
 logger = logger.get_logger(__name__)
 
 
@@ -29,6 +30,13 @@ class Algorithm(ABC):
 
         self.name = self.algorithm_spec['name']
         self.body = self.agent.body
+
+        # self.action_type = policy_util.get_space_type(self.agent.body.action_space)
+        self.action_pdtype = ps.get(algorithm_spec, f'action_pdtype')
+        print("agent self.action_pdtype", self.action_pdtype, algorithm_spec)
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.agent.body.action_type][0]
+        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.agent.body.action_type)
 
         self.init_memory()
         self.init_algorithm_params()

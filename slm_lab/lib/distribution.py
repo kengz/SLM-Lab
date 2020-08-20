@@ -20,7 +20,6 @@ class Argmax(distributions.Categorical):
             new_logits = torch.full_like(logits, -1e8, dtype=torch.float)
             new_logits[logits == logits.max(dim=-1, keepdim=True)[0]] = 1.0
             logits = new_logits
-
         super().__init__(probs=probs, logits=logits, validate_args=validate_args)
 
 

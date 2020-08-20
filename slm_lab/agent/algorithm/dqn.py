@@ -62,6 +62,7 @@ class VanillaDQN(SARSA):
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
+            'normalize_inputs',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_spec',
@@ -82,7 +83,7 @@ class VanillaDQN(SARSA):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -97,6 +98,11 @@ class VanillaDQN(SARSA):
         q_preds = self.net(states)
         with torch.no_grad():
             next_q_preds = self.net(next_states)
+
+            for i, q_action_i in enumerate(next_q_preds.mean(dim=0).tolist()):
+                self.to_log[f'q_train_{i}'] = q_action_i
+            action_pd = policy_util.init_action_pd(self.ActionPD, next_q_preds)
+            self.to_log["entropy_train"] = action_pd.entropy().mean().item()
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=False)
@@ -133,7 +139,7 @@ class VanillaDQN(SARSA):
         '''
         if util.in_eval_lab_modes():
             return np.nan
-        clock = self.body.env.clock
+        clock = self.internal_clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_iter):
@@ -182,8 +188,8 @@ class DQNBase(VanillaDQN):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
+        self.target_net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
         self.net_names = ['net', 'target_net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -203,6 +209,12 @@ class DQNBase(VanillaDQN):
             online_next_q_preds = self.online_net(next_states)
             # Use eval_net to calculate next_q_preds for actions chosen by online_net
             next_q_preds = self.eval_net(next_states)
+
+            for i, q_action_i in enumerate(next_q_preds.mean(dim=0).tolist()):
+                self.to_log[f'q_train_{i}'] = q_action_i
+            action_pd = policy_util.init_action_pd(self.ActionPD, next_q_preds)
+            self.to_log["entropy_train"] = action_pd.entropy().mean().item()
+
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         online_actions = online_next_q_preds.argmax(dim=-1, keepdim=True)
         max_next_q_preds = next_q_preds.gather(-1, online_actions).squeeze(-1)
@@ -217,7 +229,7 @@ class DQNBase(VanillaDQN):
         return q_loss
 
     def update_nets(self):
-        if util.frame_mod(self.body.env.clock.frame, self.net.update_frequency, self.body.env.num_envs):
+        if util.frame_mod(self.internal_clock.frame, self.net.update_frequency, self.body.env.num_envs):
             if self.net.update_type == 'replace':
                 net_util.copy(self.net, self.target_net)
             elif self.net.update_type == 'polyak':

@@ -133,7 +133,7 @@ class PPO(ActorCritic):
         3. H = E[ entropy ]
         '''
         clip_eps = self.clip_eps_scheduler.val
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        action_pd = policy_util.init_action_pd(self.ActionPD, pdparams)
         states = batch['states']
         actions = batch['actions']
         if self.body.env.is_venv:
@@ -144,7 +144,7 @@ class PPO(ActorCritic):
         log_probs = action_pd.log_prob(actions)
         with torch.no_grad():
             old_pdparams = self.proba_distrib_params(states, net=self.old_net)
-            old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
+            old_action_pd = policy_util.init_action_pd(self.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
@@ -192,7 +192,7 @@ class PPO(ActorCritic):
             total_clip_loss = torch.tensor(0.0)
             # total_clip_loss_grad = torch.tensor(0.0)
             total_entropy = torch.tensor(0.0)
-            # total_ent_loss_grad = torch.tensor(0.0)
+            total_entropy_loss = torch.tensor(0.0)
             n_steps = 0
 
             for _ in range(self.training_epoch):
@@ -220,7 +220,7 @@ class PPO(ActorCritic):
                         # policy_loss += self.auxilary_loss / 2
                         # val_loss += self.auxilary_loss / 2
 
-                        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+                        action_pd = policy_util.init_action_pd(self.ActionPD, pdparams)
                         coop_entropy = action_pd.entropy().mean()
                         # ent_diff = (coop_entropy -
                         #             (self.auxilary_loss * 0.95) + 0.01) ** 2
@@ -253,7 +253,7 @@ class PPO(ActorCritic):
                     total_clip_loss += clip_loss.detach().norm()
                     total_entropy += entropy.detach().norm()
                     # total_clip_loss_grad += clip_loss.grad.norm().item()
-                    # total_ent_loss_grad += ent_penalty.grad.norm().item()
+                    total_entropy_loss += ent_penalty.detach().mean()
                     n_steps += 1
 
             if hasattr(self, "auxilary_loss"):
@@ -272,7 +272,7 @@ class PPO(ActorCritic):
             self.to_log["entropy_train"] = self.entropy
             self.to_log["loss_clip_norm"] = total_clip_loss / n_steps
             if total_clip_loss != 0.0:
-                self.to_log["entropy_over_loss"] = (total_entropy / total_clip_loss).clamp(min=-100, max=100)
+                self.to_log["entropy_over_loss"] = (total_entropy_loss / (total_clip_loss+1e-12)).clamp(min=-100, max=100)
                 # if abs(total_entropy / total_clip_loss) < 100:
                 #     self.to_log["entropy_over_loss"] = total_entropy / total_clip_loss
                 # else:
@@ -293,6 +293,7 @@ class PPO(ActorCritic):
     @lab_api
     def update(self):
         self.explore_var_scheduler.update(self, self.internal_clock)
+        self.to_log['explore_var'] = self.explore_var_scheduler.val
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler.update(self, self.internal_clock)
         self.clip_eps_scheduler.update(self, self.internal_clock)

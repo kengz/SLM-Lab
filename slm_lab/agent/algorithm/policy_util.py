@@ -57,6 +57,7 @@ def get_action_pd_cls(action_pdtype, action_type):
     Called by body at init to set its own ActionPD
     '''
     pdtypes = ACTION_PDS[action_type]
+    print("action_pdtype",action_pdtype)
     assert action_pdtype in pdtypes, f'Pdtype {action_pdtype} is not compatible/supported with action_type {action_type}. Options are: {pdtypes}'
     ActionPD = getattr(distributions, action_pdtype)
     return ActionPD
@@ -120,7 +121,7 @@ def init_action_pd(ActionPD, pdparam):
     return action_pd
 
 
-def sample_action(ActionPD, pdparam, algorithm):
+def sample_action(ActionPD, pdparam):
     '''
     Convenience method to sample action(s) from action_pd = ActionPD(pdparam)
     Works with batched pdparam too
@@ -129,7 +130,7 @@ def sample_action(ActionPD, pdparam, algorithm):
 
     # policy contains:
     pdparam = calc_pdparam(state, algorithm, body)
-    action = sample_action(body.ActionPD, pdparam)
+    action = sample_action(algorithm.ActionPD, pdparam)
     '''
     action_pd = init_action_pd(ActionPD, pdparam)
 
@@ -140,28 +141,34 @@ def sample_action(ActionPD, pdparam, algorithm):
 # action_policy used by agent
 
 def default(state, algorithm, body):
-    '''Plain policy by direct sampling from a default action probability defined by body.ActionPD'''
+    '''Plain policy by direct sampling from a default action probability defined by algorithm.ActionPD'''
     pdparam = calc_pdparam(state, algorithm, body)
-    action, action_pd = sample_action(body.ActionPD, pdparam, algorithm)
+    action, action_pd = sample_action(algorithm.ActionPD, pdparam)
     return action, action_pd
 
 
 def random(state, algorithm, body):
     '''Random action using gym.action_space.sample(), with the same format as default()'''
     if body.env.is_venv and not util.in_eval_lab_modes():
-        _action = [body.action_dim.sample() for _ in range(body.env.num_envs)]
+        _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
-        _action = [body.action_dim.sample()]
+        _action = [body.action_space.sample()]
     action = torch.tensor(_action)
-    return action, None
+    # return action, None
+
+    pdparam = calc_pdparam(state, algorithm, body)
+    _, action_pd = sample_action(algorithm.ActionPD, pdparam)
+    return action, action_pd
 
 
 def epsilon_greedy(state, algorithm, body):
     '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
-    epsilon = body.explore_var
-    if epsilon > np.random.rand():
+    # epsilon = body.explore_var
+    epsilon = algorithm.explore_var_scheduler.val
+    if np.random.rand() < epsilon:
         return random(state, algorithm, body)
     else:
+        print("default policy, epsilon", epsilon)
         return default(state, algorithm, body)
 
 
@@ -169,10 +176,11 @@ def boltzmann(state, algorithm, body):
     '''
     Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
     '''
-    tau = body.explore_var
+    # tau = body.explore_var
+    tau = algorithm.explore_var_scheduler.val
     pdparam = calc_pdparam(state, algorithm, body)
     pdparam /= tau
-    action, action_pd = sample_action(body.ActionPD, pdparam)
+    action, action_pd = sample_action(algorithm.ActionPD, pdparam)
     return action, action_pd
 
 
@@ -194,7 +202,7 @@ def multi_default(states, algorithm, body_list, pdparam):
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         guard_tensor(states[idx], body)  # for consistency with singleton inner logic
-        action, action_pd = sample_action(body.ActionPD, sub_pdparam)
+        action, action_pd = sample_action(algorithm.ActionPD, sub_pdparam)
         action_list.append(action)
         action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
@@ -223,7 +231,7 @@ def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
             action, action_pd = random(states[idx], algorithm, body)
         else:
             guard_tensor(states[idx], body)  # for consistency with singleton inner logic
-            action, action_pd = sample_action(body.ActionPD, sub_pdparam)
+            action, action_pd = sample_action(algorithm.ActionPD, sub_pdparam)
         action_list.append(action)
         action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
@@ -239,7 +247,7 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
         guard_tensor(states[idx], body)  # for consistency with singleton inner logic
         tau = body.explore_var
         sub_pdparam /= tau
-        action, action_pd = sample_action(body.ActionPD, sub_pdparam)
+        action, action_pd = sample_action(algorithm.ActionPD, sub_pdparam)
         action_list.append(action)
         action_pd_list.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
@@ -277,7 +285,8 @@ class VarScheduler:
             'decay_rate',
         ])
         self.val = self.start_val
-        if not getattr(self, 'end_val', None):
+
+        if getattr(self, 'end_val', None) is None:
             self.end_val = self.start_val
         self.kwargs = {}
         if hasattr(self,"frequency"):

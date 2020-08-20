@@ -425,7 +425,7 @@ def plot_for_coin_game(input_df, current_dir, trial_idx):
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         # plt.legend(loc="lower right")
-        plt.legend(loc="upper right")
+        plt.legend(loc="lower left")
 
         # if "TFT" in title:
         #     plt.subplot(n_graphs, 1, 3)

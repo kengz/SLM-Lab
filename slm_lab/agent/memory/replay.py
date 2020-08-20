@@ -148,7 +148,7 @@ class Replay(Memory):
         self.algorithm.to_train = (self.algorithm.to_train or
                                    (self.seen_size > self.algorithm.training_start_step
                                                                and self.head % self.algorithm.training_frequency == 0))
-
+        # print("self.algorithm.to_train", self.algorithm.algo_idx, self.algorithm.to_train, self.seen_size, self.head, self.algorithm.training_frequency)
     @lab_api
     def sample(self, batch_idxs=None):
         '''

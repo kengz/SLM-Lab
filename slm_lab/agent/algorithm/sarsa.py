@@ -49,11 +49,13 @@ class SARSA(Algorithm):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
+            normalize_inputs=False,
             explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
+            'normalize_inputs',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_spec',
@@ -62,7 +64,7 @@ class SARSA(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.explore_var_scheduler = policy_util.VarScheduler(self.body.env.clock, self.explore_var_spec)
+        self.explore_var_scheduler = policy_util.VarScheduler(self.internal_clock, self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
 
     @lab_api
@@ -74,7 +76,7 @@ class SARSA(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -88,16 +90,30 @@ class SARSA(Algorithm):
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+
+        if self.normalize_inputs:
+            # print("x", x.min(), x.max())
+            assert x.min() >= 0.0
+            assert x.max() <= 1.0
+            x = (x - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert x.min() >= -1.0
+            assert x.max() <= 1.0
+
         net = self.net if net is None else net
         pdparam = net(x)
+        for i, q_action_i in enumerate(pdparam.squeeze(dim=0).tolist()):
+            self.to_log[f'q_act_{i}'] = q_action_i
+
         return pdparam
 
     @lab_api
     def act(self, state):
         '''Note, SARSA is discrete-only'''
         body = self.body
-        action, _ = self.action_policy(state, self, body)
-        return action.cpu().squeeze().numpy()  # squeeze to handle scalar
+        action, action_pd = self.action_policy(state, self, body)
+        self.to_log["entropy_act"] = action_pd.entropy().mean().item()
+        return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
     @lab_api
     def sample(self):
@@ -119,6 +135,11 @@ class SARSA(Algorithm):
         q_preds = self.net(states)
         with torch.no_grad():
             next_q_preds = self.net(next_states)
+            # TODO change this : we would prefer the q value per state
+            for i, q_action_i in enumerate(next_q_preds.mean(dim=0).tolist()):
+                self.to_log[f'q_train_{i}'] = q_action_i
+            action_pd = policy_util.init_action_pd(self.ActionPD, next_q_preds)
+            self.to_log["entropy_train"] = action_pd.entropy().mean().item()
         if self.body.env.is_venv:
             q_preds = math_util.venv_pack(q_preds, self.body.env.num_envs)
             next_q_preds = math_util.venv_pack(next_q_preds, self.body.env.num_envs)
@@ -137,7 +158,7 @@ class SARSA(Algorithm):
         '''
         if util.in_eval_lab_modes():
             return np.nan
-        clock = self.body.env.clock
+        clock = self.internal_clock
         if self.to_train == 1:
             batch = self.sample()
             clock.set_batch_size(len(batch))
@@ -154,5 +175,7 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.explore_var_scheduler.update(self, self.internal_clock)
+        self.to_log['explore_var'] = self.explore_var_scheduler.val
+        # print("sarsa update", self.explore_var_scheduler.val)
         return self.explore_var_scheduler.val

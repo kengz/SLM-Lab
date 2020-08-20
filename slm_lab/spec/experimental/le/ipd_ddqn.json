@@ -5,32 +5,33 @@
     },
     "agent":[
       {
-        "name":"Reinforce",
         "observing_other_agents":{
           "name":"FullyObservable"
         },
         "welfare_function":"default_welfare",
-        "algorithm":{
-          "name":"Reinforce",
-          "action_pdtype":"default",
-          "action_policy":"default",
-          "explore_var_spec":null,
-          "gamma":0.0,
-          "center_return":true,
-          "normalize_return":true,
-          "normalize_inputs":true,
-          "normalize_over_n_batch":10,
-          "entropy_coef_spec":{
-            "name":"linear_decay",
-            "start_val":2.0,
-            "end_val":0.01,
-            "start_step":0,
-            "end_step":7500
+        "name": "DoubleDQN",
+        "algorithm": {
+          "name": "DoubleDQN",
+          "action_pdtype": "Categorical",
+          "action_policy": "boltzmann",
+          "explore_var_spec": {
+            "name": "linear_decay",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 0,
+            "end_step": 1500
           },
-          "training_frequency":4
+          "gamma": 0.5,
+          "training_batch_iter": 1,
+          "training_iter": 1,
+          "training_frequency": 4,
+          "training_start_step": 80
         },
-        "memory":{
-          "name":"OnPolicyReplay"
+        "memory": {
+          "name": "Replay",
+          "batch_size": 80,
+          "max_size": 2000,
+          "use_cer": true
         },
         "net":{
           "type":"MLPNet",
@@ -45,7 +46,7 @@
           },
           "lr_scheduler_spec":{
             "name":"LinearToZero",
-            "frame":20000
+            "frame":2000
           }
         }
       },
@@ -57,7 +58,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -79,32 +80,33 @@
     },
     "agent":[
       {
-        "name":"Reinforce",
         "observing_other_agents":{
           "name":"FullyObservable"
         },
         "welfare_function":"utilitarian_welfare",
-        "algorithm":{
-          "name":"Reinforce",
-          "action_pdtype":"default",
-          "action_policy":"default",
-          "explore_var_spec":null,
-          "gamma":0.0,
-          "center_return":true,
-          "normalize_return":true,
-          "normalize_inputs":true,
-          "normalize_over_n_batch":10,
-          "entropy_coef_spec":{
-            "name":"linear_decay",
-            "start_val":2.0,
-            "end_val":0.01,
-            "start_step":0,
-            "end_step":7500
+        "name": "DoubleDQN",
+        "algorithm": {
+          "name": "DoubleDQN",
+          "action_pdtype": "Categorical",
+          "action_policy": "boltzmann",
+          "explore_var_spec": {
+            "name": "linear_decay",
+            "start_val": 3.0,
+            "end_val": 0.1,
+            "start_step": 0,
+            "end_step": 1500
           },
-          "training_frequency":4
+          "gamma": 0.5,
+          "training_batch_iter": 1,
+          "training_iter": 1,
+          "training_frequency": 4,
+          "training_start_step": 80
         },
-        "memory":{
-          "name":"OnPolicyReplay"
+        "memory": {
+          "name": "Replay",
+          "batch_size": 80,
+          "max_size": 2000,
+          "use_cer": true
         },
         "net":{
           "type":"MLPNet",
@@ -119,7 +121,7 @@
           },
           "lr_scheduler_spec":{
             "name":"LinearToZero",
-            "frame":20000
+            "frame":2000
           }
         }
       },
@@ -131,7 +133,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -187,28 +189,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                  "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -223,7 +226,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -244,7 +247,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -300,28 +303,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                  "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -336,7 +340,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -350,31 +354,32 @@
         }
       },
       {
-        "name":"Reinforce",
         "observing_other_agents":{
           "name":"FullyObservable"
         },
-        "algorithm":{
-          "name":"Reinforce",
-          "action_pdtype":"default",
-          "action_policy":"default",
-          "explore_var_spec":null,
-          "gamma":0.0,
-          "center_return":true,
-          "normalize_return":true,
-          "normalize_inputs":true,
-          "normalize_over_n_batch":10,
-          "entropy_coef_spec":{
-            "name":"linear_decay",
-            "start_val":2.0,
-            "end_val":0.01,
-            "start_step":0,
-            "end_step":7500
+        "name": "DoubleDQN",
+        "algorithm": {
+          "name": "DoubleDQN",
+          "action_pdtype": "Categorical",
+          "action_policy": "boltzmann",
+          "explore_var_spec": {
+            "name": "linear_decay",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 0,
+            "end_step": 1500
           },
-          "training_frequency":4
+          "gamma": 0.5,
+          "training_batch_iter": 1,
+          "training_iter": 1,
+          "training_frequency": 4,
+          "training_start_step": 80
         },
-        "memory":{
-          "name":"OnPolicyReplay"
+        "memory": {
+          "name": "Replay",
+          "batch_size": 80,
+          "max_size": 2000,
+          "use_cer": true
         },
         "net":{
           "type":"MLPNet",
@@ -389,7 +394,7 @@
           },
           "lr_scheduler_spec":{
             "name":"LinearToZero",
-            "frame":20000
+            "frame":2000
           }
         }
       }
@@ -398,7 +403,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -455,28 +460,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                  "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -491,7 +497,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -513,7 +519,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -532,12 +538,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -552,7 +558,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -609,28 +615,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                  "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -645,7 +652,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -667,7 +674,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -686,12 +693,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -699,31 +706,29 @@
         }
       },
       {
-        "name":"Reinforce",
-        "observing_other_agents":{
-          "name":"FullyObservable"
-        },
-        "algorithm":{
-          "name":"Reinforce",
-          "action_pdtype":"default",
-          "action_policy":"default",
-          "explore_var_spec":null,
-          "gamma":0.0,
-          "center_return":true,
-          "normalize_return":true,
-          "normalize_inputs":true,
-          "normalize_over_n_batch":10,
-          "entropy_coef_spec":{
-            "name":"linear_decay",
-            "start_val":2.0,
-            "end_val":0.01,
-            "start_step":0,
-            "end_step":7500
+        "name": "DoubleDQN",
+        "algorithm": {
+          "name": "DoubleDQN",
+          "action_pdtype": "Categorical",
+          "action_policy": "boltzmann",
+          "explore_var_spec": {
+            "name": "linear_decay",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 0,
+            "end_step": 1500
           },
-          "training_frequency":4
+          "gamma": 0.5,
+          "training_batch_iter": 1,
+          "training_iter": 1,
+          "training_frequency": 4,
+          "training_start_step": 80
         },
-        "memory":{
-          "name":"OnPolicyReplay"
+        "memory": {
+          "name": "Replay",
+          "batch_size": 80,
+          "max_size": 2000,
+          "use_cer": true
         },
         "net":{
           "type":"MLPNet",
@@ -738,7 +743,7 @@
           },
           "lr_scheduler_spec":{
             "name":"LinearToZero",
-            "frame":20000
+            "frame":2000
           }
         }
       }
@@ -747,7 +752,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -804,28 +809,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                  "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -840,7 +846,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -862,7 +868,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -881,12 +887,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -927,29 +933,30 @@
           },
           "contained_algorithms":[
             {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
+                },
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "training_frequency":4
-            },
-            "memory":{
-              "name":"OnPolicyReplay"
-            },
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
+              },
             "net":{
               "type":"MLPNet",
               "hid_layers":[4],
@@ -963,7 +970,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           },
@@ -985,7 +992,7 @@
                 "start_val":0.0,
                 "end_val":0.0,
                 "start_step":0,
-                "end_step":5000
+                "end_step":500
               },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1004,12 +1011,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.1,
-                "momentum":0.0
+                "lr":0.40,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -1020,7 +1027,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -1073,29 +1080,30 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
+                },
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "training_frequency":4
-            },
-            "memory":{
-              "name":"OnPolicyReplay"
-            },
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
+              },
             "net":{
               "type":"MLPNet",
               "hid_layers":[4],
@@ -1109,7 +1117,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -1132,7 +1140,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1151,12 +1159,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -1165,31 +1173,31 @@
       }
     },
     {
-      "name":"Reinforce",
+
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-
-
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
 
 
@@ -1206,7 +1214,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -1214,7 +1222,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -1267,28 +1275,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -1303,7 +1312,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -1326,7 +1335,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1345,12 +1354,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -1392,28 +1401,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -1428,7 +1438,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -1451,7 +1461,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1470,12 +1480,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":1.6,
-                "momentum":0.0
+                "lr":6.40,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -1487,7 +1497,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -1540,28 +1550,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -1576,7 +1587,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -1599,7 +1610,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1618,12 +1629,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -1632,31 +1643,30 @@
       }
     },
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-
-
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
 
 
@@ -1673,7 +1683,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -1681,7 +1691,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -1735,28 +1745,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -1771,7 +1782,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -1794,7 +1805,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1813,12 +1824,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -1833,7 +1844,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -1886,28 +1897,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -1922,7 +1934,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -1945,7 +1957,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -1963,12 +1975,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2010,28 +2022,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -2046,7 +2059,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -2069,7 +2082,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -2087,12 +2100,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.1,
-                "momentum":0.0
+                "lr":0.40,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2104,7 +2117,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -2157,28 +2170,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -2193,7 +2207,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -2216,7 +2230,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -2234,12 +2248,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2281,28 +2295,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -2317,7 +2332,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -2340,7 +2355,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -2358,12 +2373,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":1.6,
-                "momentum":0.0
+                "lr":6.40,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2375,7 +2390,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -2428,28 +2443,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -2464,7 +2480,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -2487,7 +2503,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -2506,12 +2522,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2520,31 +2536,30 @@
       }
     },
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-
-
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
 
 
@@ -2561,7 +2576,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -2569,7 +2584,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -2623,28 +2638,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -2659,7 +2675,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -2682,7 +2698,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -2700,12 +2716,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2714,29 +2730,30 @@
       }
     },
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
       "net":{
         "type":"MLPNet",
@@ -2751,7 +2768,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -2759,7 +2776,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -2813,28 +2830,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -2849,7 +2867,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           },
@@ -2871,7 +2889,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
               },
               "training_frequency":4,
               "normalize_inputs":true
@@ -2889,12 +2907,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -2903,29 +2921,30 @@
       }
     },
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
       "net":{
         "type":"MLPNet",
@@ -2940,7 +2959,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -2948,7 +2967,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -3002,28 +3021,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3038,7 +3058,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3061,7 +3081,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3080,12 +3100,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3100,7 +3120,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -3153,28 +3173,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3189,7 +3210,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3212,7 +3233,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3231,12 +3252,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3278,28 +3299,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3314,7 +3336,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3337,7 +3359,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3355,12 +3377,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.1,
-                "momentum":0.0
+                "lr":0.40,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3372,7 +3394,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -3425,28 +3447,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3461,7 +3484,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3484,7 +3507,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3503,12 +3526,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3550,28 +3573,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3586,7 +3610,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3609,7 +3633,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3627,12 +3651,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":1.6,
-                "momentum":0.0
+                "lr":6.40,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3644,7 +3668,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -3697,28 +3721,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3733,7 +3758,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3756,7 +3781,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3775,12 +3800,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3789,31 +3814,30 @@
       }
     },
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-
-
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
 
 
@@ -3830,7 +3854,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -3838,7 +3862,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -3892,28 +3916,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -3928,7 +3953,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -3951,7 +3976,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -3969,12 +3994,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -3983,29 +4008,30 @@
       }
     },
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
       "net":{
         "type":"MLPNet",
@@ -4020,7 +4046,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -4028,7 +4054,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -4082,28 +4108,29 @@
         },
         "contained_algorithms":[
           {
-            "name":"Reinforce",
-            "algorithm":{
-              "name":"Reinforce",
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "gamma":0.0,
-              "center_return":true,
-              "normalize_return":true,
-              "normalize_inputs":true,
-              "normalize_over_n_batch":10,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":2.0,
-                "end_val":0.01,
-                "start_step":0,
-                "end_step":7500
+            "name": "DoubleDQN",
+            "algorithm": {
+              "name": "DoubleDQN",
+              "action_pdtype": "Categorical",
+              "action_policy": "boltzmann",
+              "explore_var_spec": {
+                "name": "linear_decay",
+                "start_val": 1.0,
+                "end_val": 0.1,
+                "start_step": 0,
+                "end_step": 1500
               },
-              "training_frequency":4
+              "gamma": 0.5,
+              "training_batch_iter": 1,
+              "training_iter": 1,
+              "training_frequency": 4,
+              "training_start_step": 80
             },
-            "memory":{
-              "name":"OnPolicyReplay"
+            "memory": {
+              "name": "Replay",
+              "batch_size": 80,
+              "max_size": 2000,
+              "use_cer": true
             },
             "net":{
               "type":"MLPNet",
@@ -4118,7 +4145,7 @@
               "clip_grad_val":1.0,
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
 
@@ -4141,7 +4168,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
              },
               "training_frequency":4,
               "normalize_inputs":true
@@ -4159,12 +4186,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
-                "momentum":0.0
+                "lr":1.60,
+                "momentum":0.5
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":20000
+                "frame":2000
               }
             }
           }
@@ -4174,31 +4201,30 @@
     },
 
     {
-      "name":"Reinforce",
       "observing_other_agents":{"name":"FullyObservable"},
-      "algorithm":{
-        "name":"Reinforce",
-        "action_pdtype":"default",
-        "action_policy":"default",
-        "explore_var_spec":null,
-        "gamma":0.0,
-        "center_return":true,
-        "normalize_return":true,
-        "normalize_inputs":true,
-        "normalize_over_n_batch":10,
-        "entropy_coef_spec":{
-          "name":"linear_decay",
-          "start_val":2.0,
-          "end_val":0.01,
-          "start_step":0,
-          "end_step":7500
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 1500
         },
-        "training_frequency":4
+        "gamma": 0.5,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 4,
+        "training_start_step": 80
       },
-
-
-      "memory":{
-        "name":"OnPolicyReplay"
+      "memory": {
+        "name": "Replay",
+        "batch_size": 80,
+        "max_size": 2000,
+        "use_cer": true
       },
 
 
@@ -4215,7 +4241,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":20000
+          "frame":2000
         }
       }
     }
@@ -4223,7 +4249,7 @@
     "env":[{
       "name":"IteratedPrisonersDilemma-v0",
       "max_t":null,
-      "max_frame":20000,
+      "max_frame":2000,
       "num_envs":1
     }],
     "body":{
@@ -4281,28 +4307,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                 "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -4317,7 +4344,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -4339,7 +4366,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -4358,12 +4385,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -4405,28 +4432,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                 "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -4441,7 +4469,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -4463,7 +4491,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -4482,12 +4510,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -4499,7 +4527,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -4557,28 +4585,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                 "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -4593,7 +4622,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -4615,7 +4644,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -4634,12 +4663,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -4681,28 +4710,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                 "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "Categorical",
+                "action_policy": "boltzmann",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.1,
+                  "start_step": 0,
+                  "end_step": 1500
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 1,
+                "training_iter": 1,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -4717,7 +4747,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -4739,7 +4769,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -4758,12 +4788,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -4775,7 +4805,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -4833,28 +4863,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                 "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.08,
+                  "start_step": 0,
+                  "end_step": 2000
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 10,
+                "training_iter": 4,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -4869,7 +4900,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -4891,7 +4922,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -4910,12 +4941,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -4957,28 +4988,29 @@
           },
           "contained_algorithms":[
             {
-              "name":"Reinforce",
-              "algorithm":{
-                "name":"Reinforce",
-                "action_pdtype":"default",
-                "action_policy":"default",
-                "explore_var_spec":null,
-                "gamma":0.0,
-                "center_return":true,
-                "normalize_return":true,
-                "normalize_inputs":true,
-                "normalize_over_n_batch":10,
-                "entropy_coef_spec":{
-                  "name":"linear_decay",
-                 "start_val":2.0,
-                  "end_val":0.01,
-                  "start_step":0,
-                  "end_step":7500
+              "name": "DoubleDQN",
+              "algorithm": {
+                "name": "DoubleDQN",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "explore_var_spec": {
+                  "name": "linear_decay",
+                  "start_val": 1.0,
+                  "end_val": 0.08,
+                  "start_step": 0,
+                  "end_step": 2000
                 },
-                "training_frequency":4
+                "gamma": 0.5,
+                "training_batch_iter": 10,
+                "training_iter": 4,
+                "training_frequency": 4,
+                "training_start_step": 80
               },
-              "memory":{
-                "name":"OnPolicyReplay"
+              "memory": {
+                "name": "Replay",
+                "batch_size": 80,
+                "max_size": 2000,
+                "use_cer": true
               },
               "net":{
                 "type":"MLPNet",
@@ -4993,7 +5025,7 @@
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             },
@@ -5015,7 +5047,7 @@
                   "start_val":0.0,
                   "end_val":0.0,
                   "start_step":0,
-                  "end_step":5000
+                  "end_step":500
                 },
                 "training_frequency":4,
                 "normalize_inputs":true
@@ -5034,12 +5066,12 @@
                 },
                 "optim_spec":{
                   "name":"SGD",
-                  "lr":0.4,
-                  "momentum":0.0
+                  "lr":1.60,
+                  "momentum":0.5
                 },
                 "lr_scheduler_spec":{
                   "name":"LinearToZero",
-                  "frame":20000
+                  "frame":2000
                 }
               }
             }
@@ -5051,7 +5083,7 @@
       {
         "name":"IteratedPrisonersDilemma-v0",
         "max_t":null,
-        "max_frame":20000,
+        "max_frame":2000,
         "num_envs":1
       }
     ],
@@ -5065,453 +5097,6 @@
       "log_frequency":20,
       "max_session":10,
       "max_concurrent_session":10,
-      "max_trial":1
-    }
-  },
-
-  "ipd_mb_mpc_cem_le_self_play":{
-    "world":{
-      "name":"DefaultMultiAgentWorld"
-    },
-    "agent":[
-      {
-        "name":"LE",
-        "memory":null,
-        "net":null,
-        "welfare_function":"utilitarian_welfare",
-        "observing_other_agents":{
-          "name":"FullyObservable"
-        },
-        "algorithm": {
-          "name": "LE",
-          "punishement_time": 1,
-          "min_coop_time": 0,
-          "defection_detection_mode": "spl_observed_actions",
-          "defection_carac_threshold": 0.0,
-          "average_d_carac":true,
-          "average_d_carac_len":20,
-          "same_init_weights": true,
-          "coop_net_ent_diff_as_lr": false,
-          "use_sl_for_simu_coop": false,
-          "use_strat_4": false,
-          "use_strat_5": false,
-          "strat_5_coeff": 10.0,
-          "use_strat_2": false,
-          "block_len": 4,
-          "meta_algo_memory": {
-            "name": "Replay",
-            "batch_size": 1,
-            "max_size": -1
-          },
-          "meta_algo_loss": {
-            "name": "CrossEntropyLoss"
-          },
-          "contained_algorithms": [
-            {
-              "name": "PETS",
-              "algorithm": {
-                "name": "PETS",
-                "contained_algorithms": [
-                  {
-                    "name": "SupervisedLAPolicy",
-                    "targets":"rewards",
-                    "inputs":["next_states", "actions"],
-                    "algorithm": {
-                      "name": "SupervisedLAPolicy",
-                      "action_pdtype": "default",
-                      "action_policy": "default",
-                      "explore_var_spec": null,
-                      "entropy_coef_spec": {
-                        "name": "linear_decay",
-                        "start_val": 0.0,
-                        "end_val": 0.0,
-                        "start_step": 0,
-                        "end_step": 5000
-                      },
-                      "training_frequency": 4,
-                      "normalize_inputs":true
-                    },
-                    "memory": {
-                      "name": "OnPolicyReplay"
-                    },
-                    "net": {
-                      "type": "MLPNet",
-                      "hid_layers": [
-                        4
-                      ],
-                      "hid_layers_activation": "LeakyReLU",
-                      "init_fn": "normal_mu_0_std_0.1",
-                      "loss_spec": {
-                        "name": "CrossEntropyLoss",
-                        "reduction": "none"
-                      },
-                      "optim_spec": {
-                        "name": "SGD",
-                        "lr": 0.008,
-                        "momentum": 0.9
-                      },
-                      "lr_scheduler_spec": null
-                    }
-                  },
-                  {
-                    "name": "SPLearningBayesianPolicy",
-                    "targets":"states",
-                    "algorithm": {
-                      "name": "SPLearningBayesianPolicy",
-                      "action_pdtype": "default",
-                      "action_policy": "default",
-                      "explore_var_spec": null,
-                      "entropy_coef_spec": {
-                        "name": "linear_decay",
-                        "start_val": 0.0,
-                        "end_val": 0.0,
-                        "start_step": 0,
-                        "end_step": 5000
-                      },
-                      "training_frequency": 4
-                    },
-                    "memory": {
-                      "name": "OnPolicyReplay"
-                    },
-                    "net": {
-                      "type": "MLPNet",
-                      "hid_layers": [
-                        4
-                      ],
-                      "hid_layers_activation": "LeakyReLU",
-                      "init_fn": "normal_mu_0_std_0.1",
-                      "loss_spec": {
-                        "name": "CrossEntropyLoss",
-                        "reduction": "none"
-                      },
-                      "optim_spec": {
-                        "name": "SGD",
-                        "lr": 0.008,
-                        "momentum": 0.9
-                      },
-                      "lr_scheduler_spec": {
-                        "name": "LinearToZero",
-                        "frame": 20000
-                      }
-                    }
-                  },
-                  {
-                    "copy_n": 0
-                  }
-                ]
-              }
-            },
-            {
-              "copy_n": 0
-            },
-            {
-              "copy_n": 0
-            },
-            {
-              "name": "SupervisedLAPolicy",
-              "algorithm": {
-                "name": "SupervisedLAPolicy",
-                "action_pdtype": "default",
-                "action_policy": "default",
-                "explore_var_spec": null,
-                "entropy_coef_spec": {
-                  "name": "linear_decay",
-                  "start_val": 0.0,
-                  "end_val": 0.0,
-                  "start_step": 0,
-                  "end_step": 5000
-                },
-                "training_frequency": 4,
-                "normalize_inputs":true
-              },
-              "memory": {
-                "name": "OnPolicyReplay"
-              },
-              "net": {
-                "type": "MLPNet",
-                "hid_layers": [
-                  4
-                ],
-                "hid_layers_activation": "LeakyReLU",
-                "init_fn": "normal_mu_0_std_0.1",
-                "loss_spec": {
-                  "name": "CrossEntropyLoss",
-                  "reduction": "none"
-                },
-                "optim_spec": {
-                  "name": "SGD",
-                  "lr": 0.008,
-                  "momentum": 0.9
-                },
-                "lr_scheduler_spec": null
-              }
-            }
-          ]
-        }
-      },
-      {
-        "copy_n":0
-      }
-    ],
-    "env":[
-      {
-        "name":"IteratedPrisonersDilemma-v0",
-        "max_t":null,
-        "max_frame":20000,
-        "num_envs":1
-      }
-    ],
-    "body":{
-      "product":"outer",
-      "num":1
-    },
-    "meta":{
-      "distributed":false,
-      "eval_frequency":20,
-      "log_frequency":20,
-      "max_session":10,
-      "max_trial":1
-    }
-  },
-  "ipd_mb_mpc_cem_le_vs_naive_opp":{
-    "world":{
-      "name":"DefaultMultiAgentWorld"
-    },
-    "agent":[
-      {
-        "name":"LE",
-        "memory":null,
-        "net":null,
-        "welfare_function":"utilitarian_welfare",
-        "observing_other_agents":{
-          "name":"FullyObservable"
-        },
-        "algorithm": {
-          "name": "LE",
-          "punishement_time": 1,
-          "min_coop_time": 0,
-          "defection_detection_mode": "spl_observed_actions",
-          "defection_carac_threshold": 0.0,
-          "average_d_carac":true,
-          "average_d_carac_len":20,
-          "same_init_weights": true,
-          "coop_net_ent_diff_as_lr": false,
-          "use_sl_for_simu_coop": false,
-          "use_strat_4": false,
-          "use_strat_5": false,
-          "strat_5_coeff": 10.0,
-          "use_strat_2": false,
-          "block_len": 4,
-          "meta_algo_memory": {
-            "name": "Replay",
-            "batch_size": 1,
-            "max_size": -1
-          },
-          "meta_algo_loss": {
-            "name": "CrossEntropyLoss"
-          },
-          "contained_algorithms": [
-            {
-              "name": "PETS",
-              "contained_algorithms": [
-                {
-                  "name": "SupervisedLAPolicy",
-                  "targets":"rewards",
-                  "inputs":["next_states", "actions"],
-                  "algorithm": {
-                    "name": "SupervisedLAPolicy",
-                    "action_pdtype": "default",
-                    "action_policy": "default",
-                    "explore_var_spec": null,
-                    "entropy_coef_spec": {
-                      "name": "linear_decay",
-                      "start_val": 0.0,
-                      "end_val": 0.0,
-                      "start_step": 0,
-                      "end_step": 5000
-                    },
-                    "training_frequency": 4,
-                    "normalize_inputs":true
-                  },
-                  "memory": {
-                    "name": "OnPolicyReplay"
-                  },
-                  "net": {
-                    "type": "MLPNet",
-                    "hid_layers": [
-                      4
-                    ],
-                    "hid_layers_activation": "LeakyReLU",
-                    "init_fn": "normal_mu_0_std_0.1",
-                    "loss_spec": {
-                      "name": "CrossEntropyLoss",
-                      "reduction": "none"
-                    },
-                    "optim_spec": {
-                      "name": "SGD",
-                      "lr": 0.008,
-                      "momentum": 0.9
-                    },
-                    "lr_scheduler_spec": null
-                  }
-                },
-                {
-                  "name": "SPLearningBayesianPolicy",
-                  "targets":"states",
-                  "algorithm": {
-                    "name": "SPLearningBayesianPolicy",
-                    "action_pdtype": "default",
-                    "action_policy": "default",
-                    "explore_var_spec": null,
-                    "entropy_coef_spec": {
-                      "name": "linear_decay",
-                      "start_val": 0.0,
-                      "end_val": 0.0,
-                      "start_step": 0,
-                      "end_step": 5000
-                    },
-                    "training_frequency": 4
-                  },
-                  "memory": {
-                    "name": "OnPolicyReplay"
-                  },
-                  "net": {
-                    "type": "MLPNet",
-                    "hid_layers": [
-                      4
-                    ],
-                    "hid_layers_activation": "LeakyReLU",
-                    "init_fn": "normal_mu_0_std_0.1",
-                    "loss_spec": {
-                      "name": "CrossEntropyLoss",
-                      "reduction": "none"
-                    },
-                    "optim_spec": {
-                      "name": "SGD",
-                      "lr": 0.008,
-                      "momentum": 0.9
-                    },
-                    "lr_scheduler_spec": {
-                      "name": "LinearToZero",
-                      "frame": 20000
-                    }
-                  }
-                },
-                {
-                  "copy_n": 0
-                }
-              ]
-            },
-            {
-              "copy_n": 0
-            },
-            {
-              "copy_n": 0
-            },
-            {
-              "name": "SupervisedLAPolicy",
-              "algorithm": {
-                "name": "SupervisedLAPolicy",
-                "action_pdtype": "default",
-                "action_policy": "default",
-                "explore_var_spec": null,
-                "entropy_coef_spec": {
-                  "name": "linear_decay",
-                  "start_val": 0.0,
-                  "end_val": 0.0,
-                  "start_step": 0,
-                  "end_step": 5000
-                },
-                "training_frequency": 4,
-                "normalize_inputs":true
-              },
-              "memory": {
-                "name": "OnPolicyReplay"
-              },
-              "net": {
-                "type": "MLPNet",
-                "hid_layers": [
-                  4
-                ],
-                "hid_layers_activation": "LeakyReLU",
-                "init_fn": "normal_mu_0_std_0.1",
-                "loss_spec": {
-                  "name": "CrossEntropyLoss",
-                  "reduction": "none"
-                },
-                "optim_spec": {
-                  "name": "SGD",
-                  "lr": 0.08,
-                  "momentum": 0.0
-                },
-                "lr_scheduler_spec": null
-              }
-            }
-          ]
-        }
-      },
-      {
-        "name":"Reinforce",
-        "observing_other_agents":{
-          "name":"FullyObservable"
-        },
-        "algorithm":{
-          "name":"Reinforce",
-          "action_pdtype":"default",
-          "action_policy":"default",
-          "explore_var_spec":null,
-          "gamma":0.0,
-          "center_return":true,
-          "normalize_return":true,
-          "normalize_inputs":true,
-          "normalize_over_n_batch":10,
-          "entropy_coef_spec":{
-            "name":"linear_decay",
-            "start_val":2.0,
-            "end_val":0.01,
-            "start_step":0,
-            "end_step":7500
-          },
-          "training_frequency":4
-        },
-        "memory":{
-          "name":"OnPolicyReplay"
-        },
-        "net":{
-          "type":"MLPNet",
-          "hid_layers":[4],
-          "hid_layers_activation":"LeakyReLU",
-          "init_fn":"normal_mu_0_std_0.1",
-          "clip_grad_val":1.0,
-          "optim_spec":{
-            "name":"SGD",
-            "lr":0.04,
-            "momentum":0.9
-          },
-          "lr_scheduler_spec":{
-            "name":"LinearToZero",
-            "frame":20000
-          }
-        }
-      }
-    ],
-    "env":[
-      {
-        "name":"IteratedPrisonersDilemma-v0",
-        "max_t":null,
-        "max_frame":20000,
-        "num_envs":1
-      }
-    ],
-    "body":{
-      "product":"outer",
-      "num":1
-    },
-    "meta":{
-      "distributed":false,
-      "eval_frequency":20,
-      "log_frequency":20,
-      "max_session":10,
       "max_trial":1
     }
   }

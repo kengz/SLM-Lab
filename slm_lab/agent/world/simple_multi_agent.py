@@ -31,7 +31,7 @@ class DefaultMultiAgentWorld:
         self.spec = spec
 
         util.set_attr(self, dict(
-            deterministic=True,
+            deterministic=False,
         ))
         util.set_attr(self, self.spec["world"], [
             'deterministic',
@@ -129,11 +129,12 @@ class DefaultMultiAgentWorld:
 
         if not any([np.isnan(l) for l in loss]):  # set for log_summary()
             sum_loss_over_agents = torch.cat(loss, dim=0).sum()
-            sum_explore_var_over_agents = torch.cat(explore_var, dim=0).sum()
-            self.body.loss = sum_loss_over_agents
-            self.body.explore_var = sum_explore_var_over_agents
+            # sum_explore_var_over_agents = torch.cat(explore_var, dim=0).sum()
+            # self.body.loss = sum_loss_over_agents
+            # self.body.explore_var = sum_explore_var_over_agents
             if util.in_eval_lab_modes():
-                return sum_loss_over_agents, sum_explore_var_over_agents
+                # return sum_loss_over_agents, sum_explore_var_over_agents
+                return sum_loss_over_agents, None
 
     def _update_agent_info_wt_feedback_from_env_step(self, reward, next_state, done):
 

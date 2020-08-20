@@ -198,6 +198,7 @@ class OneOfNAlgoActived(MetaAlgorithm):
         '''Implement algorithm train, or throw NotImplementedError'''
         losses = []
 
+        # print(f"train in agent {self.agent.agent_idx}")
         for idx, algo in enumerate(self.algorithms):
             if self.agent.world.deterministic:
                 self.agent.world._set_rd_state(self.agent.world.rd_seed)
@@ -216,12 +217,15 @@ class OneOfNAlgoActived(MetaAlgorithm):
     @lab_api
     def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''
-        explore_vars = []
+        # explore_vars = []
+        # for algo in self.algorithms:
+        #     explore_vars.append(algo.update())
+        # explore_vars = [el for el in explore_vars if not np.isnan(el)]
+        # explore_var = sum(explore_vars) if len(explore_vars) > 0 else np.nan
+        # return explore_var
         for algo in self.algorithms:
-            explore_vars.append(algo.update())
-        explore_vars = [el for el in explore_vars if not np.isnan(el)]
-        explore_var = sum(explore_vars) if len(explore_vars) > 0 else np.nan
-        return explore_var
+            algo.update()
+        return np.nan
 
     @lab_api
     def memory_update(self, state, action, welfare, next_state, done):
