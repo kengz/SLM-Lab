@@ -1,16 +1,18 @@
 from abc import ABC, abstractmethod
 from slm_lab.agent.net import net_util
+from slm_lab.agent.net import gradflow_check
+from slm_lab.lib import logger, util
+
 import pydash as ps
 import torch
 import torch.nn as nn
 import numpy as np
-from slm_lab.lib import logger
 logger = logger.get_logger(__name__)
 
 class Net(ABC):
     '''Abstract Net class to define the API methods'''
 
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
         '''
         @param {dict} net_spec is the spec for the net
         @param {int|list} in_dim is the input dimension(s) for the network. Usually use in_dim=body.state_dim
@@ -19,6 +21,7 @@ class Net(ABC):
         self.net_spec = net_spec
         self.in_dim = in_dim
         self.out_dim = out_dim
+        self.name = name
         self.grad_norms = None  # for debugging
         if self.net_spec.get('gpu'):
             if torch.cuda.device_count():
@@ -31,13 +34,14 @@ class Net(ABC):
         self.opt_step = 0
         self.n_frames_at_init = clock.get('frame')
 
+
     @abstractmethod
     def forward(self):
         '''The forward step for a specific network architecture'''
         raise NotImplementedError
 
     @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
+    def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None, display_gradflow:bool=False):
         if lr_scheduler is not None:
             # Overwritte with scalar value
             if np.isscalar(lr_scheduler):
@@ -56,8 +60,9 @@ class Net(ABC):
         # optim.zero_grad()
         loss.backward()
 
-        #Debug
-        # plot_grad_flow(self.named_parameters())
+        if display_gradflow:
+            gradflow_check.plot_grad_flow(self.named_parameters(),
+                                          title=self.name)
 
         if self.clip_grad_val is not None:
             tot_total_norm_before_clipping = nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)

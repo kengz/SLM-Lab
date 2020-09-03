@@ -60,6 +60,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             use_strat_5=False,
             strat_5_coeff=10,
             use_strat_2=False,
+            use_last_steps_for_search=False,
+            use_bolzmann_search=False,
             use_gene_algo=False,  # if not use grid search
             lr_grid_search_array=[1 / 10, 1 / 3, 1, 1 * 3, 1 * 10, 1 * 30, 1 * 100],
             n_gene_algo=10,
@@ -88,6 +90,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             "use_strat_5",
             "strat_5_coeff",
             "use_strat_2",
+            "use_last_steps_for_search",
+            "use_bolzmann_search",
             "use_gene_algo",
             "lr_grid_search_array",
             "n_gene_algo",
@@ -98,6 +102,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             "n_bootstrapped_replications"
             # "stop_while_punishing"
         ])
+
+        if self.use_bolzmann_search:
+            assert self.use_strat_2
+            assert not self.use_gene_algo
+            assert not self.use_strat_5
 
         self.all_defection_detection_modes = ["network_weights",
                                               "action_pd_kullback_leibler_div",
@@ -186,18 +195,31 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             else:  # use grid search
                 self.n_algo_in_strat_2 = len(self.lr_grid_search_array) + 3  # 12
 
-            self.strat_2_data = [{"lr": -1, "steps_seen": 0,
-                                  # "spl_losses": [],
-                                  "spl_losses": deque(maxlen=self.length_of_history),
-                                  "age": 0,
-                                  "algo": None,
-                                  "log_likelihood": deque(maxlen=self.length_of_history)}
-                                 for i in range(self.n_algo_in_strat_2)]
+            if self.use_last_steps_for_search:
+                self.strat_2_data = [{"lr": -1, "steps_seen": 0,
+                                      # "spl_losses": [],
+                                      "spl_losses": deque(maxlen=self.length_of_history),
+                                      "age": 0,
+                                      "algo": None,
+                                      "log_likelihood": deque(maxlen=self.length_of_history)}
+                                     for i in range(self.n_algo_in_strat_2)]
+            else:
+                self.strat_2_data = [{"lr": -1, "steps_seen": 0,
+                                      "spl_losses": [],
+                                      # "spl_losses": deque(maxlen=self.length_of_history),
+                                      "age": 0,
+                                      "algo": None,
+                                      "log_likelihood": deque(maxlen=self.length_of_history)}
+                                     for i in range(self.n_algo_in_strat_2)]
             self.best_lr_idx = 0
             self.strat_2_is_init = False
 
             self.last_change_best_algo = False
             self.KILL_LOSS_THRESHOLD = 1e6
+
+            # if self.use_bolzmann_search:
+                # self.lr_grid_search_array = [1/10, 1 / 3, 1, 1 * 3, 1 * 10, 1 * 30, 1*100],
+
 
         # Logging
         self.n_cooperation_steps = 0
@@ -243,8 +265,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         self.last_used_algo = self.active_algo_idx
 
-        if self.DEBUG:
-            logger.info(f"action_pd {self.agent.agent_idx} {action_pd.probs}")
+        # if self.DEBUG:
+        # logger.info(f"agent {self.agent.agent_idx} active_algo {self.active_algo_idx} proba {action_pd.probs} "
+        #             f"tau {self.algorithms[self.active_algo_idx].explore_var_scheduler.val}")
 
         return action, action_pd
 
@@ -479,12 +502,12 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             # Next LR to test
             best_lr = self.strat_2_data[self.best_lr_idx]['lr']
             if best_lr == -1:
-                new_lr = self._find_algo_lr(spec=self.meta_algorithm_spec['contained_algorithms'][
+                new_lr = self._find_parameter_base_value(spec=self.meta_algorithm_spec['contained_algorithms'][
                     self.coop_net_simul_opponent_idx]['net'])
             else:
                 new_lr = best_lr * np.random.uniform(low=1 / self.lr_perturbation, high=self.lr_perturbation)
 
-            self._spawn_new_network(new_lr=new_lr, algo_idx_to_replace=self.algo_to_kill_idx)
+            self._spawn_new_network(new_value=new_lr, algo_idx_to_replace=self.algo_to_kill_idx)
 
         else:
             if not self.strat_2_is_init:
@@ -493,12 +516,16 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
                 self.save_init_weights = copy.deepcopy(self.algorithms[self.coop_net_simul_opponent_idx].net)
 
-                base_lr = self._find_algo_lr(spec=self.meta_algorithm_spec['contained_algorithms'][
-                    self.coop_net_simul_opponent_idx]['net'])
+                #     base_lr = self._find_parameter_base_value(spec=self.meta_algorithm_spec['contained_algorithms'][
+                #         self.coop_net_simul_opponent_idx]['net'])
+                base_parameter_value = self._find_parameter_base_value(spec=self.meta_algorithm_spec[
+                    'contained_algorithms'][
+                    self.coop_net_simul_opponent_idx])
+
 
                 for idx, lr_ratio in enumerate(self.lr_grid_search_array):
-                    new_lr = base_lr * lr_ratio
-                    self._spawn_new_network(new_lr=new_lr, algo_idx_to_replace=idx)
+                    new_lr = base_parameter_value * lr_ratio
+                    self._spawn_new_network(new_value=new_lr, algo_idx_to_replace=idx)
 
             for middle_point_idx, (new_middle_point, last_middle_point) in enumerate(
                     zip(self.middle_points, self.last_middle_points)):
@@ -514,7 +541,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                         # self.strat_2_data[self.n_algo_in_strat_2 - 1] = self.strat_2_data[len(self.lr_grid_search_array) +
                         #                                         middle_point_idx]
 
-                    self._spawn_new_network(new_lr=new_middle_point,
+                    self._spawn_new_network(new_value=new_middle_point,
                                             algo_idx_to_replace=len(self.lr_grid_search_array) +
                                                                 middle_point_idx)
 
@@ -562,7 +589,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         # Kill diverging lr
         for i, (data, loss) in enumerate(zip(self.strat_2_data, spl_losses)):
             if data['lr'] != -1 and data['algo'] is not None:
-                if loss >= self.KILL_LOSS_THRESHOLD:
+                if ((loss >= self.KILL_LOSS_THRESHOLD or np.isnan(data['spl_losses'][-1]))
+                        and len(data['spl_losses']) > 0 ):
                     # Kill it
                     print("!!! killing", data['lr'], "!!!", "loss", loss)
                     data['lr'] = -1
@@ -576,6 +604,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         spl_losses = torch.tensor([torch.tensor(data['spl_losses']).mean()
                                    if data['algo'] is not None and not np.isnan(torch.tensor(data['spl_losses']).mean())
                                    else self.KILL_LOSS_THRESHOLD for data in self.strat_2_data])
+        print("spl_losses", spl_losses)
         _, new_best_lr_idx = torch.min(spl_losses, dim=0)
         return new_best_lr_idx, lrs, steps_seen, log_likelihoods, spl_losses
 
@@ -589,37 +618,55 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self.middle_points = [middle_point_down, middle_point_up]
         self.last_change_best_algo = change_best_algo
 
-    def _find_algo_lr(self, spec):
-        # spec = self.meta_algorithm_spec['contained_algorithms'][self.coop_net_simul_opponent_idx]['net']
-        if spec['lr_scheduler_spec'] is None or spec['lr_scheduler_spec']["name"] == "LinearToZero":
-            if 'optim_spec' in spec.keys():
-                lr = spec['optim_spec']['lr']
-            elif 'actor_optim_spec' in spec.keys():
-                lr = spec['actor_optim_spec']['lr']
-        elif spec['lr_scheduler_spec']["name"] == "CyclicLR":
-            lr = spec['lr_scheduler_spec']['max_lr']
-        else:
-            raise NotImplementedError()
-        return lr
+    def _find_parameter_base_value(self, spec):
 
-    def _spawn_new_network(self, new_lr, algo_idx_to_replace):
-        spec_to_modify = copy.deepcopy(self.meta_algorithm_spec['contained_algorithms'][
-                                           self.coop_net_simul_opponent_idx]['net'])
-        if spec_to_modify['lr_scheduler_spec'] is None or spec_to_modify['lr_scheduler_spec']["name"] == "LinearToZero":
-            if 'optim_spec' in spec_to_modify.keys():
-                spec_to_modify['optim_spec']['lr'] = new_lr
-            elif 'actor_optim_spec' in spec_to_modify.keys():
-                spec_to_modify['actor_optim_spec']['lr'] = new_lr
-        elif spec_to_modify['lr_scheduler_spec']["name"] == "CyclicLR":
-            current_base_lr = spec_to_modify['lr_scheduler_spec']['base_lr']
-            current_max_lr = spec_to_modify['lr_scheduler_spec']['max_lr']
-            spec_to_modify['lr_scheduler_spec'].update({"base_lr": new_lr * current_base_lr / current_max_lr,
-                                                        "max_lr": new_lr})
-            # print("spec_to_modify['lr_scheduler_spec']",spec_to_modify['lr_scheduler_spec'])
+        if self.use_bolzmann_search:
+            spec = spec["algorithm"]
+            return spec['explore_var_spec']['start_val']
         else:
-            raise NotImplementedError()
-        self.meta_algorithm_spec['contained_algorithms'][
-            self.coop_net_simul_opponent_idx]['net'] = spec_to_modify
+            spec = spec["net"]
+
+            # spec = self.meta_algorithm_spec['contained_algorithms'][self.coop_net_simul_opponent_idx]['net']
+            if spec['lr_scheduler_spec'] is None or spec['lr_scheduler_spec']["name"] == "LinearToZero":
+                if 'optim_spec' in spec.keys():
+                    lr = spec['optim_spec']['lr']
+                elif 'actor_optim_spec' in spec.keys():
+                    lr = spec['actor_optim_spec']['lr']
+            elif spec['lr_scheduler_spec']["name"] == "CyclicLR":
+                lr = spec['lr_scheduler_spec']['max_lr']
+            else:
+                raise NotImplementedError()
+            return lr
+
+    def _spawn_new_network(self, new_value, algo_idx_to_replace):
+        if self.use_bolzmann_search:
+            spec_to_modify = copy.deepcopy(self.meta_algorithm_spec['contained_algorithms'][
+                                               self.coop_net_simul_opponent_idx]['algorithm'])
+        else:
+            spec_to_modify = copy.deepcopy(self.meta_algorithm_spec['contained_algorithms'][
+                                               self.coop_net_simul_opponent_idx]['net'])
+
+        if self.use_bolzmann_search:
+            spec_to_modify['explore_var_spec']['start_val'] = new_value
+            self.meta_algorithm_spec['contained_algorithms'][
+                self.coop_net_simul_opponent_idx]['algorithm'] = spec_to_modify
+        # If we do not search for the bolzmann temperature then we search the LR
+        else:
+            if spec_to_modify['lr_scheduler_spec'] is None or spec_to_modify['lr_scheduler_spec']["name"] == "LinearToZero":
+                if 'optim_spec' in spec_to_modify.keys():
+                    spec_to_modify['optim_spec']['lr'] = new_value
+                elif 'actor_optim_spec' in spec_to_modify.keys():
+                    spec_to_modify['actor_optim_spec']['lr'] = new_value
+            elif spec_to_modify['lr_scheduler_spec']["name"] == "CyclicLR":
+                current_base_lr = spec_to_modify['lr_scheduler_spec']['base_lr']
+                current_max_lr = spec_to_modify['lr_scheduler_spec']['max_lr']
+                spec_to_modify['lr_scheduler_spec'].update({"base_lr": new_value * current_base_lr / current_max_lr,
+                                                            "max_lr": new_value})
+                # print("spec_to_modify['lr_scheduler_spec']",spec_to_modify['lr_scheduler_spec'])
+            else:
+                raise NotImplementedError()
+            self.meta_algorithm_spec['contained_algorithms'][
+                self.coop_net_simul_opponent_idx]['net'] = spec_to_modify
 
         # Re-init algo
         # TODO improve this by using the global_nets to always init with the weights
@@ -630,22 +677,22 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         self.strat_2_data[algo_idx_to_replace]['steps_seen'] = 0
         self.strat_2_data[algo_idx_to_replace]['algo'] = algo
-        self.strat_2_data[algo_idx_to_replace]['lr'] = new_lr
+        self.strat_2_data[algo_idx_to_replace]['lr'] = new_value
         self.strat_2_data[algo_idx_to_replace]['spl_losses'] = []
         self.strat_2_data[algo_idx_to_replace]['log_likelihood'].clear()
         self.strat_2_data[algo_idx_to_replace]['age'] = 0
 
-        print("New tested LR", new_lr)
+        print("New tested LR", new_value)
 
     def _train_group_of_networks_on_all_history(self):
         print("agent_idx", self.agent.agent_idx)
         for algo_idx, algo_data in enumerate(self.strat_2_data):
-            for step_idx, data in enumerate(self.memory.replay_all_history(from_idx=algo_data['steps_seen'])):
+            for _, data in enumerate(self.memory.replay_all_history(from_idx=algo_data['steps_seen'])):
                 # if step_idx >= algo_data['steps_seen']:
-                print(algo_data["algo"] is not None
-                        , algo_data["lr"] != -1
-                        , len(algo_data['spl_losses']) == 0 ,
-                             sum(algo_data['spl_losses']) < self.KILL_LOSS_THRESHOLD)
+                # print(algo_data["algo"] is not None
+                #         , algo_data["lr"] != -1
+                #         , len(algo_data['spl_losses']) == 0 ,
+                #              sum(algo_data['spl_losses']) < self.KILL_LOSS_THRESHOLD)
                 if (algo_data["algo"] is not None
                         and algo_data["lr"] != -1
                         and (len(algo_data['spl_losses']) == 0 or
@@ -659,31 +706,58 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
                     self.strat_2_data[algo_idx]['steps_seen'] += 1
                     self.strat_2_data[algo_idx]['algo'].memory_update(s, a, float(w), n_s, bool(done))
+                    # print("self.strat_2_data[algo_idx]['algo'].to_train", self.strat_2_data[algo_idx]['algo'].to_train)
+
+                    train = False
                     if self.strat_2_data[algo_idx]['algo'].to_train == 1:
+                        train = True
+
+                    self.strat_2_data[algo_idx]['algo'].train()
+                    self.strat_2_data[algo_idx]['algo'].update()
+
+                    if train:
+                        # TODO adapt this to Replay
                         with torch.no_grad():
-                            batch = algo_data['algo'].sample(reset=False)
-                            pdparams = algo_data['algo'].calc_pdparam_batch(batch)
-                            spl_loss = self._calc_supervised_learn_loss(batch, pdparams)
+                            # TODO make methods of both algo below the same
+                            if hasattr(algo_data['algo'], "calc_pdparam_batch"):
+                                batch = algo_data['algo'].sample(reset=False)
+                                pdparams = algo_data['algo'].calc_pdparam_batch(batch)
+                            elif hasattr(algo_data['algo'], "proba_distrib_params"):
+                                batch_idxs = np.arange(
+                                    algo_data['algo'].memory.size - algo_data['algo'].memory.batch_size,
+                                    algo_data['algo'].memory.size)
+                                batch = algo_data['algo'].sample(batch_idxs=batch_idxs, reset=False)
+                                pdparams = algo_data['algo'].proba_distrib_params(batch['states'])
+                            else:
+                                raise NotImplementedError()
+                            spl_loss = self._calc_supervised_learn_loss(batch, pdparams, algo_data['algo'])
                             print("spl_loss", spl_loss)
                             self.strat_2_data[algo_idx]['spl_losses'].append(spl_loss)
                             self.to_log[f"lr_spl_strat_2_{algo_idx}"] = algo_data['lr']
                             self.to_log[f"loss_spl_strat_2_{algo_idx}"] = spl_loss
-                        print("Train algo", algo_idx)
-
-                    self.strat_2_data[algo_idx]['algo'].train()
-
-                    self.strat_2_data[algo_idx]['algo'].update()
+                        logger.info(f"Train algo {algo_idx}")
 
                     # Update data in the data queue to compare the log likelihood
-                    if len(self.memory.states) - step_idx <= self.length_of_history:
+                    # if len(self.memory.states) - step_idx <= self.length_of_history:
+                    # print("len(self.memory.states) - self.strat_2_data[algo_idx]['steps_seen']",
+                    #       len(self.memory.states) - self.strat_2_data[algo_idx]['steps_seen'],
+                    #       len(self.memory.states), self.strat_2_data[algo_idx]['steps_seen'])
+                    if len(self.memory.states) - self.strat_2_data[algo_idx]['steps_seen'] < self.length_of_history:
+                        if ( len(algo_data['spl_losses']) > 0 and
+                             ( algo_data['spl_losses'][-1] > self.KILL_LOSS_THRESHOLD/100
+                               or np.isnan(algo_data['spl_losses'][-1]))):
+                            if (sum(algo_data['spl_losses']) > self.KILL_LOSS_THRESHOLD or
+                                    np.isnan(algo_data['spl_losses'][-1])):
+                                break
+
                         (log_likelihood_opponent_cooporating,
                          prob_distrib) = (self._compute_s_a_log_likelihood(s, a,
                                                                            algo=self.strat_2_data[algo_idx]['algo'],
                                                                            no_grad=True))
                         self.to_log[f'entropy_strat_2_{algo_idx}'] = prob_distrib.entropy()
                         self.strat_2_data[algo_idx]['log_likelihood'].append(log_likelihood_opponent_cooporating)
-                else:
-                    print("above loss KILL_LOSS_THRESHOLD during training")
+                # else:
+                #     print("above loss KILL_LOSS_THRESHOLD during training")
 
     def _worst_or_oldest_algo_to_kill(self, age, lrs, spl_losses):
 
@@ -708,13 +782,16 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         if change_best_algo:
             last_best_lr = self.strat_2_data[self.best_lr_idx]['lr']
             self.best_lr_idx = new_best_lr_idx
+            # self.best_lr_idx = 2
             self.best_lr = self.strat_2_data[self.best_lr_idx]['lr']
             print("New best LR", self.strat_2_data[self.best_lr_idx]['lr'], "last_best_lr", last_best_lr)
 
             # Update stored data
-            for data_idx, (data, log_lik) in enumerate(zip(self.data_queue[opp_idx],
-                                                           list(
-                                                               self.strat_2_data[self.best_lr_idx]["log_likelihood"]))):
+            assert len(self.data_queue[opp_idx]) == len(self.strat_2_data[self.best_lr_idx]["log_likelihood"])
+
+            for data_idx, (_, log_lik) in enumerate(zip(
+                    list(self.data_queue[opp_idx]),
+                    list(self.strat_2_data[self.best_lr_idx]["log_likelihood"]))):
                 stored_data = self.data_queue[opp_idx][data_idx]
                 self.data_queue[opp_idx][data_idx] = [log_lik] + stored_data[1:]
         else:
@@ -722,9 +799,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         self.algorithms[self.coop_net_simul_opponent_idx] = self.strat_2_data[self.best_lr_idx]['algo']
 
-    def _calc_supervised_learn_loss(self, batch, pdparams):
+    def _calc_supervised_learn_loss(self, batch, pdparams, algo):
         '''Calculate the actor's policy loss'''
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        # print(f"pdparams {pdparams[0,...]}")
+
+        action_pd = policy_util.init_action_pd(algo.ActionPD, pdparams)
         targets = batch['actions']
         # print("targets", targets)
         if self.body.env.is_venv:
@@ -742,6 +821,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             supervised_learning_loss = supervised_learning_loss.mean()
         else:
             supervised_learning_loss = self.spl_loss_fn(preds, targets).mean()
+
+        # print(f'self.algo_idx {self.algo_idx} supervised_learning_loss: {supervised_learning_loss:g} , '
+        #       f'preds {preds[0,...]}')
         return supervised_learning_loss
 
     def _one_hot_embedding(self, labels, num_classes):

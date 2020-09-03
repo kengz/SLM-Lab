@@ -8,7 +8,7 @@ import pydash as ps
 
 logger = logger.get_logger(__name__)
 
-
+#TODO mke training_frequency work the same for OnPolicyReplay (epi) and Replay (steps)
 class OnPolicyReplay(Memory):
     '''
     Stores agent experiences and returns them in a batch for agent training.

@@ -76,7 +76,8 @@ class SARSA(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock,
+                            name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_net")
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -102,7 +103,7 @@ class SARSA(Algorithm):
 
         net = self.net if net is None else net
         pdparam = net(x)
-        for i, q_action_i in enumerate(pdparam.squeeze(dim=0).tolist()):
+        for i, q_action_i in enumerate(pdparam.mean(dim=0).tolist()):
             self.to_log[f'q_act_{i}'] = q_action_i
 
         return pdparam
@@ -110,15 +111,18 @@ class SARSA(Algorithm):
     @lab_api
     def act(self, state):
         '''Note, SARSA is discrete-only'''
-        body = self.body
-        action, action_pd = self.action_policy(state, self, body)
+        self.net.eval()
+        with torch.no_grad():
+            body = self.body
+            action, action_pd = self.action_policy(state, self, body)
+        self.net.train()
         self.to_log["entropy_act"] = action_pd.entropy().mean().item()
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 
     @lab_api
-    def sample(self):
+    def sample(self, batch_idxs=None, reset=False):
         '''Samples a batch from memory'''
-        batch = self.memory.sample()
+        batch = self.memory.sample(batch_idxs, reset)
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
@@ -129,6 +133,22 @@ class SARSA(Algorithm):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         states = batch['states']
         next_states = batch['next_states']
+
+        if self.normalize_inputs:
+            # print("x", x.min(), x.max())
+            assert states.min() >= 0.0
+            assert states.max() <= 1.0
+            states = (states - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert states.min() >= -1.0
+            assert states.max() <= 1.0
+
+            assert next_states.min() >= 0.0
+            assert next_states.max() <= 1.0
+            next_states = (next_states - 0.5) / 0.5
+            assert next_states.min() >= -1.0
+            assert next_states.max() <= 1.0
+
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
             next_states = math_util.venv_unpack(next_states)
@@ -168,6 +188,7 @@ class SARSA(Algorithm):
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
             self.to_log["loss"] = loss.item()
+            self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
             return loss.item()
         else:
             return np.nan

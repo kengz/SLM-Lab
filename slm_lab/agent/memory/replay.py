@@ -116,6 +116,11 @@ class Replay(Memory):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
+
+        # Needed for the supervised learning algo which do not store next_state
+        if next_state is None:
+            next_state = np.zeros_like(state)
+
         # Move head pointer. Wrap around if necessary
         if self.max_size > 0:
             self.head = (self.head + 1) % self.max_size
@@ -145,12 +150,16 @@ class Replay(Memory):
             self.size += 1
         self.seen_size += 1
         # set to_train using memory counters head, seen_size instead of tick since clock will step by num_envs when on venv; to_train will be set to 0 after training step
+        # TODO remove this dependency, should be managed inside algo?
         self.algorithm.to_train = (self.algorithm.to_train or
                                    (self.seen_size > self.algorithm.training_start_step
                                                                and self.head % self.algorithm.training_frequency == 0))
-        # print("self.algorithm.to_train", self.algorithm.algo_idx, self.algorithm.to_train, self.seen_size, self.head, self.algorithm.training_frequency)
+        # print("self.seen_size > self.algorithm.training_start_step", self.seen_size >
+        #       self.algorithm.training_start_step, self.head % self.algorithm.training_frequency)
+        # print(" self.seen_size",  self.seen_size, self.algorithm.training_start_step)
+        # print("self.algorithm.to_train", self.algorithm.to_train)
     @lab_api
-    def sample(self, batch_idxs=None):
+    def sample(self, batch_idxs=None, reset=False):
         '''
         Returns a batch of batch_size samples. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
@@ -182,11 +191,14 @@ class Replay(Memory):
         return batch_idxs
 
 
-    def replay_all_history(self, from_idx=0):
+    def replay_all_history(self, from_idx=0, batch_size=None):
         """Drop the last non-complete batch"""
-        from_batch = int(from_idx/self.batch_size)
-        for batch_i in range(from_batch,int(self.size/self.batch_size),1):
+        if batch_size is None:
+            batch_size = self.batch_size
+
+        from_batch = int(from_idx/batch_size)
+        for batch_i in range(from_batch,int(self.size/batch_size),1):
             batch_idxs = np.arange(start=batch_i,
-                                    stop=batch_i+self.batch_size,
+                                    stop=batch_i+batch_size,
                                     step=1)
             yield self.sample(batch_idxs=batch_idxs)

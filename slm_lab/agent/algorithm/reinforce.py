@@ -94,7 +94,8 @@ class Reinforce(Algorithm):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock,
+                            name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_net")
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -123,7 +124,10 @@ class Reinforce(Algorithm):
     @lab_api
     def act(self, state):
         body = self.body
-        action, action_pd = self.action_policy(state, self, body)
+        self.net.eval()
+        with torch.no_grad():
+            action, action_pd = self.action_policy(state, self, body)
+        self.net.train()
         self.to_log["entropy_act"] = action_pd.entropy().mean().item()
         return action.cpu().squeeze().numpy(), action_pd  # squeeze to handle scalar
 

@@ -49,7 +49,7 @@ class RecurrentNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
         '''
         net_spec:
         cell_type: any of RNN, LSTM, GRU
@@ -71,7 +71,7 @@ class RecurrentNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         nn.Module.__init__(self)
-        super().__init__(net_spec, in_dim, out_dim, clock)
+        super().__init__(net_spec, in_dim, out_dim, clock, name)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,

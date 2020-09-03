@@ -85,10 +85,6 @@
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_clean_simple_exp_high.json ipd_ipm_le_vs_exploiter_no_strat_lr_008 train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_clean_simple_exp_high.json ipd_ipm_le_vs_exploiter_strat_2_lr_008 train
 
-xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_vs_exploiter_no_strat_lr_0008 train
-xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_vs_exploiter_strat_2_lr_0008 train
-
-
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_clean_simple_exp_high.json ipd_ipm_le_self_play_no_strat_lr_008  train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_clean_simple_exp_high.json ipd_ipm_le_self_play_no_strat_lr_002  train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/ipd_clean_simple_exp_high.json ipd_ipm_le_self_play_no_strat_lr_032  train
@@ -105,3 +101,7 @@ xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_ex
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_self_play_strat_5_lr_0032 train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_self_play_strat_5_lr_0002 train
 xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_self_play_strat_5_lr_0008 train
+
+
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_vs_exploiter_no_strat_lr_0008 train
+xvfb-run -a python3 run_lab.py slm_lab/spec/experimental/le/coin_clean_simple_exp_SGD.json coin_ppo_ipm_le_vs_exploiter_strat_2_lr_0008 train

@@ -83,7 +83,8 @@ class VanillaDQN(SARSA):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock,
+                            name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_net")
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -95,6 +96,26 @@ class VanillaDQN(SARSA):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         states = batch['states']
         next_states = batch['next_states']
+        rewards = batch['rewards']
+
+        if self.normalize_inputs:
+            # print("x", x.min(), x.max())
+            assert states.min() >= 0.0
+            assert states.max() <= 1.0
+            states = (states - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert states.min() >= -1.0
+            assert states.max() <= 1.0
+
+            assert next_states.min() >= 0.0
+            assert next_states.max() <= 1.0
+            next_states = (next_states - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert next_states.min() >= -1.0
+            assert next_states.max() <= 1.0
+
+        # states = states + torch.randn_like(states) / 5
+
         q_preds = self.net(states)
         with torch.no_grad():
             next_q_preds = self.net(next_states)
@@ -106,7 +127,7 @@ class VanillaDQN(SARSA):
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=False)
-        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        max_q_targets = rewards + self.gamma * (1 - batch['dones']) * max_next_q_preds
         logger.debug(f'act_q_preds: {act_q_preds}\nmax_q_targets: {max_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
@@ -122,9 +143,9 @@ class VanillaDQN(SARSA):
         return super().act(state)
 
     @lab_api
-    def sample(self):
+    def sample(self, batch_idxs=None, reset=False):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
-        batch = self.memory.sample()
+        batch = self.memory.sample(batch_idxs, reset)
         batch = util.to_torch_batch(batch, self.net.device, self.memory.is_episodic)
         return batch
 
@@ -142,18 +163,22 @@ class VanillaDQN(SARSA):
         clock = self.internal_clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
-            for _ in range(self.training_iter):
+            for i in range(self.training_iter):
                 batch = self.sample()
                 clock.set_batch_size(len(batch))
-                for _ in range(self.training_batch_iter):
+                for j in range(self.training_batch_iter):
                     loss = self.calc_q_loss(batch)
-                    self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler,
+                                        clock=clock, global_net=self.global_net,
+                                        display_gradflow=self.display_gradflow and i+j == 0)
+                    # print("loss",loss)
                     total_loss += loss
             loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
             self.to_log["loss"] = loss.item()
+            self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
             return loss.item()
         else:
             return np.nan
@@ -188,8 +213,10 @@ class DQNBase(VanillaDQN):
         in_dim = self.body.observation_dim
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
-        self.target_net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock,
+                            name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_net")
+        self.target_net = NetClass(self.net_spec, in_dim, out_dim, self.internal_clock,
+                                   name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_target_net")
         self.net_names = ['net', 'target_net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -203,6 +230,29 @@ class DQNBase(VanillaDQN):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         states = batch['states']
         next_states = batch['next_states']
+        rewards = batch['rewards']
+
+        if self.normalize_inputs:
+            # print("x", x.min(), x.max())
+            assert states.min() >= 0.0
+            assert states.max() <= 1.0
+            states = (states - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert states.min() >= -1.0
+            assert states.max() <= 1.0
+
+            # print("x", x.min(), x.max())
+            assert next_states.min() >= 0.0
+            assert next_states.max() <= 1.0
+            next_states = (next_states - 0.5) / 0.5
+            # print("x normalized", x.min(), x.max())
+            assert next_states.min() >= -1.0
+            assert next_states.max() <= 1.0
+
+
+        # states = states + torch.randn_like(states) / 5
+        # rewards = rewards + torch.randn_like(rewards) / 5
+
         q_preds = self.net(states)
         with torch.no_grad():
             # Use online_net to select actions in next state
@@ -218,7 +268,7 @@ class DQNBase(VanillaDQN):
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         online_actions = online_next_q_preds.argmax(dim=-1, keepdim=True)
         max_next_q_preds = next_q_preds.gather(-1, online_actions).squeeze(-1)
-        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        max_q_targets = rewards + self.gamma * (1 - batch['dones']) * max_next_q_preds
         logger.debug(f'act_q_preds: {act_q_preds}\nmax_q_targets: {max_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 

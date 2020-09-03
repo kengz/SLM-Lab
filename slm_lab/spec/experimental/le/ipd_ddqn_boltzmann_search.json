@@ -17,7 +17,7 @@
           "explore_var_spec": {
             "name": "linear_decay",
             "start_val": 1.0,
-            "end_val": 0.1,
+            "end_val": 0.000001,
             "start_step": 0,
             "end_step": 3000
           },
@@ -93,7 +93,7 @@
           "explore_var_spec": {
             "name": "linear_decay",
             "start_val": 1.0,
-            "end_val": 0.1,
+            "end_val": 0.000001,
             "start_step": 0,
             "end_step": 3000
           },
@@ -201,7 +201,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -318,7 +318,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -373,7 +373,7 @@
           "explore_var_spec": {
             "name": "linear_decay",
             "start_val": 1.0,
-            "end_val": 0.1,
+            "end_val": 0.000001,
             "start_step": 0,
             "end_step": 3000
           },
@@ -479,7 +479,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -638,7 +638,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -731,7 +731,7 @@
           "explore_var_spec": {
             "name": "linear_decay",
             "start_val": 1.0,
-            "end_val": 0.1,
+            "end_val": 0.000001,
             "start_step": 0,
             "end_step": 3000
           },
@@ -837,7 +837,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -965,7 +965,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -1116,7 +1116,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -1213,7 +1213,7 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.1,
+          "end_val": 0.000001,
           "start_step": 0,
           "end_step": 3000
         },
@@ -1316,7 +1316,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -1446,7 +1446,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -1599,7 +1599,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -1695,7 +1695,7 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.1,
+          "end_val": 0.000001,
           "start_step": 0,
           "end_step": 3000
         },
@@ -1799,7 +1799,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -1955,7 +1955,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -2085,7 +2085,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -2237,7 +2237,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -2367,7 +2367,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -2519,7 +2519,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -2615,7 +2615,7 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.1,
+          "end_val": 0.000001,
           "start_step": 0,
           "end_step": 3000
         },
@@ -2719,7 +2719,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -2814,7 +2814,7 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.1,
+          "end_val": 0.000001,
           "start_step": 0,
           "end_step": 3000
         },
@@ -2916,7 +2916,7 @@
               "explore_var_spec": {
                 "name": "linear_decay",
                 "start_val": 1.0,
-                "end_val": 0.1,
+                "end_val": 0.000001,
                 "start_step": 0,
                 "end_step": 3000
               },
@@ -3012,7 +3012,7 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.1,
+          "end_val": 0.000001,
           "start_step": 0,
           "end_step": 3000
         },
@@ -3120,7 +3120,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -3249,7 +3249,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -3406,7 +3406,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },
@@ -3535,7 +3535,7 @@
                 "explore_var_spec": {
                   "name": "linear_decay",
                   "start_val": 1.0,
-                  "end_val": 0.1,
+                  "end_val": 0.000001,
                   "start_step": 0,
                   "end_step": 3000
                 },

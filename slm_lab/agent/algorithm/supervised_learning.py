@@ -48,6 +48,9 @@ class SupervisedLAPolicy(Algorithm):
             targets='actions',
             inputs=['states'],
             normalize_inputs=False,
+            training_batch_iter=1,  # how many gradient updates per batch
+            training_iter=1,        # how many batch of data to sample
+            training_start_step=1,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -62,6 +65,9 @@ class SupervisedLAPolicy(Algorithm):
             'targets',
             'inputs',
             'normalize_inputs',
+            'training_batch_iter',  # how many gradient updates per batch
+            'training_iter',
+            'training_start_step',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -104,7 +110,8 @@ class SupervisedLAPolicy(Algorithm):
             raise NotImplementedError()
 
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock)
+        self.net = NetClass(self.net_spec, in_dim, out_dim, self.body.env.clock,
+                            name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_net")
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -134,7 +141,11 @@ class SupervisedLAPolicy(Algorithm):
     def act(self, state):
         # print("state act", state)
         body = self.body
-        action, action_pd = self.action_policy(state, self, body)
+        self.net.eval()
+        with torch.no_grad():
+            action, action_pd = self.action_policy(state, self, body)
+        self.net.train()
+
         self.to_log["entropy_act"] = action_pd.entropy().mean().item()
 
         # print("act", action)
@@ -176,7 +187,7 @@ class SupervisedLAPolicy(Algorithm):
 
     def supervised_learning_loss(self, batch, pdparams):
         '''Calculate the actor's policy loss'''
-        print(f"pdparams {pdparams[0,...]}")
+        # print(f"pdparams {pdparams[0,...]}")
         action_pd = policy_util.init_action_pd(self.ActionPD, pdparams)
         targets = batch[self.targets]
         if self.body.env.is_venv:
@@ -204,9 +215,9 @@ class SupervisedLAPolicy(Algorithm):
             self.to_log["entropy_over_loss"] = (entropy_loss / supervised_learning_loss + self.episilon).clamp(
                     min=-100, max=100)
             supervised_learning_loss += entropy_loss
-        logger.debug(f'supervised_learning_loss: {supervised_learning_loss:g}')
-        print(f'self.algo_idx {self.algo_idx} supervised_learning_loss: {supervised_learning_loss:g} , '
-              f'preds {preds[0,...]}')
+        # logger.debug(f'supervised_learning_loss: {supervised_learning_loss:g}')
+        # print(f'self.algo_idx {self.algo_idx} supervised_learning_loss: {supervised_learning_loss:g} , '
+        #       f'preds {preds[0,...]}')
         return supervised_learning_loss
 
     def one_hot_embedding(self, labels, num_classes):
@@ -227,42 +238,48 @@ class SupervisedLAPolicy(Algorithm):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock
+
         if self.to_train == 1:
-            batch = self.sample()
-            clock.set_batch_size(len(batch))
+            for i in range(self.training_iter):
 
-            # Compute predictions
-            pdparams = self.proba_distrib_param_batch(batch)
+                batch = self.sample()
+                clock.set_batch_size(len(batch))
 
-            loss = self.supervised_learning_loss(batch, pdparams)
+                # TODO do something about the fact that only the last loss(and other var) is logged and returned
+                for _ in range(self.training_batch_iter):
 
-            # TODO Clean this mess !!
-            if loss_penalty is not None:
-                loss += loss_penalty
-                self.to_log["loss_penalty"] = loss_penalty
-                print("loss_penalty", loss_penalty)
+                    # Compute predictions
+                    pdparams = self.proba_distrib_param_batch(batch)
 
-            if hasattr(self, "auxilary_loss"):
-                if not np.isnan(self.auxilary_loss):
-                    print("loss auxilary_loss", loss, self.auxilary_loss)
-                    loss += self.auxilary_loss
-                    del self.auxilary_loss
-            if hasattr(self, "lr_overwritter"):
-                lr_source = self.lr_overwritter
-                self.to_log['lr'] = self.lr_overwritter
-            else:
-                lr_source = self.lr_scheduler
+                    loss = self.supervised_learning_loss(batch, pdparams)
 
-            self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
+                    # TODO Clean this mess !!
+                    if loss_penalty is not None:
+                        loss += loss_penalty
+                        self.to_log["loss_penalty"] = loss_penalty
+                        print("loss_penalty", loss_penalty)
 
-            if hasattr(self, "lr_overwritter"):
-                del self.lr_overwritter
-            else:
-                self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
+                    if hasattr(self, "auxilary_loss"):
+                        if not np.isnan(self.auxilary_loss):
+                            print("loss auxilary_loss", loss, self.auxilary_loss)
+                            loss += self.auxilary_loss
+                            del self.auxilary_loss
+                    if hasattr(self, "lr_overwritter"):
+                        lr_source = self.lr_overwritter
+                        self.to_log['lr'] = self.lr_overwritter
+                    else:
+                        lr_source = self.lr_scheduler
 
-            self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
-            self.to_log["loss_tot"] = loss.item()
+                    self.net.train_step(loss, self.optim, lr_source, clock=self.internal_clock, global_net=self.global_net)
+
+                    if hasattr(self, "lr_overwritter"):
+                        del self.lr_overwritter
+                    else:
+                        self.to_log['lr'] = np.mean(self.lr_scheduler.get_lr())
+
+                    self.to_train = 0
+                    logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+                    self.to_log["loss_tot"] = loss.item()
             return loss.item()
         else:
             return np.nan

@@ -33,7 +33,6 @@ class Algorithm(ABC):
 
         # self.action_type = policy_util.get_space_type(self.agent.body.action_space)
         self.action_pdtype = ps.get(algorithm_spec, f'action_pdtype')
-        print("agent self.action_pdtype", self.action_pdtype, algorithm_spec)
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.agent.body.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.agent.body.action_type)
@@ -52,6 +51,12 @@ class Algorithm(ABC):
         if update_welfare_fn is not None:
             agent.welfare_function = getattr(agent_util, update_welfare_fn)
 
+        util.set_attr(self, dict(
+            display_gradflow=False,
+        ))
+        util.set_attr(self, self.algorithm_spec, [
+            'display_gradflow',
+        ])
         self.episilon = 1e-12
 
     def init_memory(self, add_to_self=True):

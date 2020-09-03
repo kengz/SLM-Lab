@@ -13,13 +13,13 @@ from slm_lab.lib import logger
 logger = logger.get_logger(__name__)
 
 class QMLPNet(MLPNet):
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
 
         in_dim = self._adapt_input_dims_to_net(in_dim)
 
         state_dim, action_dim = in_dim
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, in_dim, out_dim, clock)
+        Net.__init__(self, net_spec, in_dim, out_dim, clock, name)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -83,12 +83,12 @@ class QMLPNet(MLPNet):
 
 class QConvNet(ConvNet):
 
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
         state_dim, action_dim = in_dim
         assert len(state_dim) == 3  # image shape (c,w,h)
         # conv body
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, state_dim, out_dim, clock)
+        Net.__init__(self, net_spec, state_dim, out_dim, clock, name)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -149,12 +149,12 @@ class QConvNet(ConvNet):
 
 class FiLMQConvNet(ConvNet):
 
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
         state_dim, action_dim = in_dim
         assert len(state_dim) == 3  # image shape (c,w,h)
         # conv body
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, state_dim, out_dim, clock)
+        Net.__init__(self, net_spec, state_dim, out_dim, clock, name)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,

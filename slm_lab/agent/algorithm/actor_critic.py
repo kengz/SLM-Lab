@@ -151,12 +151,14 @@ class ActorCritic(Reinforce):
         out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
         # main actor network, may contain out_dim self.shared == True
         NetClass = getattr(net, actor_net_spec['type'])
-        self.net = NetClass(actor_net_spec, in_dim, out_dim, self.body.env.clock)
+        self.net = NetClass(actor_net_spec, in_dim, out_dim, self.body.env.clock,
+                            name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_net")
         self.net_names = ['net']
         if not self.shared:  # add separate network for critic
             critic_out_dim = 1
             CriticNetClass = getattr(net, critic_net_spec['type'])
-            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim, self.body.env.clock)
+            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim, self.body.env.clock,
+                                             name=f"agent_{self.agent.agent_idx}_algo_{self.algo_idx}_critic_net")
             self.net_names.append('critic_net')
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)

@@ -181,6 +181,7 @@ def boltzmann(state, algorithm, body):
     pdparam = calc_pdparam(state, algorithm, body)
     pdparam /= tau
     action, action_pd = sample_action(algorithm.ActionPD, pdparam)
+    # logger.info(f"pdparam {pdparam} tau {tau} action_pd {action_pd.probs}")
     return action, action_pd
 
 

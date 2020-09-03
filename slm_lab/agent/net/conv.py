@@ -52,7 +52,7 @@ class ConvNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
         '''
         net_spec:
         conv_hid_layers: list containing dimensions of the convolutional hidden layers, each is a list representing hid_layer = out_d, kernel, stride, padding, dilation.
@@ -76,7 +76,7 @@ class ConvNet(Net, nn.Module):
         '''
         assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
-        super().__init__(net_spec, in_dim, out_dim, clock)
+        super().__init__(net_spec, in_dim, out_dim, clock, name)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -142,10 +142,12 @@ class ConvNet(Net, nn.Module):
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
+        self.conv_model.eval()
         with torch.no_grad():
             x = torch.ones(1, *self.in_dim)
             x = self.conv_model(x)
-            return x.numel()
+        self.conv_model.train()
+        return x.numel()
 
     def build_conv_layers(self, conv_hid_layers):
         '''
@@ -233,10 +235,10 @@ class DuelingConvNet(ConvNet):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim, clock):
+    def __init__(self, net_spec, in_dim, out_dim, clock, name):
         assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, in_dim, out_dim, clock)
+        Net.__init__(self, net_spec, in_dim, out_dim, clock, name)
         # set default
         util.set_attr(self, dict(
             init_fn=None,
