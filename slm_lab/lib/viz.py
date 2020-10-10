@@ -15,7 +15,7 @@ logger = logger.get_logger(__name__)
 
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 10
-USE_Y_LOG_SCALE = ['lr']
+USE_Y_LOG_SCALE = ['lr', "param"]
 
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(

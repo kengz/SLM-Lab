@@ -181,9 +181,76 @@ def boltzmann(state, algorithm, body):
     pdparam = calc_pdparam(state, algorithm, body)
     pdparam /= tau
     action, action_pd = sample_action(algorithm.ActionPD, pdparam)
-    # logger.info(f"pdparam {pdparam} tau {tau} action_pd {action_pd.probs}")
+    # logger.info(f"algo {algorithm.algo_idx} initial_pdparam {pdparam*tau} pdparam {pdparam} tau {tau} action_pd {action_pd.probs}")
     return action, action_pd
 
+def group_cluster(key, clusters, group=None):
+    if group is None:
+        group = []
+    if key in clusters.keys() and key not in group:
+        # print("key", key)
+        group.append(key)
+        for key_added in clusters[key]:
+            group = group_cluster(key_added, clusters, group)
+            # print("key_added",key_added, "current group", group)
+    return group
+
+def clusterize_by_distance(pdparam, boltzmann_cluster_threshold):
+    """
+    >>> clusterize_by_distance(torch.tensor([0.0,0.4,1.0,1.4,1.8,3.0]),0.5)
+    tensor([0.2000, 0.2000, 1.4000, 1.4000, 1.4000, 3.0000])
+
+    >>> clusterize_by_distance(torch.tensor([0.0,0.5,1.0,1.4,1.8,3.0]),0.5)
+    tensor([0.0000, 0.5000, 1.4000, 1.4000, 1.4000, 3.0000])
+
+    >>> clusterize_by_distance(torch.tensor([-10.0,-9.8,1.0,1.4,1.8,3.0]),0.5)
+    tensor([-9.9000, -9.9000,  1.4000,  1.4000,  1.4000,  3.0000])
+
+    >>> clusterize_by_distance(torch.tensor([-1.0,-0.51,-0.1,0.0,0.1,0.51,1.0]),0.5)
+    tensor([0., 0., 0., 0., 0., 0., 0.])
+
+    :param pdparam:
+    :param boltzmann_cluster_threshold
+    :return: pytorch.Tensor clusterized pd param
+    """
+    assert pdparam.dim() == 1, f"need pdparam.dim() == 1: pdparam.shape {pdparam.shape}"
+
+    clusters = {}
+    for i, p_1 in enumerate(pdparam.tolist()):
+        for j, p_2 in enumerate(pdparam.tolist()):
+            if i != j and abs(p_1 - p_2) < boltzmann_cluster_threshold:
+                if i in clusters.keys():
+                    clusters[i].append(j)
+                else:
+                    clusters[i] = [j]
+    clustered_pdparam = pdparam.clone()
+    for i, p_1 in enumerate(clustered_pdparam.tolist()):
+        if i in clusters.keys():
+            # print("clusters", clusters)
+            cluster_i = list(set(group_cluster(i, clusters)))
+            # print("cluster_i", cluster_i)
+            # print("pdparam",pdparam)
+            clustered_pdparam[i] = pdparam[cluster_i].clone().mean()
+
+    return clustered_pdparam
+
+def boltzmann_on_cluster(state, algorithm, body):
+    '''
+    Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
+    '''
+    # tau = body.explore_var
+    tau = algorithm.explore_var_scheduler.val
+    pdparam = calc_pdparam(state, algorithm, body)
+
+    clustered = []
+    for pdparam_chunk in pdparam.split(1, dim=0):
+        clustered.append(clusterize_by_distance(pdparam_chunk.squeeze(dim=0), algorithm.boltzmann_cluster_threshold))
+    pdparam = torch.stack(clustered, dim=0)
+
+    pdparam /= tau
+    action, action_pd = sample_action(algorithm.ActionPD, pdparam)
+    # logger.info(f"algo {algorithm.algo_idx} initial_pdparam {pdparam*tau} pdparam {pdparam} tau {tau} action_pd {action_pd.probs}")
+    return action, action_pd
 
 # multi-body/multi-env action_policy used by agent
 # TODO rework

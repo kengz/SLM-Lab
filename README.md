@@ -13,6 +13,8 @@
 # (optionnal) mkdir dev-slm-lab 
 # (optionnal) cd dev-slm-lab 
 
+sudo apt-get install build-essential
+
 # Install SLM-Lab (the multi-agent fork)
 git clone https://github.com/Manuscrit/SLM-Lab.git 
 cd SLM-Lab 
@@ -34,7 +36,7 @@ conda activate lab
 
 # Install Gym (the fork with the new multi-agent environments)
 git clone https://github.com/Manuscrit/gym.git
-cd gym
+cd ~/gym
 pip install -e .
 cd ..
 
@@ -42,8 +44,11 @@ cd ..
 conda install -c plotly plotly-orca
 # If you are working on a Virtual Machine (without X11) then:
 sudo apt-get update 
-sudo apt-get install xorg
-# Maybe also: sudo apt-get install openbox
+sudo apt-get install xorg xvfb openbox git
+pip install matplotlib tqdm
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git init && git add -A && git commit -m "fake init"
 ```
 
 

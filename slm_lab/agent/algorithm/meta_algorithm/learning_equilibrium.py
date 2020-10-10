@@ -38,6 +38,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
     # TODO add docs
     # TODO create a grid search class (for modularity)
     # TODO make it work for epi (how to divide epi when defection in during an epi ? (=> wait for end ?)
+    # TODO (above) solved by using off-policy learning
 
     def __init__(self, agent, global_nets, algorithm_spec,
                  memory_spec, net_spec, algo_idx=0):
@@ -45,9 +46,10 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         self.algorithms = []
         super().__init__(agent, global_nets, algorithm_spec, memory_spec, net_spec, algo_idx)
 
+        # TODO change all constants to MAJ
         util.set_attr(self, dict(
             defection_detection_mode="action_pd_kullback_leibler_div",
-            punishement_time=10,
+            punishement_time=1,
             min_cooperative_epi_after_punishement=0,
             defection_carac_threshold=1.0,
             average_d_carac=True,
@@ -69,7 +71,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             block_len=None,
             length_of_history=200,
             n_steps_in_bstrap_replts=20,
-            n_bootstrapped_replications=50
+            n_bootstrapped_replications=50,
+            PERCENTILE_FOR_LIKELIHOOD_TEST=95
             # stop_while_punishing=False
         ))
         util.set_attr(self, self.meta_algorithm_spec, [
@@ -99,12 +102,12 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             "block_len",
             "length_of_history",
             "n_steps_in_bstrap_replts",
-            "n_bootstrapped_replications"
+            "n_bootstrapped_replications",
+            "PERCENTILE_FOR_LIKELIHOOD_TEST"
             # "stop_while_punishing"
         ])
 
         if self.use_bolzmann_search:
-            assert self.use_strat_2
             assert not self.use_gene_algo
             assert not self.use_strat_5
 
@@ -141,7 +144,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self.action_pd_opp_approx = deque(maxlen=log_len_in_steps)
 
             self.n_steps_since_start = 0
-            self.PERCENTILE_FOR_LIKELIHOOD_TEST = 95
+            # self.PERCENTILE_FOR_LIKELIHOOD_TEST = 95
             self.data_queue = []
             self.WARMUP_LENGTH = 0  # 200
             self.last_computed_w = None
@@ -217,8 +220,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             self.last_change_best_algo = False
             self.KILL_LOSS_THRESHOLD = 1e6
 
-            # if self.use_bolzmann_search:
-                # self.lr_grid_search_array = [1/10, 1 / 3, 1, 1 * 3, 1 * 10, 1 * 30, 1*100],
+            if self.use_bolzmann_search:
+                self.lr_grid_search_array = [1/16, 1/8, 1/4, 1 / 2, 1, 1 * 2, 1 * 4]
 
 
         # Logging
@@ -266,8 +269,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         self.last_used_algo = self.active_algo_idx
 
         # if self.DEBUG:
-        # logger.info(f"agent {self.agent.agent_idx} active_algo {self.active_algo_idx} proba {action_pd.probs} "
-        #             f"tau {self.algorithms[self.active_algo_idx].explore_var_scheduler.val}")
+        logger.info(f"agent {self.agent.agent_idx} active_algo {self.active_algo_idx} proba {action_pd.probs} "
+                    f"tau {self.algorithms[self.active_algo_idx].explore_var_scheduler.val}")
 
         return action, action_pd
 
@@ -375,15 +378,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                 self._put_log_likelihood_in_data_buffer(algo, s, a, opp_idx, self.data_queue)
 
                 # if not self.always_train_puni_and_coop:
-                # if self.remeaning_punishing_time <= 0 or not self.stop_while_punishing:
                 self._ipm_memory_update(opp_idx, algo, s, a, r, n_s, done)
                 self._apply_ipm_options_every_steps()
-            # if self.always_train_puni_and_coop:
-            #     self.ipm_memory_update(opp_idx, algo, s, a, r, n_s, done, being_punished=being_punished)
-            #     self.apply_ipm_options_every_steps()
-
-            # if self.use_strat_2:
-            #     self.memory.update(s, a, self.last_computed_w, n_s, done)
 
             if done and self.use_strat_2:
                 self.block_pos += 1
@@ -391,7 +387,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     self._train_simu_coop_from_scratch(opp_idx)
 
             if done and self.n_steps_since_start >= self.length_of_history + self.WARMUP_LENGTH:
-                percentile_value = self._compare_log_likelihood_on_sequence(opp_idx, self.data_queue)
+                percentile_value = self._compare_log_likelihood_on_boostrapped_sequences(opp_idx, self.data_queue)
                 self._update_defection_metric(epi_defection_metric=-percentile_value)
 
         if not self.is_fully_init:
@@ -405,6 +401,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                                                                            algo=self.algorithms[
                                                                               self.coop_net_simul_opponent_idx],
                                                                            no_grad=self.use_strat_5))
+        # logger.info(f"algo {algo.algo_idx} log_likelihood_opponent_cooporating {log_likelihood_opponent_cooporating}")
         if log:
             # opp_coop_simu_probs_distrib = algo.agent.action_pd.probs[0, ...].detach()
             opp_coop_simu_probs_distrib = self.algorithms[self.coop_net_simul_opponent_idx].agent.action_pd.probs[0, ...].detach()
@@ -416,6 +413,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
              self.opp_spl_a_prob_distrib) = self._compute_s_a_log_likelihood(s, a,
                                                                              algo=self.algorithms[
                                                                                 self.approx_net_opponent_policy_idx])
+            # logger.info(f"algo {algo.algo_idx} log_likelihood_approximated_opponent {log_likelihood_approximated_opponent}")
             if log:
                 # opp_approx_probs_distrib = algo.agent.action_pd.probs[0, ...].detach()
                 opp_approx_probs_distrib = self.algorithms[self.approx_net_opponent_policy_idx].agent.action_pd.probs[0, ...].detach()
@@ -435,8 +433,9 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             _, a_prob_distrib = algo.act(s)
         action_probs = a_prob_distrib.probs.detach().squeeze(dim=0)
 
-        if self.DEBUG:
-            logger.info(f"coop_opp_action_pc {self.agent.agent_idx} {action_probs}")
+        # if self.DEBUG:
+        # logger.info(f"coop_opp_action_pc {self.agent.agent_idx} algo {algo.algo_idx} opt_step {algo.net.opt_step} "
+        #             f"action_probs {action_probs}")
         opponent_observed_action_index = a
         s_a_log_likelihood_under_algo_policy = np.log(np.array(action_probs[
                                                                    opponent_observed_action_index] + self.EPSILON
@@ -567,8 +566,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         # Log
         if self.strat_2_is_init:
             self.to_log['strat2_best_spl_loss'] = spl_losses[new_best_lr_idx]
-            self.to_log['found_better_lr'] = change_best_algo
-            self.to_log['best_lr'] = new_best_lr
+            self.to_log['found_better_param'] = change_best_algo
+            self.to_log['best_param'] = new_best_lr
         if self.use_gene_algo:
             print("new", new_best_lr_idx, "best", self.best_lr_idx, "kill", self.algo_to_kill_idx)
         print("lrs", lrs)
@@ -604,8 +603,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         spl_losses = torch.tensor([torch.tensor(data['spl_losses']).mean()
                                    if data['algo'] is not None and not np.isnan(torch.tensor(data['spl_losses']).mean())
                                    else self.KILL_LOSS_THRESHOLD for data in self.strat_2_data])
-        print("spl_losses", spl_losses)
-        _, new_best_lr_idx = torch.min(spl_losses, dim=0)
+        # print("spl_losses", spl_losses)
+        for i, value in enumerate(spl_losses):
+            self.to_log[f"strat_2_mean_loss_{i}th"] = value
+        min_mean_loss, new_best_lr_idx = torch.min(spl_losses, dim=0)
+        self.to_log[f"strat_2_min_mean_loss"] = min_mean_loss
         return new_best_lr_idx, lrs, steps_seen, log_likelihoods, spl_losses
 
     def _update_moving_points_in_grid_search(self, lrs, new_best_lr, change_best_algo):
@@ -678,7 +680,8 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         self.strat_2_data[algo_idx_to_replace]['steps_seen'] = 0
         self.strat_2_data[algo_idx_to_replace]['algo'] = algo
         self.strat_2_data[algo_idx_to_replace]['lr'] = new_value
-        self.strat_2_data[algo_idx_to_replace]['spl_losses'] = []
+        # self.strat_2_data[algo_idx_to_replace]['spl_losses'] = []
+        self.strat_2_data[algo_idx_to_replace]['spl_losses'].clear()
         self.strat_2_data[algo_idx_to_replace]['log_likelihood'].clear()
         self.strat_2_data[algo_idx_to_replace]['age'] = 0
 
@@ -708,34 +711,50 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     self.strat_2_data[algo_idx]['algo'].memory_update(s, a, float(w), n_s, bool(done))
                     # print("self.strat_2_data[algo_idx]['algo'].to_train", self.strat_2_data[algo_idx]['algo'].to_train)
 
-                    train = False
+                    # train = False
                     if self.strat_2_data[algo_idx]['algo'].to_train == 1:
-                        train = True
+                        # train = True
+                    # if train:
+                        # TODO adapt this to Replay
+                        with torch.no_grad():
+                            # TODO make methods of both algo below the same
+                            # Policy learning
+                            if hasattr(algo_data['algo'], "calc_pdparam_batch"):
+                                batch = algo_data['algo'].sample(reset=False)
+                                # pdparams = algo_data['algo'].calc_pdparam_batch(batch)
+                            # Q-value learning
+                            elif hasattr(algo_data['algo'], "proba_distrib_params"):
+                                # Use the last batch
+                                batch_idxs = np.arange(
+                                    # algo_data['algo'].memory.size - algo_data['algo'].memory.batch_size,
+                                    algo_data['algo'].memory.size - algo_data['algo'].training_frequency,
+                                    algo_data['algo'].memory.size)
+                                batch = algo_data['algo'].sample(batch_idxs=batch_idxs, reset=False)
+                                # pdparams = algo_data['algo'].proba_distrib_params(batch['states'])
+                            else:
+                                raise NotImplementedError()
+                            # spl_loss = self._calc_supervised_learn_loss(batch, pdparams, algo_data['algo'])
+                            spl_loss = self._calc_supervised_learn_loss(batch, algo_data['algo'])
+                            print("spl_loss.mean()", spl_loss.mean())
+                            # self.strat_2_data[algo_idx]['spl_losses'].append(spl_loss.mean()
+                            if isinstance(spl_loss.tolist(), float):
+                                self.strat_2_data[algo_idx]['spl_losses'].append(spl_loss)
+                            else:
+                                assert len(spl_loss) == algo_data['algo'].training_frequency
+                                # print("use last steps", len(spl_loss.tolist()), len(self.strat_2_data[algo_idx]['spl_losses']))
+                                for spl_loss_per_step in spl_loss.tolist():
+                                    self.strat_2_data[algo_idx]['spl_losses'].append(spl_loss_per_step)
+                                if self.use_last_steps_for_search:
+                                    assert len(self.strat_2_data[algo_idx]['spl_losses']) <= self.length_of_history
+                            self.to_log[f"strat_2_param_{algo_idx}"] = algo_data['lr']
+                            self.to_log[f"strat_2_loss_spl_{algo_idx}"] = spl_loss.mean()
+                        logger.info(f"Train algo {algo_idx}")
+
 
                     self.strat_2_data[algo_idx]['algo'].train()
                     self.strat_2_data[algo_idx]['algo'].update()
 
-                    if train:
-                        # TODO adapt this to Replay
-                        with torch.no_grad():
-                            # TODO make methods of both algo below the same
-                            if hasattr(algo_data['algo'], "calc_pdparam_batch"):
-                                batch = algo_data['algo'].sample(reset=False)
-                                pdparams = algo_data['algo'].calc_pdparam_batch(batch)
-                            elif hasattr(algo_data['algo'], "proba_distrib_params"):
-                                batch_idxs = np.arange(
-                                    algo_data['algo'].memory.size - algo_data['algo'].memory.batch_size,
-                                    algo_data['algo'].memory.size)
-                                batch = algo_data['algo'].sample(batch_idxs=batch_idxs, reset=False)
-                                pdparams = algo_data['algo'].proba_distrib_params(batch['states'])
-                            else:
-                                raise NotImplementedError()
-                            spl_loss = self._calc_supervised_learn_loss(batch, pdparams, algo_data['algo'])
-                            print("spl_loss", spl_loss)
-                            self.strat_2_data[algo_idx]['spl_losses'].append(spl_loss)
-                            self.to_log[f"lr_spl_strat_2_{algo_idx}"] = algo_data['lr']
-                            self.to_log[f"loss_spl_strat_2_{algo_idx}"] = spl_loss
-                        logger.info(f"Train algo {algo_idx}")
+
 
                     # Update data in the data queue to compare the log likelihood
                     # if len(self.memory.states) - step_idx <= self.length_of_history:
@@ -754,7 +773,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                          prob_distrib) = (self._compute_s_a_log_likelihood(s, a,
                                                                            algo=self.strat_2_data[algo_idx]['algo'],
                                                                            no_grad=True))
-                        self.to_log[f'entropy_strat_2_{algo_idx}'] = prob_distrib.entropy()
+                        self.to_log[f'strat_2_entropy_{algo_idx}'] = prob_distrib.entropy()
                         self.strat_2_data[algo_idx]['log_likelihood'].append(log_likelihood_opponent_cooporating)
                 # else:
                 #     print("above loss KILL_LOSS_THRESHOLD during training")
@@ -799,16 +818,18 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         self.algorithms[self.coop_net_simul_opponent_idx] = self.strat_2_data[self.best_lr_idx]['algo']
 
-    def _calc_supervised_learn_loss(self, batch, pdparams, algo):
+    # def _calc_supervised_learn_loss(self, batch, pdparams, algo):
+    def _calc_supervised_learn_loss(self, batch, algo):
+
         '''Calculate the actor's policy loss'''
         # print(f"pdparams {pdparams[0,...]}")
-
-        action_pd = policy_util.init_action_pd(algo.ActionPD, pdparams)
+        # action_pd = policy_util.init_action_pd(algo.ActionPD, pdparams)
+        _, action_pd = algo.act(batch['states'])
         targets = batch['actions']
-        # print("targets", targets)
         if self.body.env.is_venv:
             targets = math_util.venv_unpack(targets)
         preds = action_pd.probs
+        logger.info(f"algo {algo.algo_idx} preds {preds.mean(dim=0)}")
         if targets.dim() == 1:
             # targets = self._one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
             targets = self._one_hot_embedding(targets.long(), self.agent.body.action_space.n)
@@ -818,11 +839,11 @@ class LE(meta_algorithm.OneOfNAlgoActived):
             # Used with the SmoothL1Loss loss (Huber loss)  where err < 1 => MSE and err > 1 => MAE
             scaling = 2
             supervised_learning_loss = self.spl_loss_fn(preds * scaling, targets * scaling) / scaling
-            supervised_learning_loss = supervised_learning_loss.mean()
+            supervised_learning_loss = supervised_learning_loss
         else:
-            supervised_learning_loss = self.spl_loss_fn(preds, targets).mean()
+            supervised_learning_loss = self.spl_loss_fn(preds, targets)
 
-        # print(f'self.algo_idx {self.algo_idx} supervised_learning_loss: {supervised_learning_loss:g} , '
+        # print(f'self.algo_idx {self.algo_idx} supervised_learning_loss: {supervised_learning_loss} , '
         #       f'preds {preds[0,...]}')
         return supervised_learning_loss
 
@@ -839,18 +860,35 @@ class LE(meta_algorithm.OneOfNAlgoActived):
         y = torch.eye(num_classes)
         return y[labels]
 
-    def _compare_log_likelihood_on_sequence(self, opp_idx, data_queue, log=True):
-
+    def _bootstrap_replicats(self, opp_idx, data_queue, last_step_is_mandatory):
         data_array = np.array(list(data_queue[opp_idx]), dtype=np.object)
-        bstrap_idx = np.random.random_integers(0, high=data_array.shape[0] - 1,
+        maximum_idx = data_array.shape[0] - 1
+        bstrap_idx = np.random.random_integers(0, high=maximum_idx,
                                                size=(self.n_bootstrapped_replications,
                                                      self.n_steps_in_bstrap_replts))
+        if last_step_is_mandatory:
+            bstrap_idx[:,-1] = [maximum_idx for _ in range(self.n_bootstrapped_replications)]
         bstrap_replts_data = data_array[bstrap_idx]
+        return bstrap_replts_data
+
+    def _compare_log_likelihood_on_boostrapped_sequences(self, opp_idx, data_queue, log=True,
+                                                         last_step_is_mandatory=False): #, use_worst_values=False):
+
+        # data_array = np.array(list(data_queue[opp_idx]), dtype=np.object)
+        # maximum_idx = data_array.shape[0] - 1
+        # bstrap_idx = np.random.random_integers(0, high=maximum_idx,
+        #                                        size=(self.n_bootstrapped_replications,
+        #                                              self.n_steps_in_bstrap_replts))
+        # if last_step_is_mandatory:
+        #     bstrap_idx[:,-1] = [maximum_idx for _ in range(self.n_bootstrapped_replications)]
+        # bstrap_replts_data = data_array[bstrap_idx]
+        bstrap_replts_data = self._bootstrap_replicats(opp_idx, data_queue, last_step_is_mandatory)
 
         # Sum log_likelihood over u steps
         log_lik_cooperate = bstrap_replts_data[:, :, 0].sum(axis=1)
 
         # Get the log_likelihood of the observed actions under the computed opponent policy
+        # TODO remove the option for opp_policy_from_history
         if self.opp_policy_from_history:
             opp_historical_policy = self._approximate_policy_from_history(opp_idx)
             bstrap_replts_log_lik_defect = np.log(np.array([[opp_historical_policy[data[3]]
@@ -864,6 +902,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
 
         else:
             raise NotImplementedError()
+
         # Defect if in more than 0.95 of the replicates, the actual policy is more likely than the simulated coop policy
         log_lik_check_coop = log_lik_cooperate - log_lik_defect
         assert len(log_lik_check_coop) == self.n_bootstrapped_replications
@@ -964,6 +1003,7 @@ class LE(meta_algorithm.OneOfNAlgoActived):
                     # else:
                     #     outputs = outputs_punish
 
+        # TODO remove this unused part
         else:
             # Reset after a log
             if self.remeaning_punishing_time > 0:

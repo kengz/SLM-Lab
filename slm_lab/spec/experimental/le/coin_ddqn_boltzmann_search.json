@@ -7,31 +7,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
           "start_val":1.0,
-          "end_val":0.000001,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -44,8 +44,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -54,7 +54,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -65,7 +65,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -88,31 +88,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
           "start_val":1.0,
-          "end_val":0.000001,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -125,8 +125,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -135,7 +135,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -146,7 +146,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -190,13 +190,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -205,31 +206,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -242,8 +243,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -252,7 +253,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -272,7 +273,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -315,13 +316,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -330,31 +332,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -367,8 +369,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -377,7 +379,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -396,31 +398,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
           "start_val":1.0,
-          "end_val":0.000001,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -433,8 +435,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -443,7 +445,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -452,7 +454,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -470,7 +472,7 @@
   },
 
 
-  "coin_ppo_ipm_le_self_play_strat_2_lr_0008":{
+  "coin_ppo_ipm_le_self_play_strat_2_temp_1":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -496,13 +498,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -511,31 +514,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -548,8 +551,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -558,7 +561,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -584,13 +587,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_frequency":20
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -613,7 +619,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -627,7 +633,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -643,7 +649,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_self_play_strat_2_lr_0002":{
+  "coin_ppo_ipm_le_self_play_strat_2_temp_033":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -669,13 +675,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -684,31 +691,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -721,8 +728,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -731,7 +738,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -757,16 +764,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -789,7 +796,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -821,13 +828,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -836,31 +844,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
-                "start_val":1.0,
-                "end_val":0.000001,
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":0.33,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -873,8 +881,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -883,7 +891,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -909,16 +917,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -936,12 +944,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.008,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -953,7 +961,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -969,7 +977,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_self_play_strat_2_lr_0032":{
+  "coin_ppo_ipm_le_self_play_strat_2_temp_3":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -995,13 +1003,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -1010,31 +1019,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1047,8 +1056,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -1057,7 +1066,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1083,16 +1092,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1115,7 +1124,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1147,13 +1156,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -1162,31 +1172,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
-                "start_val":1.0,
-                "end_val":0.000001,
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":3.0,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1199,8 +1209,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -1209,7 +1219,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1235,16 +1245,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1262,12 +1272,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.008,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1279,7 +1289,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -1295,7 +1305,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_vs_naive_opp_strat_2_lr_0008":{
+  "coin_ppo_ipm_le_vs_naive_opp_strat_2_temp_1":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -1321,13 +1331,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -1336,31 +1347,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1373,8 +1384,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -1383,7 +1394,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1409,13 +1420,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_frequency":20
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1433,12 +1447,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.4,
+                "lr":0.008,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1451,31 +1465,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
           "start_val":1.0,
-          "end_val":0.000001,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -1488,8 +1502,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -1498,7 +1512,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -1507,7 +1521,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -1523,7 +1537,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_vs_naive_opp_strat_2_lr_0002":{
+  "coin_ppo_ipm_le_vs_naive_opp_strat_2_temp_033":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[
     {
@@ -1550,13 +1564,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -1565,31 +1580,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1602,8 +1617,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -1612,7 +1627,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1638,16 +1653,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1670,7 +1685,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1683,31 +1698,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val":1.0,
-          "end_val":0.000001,
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
+          "start_val":0.33,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -1720,8 +1735,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -1730,7 +1745,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -1739,7 +1754,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -1755,7 +1770,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_vs_naive_opp_strat_2_lr_0032":{
+  "coin_ppo_ipm_le_vs_naive_opp_strat_2_temp_3":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[
     {
@@ -1782,13 +1797,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -1797,31 +1813,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1834,8 +1850,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -1844,7 +1860,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1870,16 +1886,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -1902,7 +1918,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -1915,31 +1931,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val":1.0,
-          "end_val":0.000001,
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
+          "start_val":3.0,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -1952,8 +1968,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -1962,7 +1978,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -1970,7 +1986,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -1988,7 +2004,7 @@
   },
 
 
-  "coin_ppo_ipm_le_self_play_no_strat_lr_0008":{
+  "coin_ppo_ipm_le_self_play_no_strat_temp_1":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -2014,13 +2030,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -2029,31 +2046,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2066,8 +2083,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -2076,7 +2093,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2102,16 +2119,16 @@
                 "start_step":0,
                 "end_step":35000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2134,7 +2151,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2148,7 +2165,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -2164,7 +2181,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_self_play_no_strat_lr_0002":{
+  "coin_ppo_ipm_le_self_play_no_strat_temp_033":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -2190,13 +2207,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -2205,31 +2223,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2242,8 +2260,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -2252,7 +2270,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2278,16 +2296,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2310,7 +2328,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2342,13 +2360,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -2357,31 +2376,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
-                "start_val":1.0,
-                "end_val":0.000001,
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":0.33,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2394,8 +2413,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -2404,7 +2423,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2430,16 +2449,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2457,12 +2476,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.002,
+                "lr":0.008,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2473,7 +2492,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -2489,7 +2508,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_self_play_no_strat_lr_0032":{
+  "coin_ppo_ipm_le_self_play_no_strat_temp_3":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -2515,13 +2534,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -2530,31 +2550,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2567,8 +2587,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -2577,7 +2597,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2603,16 +2623,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2635,7 +2655,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2667,13 +2687,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -2682,31 +2703,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
-                "start_val":1.0,
-                "end_val":0.000001,
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":3.0,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2719,8 +2740,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -2729,7 +2750,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2755,16 +2776,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2782,12 +2803,12 @@
               },
               "optim_spec":{
                 "name":"SGD",
-                "lr":0.032,
+                "lr":0.008,
                 "momentum":0.9
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2798,7 +2819,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -2814,7 +2835,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_vs_naive_opp_no_strat_lr_0008":{
+  "coin_ppo_ipm_le_vs_naive_opp_no_strat_temp_1":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -2840,13 +2861,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -2855,31 +2877,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2892,8 +2914,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -2902,7 +2924,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -2928,16 +2950,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -2960,238 +2982,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
-              },
-              "gpu":false
-            }
-          }
-        ]
-      }
-    },
-    {
-      "welfare_function":"default_welfare",
-      "observing_other_agents":{
-        "name":"FullyObservable"
-      },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val":1.0,
-          "end_val":0.000001,
-          "start_step":512,
-          "end_step": 30000
-        },
-        "display_gradflow":false,
-        "gamma": 0.50,
-        "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
-      },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
-      },
-      "net":{
-        "type":"ConvNet",
-        "conv_hid_layers":[
-          [16, 3, 1, 1, 1],
-          [32, 3, 1, 0, 1]
-        ],
-        "fc_hid_layers":[],
-        "hid_layers_activation":"LeakyReLU",
-        "init_fn":"kaiming_uniform_",
-        "normalize":false,
-        "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec":{
-          "name":"SGD",
-          "lr":0.008,
-          "momentum":0.9
-        },
-        "lr_scheduler_spec":{
-          "name":"LinearToZero",
-          "frame":40000
-        },
-        "gpu":false
-      }
-    }
-    ],
-    "env":[{
-      "name":"CoinGame-v0",
-      "max_t":null,
-      "max_frame":40000,
-      "num_envs":1
-    }],
-    "body":{
-      "product":"outer",
-      "num":1
-    },
-    "meta":{
-      "distributed":false,
-      "eval_frequency":100,
-      "log_frequency":100,
-      "max_session":10,
-      "max_concurrent_session":10,
-      "max_trial":1
-    }
-  },
-  "coin_ppo_ipm_le_vs_naive_opp_no_strat_lr_0002":{
-    "world":{"name":"DefaultMultiAgentWorld"},
-    "agent":[{
-      "name":"LE",
-      "memory":null,
-      "net":null,
-      "welfare_function":"utilitarian_welfare",
-      "observing_other_agents":{
-        "name":"FullyObservable"
-      },
-      "algorithm":{
-        "name":"LE",
-        "punishement_time":1,
-        "min_coop_time":0,
-        "defection_detection_mode":"spl_observed_actions",
-        "defection_carac_threshold":0.0,
-        "average_d_carac":true,
-        "average_d_carac_len":20,
-        "coop_net_ent_diff_as_lr":false,
-        "use_sl_for_simu_coop":false,
-        "use_strat_4":false,
-        "use_strat_5":false,
-        "strat_5_coeff":10.0,
-        "use_strat_2":false,
-        "block_len":7,
-        "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
-        "meta_algo_memory":{
-          "name":"Replay",
-          "batch_size":1,
-          "max_size":-1
-        },
-        "meta_algo_loss":{
-          "name":"CrossEntropyLoss"
-        },
-        "contained_algorithms":[
-          {
-            "welfare_function":"utilitarian_welfare",
-            "observing_other_agents":{
-              "name":"FullyObservable"
-            },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
-                "start_val":1.0,
-                "end_val":0.000001,
-                "start_step":512,
-                "end_step": 30000
-              },
-              "display_gradflow":false,
-              "gamma": 0.50,
-              "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
-            },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
-            },
-            "net":{
-              "type":"ConvNet",
-              "conv_hid_layers":[
-                [16, 3, 1, 1, 1],
-                [32, 3, 1, 0, 1]
-              ],
-              "fc_hid_layers":[],
-              "hid_layers_activation":"LeakyReLU",
-              "init_fn":"kaiming_uniform_",
-              "normalize":false,
-              "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
-              },
-              "optim_spec":{
-                "name":"SGD",
-                "lr":0.008,
-                "momentum":0.9
-              },
-              "lr_scheduler_spec":{
-                "name":"LinearToZero",
-                "frame":40000
-              },
-              "gpu":false
-            }
-          },
-          {
-            "copy_n":0
-          },
-          {
-            "copy_n":0
-          },
-          {
-            "name":"SupervisedLAPolicy",
-            "algorithm":{
-              "name":"SupervisedLAPolicy",
-              "normalize_inputs":true,
-              "action_pdtype":"default",
-              "action_policy":"default",
-              "explore_var_spec":null,
-              "entropy_coef_spec":{
-                "name":"linear_decay",
-                "start_val":0.0,
-                "end_val":0.0,
-                "start_step":0,
-                "end_step":30000
-              },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
-            },
-            "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
-            },
-            "net":{
-              "type":"ConvNet",
-              "conv_hid_layers":[
-                [16, 3, 1, 1, 1],
-                [32, 3, 1, 0, 1]
-              ],
-              "fc_hid_layers":[],
-              "hid_layers_activation":"LeakyReLU",
-              "init_fn":"kaiming_uniform_",
-              "normalize":false,
-              "batch_norm":false,
-              "loss_spec":{
-                "name":"CrossEntropyLoss"
-              },
-              "optim_spec":{
-                "name":"SGD",
-                "lr":0.008,
-                "momentum":0.9
-              },
-              "lr_scheduler_spec":{
-                "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3204,31 +2995,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
           "start_val":1.0,
-          "end_val":0.000001,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -3241,8 +3032,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -3251,7 +3042,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -3260,7 +3051,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -3276,7 +3067,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_vs_naive_opp_no_strat_lr_0032":{
+  "coin_ppo_ipm_le_vs_naive_opp_no_strat_temp_033":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -3302,13 +3093,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -3317,31 +3109,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3354,8 +3146,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -3364,7 +3156,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3390,16 +3182,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3422,7 +3214,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3435,31 +3227,31 @@
       "observing_other_agents":{
         "name":"FullyObservable"
       },
-      "name": "DoubleDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Categorical",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val":1.0,
-          "end_val":0.000001,
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
+          "start_val":0.33,
+          "end_val":0.2,
           "start_step":512,
-          "end_step": 30000
+          "end_step":30000
         },
         "display_gradflow":false,
-        "gamma": 0.50,
+        "gamma":0.50,
         "normalize_inputs":true,
-        "training_batch_iter": 1,
-        "training_iter": 8,
-        "training_frequency": 32,
-        "training_start_step": 512
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 64,
-        "max_size": 8192,
-        "use_cer": true
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
       },
       "net":{
         "type":"ConvNet",
@@ -3472,8 +3264,8 @@
         "init_fn":"kaiming_uniform_",
         "normalize":false,
         "batch_norm":false,
-        "loss_spec": {
-          "name": "MSELoss"
+        "loss_spec":{
+          "name":"MSELoss"
         },
         "optim_spec":{
           "name":"SGD",
@@ -3482,7 +3274,7 @@
         },
         "lr_scheduler_spec":{
           "name":"LinearToZero",
-          "frame":40000
+          "frame":60000
         },
         "gpu":false
       }
@@ -3491,7 +3283,239 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
+      "num_envs":1
+    }],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":100,
+      "log_frequency":100,
+      "max_session":10,
+      "max_concurrent_session":10,
+      "max_trial":1
+    }
+  },
+  "coin_ppo_ipm_le_vs_naive_opp_no_strat_temp_3":{
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent":[{
+      "name":"LE",
+      "memory":null,
+      "net":null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LE",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":false,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":1.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "welfare_function":"default_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "name":"DoubleDQN",
+      "algorithm":{
+        "name":"DoubleDQN",
+        "action_pdtype":"Categorical",
+        "action_policy":"boltzmann_on_cluster",
+        "explore_var_spec":{
+          "name":"linear_decay",
+          "start_val":3.0,
+          "end_val":0.2,
+          "start_step":512,
+          "end_step":30000
+        },
+        "display_gradflow":false,
+        "gamma":0.50,
+        "normalize_inputs":true,
+        "training_batch_iter":1,
+        "training_iter":8,
+        "training_frequency":32,
+        "training_start_step":512
+      },
+      "memory":{
+        "name":"Replay",
+        "batch_size":64,
+        "max_size":8192,
+        "use_cer":true
+      },
+      "net":{
+        "type":"ConvNet",
+        "conv_hid_layers":[
+          [16, 3, 1, 1, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers":[],
+        "hid_layers_activation":"LeakyReLU",
+        "init_fn":"kaiming_uniform_",
+        "normalize":false,
+        "batch_norm":false,
+        "loss_spec":{
+          "name":"MSELoss"
+        },
+        "optim_spec":{
+          "name":"SGD",
+          "lr":0.008,
+          "momentum":0.9
+        },
+        "lr_scheduler_spec":{
+          "name":"LinearToZero",
+          "frame":60000
+        },
+        "gpu":false
+      }
+    }
+    ],
+    "env":[{
+      "name":"CoinGame-v0",
+      "max_t":null,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -3509,7 +3533,7 @@
   },
 
 
-  "coin_ppo_ipm_le_vs_exploiter_no_strat_lr_0008":{
+  "coin_ppo_ipm_le_vs_exploiter_no_strat_temp_1":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -3535,13 +3559,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -3550,31 +3575,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3587,8 +3612,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -3597,7 +3622,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3623,16 +3648,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3655,7 +3680,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3687,13 +3712,14 @@
         "use_strat_2":false,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -3701,31 +3727,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3738,8 +3764,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -3748,7 +3774,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3774,16 +3800,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3806,7 +3832,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3817,7 +3843,7 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{
@@ -3833,7 +3859,7 @@
       "max_trial":1
     }
   },
-  "coin_ppo_ipm_le_vs_exploiter_strat_2_lr_0008":{
+  "coin_ppo_ipm_le_vs_exploiter_strat_2_temp_1":{
     "world":{"name":"DefaultMultiAgentWorld"},
     "agent":[{
       "name":"LE",
@@ -3859,13 +3885,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -3874,31 +3901,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3911,8 +3938,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -3921,7 +3948,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -3947,16 +3974,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -3979,7 +4006,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -4011,13 +4038,14 @@
         "use_strat_2":true,
         "block_len":7,
         "use_last_steps_for_search":true,
-        "use_bolzmann_search":false,
+        "use_bolzmann_search":true,
         "meta_algo_memory":{
           "name":"Replay",
           "batch_size":1,
           "max_size":-1
         },
         "meta_algo_loss":{
+          "reduction":"none",
           "name":"CrossEntropyLoss"
         },
         "contained_algorithms":[
@@ -4025,31 +4053,31 @@
             "observing_other_agents":{
               "name":"FullyObservable"
             },
-            "name": "DoubleDQN",
-            "algorithm": {
-              "name": "DoubleDQN",
-              "action_pdtype": "Categorical",
-              "action_policy": "boltzmann",
-              "explore_var_spec": {
-                "name": "linear_decay",
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
                 "start_val":1.0,
-                "end_val":0.000001,
+                "end_val":0.2,
                 "start_step":512,
-                "end_step": 30000
+                "end_step":30000
               },
               "display_gradflow":false,
-              "gamma": 0.50,
+              "gamma":0.50,
               "normalize_inputs":true,
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
-            "memory": {
-              "name": "Replay",
-              "batch_size": 64,
-              "max_size": 8192,
-              "use_cer": true
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -4062,8 +4090,8 @@
               "init_fn":"kaiming_uniform_",
               "normalize":false,
               "batch_norm":false,
-              "loss_spec": {
-                "name": "MSELoss"
+              "loss_spec":{
+                "name":"MSELoss"
               },
               "optim_spec":{
                 "name":"SGD",
@@ -4072,7 +4100,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -4098,16 +4126,16 @@
                 "start_step":0,
                 "end_step":30000
               },
-              "training_batch_iter": 1,
-              "training_iter": 8,
-              "training_frequency": 32,
-              "training_start_step": 512
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
             },
             "memory":{
-              "name": "Replay",
-              "batch_size": 32,
-              "max_size": 512,
-              "use_cer": true
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
             },
             "net":{
               "type":"ConvNet",
@@ -4130,7 +4158,7 @@
               },
               "lr_scheduler_spec":{
                 "name":"LinearToZero",
-                "frame":40000
+                "frame":60000
               },
               "gpu":false
             }
@@ -4141,7 +4169,1311 @@
     "env":[{
       "name":"CoinGame-v0",
       "max_t":null,
-      "max_frame":40000,
+      "max_frame":60000,
+      "num_envs":1
+    }],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":100,
+      "log_frequency":100,
+      "max_session":10,
+      "max_concurrent_session":10,
+      "max_trial":1
+    }
+  },
+  "coin_ppo_ipm_le_vs_exploiter_no_strat_temp_033":{
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent":[{
+      "name":"LE",
+      "memory":null,
+      "net":null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LE",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":false,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":1.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name":"LEExploiter",
+      "memory":null,
+      "net":null,
+      "welfare_function":"default_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LEExploiter",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":false,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":0.33,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    }],
+    "env":[{
+      "name":"CoinGame-v0",
+      "max_t":null,
+      "max_frame":60000,
+      "num_envs":1
+    }],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":100,
+      "log_frequency":100,
+      "max_session":10,
+      "max_concurrent_session":10,
+      "max_trial":1
+    }
+  },
+  "coin_ppo_ipm_le_vs_exploiter_strat_2_temp_033":{
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent":[{
+      "name":"LE",
+      "memory":null,
+      "net":null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LE",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":true,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":1.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name":"LEExploiter",
+      "memory":null,
+      "net":null,
+      "welfare_function":"default_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LEExploiter",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":true,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":0.33,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    }],
+    "env":[{
+      "name":"CoinGame-v0",
+      "max_t":null,
+      "max_frame":60000,
+      "num_envs":1
+    }],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":100,
+      "log_frequency":100,
+      "max_session":10,
+      "max_concurrent_session":10,
+      "max_trial":1
+    }
+  },
+  "coin_ppo_ipm_le_vs_exploiter_no_strat_temp_3":{
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent":[{
+      "name":"LE",
+      "memory":null,
+      "net":null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LE",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":false,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":1.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name":"LEExploiter",
+      "memory":null,
+      "net":null,
+      "welfare_function":"default_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LEExploiter",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":false,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":3.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    }],
+    "env":[{
+      "name":"CoinGame-v0",
+      "max_t":null,
+      "max_frame":60000,
+      "num_envs":1
+    }],
+    "body":{
+      "product":"outer",
+      "num":1
+    },
+    "meta":{
+      "distributed":false,
+      "eval_frequency":100,
+      "log_frequency":100,
+      "max_session":10,
+      "max_concurrent_session":10,
+      "max_trial":1
+    }
+  },
+  "coin_ppo_ipm_le_vs_exploiter_strat_2_temp_3":{
+    "world":{"name":"DefaultMultiAgentWorld"},
+    "agent":[{
+      "name":"LE",
+      "memory":null,
+      "net":null,
+      "welfare_function":"utilitarian_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LE",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":true,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "welfare_function":"utilitarian_welfare",
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":1.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name":"LEExploiter",
+      "memory":null,
+      "net":null,
+      "welfare_function":"default_welfare",
+      "observing_other_agents":{
+        "name":"FullyObservable"
+      },
+      "algorithm":{
+        "name":"LEExploiter",
+        "punishement_time":1,
+        "min_coop_time":0,
+        "defection_detection_mode":"spl_observed_actions",
+        "defection_carac_threshold":0.0,
+        "average_d_carac":true,
+        "average_d_carac_len":20,
+        "coop_net_ent_diff_as_lr":false,
+        "use_sl_for_simu_coop":false,
+        "use_strat_4":false,
+        "use_strat_5":false,
+        "strat_5_coeff":10.0,
+        "use_strat_2":true,
+        "block_len":7,
+        "use_last_steps_for_search":true,
+        "use_bolzmann_search":true,
+        "meta_algo_memory":{
+          "name":"Replay",
+          "batch_size":1,
+          "max_size":-1
+        },
+        "meta_algo_loss":{
+          "reduction":"none",
+          "name":"CrossEntropyLoss"
+        },
+        "contained_algorithms":[
+          {
+            "observing_other_agents":{
+              "name":"FullyObservable"
+            },
+            "name":"DoubleDQN",
+            "algorithm":{
+              "name":"DoubleDQN",
+              "action_pdtype":"Categorical",
+              "action_policy":"boltzmann_on_cluster",
+              "explore_var_spec":{
+                "name":"linear_decay",
+                "start_val":3.0,
+                "end_val":0.2,
+                "start_step":512,
+                "end_step":30000
+              },
+              "display_gradflow":false,
+              "gamma":0.50,
+              "normalize_inputs":true,
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":64,
+              "max_size":8192,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"MSELoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "copy_n":0
+          },
+          {
+            "name":"SupervisedLAPolicy",
+            "algorithm":{
+              "name":"SupervisedLAPolicy",
+              "normalize_inputs":true,
+              "action_pdtype":"default",
+              "action_policy":"default",
+              "explore_var_spec":null,
+              "entropy_coef_spec":{
+                "name":"linear_decay",
+                "start_val":0.0,
+                "end_val":0.0,
+                "start_step":0,
+                "end_step":30000
+              },
+              "training_batch_iter":1,
+              "training_iter":8,
+              "training_frequency":32,
+              "training_start_step":512
+            },
+            "memory":{
+              "name":"Replay",
+              "batch_size":32,
+              "max_size":512,
+              "use_cer":true
+            },
+            "net":{
+              "type":"ConvNet",
+              "conv_hid_layers":[
+                [16, 3, 1, 1, 1],
+                [32, 3, 1, 0, 1]
+              ],
+              "fc_hid_layers":[],
+              "hid_layers_activation":"LeakyReLU",
+              "init_fn":"kaiming_uniform_",
+              "normalize":false,
+              "batch_norm":false,
+              "loss_spec":{
+                "name":"CrossEntropyLoss"
+              },
+              "optim_spec":{
+                "name":"SGD",
+                "lr":0.008,
+                "momentum":0.9
+              },
+              "lr_scheduler_spec":{
+                "name":"LinearToZero",
+                "frame":60000
+              },
+              "gpu":false
+            }
+          }
+        ]
+      }
+    }],
+    "env":[{
+      "name":"CoinGame-v0",
+      "max_t":null,
+      "max_frame":60000,
       "num_envs":1
     }],
     "body":{

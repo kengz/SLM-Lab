@@ -53,9 +53,11 @@ class Algorithm(ABC):
 
         util.set_attr(self, dict(
             display_gradflow=False,
+            boltzmann_cluster_threshold=0.25,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'display_gradflow',
+            'boltzmann_cluster_threshold',
         ])
         self.episilon = 1e-12
 

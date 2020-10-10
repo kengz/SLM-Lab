@@ -198,6 +198,7 @@ class SupervisedLAPolicy(Algorithm):
             # targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space[self.agent.agent_idx].n)
             targets = self.one_hot_embedding(targets.long(), self.agent.body.action_space.n)
 
+        # TODO clean this
         if isinstance(self.net.loss_fn, torch.nn.SmoothL1Loss):
             # Used with the SmoothL1Loss loss (Huber loss)  where err < 1 => MSE and err > 1 => MAE
             scaling = 2
