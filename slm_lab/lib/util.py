@@ -394,7 +394,7 @@ def read_as_plain(data_path, **kwargs):
     open_file = open(data_path, 'r')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        data = ujson.load(open_file, **kwargs)
+        data = json.load(open_file, **kwargs)
     elif ext == '.yml':
         data = yaml.load(open_file, **kwargs)
     else:
