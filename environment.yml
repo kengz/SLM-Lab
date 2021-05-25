@@ -47,4 +47,4 @@ dependencies:
     - gym[classic_control]
     - pybullet==2.8.4
     - roboschool==1.0.46
-    - atari-py==0.2.9
+    - atari-py==0.2.6
