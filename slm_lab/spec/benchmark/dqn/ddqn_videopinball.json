@@ -1,0 +1,77 @@
+{
+  "ddqn_videopinball": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 100000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 100
+      },
+      "memory": {
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
+        "batch_size": 64,
+        "max_size": 200000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": null,
+        "shared": true,
+        "batch_norm": false,
+        "clip_grad_val": 10.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 2.5e-5
+        },
+        "lr_scheduler_spec": null,
+        "update_frequency": 100,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "VideoPinball-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 850000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 10000,
+      "log_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_trial": 1,
+      "max_session": 1
+    }
+  }
+}
