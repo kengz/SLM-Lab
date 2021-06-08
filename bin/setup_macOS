@@ -11,15 +11,11 @@ if which brew >/dev/null; then
 else
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
-if brew cask --version | grep --quiet "Cask" >/dev/null; then
-  true
-else
-  brew tap homebrew/cask
-fi
 
 echo "--- Installing brew system dependencies ---"
-hb_list=(cmake boost boost-python sdl2 swig wget curl)
+hb_list=(cmake boost boost-python3 sdl2 swig)
 for item in "${hb_list[@]}"; do
+  echo "Installing ${item}"
   brew info "${item}" | grep --quiet "Not installed" && brew install "${item}"
 done
 
@@ -28,13 +24,17 @@ if which conda >/dev/null; then
   echo "Conda is already installed"
 else
   curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-  bash Miniconda3-latest-MacOSX-x86_64.sh -b
+  bash Miniconda3-latest-MacOSX-x86_64.sh -b -p ~/miniconda3
   rm Miniconda3-latest-MacOSX-x86_64.sh
   echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bash_profile
   source ~/.bash_profile
 fi
 
 echo "--- Installing Conda environment ---"
+if ! which conda >/dev/null; then
+  # guard for when no Conda is found, e.g. in Colab
+  export PATH=~/miniconda3/bin:$PATH
+fi
 if conda env list | grep "^lab " >/dev/null; then
   echo "conda env lab is already installed"
 else
