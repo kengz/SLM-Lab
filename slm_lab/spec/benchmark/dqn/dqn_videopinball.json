@@ -1,0 +1,76 @@
+{
+  "dqn_videopinball": {
+    "agent": [{
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "VanillaDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 0.5,
+          "start_step": 1000,
+          "end_step": 100000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 64,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "shared": true,
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 10000
+        },
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "VideoPinball-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 850000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_trial": 1,
+      "max_session": 1
+    }
+  }
+}
