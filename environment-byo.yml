@@ -1,4 +1,4 @@
-name: lab-rtx
+name: lab
 channels:
   - plotly
   - conda-forge
@@ -29,20 +29,20 @@ dependencies:
   - ujson=1.35
   - xlrd=1.2.0
   - pip:
-    - box2d-py==2.3.8
-    - cloudpickle==0.5.2
-    - colorlover==0.3.0
-    - future==0.18.2
-    - opencv-python==4.1.0.25
-    - pyopengl==3.1.0
-    - ray==0.7.0
-    - redis==2.10.6
-    - tensorboard==2.1.1
-    - xvfbwrapper==0.2.9
-    - gym==0.12.1
-    - gym[atari]
-    - gym[box2d]
-    - gym[classic_control]
-    - pybullet==2.8.4
-    - roboschool==1.0.46
-    - atari-py==0.2.6
+      - box2d-py==2.3.8
+      - cloudpickle==0.5.2
+      - colorlover==0.3.0
+      - future==0.18.2
+      - opencv-python==4.1.0.25
+      - pyopengl==3.1.0
+      - ray==0.7.0
+      - redis==2.10.6
+      - tensorboard==2.1.1
+      - xvfbwrapper==0.2.9
+      - gym==0.12.1
+      - gym[atari]
+      - gym[box2d]
+      - gym[classic_control]
+      - pybullet==2.8.4
+      - roboschool==1.0.46
+      - atari-py==0.2.6

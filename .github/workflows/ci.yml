@@ -39,11 +39,6 @@ jobs:
   build:
     needs: lint
     runs-on: ubuntu-latest
-    env:
-      CB_URL: ${{ secrets.CB_URL }}
-      CB_PASSPHRASE: ${{ secrets.CB_PASSPHRASE }}
-      CB_SECRET_KEY: ${{ secrets.CB_SECRET_KEY }}
-      CB_API_KEY: ${{ secrets.CB_API_KEY }}
 
     steps:
       - uses: actions/checkout@v2
