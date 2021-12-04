@@ -134,7 +134,7 @@ class SIL(ActorCritic):
             # onpolicy update
             super_loss = super().train()
             # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0)
+            total_sil_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_iter):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_iter):

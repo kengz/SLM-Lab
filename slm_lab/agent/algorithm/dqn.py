@@ -130,7 +130,7 @@ class VanillaDQN(SARSA):
         '''
         clock = self.body.env.clock
         if self.to_train == 1:
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_iter):
                 batch = self.sample()
                 clock.set_batch_size(len(batch))
