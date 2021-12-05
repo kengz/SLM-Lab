@@ -186,7 +186,7 @@ class PPO(ActorCritic):
                 for k, v in batch.items():
                     if k not in ('advs', 'v_targets'):
                         batch[k] = math_util.venv_unpack(v)
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
                 for minibatch in minibatches:
