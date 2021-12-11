@@ -12,8 +12,6 @@ logger = logger.get_logger(__name__)
 pio.templates.default = 'none'  # set default white background for plots
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 100
-# warn orca failure only once
-orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`'))
 if util.is_jupyter():
     init_notebook_mode(connected=True)
 
@@ -121,7 +119,7 @@ def save_image(figure, filepath):
     try:
         pio.write_image(figure, filepath, scale=2)
     except Exception as e:
-        orca_warn_once(e)
+        logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`')
 
 
 # analysis plot methods
