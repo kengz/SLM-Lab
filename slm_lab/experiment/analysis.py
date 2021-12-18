@@ -254,8 +254,6 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
         # plot graph
         viz.plot_session(session_spec, session_metrics, session_df, df_mode)
         viz.plot_session(session_spec, session_metrics, session_df, df_mode, ma=True)
-    # manually shut down orca server to avoid zombie processes
-    viz.pio.orca.shutdown_server()
     return session_metrics
 
 
@@ -267,8 +265,6 @@ def analyze_trial(trial_spec, session_metrics_list):
     # plot graphs
     viz.plot_trial(trial_spec, trial_metrics)
     viz.plot_trial(trial_spec, trial_metrics, ma=True)
-    # manually shut down orca server to avoid zombie processes
-    viz.pio.orca.shutdown_server()
     # zip files
     if util.get_lab_mode() == 'train':
         predir, _, _, _, _ = util.prepath_split(info_prepath)
@@ -287,8 +283,6 @@ def analyze_experiment(spec, trial_data_dict):
     # plot graph
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
     viz.plot_experiment_trials(spec, experiment_df, METRICS_COLS)
-    # manually shut down orca server to avoid zombie processes
-    viz.pio.orca.shutdown_server()
     # zip files
     predir, _, _, _, _ = util.prepath_split(info_prepath)
     zipdir = util.smart_path(predir)
