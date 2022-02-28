@@ -47,7 +47,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 10000
+      "max_frame": 30000
     }],
     "body": {
       "product": "outer",
