@@ -142,6 +142,8 @@ class BaseEnv(ABC):
     def _get_observable_dim(self, observation_space):
         '''Get the observable dim for an agent in env'''
         state_dim = observation_space.shape
+        if isinstance(observation_space, spaces.MultiDiscrete):
+            state_dim = observation_space.nvec.tolist()
         if len(state_dim) == 1:
             state_dim = state_dim[0]
         return {'state': state_dim}
