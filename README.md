@@ -9,6 +9,7 @@
   <br><br>
 </p>
 
+>NOTE: the `book` branch has been updated for issue fixes. For the original code in the book _Foundations of Deep Reinforcement Learning_, check out to git tag `v4.1.1`
 
 |||||
 |:---:|:---:|:---:|:---:|
