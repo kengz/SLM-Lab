@@ -5,7 +5,7 @@
 # push image: docker push kengz/slm_lab
 # prune: docker system prune
 
-FROM ubuntu:16.04
+FROM ubuntu:22.04
 
 LABEL maintainer="kengzwl@gmail.com"
 LABEL website="https://github.com/kengz/SLM-Lab"
