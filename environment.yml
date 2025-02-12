@@ -29,6 +29,7 @@ dependencies:
   - scipy=1.3.0
   - ujson=1.35
   - xlrd=1.2.0
+  - more-itertools==9.1.0
   - pip:
       - box2d-py==2.3.8
       - cloudpickle==0.5.2
@@ -48,3 +49,5 @@ dependencies:
       - pybullet==2.8.4
       - roboschool==1.0.46
       - atari-py==0.2.6
+      - pyglet==1.5.29
+      - grpcio==1.32.0
