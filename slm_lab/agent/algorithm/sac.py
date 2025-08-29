@@ -26,6 +26,7 @@ class SoftActorCritic(ActorCritic):
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1,
+        "target_entropy_epsilon": 0.1,
     }
     '''
     @lab_api
@@ -48,6 +49,13 @@ class SoftActorCritic(ActorCritic):
         ])
         if self.body.is_discrete:
             assert self.action_pdtype == 'GumbelSoftmax'
+        else:
+            # Cache action scaling tensors for continuous envs
+            space = self.body.action_space
+            self._action_low = torch.from_numpy(space.low).float()
+            self._action_high = torch.from_numpy(space.high).float()
+            self._action_scale = (self._action_high - self._action_low) / 2
+            self._action_bias = (self._action_low + self._action_high) / 2
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
 
@@ -75,10 +83,20 @@ class SoftActorCritic(ActorCritic):
         # temperature variable to be learned, and its target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
+        
+        # Target entropy using epsilon-greedy policy bound
+        # Epsilon = exploration probability for baseline policy (default 0.1 = 10% exploration)
+        # Based on: https://discuss.ray.io/t/target-entropy-in-discrete-sac-implementation/12182
+        epsilon = self.algorithm_spec.get('target_entropy_epsilon', 0.1)
+        
         if self.body.is_discrete:
-            self.target_entropy = - self.body.action_space.n
+            # Discrete: entropy of epsilon-greedy policy over discrete actions
+            greedy_term = (1 - epsilon) * np.log((1 - epsilon) / (self.body.action_dim - 1))
+            self.target_entropy = -(epsilon * np.log(epsilon) + greedy_term)
         else:
-            self.target_entropy = - np.product(self.body.action_space.shape)
+            # Continuous: epsilon-greedy bound applied to standard -action_dim target
+            action_dim = np.prod(self.body.action_space.shape)
+            self.target_entropy = -(1 - epsilon) * action_dim
 
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -90,29 +108,35 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
         self.alpha_lr_scheduler = net_util.get_lr_scheduler(self.alpha_optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
+        
+        # Move cached tensors to network device
+        if not self.body.is_discrete:
+            device = self.net.device
+            self._action_low = self._action_low.to(device)
+            self._action_high = self._action_high.to(device)
+            self._action_scale = self._action_scale.to(device)
+            self._action_bias = self._action_bias.to(device)
+            
         self.end_init_nets()
 
     @lab_api
     def act(self, state):
         if self.body.env.clock.frame < self.training_start_step:
-            return policy_util.random(state, self, self.body).cpu().squeeze().numpy()
+            action = policy_util.random(state, self, self.body)
         else:
             action = self.action_policy(state, self, self.body)
             if not self.body.is_discrete:
-                action = self.scale_action(torch.tanh(action))  # continuous action bound
-            return action.cpu().squeeze().numpy()
+                action = self.scale_action(torch.tanh(action))
+        return self.to_action(action)
 
     def scale_action(self, action):
-        '''Scale continuous actions from tanh range'''
-        action_space = self.body.action_space
-        device = action.device
-        low, high = torch.from_numpy(action_space.low).to(device), torch.from_numpy(action_space.high).to(device)
-        return action * (high - low) / 2 + (low + high) / 2
+        '''Scale continuous actions from tanh range using cached tensors'''
+        return action * self._action_scale + self._action_bias
 
     def guard_q_actions(self, actions):
         '''Guard to convert actions to one-hot for input to Q-network'''
-        if self.body.is_discrete:
-            # TODO support multi-discrete actions
+        if self.body.is_discrete and actions.shape[-1] != self.body.action_dim:
+            # Convert discrete action indices to one-hot encoding
             actions = F.one_hot(actions.long(), self.body.action_dim).float()
         return actions
 
@@ -180,10 +204,10 @@ class SoftActorCritic(ActorCritic):
 
     def train_alpha(self, alpha_loss):
         '''Custom method to train the alpha variable'''
-        self.alpha_lr_scheduler.step(epoch=self.body.env.clock.frame)
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
+        self.alpha_lr_scheduler.step()
         self.alpha = self.log_alpha.detach().exp()
 
     def train(self):
