@@ -5,6 +5,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util, viz
 from slm_lab.lib.decorator import lab_api
 from torch.utils.tensorboard import SummaryWriter
+from typing import Any, Optional, Union
 import numpy as np
 import os
 import pandas as pd
@@ -21,7 +22,7 @@ class Agent:
     Contains algorithm, memory, body
     '''
 
-    def __init__(self, spec, body, global_nets=None):
+    def __init__(self, spec: dict[str, Any], body: 'Body', global_nets: Optional[dict[str, Any]] = None):
         self.spec = spec
         self.agent_spec = spec['agent'][0]  # idx 0 for single-agent
         self.name = self.agent_spec['name']
@@ -37,14 +38,14 @@ class Agent:
         logger.info(util.self_desc(self))
 
     @lab_api
-    def act(self, state):
+    def act(self, state: np.ndarray) -> np.ndarray:
         '''Standard act method from algorithm.'''
         with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
             action = self.algorithm.act(state)
         return action
 
     @lab_api
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state: np.ndarray, action: Union[int, float, np.ndarray], reward: float, next_state: np.ndarray, done: bool) -> Optional[dict[str, float]]:
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         self.body.update(state, action, reward, next_state, done)
         if util.in_eval_lab_mode():  # eval does not update agent for training
@@ -57,14 +58,14 @@ class Agent:
         return loss, explore_var
 
     @lab_api
-    def save(self, ckpt=None):
+    def save(self, ckpt: Optional[str] = None) -> None:
         '''Save agent'''
         if util.in_eval_lab_mode():  # eval does not save new models
             return
         self.algorithm.save(ckpt=ckpt)
 
     @lab_api
-    def close(self):
+    def close(self) -> None:
         '''Close and cleanup agent at the end of a session, e.g. save model'''
         self.save()
 
@@ -77,7 +78,7 @@ class Body:
     - acts as non-gradient variable storage for monitoring and analysis
     '''
 
-    def __init__(self, env, spec, aeb=(0, 0, 0)):
+    def __init__(self, env: 'BaseEnv', spec: dict[str, Any], aeb: tuple[int, int, int] = (0, 0, 0)):
         # essential reference variables
         self.agent = None  # set later
         self.env = env
@@ -117,31 +118,31 @@ class Body:
         else:
             self.eval_df = self.train_df
 
-        # the specific agent-env interface variables for a body
+        # use gymnasium space objects directly for clean interface
         self.observation_space = self.env.observation_space
         self.action_space = self.env.action_space
-        self.observable_dim = self.env.observable_dim
-        self.state_dim = self.observable_dim['state']
+        # use environment's space dimensions for agent networks
+        self.state_dim = self.env.state_dim
         self.action_dim = self.env.action_dim
         self.is_discrete = self.env.is_discrete
         # set the ActionPD class for sampling action
-        self.action_type = policy_util.get_action_type(self.action_space)
+        self.action_type = policy_util.get_action_type(self.env)
         self.action_pdtype = ps.get(spec, f'agent.{self.a}.algorithm.action_pdtype')
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state: np.ndarray, action: Union[int, float, np.ndarray], reward: float, next_state: np.ndarray, done: bool) -> None:
         '''Interface update method for body at agent.update()'''
         if util.get_lab_mode() == 'dev':  # log tensorboard only on dev mode
             self.track_tensorboard(action)
 
-    def __str__(self):
+    def __str__(self) -> str:
         class_attr = util.get_class_attr(self)
         class_attr.pop('spec')
         return f'body: {util.to_json(class_attr)}'
 
-    def calc_df_row(self, env):
+    def calc_df_row(self, env: 'BaseEnv') -> pd.Series:
         '''Calculate a row for updating train_df or eval_df.'''
         frame = self.env.clock.frame
         wall_t = self.env.clock.wall_t
@@ -155,7 +156,7 @@ class Body:
             grad_norms = net_util.get_grad_norms(self.agent.algorithm)
             self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
-        row = pd.Series({
+        row_data = {
             # epi and frame are always measured from training env
             'epi': self.env.clock.epi,
             # t and reward are measured from a given env or eval_env
@@ -172,34 +173,48 @@ class Body:
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
             'entropy': self.mean_entropy,
             'grad_norm': self.mean_grad_norm,
-        }, dtype=np.float32)
+        }
+        
+        # Convert any tensors to scalars
+        for key, value in row_data.items():
+            if hasattr(value, 'cpu'):
+                row_data[key] = value.cpu().item()
+        
+        row = pd.Series(row_data, dtype=np.float32)
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
 
-    def ckpt(self, env, df_mode):
+    def ckpt(self, env: 'BaseEnv', df_mode: str) -> None:
         '''
         Checkpoint to update body.train_df or eval_df data
-        @param OpenAIEnv:env self.env or self.eval_env
+        @param GymEnv:env self.env or self.eval_env
         @param str:df_mode 'train' or 'eval'
         '''
         row = self.calc_df_row(env)
         df = getattr(self, f'{df_mode}_df')
         df.loc[len(df)] = row  # append efficiently to df
-        df.iloc[-1]['total_reward_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
-        df.drop_duplicates('frame', inplace=True)  # remove any duplicates by the same frame
+        # Use .loc for direct assignment to avoid chained assignment
+        total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
+        df.loc[df.index[-1], 'total_reward_ma'] = total_reward_ma
+        df.drop_duplicates('frame', inplace=True)  # Remove duplicates
         self.total_reward_ma = total_reward_ma
 
-    def get_mean_lr(self):
+    def get_mean_lr(self) -> float:
         '''Gets the average current learning rate of the algorithm's nets.'''
         if not hasattr(self.agent.algorithm, 'net_names'):
             return np.nan
         lrs = []
         for attr, obj in self.agent.algorithm.__dict__.items():
             if attr.endswith('lr_scheduler'):
-                lrs.append(obj.get_lr())
-        return np.mean(lrs)
+                lr = obj.get_last_lr()
+                if hasattr(lr, 'cpu'):
+                    lr = lr.cpu().item()
+                elif isinstance(lr, list):
+                    lr = lr[0].cpu().item() if hasattr(lr[0], 'cpu') else lr[0]
+                lrs.append(lr)
+        return np.mean(lrs) if lrs else np.nan
 
-    def get_log_prefix(self):
+    def get_log_prefix(self) -> str:
         '''Get the prefix for logging'''
         spec_name = self.spec['name']
         trial_index = self.spec['meta']['trial']
@@ -207,28 +222,45 @@ class Body:
         prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}'
         return prefix
 
-    def log_metrics(self, metrics, df_mode):
+    def log_metrics(self, metrics: dict[str, float], df_mode: str) -> None:
         '''Log session metrics'''
+        import os
+        # Skip logging metrics unless LOG_METRICS=true
+        if not os.environ.get('LOG_METRICS', 'false').lower() == 'true':
+            return
         prefix = self.get_log_prefix()
         row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
         msg = f'{prefix} [{df_mode}_df metrics] {row_str}'
         logger.info(msg)
 
-    def log_summary(self, df_mode):
-        '''
-        Log the summary for this body when its environment is done
-        @param str:df_mode 'train' or 'eval'
-        '''
+    def log_summary(self, df_mode: str) -> None:
+        '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
         df = getattr(self, f'{df_mode}_df')
         last_row = df.iloc[-1]
-        row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
-        msg = f'{prefix} [{df_mode}_df] {row_str}'
-        logger.info(msg)
+        
+        # Simple format: clean up floats, keep rest as-is
+        items = []
+        for k, v in last_row.items():
+            if str(v).lower() == 'nan':
+                items.append(f'{k}:nan')
+            elif isinstance(v, float) and not v.is_integer():
+                items.append(f'{k}:{v:.3g}')
+            else:
+                items.append(f'{k}:{v:g}')
+        
+        # Simple grid: 5 per line with equal spacing
+        w = max(len(item) for item in items)
+        lines = [f"{prefix} [{df_mode}]"]
+        for i in range(0, len(items), 5):
+            chunk = [f'{item:<{w}}' for item in items[i:i+5]]
+            lines.append('  '.join(chunk))
+        
+        logger.info('\n'.join(lines))
         if util.get_lab_mode() == 'dev' and df_mode == 'train':  # log tensorboard only on dev mode and train df data
             self.log_tensorboard()
 
-    def log_tensorboard(self):
+    def log_tensorboard(self) -> None:
         '''
         Log summary and useful info to TensorBoard.
         NOTE this logging is comprehensive and memory-intensive, hence it is used in dev mode only
@@ -272,7 +304,7 @@ class Body:
                     self.tb_writer.add_histogram(f'action.{idx}/{idx_suffix}', subactions, frame)
             self.tb_actions = []
 
-    def track_tensorboard(self, action):
+    def track_tensorboard(self, action: np.ndarray) -> None:
         '''Helper to track variables for tensorboard logging'''
         if self.env.is_venv:
             self.tb_actions.extend(action.tolist())

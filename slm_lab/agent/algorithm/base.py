@@ -3,6 +3,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -59,6 +60,35 @@ class Algorithm(ABC):
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
         raise NotImplementedError
+
+    def to_action(self, action: torch.Tensor) -> np.ndarray:
+        '''Convert tensor action to numpy with gymnasium-compatible shapes
+        
+        Handles 8 action type combinations:
+        1. Single CartPole (2 actions): (1,) → scalar int
+        2. Vector CartPole (2 actions): (2,) → (2,) 
+        3. Single LunarLander (4 actions): (1,) → scalar int
+        4. Vector LunarLander (4 actions): (2,) → (2,)
+        5. Single Pendulum (1D): (1, 1) → (1,)
+        6. Vector Pendulum (1D): (2, 1) → (2, 1)
+        7. Single BipedalWalker (4D): (1, 4) → (4,)
+        8. Vector BipedalWalker (4D): (2, 4) → (2, 4)
+        '''
+        action_np = action.cpu().numpy()
+        
+        # Single environments need scalars for discrete, squeezed arrays for continuous
+        if not self.body.env.is_venv:
+            if self.body.env.is_discrete and action_np.size == 1:
+                action_np = action_np.item()  # (1,) or scalar → int
+            elif not self.body.env.is_discrete and action_np.ndim == 2:
+                action_np = action_np.squeeze(0)  # (1, action_dim) → (action_dim,)
+        
+        # Vector continuous environments need (num_envs, action_dim) shape
+        elif self.body.env.is_venv and not self.body.env.is_discrete:
+            if action_np.ndim == 1:  # Got (num_envs*action_dim,), need (num_envs, action_dim)
+                action_np = action_np.reshape(self.body.env.num_envs, self.body.env.action_dim)
+        
+        return action_np
 
     @lab_api
     def act(self, state):

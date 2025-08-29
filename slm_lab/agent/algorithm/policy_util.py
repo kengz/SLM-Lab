@@ -1,7 +1,7 @@
 # Action policy module
 # Constructs action probability distribution used by agent to sample action and calculate log_prob, entropy, etc.
-from gym import spaces
-from slm_lab.env.wrapper import LazyFrames
+from gymnasium import spaces
+# LazyFrames removed - modern gymnasium handles frame stacking efficiently
 from slm_lab.lib import distribution, logger, math_util, util
 from torch import distributions
 import numpy as np
@@ -23,23 +23,14 @@ ACTION_PDS = {
 }
 
 
-def get_action_type(action_space):
-    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
-    if isinstance(action_space, spaces.Box):
-        shape = action_space.shape
-        assert len(shape) == 1
-        if shape[0] == 1:
-            return 'continuous'
-        else:
-            return 'multi_continuous'
-    elif isinstance(action_space, spaces.Discrete):
-        return 'discrete'
-    elif isinstance(action_space, spaces.MultiDiscrete):
-        return 'multi_discrete'
-    elif isinstance(action_space, spaces.MultiBinary):
-        return 'multi_binary'
+def get_action_type(env) -> str:
+    '''Get action type for distribution selection using environment attributes'''
+    if env.is_discrete:
+        if isinstance(env.action_space, spaces.MultiBinary):
+            return 'multi_binary'
+        return 'multi_discrete' if env.is_multi else 'discrete'
     else:
-        raise NotImplementedError
+        return 'multi_continuous' if env.is_multi else 'continuous'
 
 
 # action_policy base methods
@@ -57,9 +48,12 @@ def get_action_pd_cls(action_pdtype, action_type):
 
 def guard_tensor(state, body):
     '''Guard-cast tensor before being input to network'''
-    if isinstance(state, LazyFrames):
-        state = state.__array__()  # realize data
-    state = torch.from_numpy(state.astype(np.float32))
+    # Modern gymnasium handles frame stacking efficiently, no LazyFrames needed
+    if not isinstance(state, np.ndarray):
+        state = np.array(state, dtype=np.float32)
+    elif state.dtype != np.float32:
+        state = state.astype(np.float32)
+    state = torch.from_numpy(state)
     if not body.env.is_venv:
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
@@ -132,14 +126,14 @@ def sample_action(ActionPD, pdparam):
 # action_policy used by agent
 
 
-def default(state, algorithm, body):
+def default(state, algorithm, body) -> torch.Tensor:
     '''Plain policy by direct sampling from a default action probability defined by body.ActionPD'''
     pdparam = calc_pdparam(state, algorithm, body)
     action = sample_action(body.ActionPD, pdparam)
     return action
 
 
-def random(state, algorithm, body):
+def random(state, algorithm, body) -> torch.Tensor:
     '''Random action using gym.action_space.sample(), with the same format as default()'''
     if body.env.is_venv:
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
