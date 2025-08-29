@@ -11,7 +11,6 @@ try:
     import warnings
     # Silence ALE output more aggressively
     os.environ['ALE_PY_SILENCE'] = '1'
-    os.environ['SDL_VIDEODRIVER'] = 'dummy'
     warnings.filterwarnings('ignore', category=UserWarning, module='ale_py')
     gym.register_envs(ale_py)
 except ImportError:
@@ -61,8 +60,7 @@ def enum_envs():
 
 def gen_random_return(env_name, seed):
     '''Generate a single-episode random policy return for an environment'''
-    render_mode = 'human' if util.to_render() else None
-    env = gym.make(env_name, render_mode=render_mode)
+    env = gym.make(env_name)  # No render_mode = no rendering (headless)
     state, info = env.reset(seed=seed)
     
     total_reward = 0

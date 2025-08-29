@@ -1,6 +1,7 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import math_util, util
+import numpy as np
 import pydash as ps
 import torch
 import torch.nn as nn
@@ -123,7 +124,7 @@ class ConvNet(Net, nn.Module):
             tail_in_dim = self.fc_hid_layers[-1]
 
         # tails. avoid list for single-tail for compute speed
-        if ps.is_integer(self.out_dim):
+        if isinstance(self.out_dim, (int, np.integer)):
             self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
         else:
             if not ps.is_list(self.out_layer_activation):

@@ -31,9 +31,4 @@ dstack apply -f .dstack/dev.yml
 SPEC_FILE=slm_lab/spec/demo.json SPEC_NAME=dqn_cartpole LAB_MODE=train dstack apply -f .dstack/train.yml
 # run ppo pong
 SPEC_FILE=slm_lab/spec/benchmark/ppo/ppo_pong.json SPEC_NAME=ppo_pong LAB_MODE=train dstack apply -f .dstack/train.yml
-
-USE_MODERN_VECENV=true SPEC_FILE=slm_lab/spec/benchmark/ppo/ppo_pong.json SPEC_NAME=ppo_pong LAB_MODE=train dstack apply -f .dstack/train.yml -y
-USE_MODERN_VECENV=false SPEC_FILE=slm_lab/spec/benchmark/ppo/ppo_pong.json SPEC_NAME=ppo_pong LAB_MODE=train dstack apply -f .dstack/train.yml -y --name trainfalse
-for safety - git stash then rerun pong again to check FPS
-also need to hold hardware constant
 ```

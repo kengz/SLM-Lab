@@ -91,7 +91,7 @@ class MLPNet(Net, nn.Module):
         self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
         # add last layer with no activation
         # tails. avoid list for single-tail for compute speed
-        if ps.is_integer(self.out_dim):
+        if isinstance(self.out_dim, (int, np.integer)):
             self.model_tail = net_util.build_fc_model([dims[-1], self.out_dim], self.out_layer_activation)
         else:
             if not ps.is_list(self.out_layer_activation):

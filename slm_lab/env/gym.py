@@ -101,13 +101,9 @@ class GymEnv(BaseEnv):
 
     def __init__(self, spec: dict[str, Any]) -> None:
         super().__init__(spec)
-        
-        # Determine render mode based on usage
-        if util.to_render():
-            render_mode = 'rgb_array' if self.is_venv else 'human'
-        else:
-            render_mode = None
-        
+
+        render_mode = 'human' if util.to_render() else None
+
         if self.is_venv:  # make vector environment
             # Smart vectorization mode selection based on environment complexity and performance
             vectorization_mode = self._get_vectorization_mode()
@@ -118,16 +114,15 @@ class GymEnv(BaseEnv):
             # Use gymnasium's standard make which handles all preprocessing automatically
             # Note: For Atari, this includes frame stacking and preprocessing built-in
             self.u_env = gym.make(self.name, render_mode=render_mode)
-            
+
         # Add reward tracking for SLM-Lab compatibility
         TrackRewardCls = VectorTrackReward if self.is_venv else TrackReward
         self.u_env = TrackRewardCls(self.u_env)
-            
+
         self._set_attr_from_u_env(self.u_env)
-        
+
         # Set max_t from environment spec
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps or 108000
-        logger.info(util.self_desc(self))
 
     def _get_vectorization_mode(self) -> str | None:
         """Select sync/async/vector_entry_point vectorization based on environment complexity and benchmark data."""
@@ -160,11 +155,6 @@ class GymEnv(BaseEnv):
         state, reward, term, trunc, info = self.u_env.step(action)
         self._update_total_reward(info)
         return state, reward, term, trunc, info
-
-    @lab_api
-    def render(self, mode: str = 'human') -> Any:
-        # Modern gymnasium environments use render_mode during initialization, not during render() calls
-        return self.u_env.render()
 
     @lab_api
     def close(self) -> None:

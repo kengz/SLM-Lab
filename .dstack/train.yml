@@ -14,7 +14,7 @@ commands:
   # Install Python dependencies
   - uv sync
   # Run SLM Lab training
-  - uv run run_lab.py ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE}
+  - uv run slm-lab ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE}
 
 # mount to persist
 volumes:

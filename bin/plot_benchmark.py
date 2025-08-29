@@ -17,13 +17,11 @@ trial_metrics_scalar_path = '*trial_metrics_scalar.json'
 trial_metrics_path = '*t0_trial_metrics.pkl'
 env_name_map = {
     'lunar': 'LunarLander',
-    'reakout': 'Breakout',
-    'ong': 'Pong',
-    'bert': 'Qbert',
-    'eaquest': 'Seaquest',
-    'humanoid': 'RoboschoolHumanoid',
-    'humanoidflagrun': 'RoboschoolHumanoidFlagrun',
-    'humanoidflagrunharder': 'RoboschoolHumanoidFlagrunHarder',
+    'breakout': 'Breakout',
+    'pong': 'Pong',
+    'qbert': 'Qbert',
+    'seaquest': 'Seaquest',
+    'humanoid': 'Humanoid',
 }
 master_legend_list = [
     'DQN',
@@ -142,7 +140,7 @@ def plot_envs(algos, envs, data_folder, legend_list, frame_scales=None):
 
 
 # Discrete
-# LunarLander + Small Atari + Unity
+# LunarLander + Small Atari
 data_folder = util.smart_path('../Desktop/benchmark/discrete')
 
 algos = [
@@ -162,13 +160,11 @@ legend_list = [
     'SAC',
 ]
 envs = [
-    'reakout',
-    'ong',
-    'eaquest',
-    'bert',
+    'breakout',
+    'pong',
+    'seaquest',
+    'qbert',
     'lunar',
-    'UnityHallway',
-    'UnityPushBlock',
 ]
 
 latex_body = get_latex_body(algos, envs, data_folder)
@@ -182,27 +178,25 @@ envs = [
     # 'Breakout',
     # 'Seaquest',
     'lunar',
-    'UnityHallway',
-    'UnityPushBlock',
 ]
 plot_envs(algos, envs, data_folder, legend_list)
 
 # Replot Pong and Qbert for Async SAC
 envs = [
-    'reakout',
-    'ong',
-    'eaquest',
+    'breakout',
+    'pong',
+    'seaquest',
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 6)])
 
 envs = [
-    'bert',
+    'qbert',
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 8)])
 
 
 # Continuous
-# Roboschool + Unity
+# MuJoCo
 data_folder = util.smart_path('../Desktop/benchmark/cont')
 
 algos = [
@@ -218,23 +212,14 @@ legend_list = [
     'SAC',
 ]
 envs = [
-    'RoboschoolAnt',
-    'RoboschoolAtlasForwardWalk',
-    'RoboschoolHalfCheetah',
-    'RoboschoolHopper',
-    'RoboschoolInvertedDoublePendulum',
-    'RoboschoolInvertedPendulum',
-    'RoboschoolReacher',
-    'RoboschoolWalker2d',
+    'Ant',
+    'HalfCheetah',
+    'Hopper',
+    'InvertedDoublePendulum',
+    'InvertedPendulum',
+    'Reacher',
+    'Walker2d',
     'humanoid_',
-    'humanoidflagrun_',
-    'humanoidflagrunharder',
-    'Unity3DBall-',
-    'Unity3DBallHard',
-    # 'UnityCrawlerDynamic',
-    # 'UnityCrawlerStatic',
-    # 'UnityReacher',
-    # 'UnityWalker',
 ]
 
 latex_body = get_latex_body(algos, envs, data_folder)
@@ -245,20 +230,13 @@ print(latex_im_body)
 
 # plot simple
 envs = [
-    'RoboschoolAnt',
-    'RoboschoolAtlasForwardWalk',
-    'RoboschoolHalfCheetah',
-    'RoboschoolHopper',
-    'RoboschoolInvertedDoublePendulum',
-    'RoboschoolInvertedPendulum',
-    'RoboschoolReacher',
-    'RoboschoolWalker2d',
-    'Unity3DBall-',
-    'Unity3DBallHard',
-    # 'UnityCrawlerDynamic',
-    'UnityCrawlerStatic',
-    'UnityReacher',
-    # 'UnityWalker',
+    'Ant',
+    'HalfCheetah',
+    'Hopper',
+    'InvertedDoublePendulum',
+    'InvertedPendulum',
+    'Reacher',
+    'Walker2d',
 ]
 plot_envs(algos, envs, data_folder, legend_list)
 
@@ -281,15 +259,9 @@ envs = [
 ]
 plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 16)])
 
-envs = [
-    'humanoidflagrun_',
-]
-plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
+# Removed humanoidflagrun section - now consolidated under basic humanoid specs
 
-envs = [
-    'humanoidflagrunharder',
-]
-plot_envs(algos, envs, data_folder, legend_list, frame_scales=[(-1, 32)])
+# Removed humanoidflagrunharder section as it's identical to humanoidflagrun
 
 
 # Atari full

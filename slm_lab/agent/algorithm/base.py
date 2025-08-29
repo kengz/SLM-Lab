@@ -23,7 +23,6 @@ class Algorithm(ABC):
         self.body = self.agent.body
         self.init_algorithm_params()
         self.init_nets(global_nets)
-        logger.info(util.self_desc(self, omit=['algorithm_spec', 'name', 'memory_spec', 'net_spec', 'body']))
 
     @abstractmethod
     @lab_api

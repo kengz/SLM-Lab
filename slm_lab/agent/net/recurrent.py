@@ -1,6 +1,7 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import util
+import numpy as np
 import pydash as ps
 import torch.nn as nn
 
@@ -107,8 +108,8 @@ class RecurrentNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
-        # restore proper in_dim from env stacked state_dim (stack_len, *raw_state_dim)
-        self.in_dim = in_dim[1:] if len(in_dim) > 2 else in_dim[1]
+        # Extract state_dim from in_dim (int or tuple)
+        self.in_dim = in_dim if isinstance(in_dim, (int, np.integer)) else in_dim[1]
         # fc body: state processing model
         if ps.is_empty(self.fc_hid_layers):
             self.rnn_input_dim = self.in_dim
@@ -125,7 +126,7 @@ class RecurrentNet(Net, nn.Module):
             batch_first=True, bidirectional=self.bidirectional)
 
         # tails. avoid list for single-tail for compute speed
-        if ps.is_integer(self.out_dim):
+        if isinstance(self.out_dim, (int, np.integer)):
             self.model_tail = net_util.build_fc_model([self.rnn_hidden_size, self.out_dim], self.out_layer_activation)
         else:
             if not ps.is_list(self.out_layer_activation):
@@ -143,24 +144,28 @@ class RecurrentNet(Net, nn.Module):
         self.train()
 
     def forward(self, x):
-        '''The feedforward step. Input is batch_size x seq_len x state_dim'''
-        # Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs
+        '''Forward pass. Auto-converts single states to sequences for RNN processing'''
         batch_size = x.size(0)
+        
+        # Convert (batch_size, state_dim) to (batch_size, seq_len, state_dim)
+        if x.dim() == 2:
+            x = x.unsqueeze(1).repeat(1, self.seq_len, 1)
+        
+        # Process through fc layers if present
         x = x.view(-1, self.in_dim)
         if hasattr(self, 'fc_model'):
             x = self.fc_model(x)
-        # Restack to batch_size x seq_len x rnn_input_dim
-        x = x.view(-1, self.seq_len, self.rnn_input_dim)
+        x = x.view(batch_size, self.seq_len, self.rnn_input_dim)
+        
+        # RNN forward pass
         if self.cell_type == 'LSTM':
             _output, (h_n, c_n) = self.rnn_model(x)
         else:
             _output, h_n = self.rnn_model(x)
-        hid_x = h_n[-1]  # get final time-layer
-        # return tensor if single tail, else list of tail tensors
+        hid_x = h_n[-1]  # get final hidden state
+        
+        # Output through tail networks
         if hasattr(self, 'model_tails'):
-            outs = []
-            for model_tail in self.model_tails:
-                outs.append(model_tail(hid_x))
-            return outs
+            return [model_tail(hid_x) for model_tail in self.model_tails]
         else:
             return self.model_tail(hid_x)

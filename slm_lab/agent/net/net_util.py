@@ -1,5 +1,6 @@
 from functools import partial, wraps
 from slm_lab.lib import logger, optimizer, util
+import numpy as np
 import os
 import pydash as ps
 import torch
@@ -23,7 +24,7 @@ class NoOpLRScheduler:
     def step(self, epoch=None):
         pass
 
-    def get_lr(self):
+    def get_last_lr(self):
         if hasattr(self.optim, 'defaults'):
             return self.optim.defaults['lr']
         else:  # TODO retrieve lr more generally
@@ -100,10 +101,10 @@ def get_policy_out_dim(body):
             assert ps.is_list(action_dim), action_dim
             policy_out_dim = action_dim
         else:
-            assert ps.is_integer(action_dim), action_dim
+            assert isinstance(action_dim, (int, np.integer)), action_dim
             policy_out_dim = action_dim
     else:
-        assert ps.is_integer(action_dim), action_dim
+        assert isinstance(action_dim, (int, np.integer)), action_dim
         if action_dim == 1:  # single action, use [loc, scale]
             policy_out_dim = 2
         else:  # multi-action, use [locs], [scales]

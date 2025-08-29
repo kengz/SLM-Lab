@@ -157,7 +157,7 @@ class PPO(ActorCritic):
 
         # H entropy regularization
         entropy = action_pd.entropy().mean()
-        self.body.mean_entropy = entropy  # update logging variable
+        self.body.mean_entropy = entropy.detach()  # update logging variable
         ent_penalty = -self.body.entropy_coef * entropy
         logger.debug(f'ent_penalty: {ent_penalty}')
 

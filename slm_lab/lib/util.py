@@ -2,8 +2,8 @@ from collections import deque
 from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
-from pprint import pformat
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
+from slm_lab.lib import logger
 import cv2
 import json
 import numpy as np
@@ -160,7 +160,9 @@ def get_class_attr(obj):
     '''Get the class attr of an object as dict'''
     attr_dict = {}
     for k, v in obj.__dict__.items():
-        if hasattr(v, '__dict__') or ps.is_tuple(v):
+        if isinstance(v, torch.nn.Module):
+            val = f'(device:{v.device}) {v}'
+        elif hasattr(v, '__dict__') or ps.is_tuple(v):
             val = str(v)
         else:
             val = v
@@ -299,10 +301,8 @@ def parallelize(fn, args, num_cpus=NUM_CPUS):
     args should be a list of tuples.
     @returns {list} results Order preserved output from fn.
     '''
-    pool = mp.Pool(num_cpus, maxtasksperchild=1)
-    results = pool.starmap(fn, args)
-    pool.close()
-    pool.join()
+    with mp.Pool(num_cpus, maxtasksperchild=1) as pool:
+        results = pool.starmap(fn, args)
     return results
 
 
@@ -396,29 +396,28 @@ def read_as_plain(data_path, **kwargs):
     if ext == '.json':
         data = ujson.load(open_file, **kwargs)
     elif ext == '.yml':
-        data = yaml.load(open_file, **kwargs)
+        data = yaml.load(open_file, Loader=yaml.FullLoader, **kwargs)
     else:
         data = open_file.read()
     open_file.close()
     return data
 
 
-def self_desc(cls, omit=None):
-    '''Method to get self description, used at init.'''
-    desc_list = [f'{get_class_name(cls)}:']
-    omit_list = ps.compact(cast_list(omit))
-    for k, v in get_class_attr(cls).items():
-        if k in omit_list:
-            continue
-        if k == 'spec':  # spec components are described at their object level; for session, only desc spec.meta
-            desc_v = pformat(v['meta'])
-        elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
-            desc_v = pformat(v)
-        else:
-            desc_v = v
-        desc_list.append(f'- {k} = {desc_v}')
-    desc = '\n'.join(desc_list)
-    return desc
+def log_self_desc(cls, omit=None):
+    '''Log self description in YAML-style format.'''
+    obj_dict = get_class_attr(cls)
+    if omit:
+        obj_dict = ps.omit(obj_dict, omit)
+    
+    lines = [f'{get_class_name(cls)}:']
+    for k, v in obj_dict.items():
+        if isinstance(v, dict):
+            yaml_str = yaml.dump({k: v}, default_flow_style=False, indent=2, sort_keys=False).rstrip()
+            lines.append(yaml_str)
+        elif v is not None and not ps.reg_exp_js_match(str(v), "/<.+>/"):
+            lines.append(f'{k}: {v}')
+    
+    logger.info('\n'.join(lines))
 
 
 def set_attr(obj, attr_dict, keys=None):
@@ -539,7 +538,11 @@ def to_json(d, indent=2):
 
 
 def to_render():
-    return os.environ.get('RENDER', 'false') == 'true' or (get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true')
+    # In dev/enjoy mode, render by default unless explicitly disabled
+    if get_lab_mode() in ('dev', 'enjoy'):
+        return os.environ.get('RENDER', 'true') == 'true'
+    # In other modes, don't render unless explicitly enabled
+    return os.environ.get('RENDER', 'false') == 'true'
 
 
 def to_torch_batch(batch, device, is_episodic):
@@ -549,7 +552,10 @@ def to_torch_batch(batch, device, is_episodic):
             batch[k] = np.concatenate(batch[k])
         elif ps.is_list(batch[k]):
             batch[k] = np.array(batch[k])
-        batch[k] = torch.from_numpy(batch[k].astype(np.float32)).to(device)
+        # Optimize tensor creation - direct device placement avoids intermediate CPU tensor
+        if batch[k].dtype != np.float32:
+            batch[k] = batch[k].astype(np.float32)
+        batch[k] = torch.from_numpy(batch[k]).to(device, non_blocking=True)
     return batch
 
 

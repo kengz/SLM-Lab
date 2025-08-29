@@ -1,13 +1,16 @@
 # The retro analysis module
 # Runs analysis post-hoc using existing data files
-# example: yarn retro_analyze data/reinforce_cartpole_2018_01_22_211751/
+# example: uv run slm-retro data/reinforce_cartpole_2018_01_22_211751/
 from glob import glob
 from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 import os
 import pydash as ps
+import typer
+from pathlib import Path
 
 logger = logger.get_logger(__name__)
+app = typer.Typer()
 
 
 def retro_analyze_sessions(predir):
@@ -76,3 +79,13 @@ def retro_analyze(predir):
     retro_analyze_trials(predir)
     retro_analyze_experiment(predir)
     logger.info('Finished retro-analysis')
+
+
+@app.command()
+def analyze(experiment_dir: Path = typer.Argument(..., help="Experiment directory to analyze")):
+    """Run retrospective analysis on experiment results"""
+    retro_analyze(str(experiment_dir))
+
+
+if __name__ == "__main__":
+    app()

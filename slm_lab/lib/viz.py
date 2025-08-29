@@ -119,7 +119,7 @@ def save_image(figure, filepath):
     try:
         pio.write_image(figure, filepath, scale=2)
     except Exception as e:
-        logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`')
+        logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your command with `xvfb-run -a `, for example `xvfb-run -a uv run slm-lab`')
 
 
 # analysis plot methods

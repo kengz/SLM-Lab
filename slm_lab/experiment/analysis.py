@@ -27,10 +27,11 @@ def gen_return(agent, env):
     body_env = agent.body.env
     agent.body.env = env
     # start eval loop
-    state = env.reset()
+    state, info = env.reset()
     while not np.all(vec_dones):
         action = agent.act(state)
-        state, reward, done, info = env.step(action)
+        state, reward, term, trunc, info = env.step(action)
+        done = np.logical_or(term, trunc)
         vec_dones = np.logical_or(vec_dones, done)  # wait till every vec slot done turns True
     agent.body.env = body_env  # restore swapped ref
     return np.mean(env.total_reward)
@@ -50,7 +51,7 @@ def gen_avg_return(agent, env):
 # metrics calculation methods
 
 def calc_strength(mean_returns, mean_rand_returns):
-    '''
+    r'''
     Calculate strength for metric
     str &= \frac{1}{N} \sum_{i=0}^N \overline{R}_i - \overline{R}_{rand}
     @param Series:mean_returns A series of mean returns from each checkpoint
@@ -63,7 +64,7 @@ def calc_strength(mean_returns, mean_rand_returns):
 
 
 def calc_efficiency(local_strs, ts):
-    '''
+    r'''
     Calculate efficiency for metric
     e &= \frac{\sum_{i=0}^N \frac{1}{t_i} str_i}{\sum_{i=0}^N \frac{1}{t_i}}
     @param Series:local_strs A series of local strengths
@@ -78,7 +79,7 @@ def calc_efficiency(local_strs, ts):
 
 
 def calc_stability(local_strs):
-    '''
+    r'''
     Calculate stability for metric
     sta &= 1 - \left| \frac{\sum_{i=0}^{N-1} \min(str_{i+1} - str_i, 0)}{\sum_{i=0}^{N-1} str_i} \right|
     @param Series:local_strs A series of local strengths
@@ -95,7 +96,7 @@ def calc_stability(local_strs):
 
 
 def calc_consistency(local_strs_list):
-    '''
+    r'''
     Calculate consistency for metric
     con &= 1 - \frac{\sum_{i=0}^N 2 stdev_j(str_{i,j})}{\sum_{i=0}^N avg_j(str_{i,j})}
     @param Series:local_strs_list A list of multiple series of local strengths from different sessions
@@ -119,7 +120,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     rand_bl = random_baseline.get_random_baseline(env_name)
     if rand_bl is None:
         mean_rand_returns = 0.0
-        logger.warn('Random baseline unavailable for environment. Please generate separately.')
+        logger.warning('Random baseline unavailable for environment. Please generate separately.')
     else:
         mean_rand_returns = rand_bl['mean']
     mean_returns = session_df['total_reward']

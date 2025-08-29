@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 from slm_lab.agent.net import net_util
-import pydash as ps
+from slm_lab.lib import logger, util
+import os
 import torch
 import torch.nn as nn
+
+logger = logger.get_logger(__name__)
 
 
 class Net(ABC):
@@ -23,8 +26,20 @@ class Net(ABC):
                 self.device = f'cuda:{net_spec.get("cuda_id", 0)}'
             else:
                 self.device = 'cpu'
+                logger.warning('GPU requested but CUDA not available, falling back to CPU')
         else:
             self.device = 'cpu'
+        
+        # torch.compile: auto-enable on GPU, use TORCH_COMPILE=true/false to override
+        compile_env = os.getenv('TORCH_COMPILE', 'auto').lower()
+        should_compile = (
+            compile_env == 'true' or
+            (compile_env == 'auto' and 'cuda' in self.device)
+        )
+
+        if should_compile:
+            logger.info('torch.compile enabled - compilation will occur on first forward pass')
+            self.forward = torch.compile(self.forward, mode='default')
 
     @abstractmethod
     def forward(self):
@@ -33,8 +48,6 @@ class Net(ABC):
 
     @net_util.dev_check_train_step
     def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
-        if lr_scheduler is not None:
-            lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
@@ -46,6 +59,8 @@ class Net(ABC):
             net_util.copy(global_net, self)
         if clock is not None:
             clock.tick('opt_step')
+        if lr_scheduler is not None:
+            lr_scheduler.step()
         return loss
 
     def store_grad_norms(self):

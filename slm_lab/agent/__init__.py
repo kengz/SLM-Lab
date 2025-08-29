@@ -35,8 +35,6 @@ class Agent:
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
 
-        logger.info(util.self_desc(self))
-
     @lab_api
     def act(self, state: np.ndarray) -> np.ndarray:
         '''Standard act method from algorithm.'''

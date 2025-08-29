@@ -95,7 +95,7 @@ class SARSA(Algorithm):
         '''Note, SARSA is discrete-only'''
         body = self.body
         action = self.action_policy(state, self, body)
-        return action.cpu().squeeze().numpy()  # squeeze to handle scalar
+        return self.to_action(action)
 
     @lab_api
     def sample(self):

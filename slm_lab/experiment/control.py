@@ -7,6 +7,7 @@ from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import numpy as np
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
@@ -48,7 +49,8 @@ class Session:
                 self.eval_env = make_env(self.spec)
         else:
             self.eval_env = self.env
-        logger.info(util.self_desc(self))
+        if self.index == 0:
+            util.log_self_desc(self.agent.algorithm, omit=["net_spec", "explore_var_spec"])
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
@@ -86,15 +88,24 @@ class Session:
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
+        state, info = self.env.reset()
+        
+        # Warm up torch.compile if enabled (compilation time not counted in timing)
+        if hasattr(self.agent.algorithm.net.forward, '__wrapped__'):  # torch.compile wraps the original forward method
+            with torch.no_grad():
+                self.agent.act(state)
+        
+        # Reset clock timing AFTER torch.compile warmup to get accurate FPS
         clock = self.env.clock
-        state = self.env.reset()
+        clock.reset()
+        
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
                 if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
-                    state = self.env.reset()
+                    state, info = self.env.reset()
                     done = False
             self.try_ckpt(self.agent, self.env)
             if clock.get() >= clock.max_frame:  # finish
@@ -102,7 +113,8 @@ class Session:
             clock.tick('t')
             with torch.no_grad():
                 action = self.agent.act(state)
-            next_state, reward, done, info = self.env.step(action)
+            next_state, reward, term, trunc, info = self.env.step(action)
+            done = np.logical_or(term, trunc)
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
 
@@ -150,8 +162,9 @@ class Trial:
         return session_metrics_list
 
     def run_sessions(self):
-        logger.info('Running sessions')
-        if self.spec['meta']['max_session'] == 1:
+        max_session = self.spec["meta"]["max_session"]
+        logger.info(f"Running {max_session} sessions")
+        if max_session == 1:
             spec = deepcopy(self.spec)
             spec_util.tick(spec, 'session')
             session_metrics_list = [Session(spec).run()]
