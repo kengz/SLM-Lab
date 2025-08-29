@@ -21,7 +21,7 @@
         "training_frequency": 5
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -54,10 +54,7 @@
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+      "name": "ALE/Pong-v5",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7
@@ -71,7 +68,7 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "max_session": 16,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "gpu_a3c_nstep_pong": {
@@ -96,7 +93,7 @@
         "training_frequency": 5
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -129,10 +126,7 @@
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+      "name": "ALE/Pong-v5",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7
@@ -146,7 +140,7 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "max_session": 16,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

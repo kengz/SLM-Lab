@@ -7,6 +7,7 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
+        "target_entropy_epsilon": 0.2,
         "training_frequency": 1
       },
       "memory": {
@@ -36,11 +37,10 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 200000,
-      "num_envs": 8,
-      "normalize_state": false
+      "num_envs": 8
     }],
     "body": {
       "product": "outer",
@@ -52,7 +52,7 @@
       "eval_frequency": 500,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

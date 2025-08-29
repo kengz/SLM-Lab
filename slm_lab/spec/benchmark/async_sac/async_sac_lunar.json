@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-3,
+          "lr": 1e-3
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -36,13 +36,10 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 8e5,
-      "num_envs": 8,
-      "normalize_state": false
+      "num_envs": 8
     }],
     "body": {
       "product": "outer",
@@ -54,7 +51,7 @@
       "eval_frequency": 500,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
       "env": [{

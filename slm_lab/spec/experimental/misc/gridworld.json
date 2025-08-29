@@ -13,7 +13,7 @@
         "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -36,7 +36,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -44,7 +44,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -55,7 +55,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -90,7 +90,7 @@
         "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -117,7 +117,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -125,7 +125,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -136,7 +136,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -171,7 +171,7 @@
         "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -194,7 +194,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -202,7 +202,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -213,7 +213,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -248,7 +248,7 @@
         "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -275,7 +275,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -283,7 +283,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -294,7 +294,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -327,7 +327,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.999,
         "training_batch_iter": 3,
@@ -356,7 +356,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -366,10 +366,8 @@
     }],
     "env": [{
       "name": "gridworld",
-      "frame_op": "concat",
-      "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -380,7 +378,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -390,14 +388,14 @@
           }
         },
         "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000]
         },
         "net": {
           "training_iter__choice": [1, 2, 3, 4],
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
           "lr__uniform": [0.001, 0.01],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -414,7 +412,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.999,
         "training_batch_iter": 3,
@@ -447,7 +445,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -457,10 +455,8 @@
     }],
     "env": [{
       "name": "gridworld",
-      "frame_op": "concat",
-      "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -471,7 +467,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -481,7 +477,7 @@
           }
         },
         "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000]
         },
         "net": {
           "rnn_hidden_size__choice": [32, 64],
@@ -490,7 +486,7 @@
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "lr__uniform": [0.001, 0.01],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -507,7 +503,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.999,
         "training_batch_iter": 3,
@@ -536,7 +532,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -546,10 +542,8 @@
     }],
     "env": [{
       "name": "gridworld",
-      "frame_op": "concat",
-      "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -560,7 +554,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -570,14 +564,14 @@
           }
         },
         "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000]
         },
         "net": {
           "training_iter__choice": [1, 2, 3, 4],
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "lr__uniform": [0.001, 0.01],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -594,7 +588,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.999,
         "training_batch_iter": 3,
@@ -627,7 +621,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -637,10 +631,8 @@
     }],
     "env": [{
       "name": "gridworld",
-      "frame_op": "concat",
-      "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 1000,
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -651,7 +643,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 95,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -661,7 +653,7 @@
           }
         },
         "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000]
         },
         "net": {
           "rnn_hidden_size__choice": [32, 64],
@@ -670,9 +662,9 @@
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "lr__uniform": [0.001, 0.01],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
-  },
+  }
 }

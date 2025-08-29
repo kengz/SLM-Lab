@@ -21,7 +21,7 @@
         "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -53,10 +53,10 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 30000,
+      "max_frame": 30000
     }],
     "body": {
       "product": "outer",
@@ -81,6 +81,6 @@
           }
         }
       }]
-    },
-  },
+    }
+  }
 }

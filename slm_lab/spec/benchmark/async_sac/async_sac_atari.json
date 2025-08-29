@@ -36,7 +36,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 1e-4
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -47,10 +47,6 @@
     }],
     "env": [{
       "name": "BreakoutNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "image_downsize": [64, 64],
-      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
@@ -65,7 +61,7 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "async_sac_pong": {
@@ -105,7 +101,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 1e-4
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -116,10 +112,6 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "image_downsize": [64, 64],
-      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
@@ -134,7 +126,7 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "async_sac_qbert": {
@@ -174,7 +166,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 1e-4
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -185,10 +177,6 @@
     }],
     "env": [{
       "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "image_downsize": [64, 64],
-      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
@@ -203,7 +191,7 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "async_sac_seaquest": {
@@ -243,7 +231,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 1e-4
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -254,10 +242,6 @@
     }],
     "env": [{
       "name": "SeaquestNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "image_downsize": [64, 64],
-      "reward_scale": "sign",
       "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
@@ -272,7 +256,7 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

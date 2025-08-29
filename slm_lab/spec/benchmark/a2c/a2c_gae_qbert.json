@@ -21,7 +21,7 @@
         "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -59,9 +59,6 @@
     }],
     "env": [{
       "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
@@ -76,7 +73,7 @@
       "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

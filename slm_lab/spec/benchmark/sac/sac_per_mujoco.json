@@ -1,5 +1,5 @@
 {
-  "sac_per_roboschool": {
+  "sac_per_mujoco": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -28,7 +28,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 1e-3,
+          "lr": 1e-3
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -57,7 +57,7 @@
     },
     "spec_params": {
       "env": [
-        "RoboschoolAnt-v1", "RoboschoolAtlasForwardWalk-v1", "RoboschoolHalfCheetah-v1", "RoboschoolHopper-v1", "RoboschoolInvertedDoublePendulum-v1", "RoboschoolInvertedPendulum-v1", "RoboschoolInvertedPendulumSwingup-v1", "RoboschoolReacher-v1", "RoboschoolWalker2d-v1"
+        "Ant-v5", "HalfCheetah-v5", "Hopper-v5", "InvertedDoublePendulum-v5", "InvertedPendulum-v5", "Reacher-v5", "Walker2d-v5"
       ]
     }
   }

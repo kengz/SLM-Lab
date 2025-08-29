@@ -58,17 +58,14 @@
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+      "name": "ALE/Pong-v5",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
     }],
     "body": {
       "product": "outer",
-      "num": 1,
+      "num": 1
     },
     "meta": {
       "distributed": false,

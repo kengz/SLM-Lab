@@ -14,7 +14,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 20000,
+          "end_step": 20000
         },
         "training_frequency": 1
       },
@@ -37,9 +37,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100000,
+      "max_frame": 100000
     }],
     "body": {
       "product": "outer",
@@ -49,7 +49,7 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
       "agent": [{
@@ -74,7 +74,7 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 20000,
+          "end_step": 20000
         },
         "training_frequency": 1
       },
@@ -97,9 +97,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100000,
+      "max_frame": 100000
     }],
     "body": {
       "product": "outer",
@@ -109,7 +109,7 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
       "agent": [{

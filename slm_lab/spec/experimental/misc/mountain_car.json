@@ -15,11 +15,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -42,7 +42,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -50,7 +50,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 2600,
+      "max_frame": 2600
     }],
     "body": {
       "product": "outer",
@@ -61,7 +61,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -98,11 +98,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -129,12 +129,12 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -142,7 +142,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 2600,
+      "max_frame": 2600
     }],
     "body": {
       "product": "outer",
@@ -153,13 +153,13 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 4, 8],
-          "lam__uniform": [0.9, 0.99],
+          "lam__uniform": [0.9, 0.99]
         },
         "net": {
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
@@ -193,11 +193,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -220,7 +220,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -228,7 +228,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 2600,
+      "max_frame": 2600
     }],
     "body": {
       "product": "outer",
@@ -239,7 +239,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -277,11 +277,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -308,7 +308,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
@@ -316,7 +316,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 2600,
+      "max_frame": 2600
     }],
     "body": {
       "product": "outer",
@@ -327,13 +327,13 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 4, 8],
-          "lam__uniform": [0.9, 0.99],
+          "lam__uniform": [0.9, 0.99]
         },
         "net": {
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
@@ -363,7 +363,7 @@
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 80000,
+          "end_step": 80000
         },
         "gamma": 0.999,
         "training_batch_iter": 3,
@@ -392,18 +392,18 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
-        "gpu": false,
+        "gpu": false
       }
     }],
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 1400,
+      "max_frame": 1400
     }],
     "body": {
       "product": "outer",
@@ -414,7 +414,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -430,7 +430,7 @@
           "hid_layers__choice": [[100], [200], [400], [200, 100]],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
-          },
+          }
         }
       }]
     }
@@ -447,7 +447,7 @@
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 40000,
+          "end_step": 40000
         },
         "gamma": 0.999,
         "training_batch_iter": 3,
@@ -480,7 +480,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -491,7 +491,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 1400,
+      "max_frame": 1400
     }],
     "body": {
       "product": "outer",
@@ -502,7 +502,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -520,7 +520,7 @@
           "seq_len__choice": [2, 3, 4, 5, 6],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
-          },
+          }
         }
       }]
     }
@@ -537,7 +537,7 @@
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 40000,
+          "end_step": 40000
         },
         "gamma": 0.999,
         "training_batch_iter": 4,
@@ -566,18 +566,18 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
-        "gpu": false,
+        "gpu": false
       }
     }],
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 1400,
+      "max_frame": 1400
     }],
     "body": {
       "product": "outer",
@@ -588,7 +588,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -604,7 +604,7 @@
           "hid_layers__choice": [[100], [200], [400], [200, 100]],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
-          },
+          }
         }
       }]
     }
@@ -621,7 +621,7 @@
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 40000,
+          "end_step": 40000
         },
         "gamma": 0.999,
         "training_batch_iter": 4,
@@ -654,7 +654,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -665,7 +665,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 1400,
+      "max_frame": 1400
     }],
     "body": {
       "product": "outer",
@@ -676,7 +676,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 200,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -694,9 +694,9 @@
           "seq_len__choice": [2, 3, 4, 5, 6],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
-          },
+          }
         }
       }]
     }
-  },
+  }
 }

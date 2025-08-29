@@ -14,14 +14,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "val_loss_coef": 1.0,
         "sil_policy_loss_coef": 1.0,
@@ -56,15 +56,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
+      "max_frame": 50000
     }],
     "body": {
       "product": "outer",
@@ -114,14 +114,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "val_loss_coef": 0.4,
         "sil_policy_loss_coef": 1.0,
@@ -156,15 +156,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
+      "max_frame": 50000
     }],
     "body": {
       "product": "outer",
@@ -214,14 +214,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "val_loss_coef": 1.0,
         "sil_policy_loss_coef": 1.0,
@@ -260,15 +260,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
+      "max_frame": 50000
     }],
     "body": {
       "product": "outer",
@@ -318,14 +318,14 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 50000,
+          "end_step": 50000
         },
         "val_loss_coef": 1.0,
         "sil_policy_loss_coef": 1.0,
@@ -364,15 +364,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
+      "max_frame": 50000
     }],
     "body": {
       "product": "outer",
@@ -406,5 +406,5 @@
         }
       }]
     }
-  },
+  }
 }

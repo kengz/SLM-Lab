@@ -25,7 +25,7 @@
         "epsilon": 0.0001,
         "batch_size": 32,
         "max_size": 50000,
-        "use_cer": false,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -46,12 +46,10 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 300000,
-      "normalize_state": false
+      "max_frame": 300000
     }],
     "body": {
       "product": "outer",
@@ -63,7 +61,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 1,
-      "search": "RandomSearch",
-    },
+      "search": "RandomSearch"
+    }
   }
 }

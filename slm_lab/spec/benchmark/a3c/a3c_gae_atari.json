@@ -21,7 +21,7 @@
         "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -55,9 +55,6 @@
     }],
     "env": [{
       "name": "${env}",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7
@@ -101,7 +98,7 @@
         "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -135,9 +132,6 @@
     }],
     "env": [{
       "name": "${env}",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7

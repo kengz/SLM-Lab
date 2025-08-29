@@ -29,7 +29,7 @@
         "training_epoch": 15
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -46,11 +46,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 3e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 3e-4
         },
         "lr_scheduler_spec": null,
         "gpu": false
@@ -104,7 +104,7 @@
         "training_epoch": 15
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -121,18 +121,18 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 3e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 3e-4
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
     }],
     "env": [{
-      "name": "Pendulum-v0",
+      "name": "Pendulum-v1",
       "num_envs": 32,
       "max_t": null,
       "max_frame": 1e6

@@ -29,7 +29,7 @@
         "training_epoch": 4
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -51,21 +51,18 @@
         },
         "actor_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 7e-4,
+          "lr": 7e-4
         },
         "critic_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 7e-4,
+          "lr": 7e-4
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+      "name": "ALE/Pong-v5",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7
@@ -79,7 +76,7 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "max_session": 16,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

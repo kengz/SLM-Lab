@@ -54,9 +54,7 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 250000
     }],
@@ -69,7 +67,7 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 62,
-      "search": "RandomSearch",
-    },
+      "search": "RandomSearch"
+    }
   }
 }

@@ -15,11 +15,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.96,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -42,15 +42,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 2000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 500
     }],
     "body": {
       "product": "outer",
@@ -96,11 +96,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -122,9 +122,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100000,
+      "max_frame": 100000
     }],
     "body": {
       "product": "outer",
@@ -170,11 +170,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.08,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -197,15 +197,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 2000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 400,
+      "max_frame": 400
     }],
     "body": {
       "product": "outer",
@@ -251,11 +251,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -282,15 +282,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 500
     }],
     "body": {
       "product": "outer",
@@ -336,11 +336,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -367,15 +367,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 500
     }],
     "body": {
       "product": "outer",
@@ -404,5 +404,5 @@
         }
       }]
     }
-  },
+  }
 }

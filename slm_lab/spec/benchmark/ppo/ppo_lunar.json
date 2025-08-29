@@ -29,7 +29,7 @@
         "training_epoch": 10
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -45,24 +45,21 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 5e-4,
+          "lr": 5e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 5e-4,
+          "lr": 5e-4
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000,
-      "num_envs": 8,
-      "normalize_state": false
+      "num_envs": 8
     }],
     "body": {
       "product": "outer",
@@ -75,5 +72,5 @@
       "max_session": 4,
       "max_trial": 1
     }
-  },
+  }
 }

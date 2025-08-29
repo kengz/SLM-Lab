@@ -38,7 +38,7 @@
       }
     }],
     "env": [{
-      "name": "RoboschoolHalfCheetah-v1",
+      "name": "HalfCheetah-v5",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 2e6

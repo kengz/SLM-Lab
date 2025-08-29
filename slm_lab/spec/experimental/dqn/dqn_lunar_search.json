@@ -17,8 +17,7 @@
         "training_batch_iter": 3,
         "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": true,
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -54,9 +53,7 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000
     }],
@@ -68,7 +65,7 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
       "agent": [{
@@ -96,8 +93,7 @@
         "training_batch_iter": 3,
         "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": true,
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -133,9 +129,7 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000
     }],
@@ -147,7 +141,7 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
       "agent": [{
@@ -175,8 +169,7 @@
         "training_batch_iter": 3,
         "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": true,
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -210,9 +203,7 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000
     }],
@@ -224,12 +215,11 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__grid_search": [true, false],
         }
       }]
     }

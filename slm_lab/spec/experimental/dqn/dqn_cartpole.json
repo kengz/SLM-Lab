@@ -11,7 +11,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 1000,
+          "end_step": 1000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -40,15 +40,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 2000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000
+      "max_frame": 5e5
     }],
     "body": {
       "product": "outer",
@@ -65,7 +65,7 @@
       "agent": [{
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [1000, 3000, 5000, 10000]
           }
         },
         "net": {
@@ -95,7 +95,7 @@
           "start_val": 5.0,
           "end_val": 0.5,
           "start_step": 0,
-          "end_step": 1000,
+          "end_step": 1000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -124,15 +124,15 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 2000,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000
+      "max_frame": 5e5
     }],
     "body": {
       "product": "outer",
@@ -149,7 +149,7 @@
       "agent": [{
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [1000, 3000, 5000, 10000]
           }
         },
         "net": {
@@ -179,7 +179,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -208,7 +208,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -217,9 +217,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100,
+      "max_frame": 100
     }],
     "body": {
       "product": "outer",
@@ -227,7 +227,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 2,
       "max_trial": 16,
       "search": "RandomSearch"
@@ -235,14 +235,14 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__uniform": [0.8, 0.999],
+          "gamma__uniform": [0.8, 0.999]
         },
         "net": {
           "hid_layers__choice": [
             [32],
             [64],
             [64, 32]
-          ],
+          ]
         }
       }]
     }
@@ -259,7 +259,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -288,7 +288,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -297,9 +297,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 250,
+      "max_frame": 250
     }],
     "body": {
       "product": "outer",
@@ -307,7 +307,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -316,7 +316,7 @@
       "agent": [{
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [1000, 3000, 5000, 10000]
           }
         },
         "net": {
@@ -346,7 +346,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -379,7 +379,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -388,9 +388,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 250,
+      "max_frame": 250
     }],
     "body": {
       "product": "outer",
@@ -398,7 +398,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -407,7 +407,7 @@
       "agent": [{
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [1000, 3000, 5000, 10000]
           }
         },
         "net": {
@@ -437,7 +437,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -470,7 +470,7 @@
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
-          "gamma": 0.9,
+          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -479,9 +479,9 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 250,
+      "max_frame": 500000
     }],
     "body": {
       "product": "outer",
@@ -489,7 +489,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -498,7 +498,7 @@
       "agent": [{
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [1000, 3000, 5000, 10000]
           }
         },
         "net": {
@@ -515,5 +515,5 @@
         }
       }]
     }
-  },
+  }
 }

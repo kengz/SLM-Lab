@@ -35,7 +35,7 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 100000
     }],
@@ -95,7 +95,7 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 100000
     }],
