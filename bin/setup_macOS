@@ -13,44 +13,23 @@ else
 fi
 
 echo "--- Installing brew system dependencies ---"
-hb_list=(cmake boost boost-python3 sdl2 swig)
+hb_list=(cmake sdl2 swig)
 for item in "${hb_list[@]}"; do
   echo "Installing ${item}"
   brew info "${item}" | grep --quiet "Not installed" && brew install "${item}"
 done
 
-echo "--- Installing Conda ---"
-if which conda >/dev/null; then
-  echo "Conda is already installed"
+echo "--- Installing uv ---"
+if which uv >/dev/null; then
+  echo "uv is already installed"
 else
-  curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-  bash Miniconda3-latest-MacOSX-x86_64.sh -b -p ~/miniconda3
-  rm Miniconda3-latest-MacOSX-x86_64.sh
-  echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bash_profile
-  source ~/.bash_profile
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
 fi
 
-echo "--- Installing Conda environment ---"
-if ! which conda >/dev/null; then
-  # guard for when no Conda is found, e.g. in Colab
-  export PATH=~/miniconda3/bin:$PATH
-fi
-if conda env list | grep "^lab " >/dev/null; then
-  echo "conda env lab is already installed"
-else
-  conda create -n lab python=3.7.3 -y
-fi
+echo "--- Installing Python dependencies with uv ---"
+# uv will automatically create virtual environment and install dependencies
+uv sync
 
-# install kernel for Atom Hydrogen
-# conda install ipykernel
-# python -m ipykernel install --user --name lab
-
-# remove for reset:
-# conda deactivate
-# conda env remove -n lab -y
-# conda env export > environment.yml
-echo "--- Updating Conda environment ---"
-conda env update -f environment.yml
-
-source ~/.bash_profile
+export PATH="$HOME/.local/bin:$PATH"
 echo "--- Lab setup complete ---"

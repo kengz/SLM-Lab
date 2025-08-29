@@ -22,8 +22,6 @@
 # NodeJS
 **/node_modules
 
-# VizDoom
-**/*.ini
 
 # Data files
 **/data

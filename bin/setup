@@ -12,8 +12,8 @@ read -p "
 ------------------------------------------------
 
 Welcome to the SLM Lab setup script;
-This will invoke sudo; alternatively,
-inspect bin/setup_ubuntu or bin/setup_macOS and run the lines manually.
+This will install system dependencies and uv package manager;
+Alternatively, inspect bin/setup_ubuntu or bin/setup_macOS and run the lines manually.
 
 Press enter to continue, Ctrl+c to quit:
 
@@ -32,16 +32,10 @@ else
   $BIN_DIR/setup_ubuntu
 fi
 
-# Run extra setup
+# Extra dependencies no longer supported (Unity/VizDoom deprecated)
 if [ "$1" == "extra" ]; then
-  echo "Running extra optional setup"
-  if [ $(uname) == "Darwin" ]; then
-    $BIN_DIR/setup_macOS_extra
-  elif [ -f '/etc/arch-release' ]; then
-    $BIN_DIR/setup_arch_extra
-  else
-    $BIN_DIR/setup_ubuntu_extra
-  fi
+  echo "Extra dependencies (Unity/VizDoom) are no longer supported."
+  echo "Use gymnasium environments directly: https://gymnasium.farama.org/environments/third_party_environments/"
 fi
 
 echo "

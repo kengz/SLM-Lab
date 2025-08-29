@@ -1,0 +1,8 @@
+# dstack apply -f .dstack/cache-volume.yml
+type: volume
+name: cache-volume
+
+backend: gcp
+region: us-east1
+
+size: 20GB

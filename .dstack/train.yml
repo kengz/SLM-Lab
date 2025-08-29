@@ -1,0 +1,28 @@
+type: task
+name: train
+
+python: 3.12
+
+env:
+  - SPEC_FILE
+  - SPEC_NAME
+  - LAB_MODE=train
+
+commands:
+  # Install minimal dependencies for OpenCV and RL environments
+  - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
+  # Install Python dependencies
+  - uv sync
+  # Run SLM Lab training
+  - uv run run_lab.py ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE}
+
+# mount to persist
+volumes:
+  - cache-volume:/root/.cache
+  - data-volume:/workflow/data
+
+resources:
+  cpu: 4
+  gpu: T4
+
+backends: [gcp]
