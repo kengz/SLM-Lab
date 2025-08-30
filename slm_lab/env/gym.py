@@ -109,6 +109,7 @@ class GymEnv(BaseEnv):
             vectorization_mode = self._get_vectorization_mode()
             # Note: For Atari, gymnasium's make_vec automatically includes FrameStackObservation + AtariPreprocessing
             # See: https://ale.farama.org/vector-environment/
+            # NOTE: render_mode is NOT a valid parameter for gym.make_vec - vector envs handle rendering differently
             self.u_env = gym.make_vec(self.name, num_envs=self.num_envs, vectorization_mode=vectorization_mode)
         else:
             # Use gymnasium's standard make which handles all preprocessing automatically

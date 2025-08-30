@@ -96,21 +96,65 @@ Currently migrating from:
 
 ## How to Run SLM-Lab
 
+### Option 1: Installed Tool (Recommended)
 ```bash
-# Command structure
-uv run slm-lab {spec_file} {spec_name} {lab_mode}
+# Install as uv tool for shorter commands
+uv tool install --editable .
 
-# Lab modes:
-#   dev     - Development mode with verbose logging, env rendering, gradient checks (slower but helpful)
-#   train   - Training mode for fastest performance (disables dev tools)
-#   train@{predir} - Resume training from specific directory (e.g. train@latest)
-#   enjoy@{session_spec_file} - Replay trained model from trial-session
-#   search  - Hyperparameter search (uses Ray - avoid until stable)
+# Command patterns:
+slm-lab                              # CartPole demo (dev mode, no rendering)
+slm-lab spec.json spec_name mode     # Single experiment
+slm-lab --job job/experiments.json   # Batch experiments
 
 # Examples:
-uv run slm-lab slm_lab/spec/demo.json dqn_cartpole dev
-uv run slm-lab slm_lab/spec/benchmark/dqn/dqn_cartpole.json vanilla_dqn_boltzmann_cartpole train
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole dev
+slm-lab                                                # CartPole demo
+slm-lab --render                                       # CartPole demo with rendering  
+slm-lab slm_lab/spec/demo.json dqn_cartpole dev       # Custom experiment
+slm-lab slm_lab/spec/demo.json dqn_cartpole train     # Training mode
+slm-lab --job job/experiments.json                    # Batch mode
+```
+
+### Option 2: Direct Execution (Development)
+```bash
+# Equivalent to slm-lab commands above
+python run_lab.py                                        # CartPole demo
+python run_lab.py --render                               # CartPole demo with rendering
+python run_lab.py slm_lab/spec/demo.json dqn_cartpole dev   # Custom experiment  
+python run_lab.py --job job/experiments.json             # Batch mode
+
+# Or with uv run
+uv run python run_lab.py slm_lab/spec/demo.json dqn_cartpole dev
+```
+
+### Execution Modes:
+- `dev` - Development mode with verbose logging and debugging features
+- `train` - Training mode for fastest performance (production)
+- `train@{predir}` - Resume training from directory (e.g. train@latest)
+- `enjoy@{session_spec_file}` - Replay trained model from session
+- `search` - Hyperparameter search (uses Ray - avoid until stable)
+
+### CLI Flags (ordered by relevance):
+```bash
+# Most common
+--render                          # Enable environment rendering (explicit)
+--job job_file.json              # Run batch experiments  
+
+# Configuration  
+--log-level=INFO|DEBUG|WARNING|ERROR  # Logging verbosity
+--torch-compile=auto|true|false   # Smart torch.compile (auto=modern GPUs only)
+--cuda-offset=0                   # GPU device offset
+
+# Advanced debugging
+--profile=false|true|gpu|cpu      # Performance profiling
+```
+
+### Environment Variables:
+All flags have corresponding environment variables:
+```bash
+RENDER=true slm-lab                    # Same as --render
+LOG_LEVEL=DEBUG slm-lab               # Same as --log-level=DEBUG
+TORCH_COMPILE=false slm-lab           # Same as --torch-compile=false
+```
 
 # Spec files are located in slm_lab/spec/ with structure:
 # {
@@ -193,12 +237,31 @@ uv run slm-lab slm_lab/spec/benchmark/async_sac/async_sac_mujoco.json async_sac_
 
 ### Current
 
-1. ✅ **Rendering system completely fixed** - Fixed dev mode logic AND removed SDL_VIDEODRIVER=dummy that was breaking GUI display
-2. also cleanup some of the preprocessing methods? no longer used since it's in gymnasium now. but check if book needs it
-3. GPU optim. device transfer, pin_memory, compile (it's slower), torch.profiler.profile(). test on L4 to see perf w/ or w/out compile
+- btw render_mode=render_mode is not a flag for gym.make_vec
+1. optimization - currently the FPS is still low. when running I don't see ful GPU utilization - GPU spikes and CPU spikes - so this indicates bottleneck of back and forth waiting.
+2. Also, enabling Torch compile actually runs slower overall - I ran on T4 GPU which is older so perhaps? or it's just the models are too small? but nevertheless it should not be slower right?
+3. So, let's do a proper optimization - start by solving the bottleneck/wait cycles. Then look at standard speedup tricks - GPU optim. device transfer, pin_memory, compile (the slowdown issue), or use torch.profiler.profile().
+
+#### Benchmark
+
+`uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train`
+
+Set session to 1 to focus on benchmarking.
+
+- 16 envs
+  - disabled compile: 1200 fps
+  - enabled compile: 1000 fps hmm slower
+- change to 32 envs
+  - disabled compile: 1300 fps
+  - enabled compile: 1100 fps
+- double minibatch
+  - still 1300 fps
+- possible performance block - the log file (not stdout) is writing too much shit - all the debug stuff
+  - info only, 32 envs, no compile: 1300 fps
 
 ### 📝 Future Enhancements
 
+- [ ] also cleanup some of the preprocessing methods? no longer used since it's in gymnasium now. but check if book needs it
 - [ ] **TrackTime Environment Wrapper**: Implement timing wrapper for comprehensive performance analysis
 - [ ] **Atari Production Testing**: Full Pong training run with dstack GPU infrastructure
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)

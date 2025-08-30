@@ -538,10 +538,7 @@ def to_json(d, indent=2):
 
 
 def to_render():
-    # In dev/enjoy mode, render by default unless explicitly disabled
-    if get_lab_mode() in ('dev', 'enjoy'):
-        return os.environ.get('RENDER', 'true') == 'true'
-    # In other modes, don't render unless explicitly enabled
+    '''Return True if --render flag was passed, False otherwise'''
     return os.environ.get('RENDER', 'false') == 'true'
 
 

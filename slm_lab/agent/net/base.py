@@ -30,15 +30,9 @@ class Net(ABC):
         else:
             self.device = 'cpu'
         
-        # torch.compile: auto-enable on GPU, use TORCH_COMPILE=true/false to override
-        compile_env = os.getenv('TORCH_COMPILE', 'auto').lower()
-        should_compile = (
-            compile_env == 'true' or
-            (compile_env == 'auto' and 'cuda' in self.device)
-        )
-
-        if should_compile:
-            logger.info('torch.compile enabled - compilation will occur on first forward pass')
+        # Basic torch.compile support - enable with TORCH_COMPILE=true
+        compile_env = os.getenv('TORCH_COMPILE', 'false').lower()
+        if compile_env == 'true':
             self.forward = torch.compile(self.forward, mode='default')
 
     @abstractmethod
