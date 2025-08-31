@@ -127,9 +127,18 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
-    final_return_ma = mean_returns[-viz.PLOT_MA_WINDOW:].mean()
-    str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
-    max_str, final_str = local_strs.max(), local_strs.iloc[-1]
+    # Protect against insufficient data points
+    if len(mean_returns) == 0:
+        logger.warning('Empty session data - using NaN metrics')
+        final_return_ma = np.nan
+        str_, local_strs = np.nan, pd.Series(dtype=float)
+        max_str, final_str = np.nan, np.nan
+    else:
+        # Use available data if less than PLOT_MA_WINDOW
+        window_size = min(len(mean_returns), viz.PLOT_MA_WINDOW)
+        final_return_ma = mean_returns[-window_size:].mean()
+        str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
+        max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     with warnings.catch_warnings():  # mute np.nanmean warning
         warnings.filterwarnings('ignore')
         sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)

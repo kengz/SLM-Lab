@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
-import os
+
 import torch
 import torch.nn as nn
+
+from slm_lab.agent.net import net_util
+from slm_lab.lib import logger
+from slm_lab.lib.perf import _perf_torch_compile
 
 logger = logger.get_logger(__name__)
 
@@ -30,10 +32,9 @@ class Net(ABC):
         else:
             self.device = 'cpu'
         
-        # Basic torch.compile support - enable with TORCH_COMPILE=true
-        compile_env = os.getenv('TORCH_COMPILE', 'false').lower()
-        if compile_env == 'true':
-            self.forward = torch.compile(self.forward, mode='default')
+        # Apply torch.compile if enabled
+        if _perf_torch_compile():
+            self.forward = torch.compile(self.forward, mode="default", fullgraph=False)
 
     @abstractmethod
     def forward(self):

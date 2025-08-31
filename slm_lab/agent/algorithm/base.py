@@ -48,9 +48,6 @@ class Algorithm(ABC):
         lab_mode = util.get_lab_mode()
         if self.agent.spec['meta']['resume'] or lab_mode == 'enjoy':
             self.load()
-            logger.info(f'Loaded algorithm models for lab_mode: {lab_mode}')
-        else:
-            logger.info(f'Initialized algorithm models for lab_mode: {lab_mode}')
 
     @lab_api
     def calc_pdparam(self, x, net=None):

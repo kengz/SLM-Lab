@@ -83,7 +83,9 @@ def run_experiment(spec_file: str, spec_name: str, lab_mode: str):
 
 
 def main(
-    spec_file: str = typer.Argument("slm_lab/spec/demo.json", help="JSON spec file path"),
+    spec_file: str = typer.Argument(
+        "slm_lab/spec/demo.json", help="JSON spec file path"
+    ),
     spec_name: str = typer.Argument("dqn_cartpole", help="Spec name within the file"),
     mode: str = typer.Argument("dev", help="Execution mode: dev|train|search|enjoy"),
     # Flags ordered by relevance
@@ -99,11 +101,17 @@ def main(
         envvar="LOG_LEVEL",
         help="Logging: DEBUG|INFO|WARNING|ERROR",
     ),
+    optimize_perf: bool = typer.Option(
+        True,
+        "--optimize-perf",
+        envvar="OPTIMIZE_PERF",
+        help="true|false: Auto-optimize CPU threading, torch.compile, and GPU settings (false disables all)",
+    ),
     torch_compile: str = typer.Option(
         "auto",
         "--torch-compile",
         envvar="TORCH_COMPILE",
-        help="torch.compile: auto|true|false",
+        help="auto|true|false: torch.compile smart detection (auto=Ampere+ only, true=force, may fail Apple Silicon)",
     ),
     cuda_offset: int = typer.Option(
         0, "--cuda-offset", envvar="CUDA_OFFSET", help="GPU device offset"
@@ -117,7 +125,7 @@ def main(
 ):
     """
     Run SLM-Lab experiments. Defaults to CartPole demo in dev mode.
-    
+
     Examples:
         slm-lab                                    # CartPole demo (no rendering)
         slm-lab --render                           # CartPole demo with rendering
@@ -125,12 +133,18 @@ def main(
         slm-lab spec.json spec_name train          # Custom experiment
         slm-lab --job job/experiments.json         # Batch experiments
     """
-    # Set environment variables from CLI flags (simple one-liner approach)
-    os.environ.update({
-        'TORCH_COMPILE': torch_compile, 'PROFILE': profile, 'RENDER': str(render).lower(),
-        'LOG_LEVEL': log_level, 'CUDA_OFFSET': str(cuda_offset)
-    })
-    
+    # Set environment variables from CLI flags
+    os.environ.update(
+        {
+            "RENDER": str(render).lower(),
+            "LOG_LEVEL": log_level,
+            "OPTIMIZE_PERF": str(optimize_perf).lower(),
+            "TORCH_COMPILE": torch_compile,
+            "CUDA_OFFSET": str(cuda_offset),
+            "PROFILE": profile,
+        }
+    )
+
     if job is not None:
         # Batch mode: run experiments from job file
         for spec_file, spec_and_mode in util.read(job).items():

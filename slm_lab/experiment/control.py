@@ -1,13 +1,17 @@
 # The control module
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
+from slm_lab import ROOT_DIR
 from slm_lab.agent import Agent, Body
 from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
+from slm_lab.lib.util import log_dict
+from slm_lab.lib.perf import optimize_perf
 from slm_lab.spec import spec_util
 import numpy as np
+import os
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
@@ -43,6 +47,9 @@ class Session:
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
 
+        # Apply perf optimizations for all sessions
+        self.perf_setup = optimize_perf()
+        
         self.agent, self.env = make_agent_env(self.spec, global_nets)
         if ps.get(self.spec, 'meta.rigorous_eval'):
             with util.ctx_lab_mode('eval'):
@@ -50,6 +57,7 @@ class Session:
         else:
             self.eval_env = self.env
         if self.index == 0:
+            log_dict(self.perf_setup, 'Performance setup')
             util.log_self_desc(self.agent.algorithm, omit=["net_spec", "explore_var_spec"])
 
     def to_ckpt(self, env, mode='eval'):
@@ -91,9 +99,28 @@ class Session:
         state, info = self.env.reset()
         
         # Warm up torch.compile if enabled (compilation time not counted in timing)
-        if hasattr(self.agent.algorithm.net.forward, '__wrapped__'):  # torch.compile wraps the original forward method
+        if hasattr(self.agent.algorithm, 'net') and hasattr(self.agent.algorithm.net.forward, '__wrapped__'):
             with torch.no_grad():
                 self.agent.act(state)
+        
+        # Simple profiler setup (only if PROFILE=true and session 0)
+        profiler = None
+        if os.getenv('PROFILE', '').lower() == 'true' and self.index == 0:
+            # Use ROOT_DIR for consistent profiler directory
+            profiler_dir = os.path.join(ROOT_DIR, 'data', 'profiler_logs')
+            os.makedirs(profiler_dir, exist_ok=True)
+            
+            activities = [torch.profiler.ProfilerActivity.CPU]
+            if torch.cuda.is_available():
+                activities.append(torch.profiler.ProfilerActivity.CUDA)
+            profiler = torch.profiler.profile(
+                activities=activities,
+                record_shapes=True,
+                profile_memory=True,
+                on_trace_ready=torch.profiler.tensorboard_trace_handler(profiler_dir)
+            )
+            profiler.start()
+            logger.info(f'Profiler started - will profile first 100 steps to {profiler_dir}')
         
         # Reset clock timing AFTER torch.compile warmup to get accurate FPS
         clock = self.env.clock
@@ -117,6 +144,15 @@ class Session:
             done = np.logical_or(term, trunc)
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
+
+            # Profiler step (only first 100 steps to avoid huge files)
+            if profiler and clock.get() <= 100:
+                profiler.step()
+
+        # Clean up profiler
+        if profiler:
+            profiler.stop()
+            logger.info(f'Profiler stopped - view results with: tensorboard --logdir=data/profiler_logs')
 
     def close(self):
         '''Close session and clean up. Save agent, close env.'''
@@ -163,7 +199,7 @@ class Trial:
 
     def run_sessions(self):
         max_session = self.spec["meta"]["max_session"]
-        logger.info(f"Running {max_session} sessions")
+        logger.info(f"Running {max_session} sessions in lab mode: {util.get_lab_mode()}")
         if max_session == 1:
             spec = deepcopy(self.spec)
             spec_util.tick(spec, 'session')

@@ -403,21 +403,24 @@ def read_as_plain(data_path, **kwargs):
     return data
 
 
-def log_self_desc(cls, omit=None):
-    '''Log self description in YAML-style format.'''
-    obj_dict = get_class_attr(cls)
-    if omit:
-        obj_dict = ps.omit(obj_dict, omit)
-    
-    lines = [f'{get_class_name(cls)}:']
-    for k, v in obj_dict.items():
+def log_dict(data: dict, title: str = None):
+    '''Log dict as clean YAML format.'''
+    lines = [f'{title}:'] if title else []
+    for k, v in data.items():
         if isinstance(v, dict):
             yaml_str = yaml.dump({k: v}, default_flow_style=False, indent=2, sort_keys=False).rstrip()
             lines.append(yaml_str)
         elif v is not None and not ps.reg_exp_js_match(str(v), "/<.+>/"):
             lines.append(f'{k}: {v}')
-    
     logger.info('\n'.join(lines))
+
+
+def log_self_desc(cls, omit=None):
+    '''Log self description in YAML-style format.'''
+    obj_dict = get_class_attr(cls)
+    if omit:
+        obj_dict = ps.omit(obj_dict, omit)
+    log_dict(obj_dict, get_class_name(cls))
 
 
 def set_attr(obj, attr_dict, keys=None):

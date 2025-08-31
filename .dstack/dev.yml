@@ -12,10 +12,10 @@ inactivity_duration: 30m
 
 # volumes:
 #   - cache-volume:/root/.cache
-  # - data-volume:/workflow/data
+# - data-volume:/workflow/data
 
 resources:
-  cpu: 4
-  gpu: T4
+  cpu: 12
+  gpu: L4
 
-backends: [aws]
+backends: [runpod]

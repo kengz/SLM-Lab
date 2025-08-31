@@ -81,7 +81,7 @@ Intelligent vectorization mode selection:
 dstack apply -f .dstack/train.yml
 
 # torch.compile optimization (20-30% speedup)
-TORCH_COMPILE=true uv run slm-lab [args]
+uv run slm-lab --torch-compile=true [args]
 ```
 
 ### **Modern Development Tooling**
