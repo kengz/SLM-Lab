@@ -2,7 +2,7 @@
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 from slm_lab import ROOT_DIR
-from slm_lab.agent import Agent, Body
+from slm_lab.agent import Agent, MetricsTracker
 from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
@@ -20,8 +20,8 @@ import torch.multiprocessing as mp
 def make_agent_env(spec, global_nets=None):
     '''Helper to create agent and env given spec'''
     env = make_env(spec)
-    body = Body(env, spec)
-    agent = Agent(spec, body=body, global_nets=global_nets)
+    mt = MetricsTracker(env, spec)
+    agent = Agent(spec, mt=mt, global_nets=global_nets)
     return agent, env
 
 
@@ -64,34 +64,34 @@ class Session:
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
         if mode == 'eval' and util.in_eval_lab_mode():  # avoid double-eval: eval-ckpt in eval mode
             return False
-        clock = env.clock
-        frame = clock.get()
+        # ClockWrapper provides direct access to clock methods
+        frame = env.get()
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame
+        to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == env.max_frame
         return to_ckpt
 
     def try_ckpt(self, agent, env):
         '''Check then run checkpoint log/eval'''
-        body = agent.body
+        mt = agent.mt
         if self.to_ckpt(env, 'log'):
-            body.ckpt(self.env, 'train')
-            body.log_summary('train')
+            mt.ckpt(self.env, 'train')
+            mt.log_summary('train')
             agent.save()  # save the latest ckpt
-            if body.total_reward_ma >= body.best_total_reward_ma:
-                body.best_total_reward_ma = body.total_reward_ma
+            if mt.total_reward_ma >= mt.best_total_reward_ma:
+                mt.best_total_reward_ma = mt.total_reward_ma
                 agent.save(ckpt='best')
-            if len(body.train_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
-                body.log_metrics(metrics['scalar'], 'train')
+            if len(mt.train_df) > 2:  # need more rows to calculate metrics
+                metrics = analysis.analyze_session(self.spec, mt.train_df, 'train', plot=False)
+                mt.log_metrics(metrics['scalar'], 'train')
 
         if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
             logger.info('Running eval ckpt')
             analysis.gen_avg_return(agent, self.eval_env)
-            body.ckpt(self.eval_env, 'eval')
-            body.log_summary('eval')
-            if len(body.eval_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
-                body.log_metrics(metrics['scalar'], 'eval')
+            mt.ckpt(self.eval_env, 'eval')
+            mt.log_summary('eval')
+            if len(mt.eval_df) > 2:  # need more rows to calculate metrics
+                metrics = analysis.analyze_session(self.spec, mt.eval_df, 'eval', plot=False)
+                mt.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
@@ -123,21 +123,21 @@ class Session:
             logger.info(f'Profiler started - will profile first 100 steps to {profiler_dir}')
         
         # Reset clock timing AFTER torch.compile warmup to get accurate FPS
-        clock = self.env.clock
-        clock.reset()
+        # The ClockWrapper automatically handles timing via reset() and step()
+        self.env.reset_clock()
         
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                if clock.get() < clock.max_frame:  # reset and continue
-                    clock.tick('epi')
+                if self.env.get() < self.env.max_frame:  # reset and continue
+                    # ClockWrapper automatically ticks episode in reset()
                     state, info = self.env.reset()
                     done = False
             self.try_ckpt(self.agent, self.env)
-            if clock.get() >= clock.max_frame:  # finish
+            if self.env.get() >= self.env.max_frame:  # finish
                 break
-            clock.tick('t')
+            # ClockWrapper automatically ticks timestep in step()
             with torch.no_grad():
                 action = self.agent.act(state)
             next_state, reward, term, trunc, info = self.env.step(action)
@@ -146,13 +146,13 @@ class Session:
             state = next_state
 
             # Profiler step (only first 100 steps to avoid huge files)
-            if profiler and clock.get() <= 100:
+            if profiler and self.env.get() <= 100:
                 profiler.step()
 
         # Clean up profiler
         if profiler:
             profiler.stop()
-            logger.info(f'Profiler stopped - view results with: tensorboard --logdir=data/profiler_logs')
+            logger.info('Profiler stopped - view results with: tensorboard --logdir=data/profiler_logs')
 
     def close(self):
         '''Close session and clean up. Save agent, close env.'''
@@ -164,8 +164,8 @@ class Session:
 
     def run(self):
         self.run_rl()
-        metrics = analysis.analyze_session(self.spec, self.agent.body.eval_df, 'eval')
-        self.agent.body.log_metrics(metrics['scalar'], 'eval')
+        metrics = analysis.analyze_session(self.spec, self.agent.mt.eval_df, 'eval')
+        self.agent.mt.log_metrics(metrics['scalar'], 'eval')
         self.close()
         return metrics
 
@@ -224,7 +224,7 @@ class Trial:
         logger.info(f'Trial {self.index} done')
 
     def run(self):
-        if self.spec['meta'].get('distributed') == False:
+        if self.spec['meta'].get('distributed') is False:
             session_metrics_list = self.run_sessions()
         else:
             session_metrics_list = self.run_distributed_sessions()

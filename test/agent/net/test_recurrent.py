@@ -1,5 +1,4 @@
 from copy import deepcopy
-from slm_lab.env.base import Clock
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.recurrent import RecurrentNet
 import pytest
@@ -51,7 +50,7 @@ def test_init():
     assert hasattr(net, 'rnn_model')
     assert hasattr(net, 'model_tail')
     assert not hasattr(net, 'model_tails')
-    assert net.rnn_model.bidirectional == False
+    assert net.rnn_model.bidirectional is False
 
 
 def test_forward():
@@ -61,9 +60,8 @@ def test_forward():
 
 def test_train_step():
     y = torch.rand((batch_size, out_dim))
-    clock = Clock(100, 1)
     loss = net.loss_fn(net.forward(x), y)
-    net.train_step(loss, optim, lr_scheduler, clock=clock)
+    net.train_step(loss, optim, lr_scheduler)
     assert loss != 0.0
 
 

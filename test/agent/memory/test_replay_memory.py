@@ -75,10 +75,10 @@ class TestMemory:
             memory.add_experience(*e)
         memory.batch_size = batch_size
         batch = memory.sample()
-        assert batch['states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['states'].shape == (batch_size, memory.agent.state_dim)
         assert batch['actions'].shape == (batch_size,)
         assert batch['rewards'].shape == (batch_size,)
-        assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['next_states'].shape == (batch_size, memory.agent.state_dim)
         assert batch['dones'].shape == (batch_size,)
 
     @flaky(max_runs=10)

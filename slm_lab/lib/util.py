@@ -88,7 +88,7 @@ def cast_list(val):
 
 def concat_batches(batches):
     '''
-    Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
+    Concat batch objects from agent.memory.sample() into one batch, when all agents experience similar envs
     Also concat any nested epi sub-batches into flat batch
     {k: arr1} + {k: arr2} = {k: arr1 + arr2}
     '''
@@ -218,7 +218,7 @@ def get_prepath(spec, unit='experiment'):
 
 
 def get_session_df_path(session_spec, df_mode):
-    '''Method to return standard filepath for session_df (agent.body.train_df/eval_df) for saving and loading'''
+    '''Method to return standard filepath for session_df (agent.mt.train_df/eval_df) for saving and loading'''
     info_prepath = session_spec['meta']['info_prepath']
     return f'{info_prepath}_session_df_{df_mode}.csv'
 
@@ -436,9 +436,8 @@ def set_cuda_id(spec):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
     # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
-    for agent_spec in spec['agent']:
-        if not agent_spec['net'].get('gpu'):
-            return
+    if not spec['agent']['net'].get('gpu'):
+        return
     meta_spec = spec['meta']
     trial_idx = meta_spec['trial'] or 0
     session_idx = meta_spec['session'] or 0
@@ -449,8 +448,7 @@ def set_cuda_id(spec):
     device_count = torch.cuda.device_count()
     cuda_id = job_idx % device_count if torch.cuda.is_available() else None
 
-    for agent_spec in spec['agent']:
-        agent_spec['net']['cuda_id'] = cuda_id
+    spec['agent']['net']['cuda_id'] = cuda_id
 
 
 def set_logger(spec, logger, unit=None):

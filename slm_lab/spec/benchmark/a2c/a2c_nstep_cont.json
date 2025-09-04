@@ -1,6 +1,6 @@
 {
   "a2c_nstep_bipedalwalker": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -26,7 +26,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -38,25 +41,21 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
-      "name": "BipedalWalker-v2",
+    },
+    "env": {
+      "name": "BipedalWalker-v3",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 4e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 4000000.0
     },
     "meta": {
       "distributed": false,
@@ -67,7 +66,7 @@
     }
   },
   "a2c_nstep_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -93,7 +92,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": false,
@@ -105,28 +107,24 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 1e6
+          "frame": 1000000.0
         },
         "gpu": true
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 1000000.0
     },
     "meta": {
       "distributed": false,

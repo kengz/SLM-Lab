@@ -4,7 +4,6 @@ from slm_lab.agent.net.conv import ConvNet
 from slm_lab.agent.net.mlp import MLPNet
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util
-import pydash as ps
 import torch
 import torch.nn as nn
 

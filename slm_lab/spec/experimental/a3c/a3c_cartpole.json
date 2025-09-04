@@ -1,6 +1,6 @@
 {
   "a3c_nstep_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -27,7 +27,9 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "use_same_optim": false,
@@ -46,15 +48,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "synced",
@@ -64,24 +62,38 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.9,
+              0.99
+            ],
+            "lam__uniform": [
+              0.1,
+              1.0
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "a3c_gae_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -108,7 +120,9 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": true,
@@ -120,15 +134,11 @@
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 100000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "synced",
@@ -138,24 +148,38 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.9,
+              0.99
+            ],
+            "lam__uniform": [
+              0.1,
+              1.0
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "a3c_gae_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -182,7 +206,9 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "use_same_optim": false,
@@ -201,15 +227,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 400
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "synced",
@@ -219,24 +241,38 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.9,
+              0.99
+            ],
+            "lam__uniform": [
+              0.1,
+              1.0
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "a3c_gae_rnn_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -286,15 +322,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "synced",
@@ -304,24 +336,38 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.9,
+              0.99
+            ],
+            "lam__uniform": [
+              0.1,
+              1.0
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "a3c_gae_rnn_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -371,15 +417,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "synced",
@@ -389,20 +431,34 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.9,
+              0.99
+            ],
+            "lam__uniform": [
+              0.1,
+              1.0
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

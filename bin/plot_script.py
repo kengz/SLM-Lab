@@ -1,6 +1,5 @@
 # Script to plot graphs from data/
-from slm_lab.lib import logger, util, viz
-import numpy as np
+from slm_lab.lib import viz
 
 # Atari
 trial_metrics_path_list = [
@@ -17,7 +16,7 @@ legend_list = [
     'A2C (GAE)',
     'PPO',
 ]
-title = f'multi trial graph: Pong'
+title = 'multi trial graph: Pong'
 graph_prepath = 'data/benchmark_pong'
 viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
 viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True)

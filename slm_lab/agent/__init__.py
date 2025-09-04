@@ -6,6 +6,7 @@ from slm_lab.lib import logger, util, viz
 from slm_lab.lib.decorator import lab_api
 from torch.utils.tensorboard import SummaryWriter
 from typing import Any, Optional, Union
+import gymnasium as gym
 import numpy as np
 import os
 import pandas as pd
@@ -19,19 +20,40 @@ logger = logger.get_logger(__name__)
 class Agent:
     '''
     Agent abstraction; implements the API to interface with Env in SLM Lab
-    Contains algorithm, memory, body
+    Contains algorithm, memory, tracker
     '''
 
-    def __init__(self, spec: dict[str, Any], body: 'Body', global_nets: Optional[dict[str, Any]] = None):
+    def __init__(self, spec: dict[str, Any], mt: 'MetricsTracker', global_nets: Optional[dict[str, Any]] = None):
         self.spec = spec
-        self.agent_spec = spec['agent'][0]  # idx 0 for single-agent
+        self.agent_spec = spec['agent']
         self.name = self.agent_spec['name']
         assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         # set components
-        self.body = body
-        body.agent = self
+        self.mt = mt
+        mt.agent = self
+        # Add direct references for simplified access
+        self.env = mt.env
+        
+        # Move space attributes from Tracker to Agent where they belong
+        self.observation_space = self.env.observation_space
+        self.action_space = self.env.action_space
+        self.state_dim = self.env.state_dim
+        self.action_dim = self.env.action_dim
+        self.is_discrete = self.env.is_discrete
+        # Set the ActionPD class for sampling action
+        self.action_type = policy_util.get_action_type(self.env)
+        self.action_pdtype = ps.get(self.agent_spec, 'algorithm.action_pdtype')
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
+        
+        # Initialize algorithm-specific variables with defaults first
+        self.explore_var = np.nan  # action exploration: epsilon or tau
+        self.entropy_coef = np.nan  # entropy for exploration
+        self.mean_entropy = np.nan  # mean entropy for tracking
+        
         MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
-        self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+        self.memory = MemoryClass(self.agent_spec['memory'], self)
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
 
@@ -45,13 +67,13 @@ class Agent:
     @lab_api
     def update(self, state: np.ndarray, action: Union[int, float, np.ndarray], reward: float, next_state: np.ndarray, done: bool) -> Optional[dict[str, float]]:
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
-        self.body.update(state, action, reward, next_state, done)
+        self.mt.update(state, action, reward, next_state, done)
         if util.in_eval_lab_mode():  # eval does not update agent for training
             return
-        self.body.memory.update(state, action, reward, next_state, done)
+        self.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
-            self.body.loss = loss
+            self.mt.loss = loss
         explore_var = self.algorithm.update()
         return loss, explore_var
 
@@ -68,29 +90,23 @@ class Agent:
         self.save()
 
 
-class Body:
+class MetricsTracker:
     '''
-    Body of an agent inside an environment, it:
-    - enables the automatic dimension inference for constructing network input/output
-    - acts as reference bridge between agent and environment (useful for multi-agent, multi-env)
-    - acts as non-gradient variable storage for monitoring and analysis
+    Metrics tracker for single-agent-single-env architecture.
+    
+    Handles training and evaluation metrics collection, logging, and analysis
+    data management for RL experiments.
     '''
 
-    def __init__(self, env: 'BaseEnv', spec: dict[str, Any], aeb: tuple[int, int, int] = (0, 0, 0)):
+    def __init__(self, env: 'gym.Env', spec: dict[str, Any]):
         # essential reference variables
         self.agent = None  # set later
         self.env = env
         self.spec = spec
-        # agent, env, body index for multi-agent-env
-        self.a, self.e, self.b = self.aeb = aeb
 
-        # variables set during init_algorithm_params
-        self.explore_var = np.nan  # action exploration: epsilon or tau
-        self.entropy_coef = np.nan  # entropy for exploration
 
         # debugging/logging variables, set in train or loss function
         self.loss = np.nan
-        self.mean_entropy = np.nan
         self.mean_grad_norm = np.nan
 
         # total_reward_ma from eval for model checkpoint saves
@@ -108,7 +124,7 @@ class Body:
             train_df_filepath = util.get_session_df_path(self.spec, 'train')
             if os.path.exists(train_df_filepath):
                 self.train_df = util.read(train_df_filepath)
-                self.env.clock.load(self.train_df)
+                self.env.load(self.train_df)
 
         # track eval data within run_eval. the same as train_df except for reward
         if self.spec['meta']['rigorous_eval']:
@@ -116,34 +132,21 @@ class Body:
         else:
             self.eval_df = self.train_df
 
-        # use gymnasium space objects directly for clean interface
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
-        # use environment's space dimensions for agent networks
-        self.state_dim = self.env.state_dim
-        self.action_dim = self.env.action_dim
-        self.is_discrete = self.env.is_discrete
-        # set the ActionPD class for sampling action
-        self.action_type = policy_util.get_action_type(self.env)
-        self.action_pdtype = ps.get(spec, f'agent.{self.a}.algorithm.action_pdtype')
-        if self.action_pdtype in (None, 'default'):
-            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
-        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
     def update(self, state: np.ndarray, action: Union[int, float, np.ndarray], reward: float, next_state: np.ndarray, done: bool) -> None:
-        '''Interface update method for body at agent.update()'''
+        '''Interface update method for tracker at agent.update()'''
         if util.get_lab_mode() == 'dev':  # log tensorboard only on dev mode
             self.track_tensorboard(action)
 
     def __str__(self) -> str:
         class_attr = util.get_class_attr(self)
         class_attr.pop('spec')
-        return f'body: {util.to_json(class_attr)}'
+        return f'mt: {util.to_json(class_attr)}'
 
-    def calc_df_row(self, env: 'BaseEnv') -> pd.Series:
+    def calc_df_row(self, env: 'gym.Env') -> pd.Series:
         '''Calculate a row for updating train_df or eval_df.'''
-        frame = self.env.clock.frame
-        wall_t = self.env.clock.wall_t
+        frame = self.env.get('frame')
+        wall_t = self.env.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else frame / wall_t
         with warnings.catch_warnings():  # mute np.nanmean warning
             warnings.filterwarnings('ignore')
@@ -156,20 +159,20 @@ class Body:
 
         row_data = {
             # epi and frame are always measured from training env
-            'epi': self.env.clock.epi,
+            'epi': self.env.get('epi'),
             # t and reward are measured from a given env or eval_env
-            't': env.clock.t,
+            't': env.get('t'),
             'wall_t': wall_t,
-            'opt_step': self.env.clock.opt_step,
+            'opt_step': self.env.get('opt_step'),
             'frame': frame,
             'fps': fps,
             'total_reward': total_reward,
             'total_reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
-            'explore_var': self.explore_var,
-            'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'entropy': self.mean_entropy,
+            'explore_var': self.agent.explore_var,
+            'entropy_coef': self.agent.entropy_coef,
+            'entropy': self.agent.mean_entropy,
             'grad_norm': self.mean_grad_norm,
         }
         
@@ -182,10 +185,10 @@ class Body:
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
 
-    def ckpt(self, env: 'BaseEnv', df_mode: str) -> None:
+    def ckpt(self, env: 'gym.Env', df_mode: str) -> None:
         '''
-        Checkpoint to update body.train_df or eval_df data
-        @param GymEnv:env self.env or self.eval_env
+        Checkpoint to update train_df or eval_df data
+        @param gym.Env:env self.env or self.eval_env
         @param str:df_mode 'train' or 'eval'
         '''
         row = self.calc_df_row(env)
@@ -232,7 +235,7 @@ class Body:
         logger.info(msg)
 
     def log_summary(self, df_mode: str) -> None:
-        '''Log the summary for this body when its environment is done'''
+        '''Log the summary for this tracker when its environment is done'''
         prefix = self.get_log_prefix()
         df = getattr(self, f'{df_mode}_df')
         last_row = df.iloc[-1]
@@ -275,9 +278,9 @@ class Body:
         if session_index != 0:  # log only session 0
             return
         idx_suffix = f'trial{trial_index}_session{session_index}'
-        frame = self.env.clock.frame
+        frame = self.env.get('frame')
         # add main graph
-        if False and self.env.clock.frame == 0 and hasattr(self.agent.algorithm, 'net'):
+        if False and self.env.get('frame') == 0 and hasattr(self.agent.algorithm, 'net'):
             # can only log 1 net to tb now, and 8 is a good common length for stacked and rnn inputs
             net = self.agent.algorithm.net
             self.tb_writer.add_graph(net, torch.rand(ps.flatten([8, net.in_dim])))

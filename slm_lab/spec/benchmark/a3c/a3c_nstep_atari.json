@@ -1,6 +1,6 @@
 {
   "a3c_nstep_atari": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -27,11 +27,31 @@
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -43,25 +63,21 @@
         },
         "actor_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4
+          "lr": 0.0001
         },
         "critic_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4
+          "lr": 0.0001
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 10000000.0
     },
     "meta": {
       "distributed": "synced",
@@ -72,12 +88,15 @@
     },
     "spec_params": {
       "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
+        "ALE/Breakout-v5",
+        "ALE/Pong-v5",
+        "ALE/Qbert-v5",
+        "ALE/SpaceInvaders-v5"
       ]
     }
   },
   "gpu_a3c_nstep_atari": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -104,11 +123,31 @@
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -120,25 +159,21 @@
         },
         "actor_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4
+          "lr": 0.0001
         },
         "critic_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4
+          "lr": 0.0001
         },
         "lr_scheduler_spec": null,
         "gpu": true
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 10000000.0
     },
     "meta": {
       "distributed": "shared",
@@ -150,7 +185,10 @@
     },
     "spec_params": {
       "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
+        "ALE/Breakout-v5",
+        "ALE/Pong-v5",
+        "ALE/Qbert-v5",
+        "ALE/SpaceInvaders-v5"
       ]
     }
   }

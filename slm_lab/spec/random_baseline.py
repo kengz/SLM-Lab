@@ -93,7 +93,7 @@ def get_random_baseline(env_name):
         try:
             logger.info(f'Generating random baseline for {env_name}')
             baseline = gen_random_baseline(env_name, NUM_EVAL)
-        except Exception as e:
+        except Exception:
             logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
             baseline = None
         # update immediately

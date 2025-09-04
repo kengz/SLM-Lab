@@ -1,6 +1,6 @@
 {
   "ppo_sil_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "PPOSIL",
       "algorithm": {
         "name": "PPOSIL",
@@ -11,7 +11,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 50000
@@ -41,7 +41,9 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -60,15 +62,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -78,29 +76,52 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_epoch__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "ppo_sil_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "PPOSIL",
       "algorithm": {
         "name": "PPOSIL",
@@ -111,7 +132,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 50000
@@ -141,7 +162,9 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -160,15 +183,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -178,29 +197,52 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_epoch__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "ppo_sil_rnn_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "PPOSIL",
       "algorithm": {
         "name": "PPOSIL",
@@ -211,7 +253,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 50000
@@ -264,15 +306,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -282,29 +320,52 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_epoch__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "ppo_sil_rnn_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "PPOSIL",
       "algorithm": {
         "name": "PPOSIL",
@@ -315,7 +376,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 50000
@@ -368,15 +429,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -386,25 +443,48 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_epoch__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

@@ -145,16 +145,15 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ## TODO
 
+1. check for outdated env, for example I still see bipedalwalker-v2
+2. ppo_cont bipedal is not using gpu. overall the gpu field in spec - should just remove and let it be automatic.
+
 - [ ] **Atari Production Testing**: Full Pong training run with dstack GPU infrastructure
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)
 - [ ] **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch_size×seq_len×input_dim handling
 - [ ] **Comprehensive Benchmarking**: Measure actual speedup gains from torch.compile and vectorization
-- [ ] **Higher Parallelization**: Test performance with more vector environments (>32)
-- [ ] **Numba Integration**: Explore for remaining CPU-bound numpy bottlenecks
-- [ ] **Unit Test Suite**: Execute full test suite for comprehensive validation
 - [ ] **Ray/Optuna Integration**: Modern hyperparameter search with Optuna backend
 - [ ] **Documentation Updates**: Update gitbook documentation reflecting new API and performance
-- [ ] **Production Validation**: Ensure migrated algorithms achieve expected benchmark performance
 
 ### Command to Test Current State
 

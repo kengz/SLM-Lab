@@ -1,6 +1,6 @@
 {
   "vanilla_dqn_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
@@ -27,7 +27,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -44,15 +46,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
@@ -62,29 +60,53 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "vanilla_dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
@@ -111,7 +133,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -128,15 +152,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
@@ -146,29 +166,53 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -195,7 +239,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -215,15 +261,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 100
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -233,22 +275,34 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.8, 0.999]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [64, 32]
-          ]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.8,
+              0.999
+            ]
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                64,
+                32
+              ]
+            ]
+          }
         }
-      }]
+      ]
     }
   },
   "dqn_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -275,7 +329,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -295,15 +351,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 250
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -313,29 +365,53 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "drqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DRQN",
       "algorithm": {
         "name": "DQN",
@@ -386,15 +462,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 250
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -404,29 +476,53 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "drqn_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DRQN",
       "algorithm": {
         "name": "DQN",
@@ -477,15 +573,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 500000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -495,25 +587,49 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

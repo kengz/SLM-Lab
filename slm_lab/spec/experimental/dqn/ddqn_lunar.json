@@ -1,6 +1,6 @@
 {
   "ddqn_concat_lunar": {
-    "agent": [{
+    "agent": {
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
@@ -52,15 +52,11 @@
         "polyak_coef": 0.9,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 250000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,

@@ -1,6 +1,6 @@
 {
   "sac_per_halfcheetah": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -19,7 +19,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -28,7 +31,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 7e-4
+          "lr": 0.0007
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -36,16 +39,12 @@
         "polyak_coef": 0.005,
         "gpu": true
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "HalfCheetahBulletEnv-v0",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 2e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": false,

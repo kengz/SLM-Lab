@@ -1,6 +1,6 @@
 {
   "dqn_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -47,15 +47,11 @@
         "polyak_coef": 0.1,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 10000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,

@@ -1,6 +1,6 @@
 {
   "a2c_gae_lunar": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -26,7 +26,11 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64, 32],
+        "hid_layers": [
+          64,
+          64,
+          32
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "batch_norm": false,
@@ -37,25 +41,21 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 0.002
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3
+          "lr": 0.002
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000,
       "num_envs": 8
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,

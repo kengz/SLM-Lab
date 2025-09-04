@@ -1,6 +1,6 @@
 {
   "a2c_gae_separate_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -27,7 +27,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "hid_layers": [
+          400,
+          200
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": true,
@@ -41,20 +44,18 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "milestones": [80000],
+          "milestones": [
+            80000
+          ],
           "gamma": 0.9
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 500000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -64,28 +65,67 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_frequency__choice": [2, 4, 8],
-          "lam__uniform": [0.95, 0.99],
-          "entropy_coef_spec": {
-            "start_val__uniform": [0.001, 0.05],
-            "end_val__uniform": [0.0001, 0.001],
-            "start_step__choice": [100000, 125000, 150000],
-            "end_step__choice": [150000, 175000, 200000, 250000]
+      "agent": [
+        {
+          "algorithm": {
+            "training_frequency__choice": [
+              2,
+              4,
+              8
+            ],
+            "lam__uniform": [
+              0.95,
+              0.99
+            ],
+            "entropy_coef_spec": {
+              "start_val__uniform": [
+                0.001,
+                0.05
+              ],
+              "end_val__uniform": [
+                0.0001,
+                0.001
+              ],
+              "start_step__choice": [
+                100000,
+                125000,
+                150000
+              ],
+              "end_step__choice": [
+                150000,
+                175000,
+                200000,
+                250000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                400,
+                200
+              ],
+              [
+                256,
+                128
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__choice": [
+                0.0001,
+                0.0005,
+                0.001,
+                0.005,
+                0.01
+              ]
+            }
           }
-        },
-        "net": {
-          "hid_layers__choice": [[400, 200], [256, 128]],
-          "actor_optim_spec": {
-           "lr__choice": [0.0001, 0.0005, 0.001, 0.005, 0.01]
-         }
         }
-      }]
+      ]
     }
   },
   "a2c_nstep_separate_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -112,7 +152,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "hid_layers": [
+          400,
+          200
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": true,
@@ -126,20 +169,18 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "milestones": [80000],
+          "milestones": [
+            80000
+          ],
           "gamma": 0.9
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 500000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -149,24 +190,71 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_frequency__choice": [2, 4, 8],
-          "num_step_returns__choice": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          "entropy_coef_spec": {
-            "start_val__uniform": [0.001, 0.05],
-            "end_val__uniform": [0.0001, 0.001],
-            "start_step__choice": [100000, 125000, 150000],
-            "end_step__choice": [150000, 175000, 200000, 250000]
+      "agent": [
+        {
+          "algorithm": {
+            "training_frequency__choice": [
+              2,
+              4,
+              8
+            ],
+            "num_step_returns__choice": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "entropy_coef_spec": {
+              "start_val__uniform": [
+                0.001,
+                0.05
+              ],
+              "end_val__uniform": [
+                0.0001,
+                0.001
+              ],
+              "start_step__choice": [
+                100000,
+                125000,
+                150000
+              ],
+              "end_step__choice": [
+                150000,
+                175000,
+                200000,
+                250000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                400,
+                200
+              ],
+              [
+                256,
+                128
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__choice": [
+                0.0001,
+                0.0005,
+                0.001,
+                0.005,
+                0.01
+              ]
+            }
           }
-        },
-        "net": {
-          "hid_layers__choice": [[400, 200], [256, 128]],
-          "actor_optim_spec": {
-           "lr__choice": [0.0001, 0.0005, 0.001, 0.005, 0.01]
-         }
         }
-      }]
+      ]
     }
   }
 }

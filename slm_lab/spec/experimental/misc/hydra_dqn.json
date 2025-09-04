@@ -1,11 +1,11 @@
 {
   "hydra_dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
         "action_pdtype": "Categorical",
-        "action_policy": "multi_boltzmann",
+        "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 3.0,
@@ -29,10 +29,16 @@
         "type": "HydraMLPNet",
         "hid_layers": [
           [
-            [32],
-            [32]
+            [
+              32
+            ],
+            [
+              32
+            ]
           ],
-          [64],
+          [
+            64
+          ],
           []
         ],
         "hid_layers_activation": "relu",
@@ -51,19 +57,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 1000
-    }, {
-      "name": "CartPole-v1",
-      "max_t": null,
-      "max_frame": 1000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -73,34 +71,58 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "hydra_dqn_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
         "action_pdtype": "Argmax",
-        "action_policy": "multi_epsilon_greedy",
+        "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
@@ -124,10 +146,16 @@
         "type": "HydraMLPNet",
         "hid_layers": [
           [
-            [32],
-            [32]
+            [
+              32
+            ],
+            [
+              32
+            ]
           ],
-          [64],
+          [
+            64
+          ],
           []
         ],
         "hid_layers_activation": "relu",
@@ -149,19 +177,11 @@
         "polyak_coef": 0.9,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 1000
-    }, {
-      "name": "CartPole-v1",
-      "max_t": null,
-      "max_frame": 1000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -171,34 +191,58 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "hydra_dqn_epsilon_greedy_cartpole_2dball": {
-    "agent": [{
+    "agent": {
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
         "action_pdtype": "Argmax",
-        "action_policy": "multi_epsilon_greedy",
+        "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
@@ -222,10 +266,16 @@
         "type": "HydraMLPNet",
         "hid_layers": [
           [
-            [32],
-            [32]
+            [
+              32
+            ],
+            [
+              32
+            ]
           ],
-          [64],
+          [
+            64
+          ],
           []
         ],
         "hid_layers_activation": "tanh",
@@ -247,19 +297,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 300
-    }, {
-      "name": "2DBall",
-      "max_t": 1000,
-      "max_frame": 300
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -269,28 +311,49 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.01]
+      "agent": [
+        {
+          "net": {
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.01
+              ]
+            },
+            "lr_decay_frequency__choice": [
+              1000,
+              2000,
+              4000
+            ]
           },
-          "lr_decay_frequency__choice": [1000, 2000, 4000]
-        },
-        "memory": {
-          "use_cer__choice": [true, false],
-          "max_size__choice": [5000, 10000, 15000, 20000]
+          "memory": {
+            "use_cer__choice": [
+              true,
+              false
+            ],
+            "max_size__choice": [
+              5000,
+              10000,
+              15000,
+              20000
+            ]
+          }
         }
-      }]
+      ]
     }
   },
   "hydra_dqn_boltzmann_cartpole_2dball": {
-    "agent": [{
+    "agent": {
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
         "action_pdtype": "Categorical",
-        "action_policy": "multi_boltzmann",
+        "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 3.0,
@@ -314,10 +377,16 @@
         "type": "HydraMLPNet",
         "hid_layers": [
           [
-            [32],
-            [32]
+            [
+              32
+            ],
+            [
+              32
+            ]
           ],
-          [64],
+          [
+            64
+          ],
           []
         ],
         "hid_layers_activation": "tanh",
@@ -339,19 +408,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 300
-    }, {
-      "name": "2DBall",
-      "max_t": 1000,
-      "max_frame": 300
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -361,19 +422,40 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.01]
+      "agent": [
+        {
+          "net": {
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.01
+              ]
+            },
+            "lr_decay_frequency__choice": [
+              1000,
+              2000,
+              4000
+            ]
           },
-          "lr_decay_frequency__choice": [1000, 2000, 4000]
-        },
-        "memory": {
-          "use_cer__choice": [true, false],
-          "max_size__choice": [5000, 10000, 15000, 20000]
+          "memory": {
+            "use_cer__choice": [
+              true,
+              false
+            ],
+            "max_size__choice": [
+              5000,
+              10000,
+              15000,
+              20000
+            ]
+          }
         }
-      }]
+      ]
     }
   }
 }

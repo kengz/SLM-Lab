@@ -1,6 +1,6 @@
 {
   "dueling_dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DuelingDQN",
       "algorithm": {
         "name": "DQN",
@@ -27,7 +27,9 @@
       },
       "net": {
         "type": "DuelingMLPNet",
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -47,15 +49,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 250
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -65,29 +63,53 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "dueling_dqn_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DuelingDQN",
       "algorithm": {
         "name": "DQN",
@@ -114,7 +136,9 @@
       },
       "net": {
         "type": "DuelingMLPNet",
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -134,15 +158,11 @@
         "polyak_coef": 0,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 250
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -152,25 +172,49 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000]
-          }
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "algorithm": {
+            "explore_var_spec": {
+              "end_step__choice": [
+                1000,
+                3000,
+                5000,
+                10000
+              ]
+            }
+          },
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

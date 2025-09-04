@@ -1,6 +1,6 @@
 {
   "reinforce_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
@@ -22,7 +22,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -34,15 +36,11 @@
         },
         "lr_scheduler_spec": null
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 80000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,

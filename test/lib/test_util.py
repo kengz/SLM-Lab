@@ -150,7 +150,7 @@ def test_write_read_as_plain_list(test_list, filename, dtype):
 @pytest.mark.parametrize('filename,dtype', [
     ('test_str.txt', str),
 ])
-def test_write_read_as_plain_list(test_str, filename, dtype):
+def test_write_read_as_plain_str(test_str, filename, dtype):
     data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_str, util.smart_path(data_path))
     assert os.path.exists(data_path)
@@ -160,7 +160,7 @@ def test_write_read_as_plain_list(test_str, filename, dtype):
 
 def test_read_file_not_found():
     fake_rel_path = 'test/lib/test_util.py_fake'
-    with pytest.raises(FileNotFoundError) as excinfo:
+    with pytest.raises(FileNotFoundError):
         util.read(fake_rel_path)
 
 

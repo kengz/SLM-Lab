@@ -93,11 +93,11 @@ def get_optim(net, optim_spec):
     return optim
 
 
-def get_policy_out_dim(body):
-    '''Helper method to construct the policy network out_dim for a body according to is_discrete, action_type'''
-    action_dim = body.action_dim
-    if body.is_discrete:
-        if body.action_type == 'multi_discrete':
+def get_policy_out_dim(agent):
+    '''Helper method to construct the policy network out_dim for an agent according to is_discrete, action_type'''
+    action_dim = agent.action_dim
+    if agent.is_discrete:
+        if agent.action_type == 'multi_discrete':
             assert ps.is_list(action_dim), action_dim
             policy_out_dim = action_dim
         else:
@@ -112,9 +112,9 @@ def get_policy_out_dim(body):
     return policy_out_dim
 
 
-def get_out_dim(body, add_critic=False):
-    '''Construct the NetClass out_dim for a body according to is_discrete, action_type, and whether to add a critic unit'''
-    policy_out_dim = get_policy_out_dim(body)
+def get_out_dim(agent, add_critic=False):
+    '''Construct the NetClass out_dim for an agent according to is_discrete, action_type, and whether to add a critic unit'''
+    policy_out_dim = get_policy_out_dim(agent)
     if add_critic:
         if ps.is_list(policy_out_dim):
             out_dim = policy_out_dim + [1]
@@ -315,7 +315,7 @@ def init_global_nets(algorithm):
     - 'synced': global network parameter is periodically synced to local network after each gradient push. In this mode, algorithm will keep a separate reference to `global_{net}` for each of its network
     '''
     dist_mode = algorithm.agent.spec['meta']['distributed']
-    assert dist_mode in ('shared', 'synced'), f'Unrecognized distributed mode'
+    assert dist_mode in ('shared', 'synced'), 'Unrecognized distributed mode'
     global_nets = {}
     for net_name in algorithm.net_names:
         optim_name = net_name.replace('net', 'optim')

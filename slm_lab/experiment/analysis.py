@@ -23,9 +23,9 @@ logger = logger.get_logger(__name__)
 def gen_return(agent, env):
     '''Generate return for an agent and an env in eval mode. eval_env should be a vec env with NUM_EVAL instances'''
     vec_dones = False  # done check for single and vec env
-    # swap ref to allow inference based on body.env
-    body_env = agent.body.env
-    agent.body.env = env
+    # swap ref to allow inference based on agent.env
+    original_env = agent.env
+    agent.env = env
     # start eval loop
     state, info = env.reset()
     while not np.all(vec_dones):
@@ -33,7 +33,7 @@ def gen_return(agent, env):
         state, reward, term, trunc, info = env.step(action)
         done = np.logical_or(term, trunc)
         vec_dones = np.logical_or(vec_dones, done)  # wait till every vec slot done turns True
-    agent.body.env = body_env  # restore swapped ref
+    agent.env = original_env  # restore swapped ref
     return np.mean(env.total_reward)
 
 
@@ -253,13 +253,13 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
 # interface analyze methods
 
 def analyze_session(session_spec, session_df, df_mode, plot=True):
-    '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: body.eval_df and body.train_df'''
+    '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: agent.mt.eval_df and agent.mt.train_df'''
     info_prepath = session_spec['meta']['info_prepath']
     session_df = session_df.copy()  # prevent modification
-    assert len(session_df) > 2, f'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
+    assert len(session_df) > 2, 'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
     util.write(session_df, util.get_session_df_path(session_spec, df_mode))
     # calculate metrics
-    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
+    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.name'), info_prepath, df_mode)
     if plot:
         # plot graph
         viz.plot_session(session_spec, session_metrics, session_df, df_mode)

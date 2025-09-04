@@ -18,20 +18,16 @@ To change from a value into param range, e.g.
 - discrete range: "explore_anneal_epi": {"values": [50, 75, 100]}
 '''
 SPEC_FORMAT = {
-    "agent": [{
+    "agent": {
         "name": str,
         "algorithm": dict,
         "memory": dict,
         "net": dict,
-    }],
-    "env": [{
+    },
+    "env": {
         "name": str,
         "max_t": (type(None), int, float),
         "max_frame": (int, float),
-    }],
-    "body": {
-        "product": ["outer", "inner", "custom"],
-        "num": (int, list),
     },
     "meta": {
         "max_session": int,
@@ -57,25 +53,12 @@ def check_comp_spec(comp_spec, comp_spec_format):
                 comp_spec[spec_k] = int(comp_spec_v)
 
 
-def check_body_spec(spec):
-    '''Base method to check body spec for multi-agent multi-env'''
-    ae_product = ps.get(spec, 'body.product')
-    body_num = ps.get(spec, 'body.num')
-    if ae_product == 'outer':
-        pass
-    elif ae_product == 'inner':
-        agent_num = len(spec['agent'])
-        env_num = len(spec['env'])
-        assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
-    else:  # custom
-        assert ps.is_list(body_num)
-
 
 def check_compatibility(spec):
     '''Check compatibility among spec setups'''
     # TODO expand to be more comprehensive
     if spec['meta'].get('distributed') == 'synced':
-        assert ps.get(spec, 'agent.0.net.gpu') == False, f'Distributed mode "synced" works with CPU only. Set gpu: false.'
+        assert ps.get(spec, 'agent.net.gpu') is False, 'Distributed mode "synced" works with CPU only. Set gpu: false.'
 
 
 def check(spec):
@@ -83,13 +66,9 @@ def check(spec):
     try:
         spec_name = spec.get('name')
         assert set(spec.keys()) >= set(SPEC_FORMAT.keys()), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
-        for agent_spec in spec['agent']:
-            check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
-        for env_spec in spec['env']:
-            check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
-        check_comp_spec(spec['body'], SPEC_FORMAT['body'])
+        check_comp_spec(spec['agent'], SPEC_FORMAT['agent'])
+        check_comp_spec(spec['env'], SPEC_FORMAT['env'])
         check_comp_spec(spec['meta'], SPEC_FORMAT['meta'])
-        # check_body_spec(spec)
         check_compatibility(spec)
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
@@ -190,19 +169,21 @@ def _override_enjoy_spec(spec):
 
 
 def _override_test_spec(spec):
-    for agent_spec in spec['agent']:
-        # onpolicy freq is episodic
-        freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
-        agent_spec['algorithm']['training_frequency'] = freq
-        agent_spec['algorithm']['time_horizon'] = freq
-        agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_iter'] = 1
-        agent_spec['algorithm']['training_batch_iter'] = 1
-    for env_spec in spec['env']:
-        env_spec['max_frame'] = 40
-        if env_spec.get('num_envs', 1) > 1:
-            env_spec['num_envs'] = 2
-        env_spec['max_t'] = 12
+    agent_spec = spec['agent']
+    # onpolicy freq is episodic
+    freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
+    agent_spec['algorithm']['training_frequency'] = freq
+    agent_spec['algorithm']['time_horizon'] = freq
+    agent_spec['algorithm']['training_start_step'] = 1
+    agent_spec['algorithm']['training_iter'] = 1
+    agent_spec['algorithm']['training_batch_iter'] = 1
+    
+    env_spec = spec['env']
+    env_spec['max_frame'] = 40
+    if env_spec.get('num_envs', 1) > 1:
+        env_spec['num_envs'] = 2
+    env_spec['max_t'] = 12
+    
     spec['meta']['log_frequency'] = 10
     spec['meta']['eval_frequency'] = 10
     spec['meta']['max_session'] = 1

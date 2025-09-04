@@ -1,6 +1,6 @@
 {
   "sil_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -35,7 +35,9 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
@@ -54,15 +56,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -72,29 +70,52 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_iter__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "sil_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -129,7 +150,9 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": null,
         "use_same_optim": false,
@@ -148,15 +171,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -166,29 +185,52 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_iter__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "sil_rnn_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -246,15 +288,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -264,29 +302,52 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_iter__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "sil_rnn_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -344,15 +405,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -362,25 +419,48 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "training_iter__choice": [
+              1,
+              4,
+              8,
+              16
+            ]
           },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

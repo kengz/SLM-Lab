@@ -20,15 +20,17 @@ class Algorithm(ABC):
         self.name = self.algorithm_spec['name']
         self.memory_spec = agent.agent_spec['memory']
         self.net_spec = agent.agent_spec['net']
-        self.body = self.agent.body
         self.init_algorithm_params()
         self.init_nets(global_nets)
 
-    @abstractmethod
     @lab_api
     def init_algorithm_params(self):
-        '''Initialize other algorithm parameters'''
-        raise NotImplementedError
+        '''Initialize other algorithm parameters and schedulers'''
+        # Initialize common scheduler attributes
+        if hasattr(self, 'explore_var_spec') and self.explore_var_spec is not None:
+            from slm_lab.agent.algorithm import policy_util
+            self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+            self.agent.explore_var = self.explore_var_scheduler.start_val
 
     @abstractmethod
     @lab_api
@@ -73,16 +75,16 @@ class Algorithm(ABC):
         action_np = action.cpu().numpy()
         
         # Single environments need scalars for discrete, squeezed arrays for continuous
-        if not self.body.env.is_venv:
-            if self.body.env.is_discrete and action_np.size == 1:
+        if not self.agent.env.is_venv:
+            if self.agent.env.is_discrete and action_np.size == 1:
                 action_np = action_np.item()  # (1,) or scalar → int
-            elif not self.body.env.is_discrete and action_np.ndim == 2:
+            elif not self.agent.env.is_discrete and action_np.ndim == 2:
                 action_np = action_np.squeeze(0)  # (1, action_dim) → (action_dim,)
         
         # Vector continuous environments need (num_envs, action_dim) shape
-        elif self.body.env.is_venv and not self.body.env.is_discrete:
+        elif self.agent.env.is_venv and not self.agent.env.is_discrete:
             if action_np.ndim == 1:  # Got (num_envs*action_dim,), need (num_envs, action_dim)
-                action_np = action_np.reshape(self.body.env.num_envs, self.body.env.action_dim)
+                action_np = action_np.reshape(self.agent.env.num_envs, self.agent.env.action_dim)
         
         return action_np
 
@@ -90,14 +92,12 @@ class Algorithm(ABC):
     def act(self, state):
         '''Standard act method.'''
         raise NotImplementedError
-        return action
 
     @abstractmethod
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
         raise NotImplementedError
-        return batch
 
     @abstractmethod
     @lab_api
@@ -126,8 +126,8 @@ class Algorithm(ABC):
             logger.info('No net declared in self.net_names in init_nets(); no models to load.')
         else:
             net_util.load_algorithm(self)
-        # set decayable variables to final values
+        # set decayable variables to initial values
         for k, v in vars(self).items():
-            if k.endswith('_scheduler') and hasattr(v, 'end_val'):
+            if k.endswith('_scheduler') and hasattr(v, 'start_val'):
                 var_name = k.replace('_scheduler', '')
-                setattr(self.body, var_name, v.end_val)
+                setattr(self.agent, var_name, v.start_val)

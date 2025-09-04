@@ -16,8 +16,8 @@ class Net(ABC):
     def __init__(self, net_spec, in_dim, out_dim):
         '''
         @param {dict} net_spec is the spec for the net
-        @param {int|list} in_dim is the input dimension(s) for the network. Usually use in_dim=body.state_dim
-        @param {int|list} out_dim is the output dimension(s) for the network. Usually use out_dim=body.action_dim
+        @param {int|list} in_dim is the input dimension(s) for the network. Usually use in_dim=agent.state_dim
+        @param {int|list} out_dim is the output dimension(s) for the network. Usually use out_dim=agent.action_dim
         '''
         self.net_spec = net_spec
         self.in_dim = in_dim
@@ -52,8 +52,7 @@ class Net(ABC):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        if clock is not None:
-            clock.tick('opt_step')
+        # Clock tick is now handled by algorithms calling env.tick_opt_step()
         if lr_scheduler is not None:
             lr_scheduler.step()
         return loss

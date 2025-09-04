@@ -1,6 +1,6 @@
 {
   "sac_per_mujoco": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -19,7 +19,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -28,7 +31,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 1e-3
+          "lr": 0.001
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -36,16 +39,12 @@
         "polyak_coef": 0.005,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 2e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": false,
@@ -57,7 +56,13 @@
     },
     "spec_params": {
       "env": [
-        "Ant-v5", "HalfCheetah-v5", "Hopper-v5", "InvertedDoublePendulum-v5", "InvertedPendulum-v5", "Reacher-v5", "Walker2d-v5"
+        "Ant-v5",
+        "HalfCheetah-v5",
+        "Hopper-v5",
+        "InvertedDoublePendulum-v5",
+        "InvertedPendulum-v5",
+        "Reacher-v5",
+        "Walker2d-v5"
       ]
     }
   }

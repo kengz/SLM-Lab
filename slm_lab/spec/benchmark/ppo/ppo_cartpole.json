@@ -1,6 +1,6 @@
 {
   "ppo_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "PPO",
       "algorithm": {
         "name": "PPO",
@@ -34,7 +34,9 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -52,15 +54,11 @@
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 30000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -69,17 +67,32 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "lam__grid_search": [0.7, 0.8, 0.9, 0.95],
-          "training_frequency__grid_search": [16, 32]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__grid_search": [5e-2, 1e-2, 5e-3, 1e-3]
+      "agent": [
+        {
+          "algorithm": {
+            "lam__grid_search": [
+              0.7,
+              0.8,
+              0.9,
+              0.95
+            ],
+            "training_frequency__grid_search": [
+              16,
+              32
+            ]
+          },
+          "net": {
+            "actor_optim_spec": {
+              "lr__grid_search": [
+                0.05,
+                0.01,
+                0.005,
+                0.001
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

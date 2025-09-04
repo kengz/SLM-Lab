@@ -149,8 +149,7 @@ def test_atari(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    # ('experimental/misc/base.json', 'base_case_unity'),
-    ('experimental/misc/base.json', 'base_case_openai'),
+    ('experimental/misc/base.json', 'base_case_gymnasium'),
     ('experimental/misc/random.json', 'random_cartpole'),
     # ('experimental/misc/random.json', 'random_pendulum'),  # mp EOF error
 ])

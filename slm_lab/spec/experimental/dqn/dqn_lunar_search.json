@@ -1,6 +1,6 @@
 {
   "dqn_concat_polyak_lunar": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -51,15 +51,11 @@
         "polyak_coef": 0.9,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -68,15 +64,22 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "net": {
-          "polyak_coef__grid_search": [0.8, 0.9, 0.95, 0.99]
+      "agent": [
+        {
+          "net": {
+            "polyak_coef__grid_search": [
+              0.8,
+              0.9,
+              0.95,
+              0.99
+            ]
+          }
         }
-      }]
+      ]
     }
   },
   "dqn_concat_replace_lunar": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -127,15 +130,11 @@
         "update_frequency": 100,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -144,15 +143,24 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "net": {
-          "update_frequency__grid_search": [10, 100, 250, 500, 1000, 2000]
+      "agent": [
+        {
+          "net": {
+            "update_frequency__grid_search": [
+              10,
+              100,
+              250,
+              500,
+              1000,
+              2000
+            ]
+          }
         }
-      }]
+      ]
     }
   },
   "vanilla_dqn_concat_lunar": {
-    "agent": [{
+    "agent": {
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
@@ -201,15 +209,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -218,10 +222,11 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "algorithm": {
+      "agent": [
+        {
+          "algorithm": {}
         }
-      }]
+      ]
     }
   }
 }

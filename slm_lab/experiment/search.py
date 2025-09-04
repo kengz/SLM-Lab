@@ -50,7 +50,7 @@ def infer_trial_resources(spec):
     requested_cpu = cpu_per_session * meta_spec['max_session']
     num_cpus = min(util.NUM_CPUS, requested_cpu)
 
-    use_gpu = any(agent_spec['net'].get('gpu') for agent_spec in spec['agent'])
+    use_gpu = spec['agent']['net'].get('gpu', False)
     gpu_per_session = meta_spec.get('num_gpus') or 1
     requested_gpu = gpu_per_session * meta_spec['max_session'] if use_gpu else 0
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
@@ -137,7 +137,7 @@ def run_ray_search(spec):
 def run_param_specs(param_specs):
     '''Run the given param_specs in parallel trials using ray. Used for benchmarking.'''
     ray.init()
-    ray_trials = tune.run(
+    tune.run(
         ray_trainable,
         name='param_specs',
         config={

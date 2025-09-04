@@ -7,7 +7,7 @@ import pytest
 
 @pytest.fixture(scope='session')
 def test_spec():
-    spec = spec_util.get('experimental/misc/base.json', 'base_case_openai')
+    spec = spec_util.get('experimental/misc/base.json', 'base_case_gymnasium')
     spec_util.tick(spec, 'trial')
     spec = spec_util.override_spec(spec, 'test')
     return spec
@@ -72,10 +72,10 @@ def test_str():
     ),
 ])
 def test_memory(request):
-    spec = spec_util.get('experimental/misc/base.json', 'base_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_replay_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory, ) + request.param
     return res
 
 
@@ -95,10 +95,10 @@ def test_memory(request):
     ),
 ])
 def test_on_policy_episodic_memory(request):
-    spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_onpolicy_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory, ) + request.param
     return res
 
 
@@ -118,10 +118,10 @@ def test_on_policy_episodic_memory(request):
     ),
 ])
 def test_on_policy_batch_memory(request):
-    spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_batch_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_onpolicy_batch_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory, ) + request.param
     return res
 
 
@@ -144,5 +144,5 @@ def test_prioritized_replay_memory(request):
     spec = spec_util.get('experimental/misc/base.json', 'base_prioritized_replay_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory, ) + request.param
     return res

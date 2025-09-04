@@ -55,7 +55,7 @@ class VanillaDQN(SARSA):
             action_pdtype='Argmax',
             action_policy='epsilon_greedy',
             explore_var_spec=None,
-            training_start_step=self.body.memory.batch_size,
+            training_start_step=self.agent.memory.batch_size,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -69,6 +69,7 @@ class VanillaDQN(SARSA):
             'training_frequency',  # how often to train (once a few timesteps)
             'training_start_step',  # how long before starting training
         ])
+        # Call parent to initialize explore_var based on explore_var_spec
         super().init_algorithm_params()
 
     @lab_api
@@ -76,8 +77,8 @@ class VanillaDQN(SARSA):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
+        in_dim = self.agent.state_dim
+        out_dim = net_util.get_out_dim(self.agent)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
@@ -102,22 +103,22 @@ class VanillaDQN(SARSA):
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
-        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+        if 'Prioritized' in util.get_class_name(self.agent.memory):  # PER
             # Minimize CPU/GPU transfers - compute on device, transfer once
             errors = (max_q_targets - act_q_preds.detach()).abs().cpu().numpy()
-            self.body.memory.update_priorities(errors)
+            self.agent.memory.update_priorities(errors)
         return q_loss
 
     @lab_api
     def act(self, state):
-        '''Selects and returns a discrete action for body using the action policy'''
+        '''Selects and returns a discrete action using the action policy'''
         return super().act(state)
 
     @lab_api
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
-        batch = self.body.memory.sample()
-        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
+        batch = self.agent.memory.sample()
+        batch = util.to_torch_batch(batch, self.net.device, self.agent.memory.is_episodic)
         return batch
 
     @lab_api
@@ -129,20 +130,20 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        clock = self.body.env.clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_iter):
                 batch = self.sample()
-                clock.set_batch_size(len(batch))
+                self.agent.env.set_batch_size(len(batch))
                 for _ in range(self.training_batch_iter):
                     loss = self.calc_q_loss(batch)
-                    self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                    self.agent.env.tick_opt_step()
                     total_loss += loss
             loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -174,8 +175,8 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
+        in_dim = self.agent.state_dim
+        out_dim = net_util.get_out_dim(self.agent)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.target_net = NetClass(self.net_spec, in_dim, out_dim)
@@ -206,14 +207,14 @@ class DQNBase(VanillaDQN):
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
-        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+        if 'Prioritized' in util.get_class_name(self.agent.memory):  # PER
             # Minimize CPU/GPU transfers - compute on device, transfer once
             errors = (max_q_targets - act_q_preds.detach()).abs().cpu().numpy()
-            self.body.memory.update_priorities(errors)
+            self.agent.memory.update_priorities(errors)
         return q_loss
 
     def update_nets(self):
-        if util.frame_mod(self.body.env.clock.frame, self.net.update_frequency, self.body.env.num_envs):
+        if util.frame_mod(self.agent.env.get('frame'), self.net.update_frequency, self.agent.env.num_envs):
             if self.net.update_type == 'replace':
                 net_util.copy(self.net, self.target_net)
             elif self.net.update_type == 'polyak':

@@ -36,8 +36,8 @@ class SoftActorCritic(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            training_iter=self.body.env.num_envs,
-            training_start_step=self.body.memory.batch_size,
+            training_iter=self.agent.env.num_envs,
+            training_start_step=self.agent.memory.batch_size,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -47,11 +47,11 @@ class SoftActorCritic(ActorCritic):
             'training_frequency',
             'training_start_step',
         ])
-        if self.body.is_discrete:
+        if self.agent.is_discrete:
             assert self.action_pdtype == 'GumbelSoftmax'
         else:
             # Cache action scaling tensors for continuous envs
-            space = self.body.action_space
+            space = self.agent.action_space
             self._action_low = torch.from_numpy(space.low).float()
             self._action_high = torch.from_numpy(space.high).float()
             self._action_scale = (self._action_high - self._action_low) / 2
@@ -68,11 +68,11 @@ class SoftActorCritic(ActorCritic):
         self.shared = False  # SAC does not share networks
         NetClass = getattr(net, self.net_spec['type'])
         # main actor network
-        self.net = NetClass(self.net_spec, self.body.state_dim, net_util.get_out_dim(self.body))
+        self.net = NetClass(self.net_spec, self.agent.state_dim, net_util.get_out_dim(self.agent))
         self.net_names = ['net']
         # two critic Q-networks to mitigate positive bias in q_loss and speed up training, uses q_net.py with prefix Q
         QNetClass = getattr(net, 'Q' + self.net_spec['type'])
-        q_in_dim = [self.body.state_dim, self.body.action_dim]
+        q_in_dim = [self.agent.state_dim, self.agent.action_dim]
         self.q1_net = QNetClass(self.net_spec, q_in_dim, 1)
         self.target_q1_net = QNetClass(self.net_spec, q_in_dim, 1)
         self.q2_net = QNetClass(self.net_spec, q_in_dim, 1)
@@ -89,13 +89,13 @@ class SoftActorCritic(ActorCritic):
         # Based on: https://discuss.ray.io/t/target-entropy-in-discrete-sac-implementation/12182
         epsilon = self.algorithm_spec.get('target_entropy_epsilon', 0.1)
         
-        if self.body.is_discrete:
+        if self.agent.is_discrete:
             # Discrete: entropy of epsilon-greedy policy over discrete actions
-            greedy_term = (1 - epsilon) * np.log((1 - epsilon) / (self.body.action_dim - 1))
+            greedy_term = (1 - epsilon) * np.log((1 - epsilon) / (self.agent.action_dim - 1))
             self.target_entropy = -(epsilon * np.log(epsilon) + greedy_term)
         else:
             # Continuous: epsilon-greedy bound applied to standard -action_dim target
-            action_dim = np.prod(self.body.action_space.shape)
+            action_dim = np.prod(self.agent.action_space.shape)
             self.target_entropy = -(1 - epsilon) * action_dim
 
         # init net optimizer and its lr scheduler
@@ -110,7 +110,7 @@ class SoftActorCritic(ActorCritic):
         net_util.set_global_nets(self, global_nets)
         
         # Move cached tensors to network device
-        if not self.body.is_discrete:
+        if not self.agent.is_discrete:
             device = self.net.device
             self._action_low = self._action_low.to(device)
             self._action_high = self._action_high.to(device)
@@ -121,11 +121,11 @@ class SoftActorCritic(ActorCritic):
 
     @lab_api
     def act(self, state):
-        if self.body.env.clock.frame < self.training_start_step:
-            action = policy_util.random(state, self, self.body)
+        if self.agent.env.get('frame') < self.training_start_step:
+            action = policy_util.random(state, self)
         else:
-            action = self.action_policy(state, self, self.body)
-            if not self.body.is_discrete:
+            action = self.action_policy(state, self)
+            if not self.agent.is_discrete:
                 action = self.scale_action(torch.tanh(action))
         return self.to_action(action)
 
@@ -135,15 +135,15 @@ class SoftActorCritic(ActorCritic):
 
     def guard_q_actions(self, actions):
         '''Guard to convert actions to one-hot for input to Q-network'''
-        if self.body.is_discrete and actions.shape[-1] != self.body.action_dim:
+        if self.agent.is_discrete and actions.shape[-1] != self.agent.action_dim:
             # Convert discrete action indices to one-hot encoding
-            actions = F.one_hot(actions.long(), self.body.action_dim).float()
+            actions = F.one_hot(actions.long(), self.agent.action_dim).float()
         return actions
 
     def calc_log_prob_action(self, action_pd, reparam=False):
         '''Calculate log_probs and actions with option to reparametrize from paper eq. 11'''
         samples = action_pd.rsample() if reparam else action_pd.sample()
-        if self.body.is_discrete:  # this is straightforward using GumbelSoftmax
+        if self.agent.is_discrete:  # this is straightforward using GumbelSoftmax
             actions = samples
             log_probs = action_pd.log_prob(actions)
         else:
@@ -157,7 +157,7 @@ class SoftActorCritic(ActorCritic):
 
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
-        if not self.body.is_discrete and action.dim() == 1:  # handle shape consistency for single continuous action
+        if not self.agent.is_discrete and action.dim() == 1:  # handle shape consistency for single continuous action
             action = action.unsqueeze(dim=-1)
         q_pred = net(state, action).view(-1)
         return q_pred
@@ -167,7 +167,7 @@ class SoftActorCritic(ActorCritic):
         next_states = batch['next_states']
         with torch.no_grad():
             pdparams = self.calc_pdparam(next_states)
-            action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+            action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)
             next_log_probs, next_actions = self.calc_log_prob_action(action_pd)
             next_actions = self.guard_q_actions(next_actions)  # non-reparam discrete actions need to be converted into one-hot
 
@@ -197,10 +197,10 @@ class SoftActorCritic(ActorCritic):
         return alpha_loss
 
     def try_update_per(self, q_preds, q_targets):
-        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+        if 'Prioritized' in util.get_class_name(self.agent.memory):  # PER
             with torch.no_grad():
                 errors = (q_preds - q_targets).abs().cpu().numpy()
-            self.body.memory.update_priorities(errors)
+            self.agent.memory.update_priorities(errors)
 
     def train_alpha(self, alpha_loss):
         '''Custom method to train the alpha variable'''
@@ -212,11 +212,10 @@ class SoftActorCritic(ActorCritic):
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
-        clock = self.body.env.clock
         if self.to_train == 1:
             for _ in range(self.training_iter):
                 batch = self.sample()
-                clock.set_batch_size(len(batch))
+                self.agent.env.set_batch_size(len(batch))
 
                 states = batch['states']
                 actions = self.guard_q_actions(batch['actions'])
@@ -224,17 +223,20 @@ class SoftActorCritic(ActorCritic):
                 # Q-value loss for both Q nets
                 q1_preds = self.calc_q(states, actions, self.q1_net)
                 q1_loss = self.calc_reg_loss(q1_preds, q_targets)
-                self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
+                self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, global_net=self.global_q1_net)
+                self.agent.env.tick_opt_step()
 
                 q2_preds = self.calc_q(states, actions, self.q2_net)
                 q2_loss = self.calc_reg_loss(q2_preds, q_targets)
-                self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
+                self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, global_net=self.global_q2_net)
+                self.agent.env.tick_opt_step()
 
                 # policy loss
-                action_pd = policy_util.init_action_pd(self.body.ActionPD, self.calc_pdparam(states))
+                action_pd = policy_util.init_action_pd(self.agent.ActionPD, self.calc_pdparam(states))
                 log_probs, reparam_actions = self.calc_log_prob_action(action_pd, reparam=True)
                 policy_loss = self.calc_policy_loss(batch, log_probs, reparam_actions)
-                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                self.agent.env.tick_opt_step()
 
                 # alpha loss
                 alpha_loss = self.calc_alpha_loss(log_probs)
@@ -248,14 +250,14 @@ class SoftActorCritic(ActorCritic):
 
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
 
     def update_nets(self):
         '''Update target networks'''
-        if util.frame_mod(self.body.env.clock.frame, self.q1_net.update_frequency, self.body.env.num_envs):
+        if util.frame_mod(self.agent.env.get('frame'), self.q1_net.update_frequency, self.agent.env.num_envs):
             if self.q1_net.update_type == 'replace':
                 net_util.copy(self.q1_net, self.target_q1_net)
                 net_util.copy(self.q2_net, self.target_q2_net)
@@ -268,4 +270,4 @@ class SoftActorCritic(ActorCritic):
     @lab_api
     def update(self):
         '''Override parent method to do nothing'''
-        return self.body.explore_var
+        return self.agent.explore_var

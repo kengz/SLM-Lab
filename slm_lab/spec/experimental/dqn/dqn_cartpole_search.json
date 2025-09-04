@@ -1,6 +1,6 @@
 {
   "dqn_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -27,7 +27,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -43,15 +45,11 @@
         "polyak_coef": 0.1,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -60,17 +58,30 @@
       "max_trial": 32
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.50, 1.0],
-          "training_iter__randint": [1, 10]
-        },
-        "net": {
-          "optim_spec": {
-            "lr__choice": [0.0001, 0.001, 0.01, 0.1]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__uniform": [
+              0.5,
+              1.0
+            ],
+            "training_iter__randint": [
+              1,
+              10
+            ]
+          },
+          "net": {
+            "optim_spec": {
+              "lr__choice": [
+                0.0001,
+                0.001,
+                0.01,
+                0.1
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }

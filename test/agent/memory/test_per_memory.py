@@ -1,7 +1,5 @@
-from collections import Counter
 from flaky import flaky
 import numpy as np
-import pytest
 
 
 @flaky
@@ -69,10 +67,10 @@ class TestPERMemory:
         for e in experiences:
             memory.add_experience(*e)
         batch = memory.sample()
-        assert batch['states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['states'].shape == (batch_size, memory.agent.state_dim)
         assert batch['actions'].shape == (batch_size,)
         assert batch['rewards'].shape == (batch_size,)
-        assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['next_states'].shape == (batch_size, memory.agent.state_dim)
         assert batch['dones'].shape == (batch_size,)
         assert batch['priorities'].shape == (batch_size,)
 
@@ -80,11 +78,11 @@ class TestPERMemory:
         '''Tests if batch conforms to prioritized distribution'''
         memory = test_prioritized_replay_memory[0]
         memory.reset()
-        batch_size = test_prioritized_replay_memory[1]
+        test_prioritized_replay_memory[1]
         experiences = test_prioritized_replay_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        batch = memory.sample()
+        memory.sample()
         assert 0 in memory.batch_idxs
         assert 3 in memory.batch_idxs
         assert 1 not in memory.batch_idxs
@@ -119,7 +117,7 @@ class TestPERMemory:
         for e in experiences:
             memory.add_experience(*e)
         print(f'memory.priorities: {memory.priorities}')
-        batch = memory.sample()
+        memory.sample()
         # First update
         # Manually change tree idxs and batch idxs
         memory.batch_idxs = np.asarray([0, 1, 2, 3]).astype(int)

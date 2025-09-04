@@ -1,6 +1,6 @@
 {
   "a2c_gae_mujoco": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -26,7 +26,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -37,26 +40,22 @@
         "actor_optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "critic_optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 2e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": false,
@@ -68,12 +67,18 @@
     },
     "spec_params": {
       "env": [
-        "Ant-v5", "HalfCheetah-v5", "Hopper-v5", "InvertedDoublePendulum-v5", "InvertedPendulum-v5", "Reacher-v5", "Walker2d-v5"
+        "Ant-v5",
+        "HalfCheetah-v5",
+        "Hopper-v5",
+        "InvertedDoublePendulum-v5",
+        "InvertedPendulum-v5",
+        "Reacher-v5",
+        "Walker2d-v5"
       ]
     }
   },
   "a2c_gae_humanoid": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -99,7 +104,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -110,26 +118,22 @@
         "actor_optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "critic_optim_spec": {
           "name": "Lookahead",
           "optimizer": "RAdam",
-          "lr": 3e-4
+          "lr": 0.0003
         },
         "lr_scheduler_spec": null,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Humanoid-v5",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 5e7
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 50000000.0
     },
     "meta": {
       "distributed": false,

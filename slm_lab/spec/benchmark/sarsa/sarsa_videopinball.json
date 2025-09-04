@@ -1,6 +1,6 @@
 {
   "sarsa_epsilon_greedy_videopinball": {
-    "agent": [{
+    "agent": {
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
@@ -23,11 +23,31 @@
       "net": {
         "type": "ConvNet",
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -44,16 +64,12 @@
         "lr_scheduler_spec": null,
         "gpu": true
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "VideoPinball-v0",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 850000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -63,7 +79,7 @@
     }
   },
   "sarsa_boltzmann_videopinball": {
-    "agent": [{
+    "agent": {
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
@@ -86,11 +102,31 @@
       "net": {
         "type": "ConvNet",
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -107,16 +143,12 @@
         "lr_scheduler_spec": null,
         "gpu": true
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "VideoPinball-v0",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 850000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,

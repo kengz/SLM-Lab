@@ -1,6 +1,6 @@
 {
   "vanilla_dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
@@ -27,7 +27,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -43,16 +45,12 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 30000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -61,20 +59,32 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__grid_search": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__grid_search": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ]
+          }
         }
-      }]
+      ]
     }
   },
   "dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -101,7 +111,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -119,16 +131,12 @@
         "update_frequency": 10,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 30000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -137,20 +145,32 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__grid_search": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__grid_search": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ]
+          }
         }
-      }]
+      ]
     }
   },
   "ddqn_per_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
@@ -179,7 +199,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -197,16 +219,12 @@
         "update_frequency": 10,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 30000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -215,16 +233,28 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__grid_search": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__grid_search": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ]
+          }
         }
-      }]
+      ]
     }
   }
 }

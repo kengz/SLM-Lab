@@ -1,6 +1,6 @@
 {
   "reinforce_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
@@ -22,7 +22,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -34,15 +36,11 @@
         },
         "lr_scheduler_spec": null
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 80000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -52,7 +50,7 @@
     }
   },
   "reinforce_cross_entropy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
@@ -76,7 +74,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128],
+        "hid_layers": [
+          128
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
@@ -88,15 +88,11 @@
         },
         "lr_scheduler_spec": null
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 100000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -105,11 +101,21 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__grid_search": [0.1, 0.5, 0.7, 0.8, 0.90, 0.99, 0.999]
+      "agent": [
+        {
+          "algorithm": {
+            "gamma__grid_search": [
+              0.1,
+              0.5,
+              0.7,
+              0.8,
+              0.9,
+              0.99,
+              0.999
+            ]
+          }
         }
-      }]
+      ]
     }
   }
 }

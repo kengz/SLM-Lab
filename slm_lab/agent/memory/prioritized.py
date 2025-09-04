@@ -1,6 +1,5 @@
 from slm_lab.agent.memory.replay import Replay
 from slm_lab.lib import util
-from slm_lab.lib.decorator import lab_api
 import numpy as np
 import random
 
@@ -104,7 +103,7 @@ class PrioritizedReplay(Replay):
     }
     '''
 
-    def __init__(self, memory_spec, body):
+    def __init__(self, memory_spec, agent):
         util.set_attr(self, memory_spec, [
             'alpha',
             'epsilon',
@@ -112,7 +111,7 @@ class PrioritizedReplay(Replay):
             'max_size',
             'use_cer',
         ])
-        super().__init__(memory_spec, body)
+        super().__init__(memory_spec, agent)
 
         self.epsilon = np.full((1,), self.epsilon)
         self.alpha = np.full((1,), self.alpha)

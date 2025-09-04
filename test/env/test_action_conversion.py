@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import pytest
 from slm_lab.agent.algorithm.base import Algorithm
 
 
@@ -9,13 +8,13 @@ class TestAlgorithm(Algorithm):
     
     def __init__(self, is_discrete, is_venv, action_dim, num_envs=1):
         # Direct setup without using mock
-        self.body = type('Body', (), {})()
-        self.body.env = type('Env', (), {})()
-        self.body.env.is_discrete = is_discrete
-        self.body.env.is_venv = is_venv
-        self.body.env.action_dim = action_dim
+        self.agent = type('Agent', (), {})()
+        self.agent.env = type('Env', (), {})()
+        self.agent.env.is_discrete = is_discrete
+        self.agent.env.is_venv = is_venv
+        self.agent.env.action_dim = action_dim
         if is_venv:
-            self.body.env.num_envs = num_envs
+            self.agent.env.num_envs = num_envs
     
     def init_algorithm_params(self):
         pass

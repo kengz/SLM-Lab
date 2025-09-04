@@ -8,7 +8,6 @@
 from copy import deepcopy
 from glob import glob
 from slm_lab.lib import logger, util, viz
-import numpy as np
 import pydash as ps
 
 
@@ -49,7 +48,7 @@ def get_trial_metrics_scalar(algo, env, data_folder):
         assert len(filepaths) == 1, f'{algo}, {env}, {filepaths}'
         filepath = filepaths[0]
         return util.read(filepath)
-    except Exception as e:
+    except Exception:
         # blank fill
         return {'final_return_ma': ''}
 
@@ -62,7 +61,7 @@ def get_latex_row(algos, env, data_folder):
     env_ret_ma_list = [get_trial_metrics_scalar(algo, env, data_folder)['final_return_ma'] for algo in algos]
     try:
         max_val = ps.max_([k for k in env_ret_ma_list if isinstance(k, (int, float))])
-    except Exception as e:
+    except Exception:
         print(env, env_ret_ma_list)
         raise
     ret_ma_str_list = []
@@ -114,7 +113,7 @@ def plot_env(algos, env, data_folder, legend_list=None, frame_scales=None, showl
     for idx, algo in enumerate(algos):
         try:
             trial_metrics_path_list.append(get_trial_metrics_path(algo, env, data_folder))
-        except Exception as e:
+        except Exception:
             if legend_list is not None:
                 del legend_list[idx]
             logger.warning(f'Nothing to plot for algo: {algo}, env: {env}')

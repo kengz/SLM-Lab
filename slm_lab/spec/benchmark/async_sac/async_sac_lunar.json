@@ -1,6 +1,6 @@
 {
   "async_sac_lunar": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -17,7 +17,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64, 64, 32],
+        "hid_layers": [
+          64,
+          64,
+          32
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -26,7 +30,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-3
+          "lr": 0.001
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -34,16 +38,12 @@
         "polyak_coef": 0.005,
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "max_t": null,
-      "max_frame": 8e5,
+      "max_frame": 800000.0,
       "num_envs": 8
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "shared",
@@ -54,11 +54,21 @@
       "max_trial": 1
     },
     "search": {
-      "env": [{
-        "num_envs__grid_search": [4, 6, 8, 10]
-      }],
+      "env": {
+        "num_envs__grid_search": [
+          4,
+          6,
+          8,
+          10
+        ]
+      },
       "meta": {
-        "max_session__grid_search": [4, 6, 8, 10]
+        "max_session__grid_search": [
+          4,
+          6,
+          8,
+          10
+        ]
       }
     }
   }

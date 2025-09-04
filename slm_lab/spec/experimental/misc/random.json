@@ -1,6 +1,6 @@
 {
   "random_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -9,16 +9,12 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "CartPole-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
@@ -28,7 +24,7 @@
     }
   },
   "random_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -37,16 +33,12 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
@@ -56,7 +48,7 @@
     }
   },
   "random_lunarlander": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -65,16 +57,12 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "LunarLander-v3",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
@@ -84,7 +72,7 @@
     }
   },
   "random_bipedalwalker": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -93,16 +81,12 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "BipedalWalker-v3",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
@@ -112,7 +96,7 @@
     }
   },
   "random_pong": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -121,16 +105,12 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "PongNoFrameskip-v4",
+    },
+    "env": {
+      "name": "ALE/Pong-v5",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e5
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,

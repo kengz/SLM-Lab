@@ -90,7 +90,7 @@ class PPO(ActorCritic):
         ])
         self.to_train = 0
         # guard
-        num_envs = self.body.env.num_envs
+        num_envs = self.agent.env.num_envs
         if self.minibatch_size % num_envs != 0 or self.time_horizon % num_envs != 0:
             self.minibatch_size = math.ceil(self.minibatch_size / num_envs) * num_envs
             self.time_horizon = math.ceil(self.time_horizon / num_envs) * num_envs
@@ -99,13 +99,13 @@ class PPO(ActorCritic):
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
-        self.body.explore_var = self.explore_var_scheduler.start_val
+        self.agent.explore_var = self.explore_var_scheduler.start_val
         # extra variable decays for PPO
         self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
-        self.body.clip_eps = self.clip_eps_scheduler.start_val
+        self.clip_eps = self.clip_eps_scheduler.start_val
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
-            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
+            self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
@@ -130,11 +130,11 @@ class PPO(ActorCritic):
 
         3. H = E[ entropy ]
         '''
-        clip_eps = self.body.clip_eps
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        clip_eps = self.clip_eps
+        action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)
         states = batch['states']
         actions = batch['actions']
-        if self.body.env.is_venv:
+        if self.agent.env.is_venv:
             states = math_util.venv_unpack(states)
             actions = math_util.venv_unpack(actions)
 
@@ -142,7 +142,7 @@ class PPO(ActorCritic):
         log_probs = action_pd.log_prob(actions)
         with torch.no_grad():
             old_pdparams = self.calc_pdparam(states, net=self.old_net)
-            old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
+            old_action_pd = policy_util.init_action_pd(self.agent.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
@@ -157,8 +157,8 @@ class PPO(ActorCritic):
 
         # H entropy regularization
         entropy = action_pd.entropy().mean()
-        self.body.mean_entropy = entropy.detach()  # update logging variable
-        ent_penalty = -self.body.entropy_coef * entropy
+        self.agent.mean_entropy = entropy.detach()  # update logging variable
+        ent_penalty = -self.agent.entropy_coef * entropy
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
@@ -166,14 +166,13 @@ class PPO(ActorCritic):
         return policy_loss
 
     def train(self):
-        clock = self.body.env.clock
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
-            clock.set_batch_size(len(batch))
+            self.agent.env.set_batch_size(len(batch))
             with torch.no_grad():
                 states = batch['states']
-                if self.body.env.is_venv:
+                if self.agent.env.is_venv:
                     states = math_util.venv_unpack(states)
                 # NOTE states is massive with batch_size = time_horizon * num_envs. Chunk up so forward pass can fit into device esp. GPU
                 num_chunks = int(len(states) / self.minibatch_size)
@@ -182,7 +181,7 @@ class PPO(ActorCritic):
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
             batch['advs'], batch['v_targets'] = advs, v_targets
-            if self.body.env.is_venv:  # unpack if venv for minibatch sampling
+            if self.agent.env.is_venv:  # unpack if venv for minibatch sampling
                 for k, v in batch.items():
                     if k not in ('advs', 'v_targets'):
                         batch[k] = math_util.venv_unpack(v)
@@ -190,34 +189,37 @@ class PPO(ActorCritic):
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
                 for minibatch in minibatches:
-                    if self.body.env.is_venv:  # re-pack to restore proper shape
+                    if self.agent.env.is_venv:  # re-pack to restore proper shape
                         for k, v in minibatch.items():
                             if k not in ('advs', 'v_targets'):
-                                minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
+                                minibatch[k] = math_util.venv_pack(v, self.agent.env.num_envs)
                     advs, v_targets = minibatch['advs'], minibatch['v_targets']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
                     val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
-                        self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                        self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                        self.agent.env.tick_opt_step()
                     else:
-                        self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
-                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
+                        self.net.train_step(policy_loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, global_net=self.global_critic_net)
+                        self.agent.env.tick_opt_step()
+                        self.agent.env.tick_opt_step()
                         loss = policy_loss + val_loss
                     total_loss += loss
             loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
 
     @lab_api
     def update(self):
-        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.agent.explore_var = self.explore_var_scheduler.update(self, self.agent.env)
         if self.entropy_coef_spec is not None:
-            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
-        self.body.clip_eps = self.clip_eps_scheduler.update(self, self.body.env.clock)
-        return self.body.explore_var
+            self.agent.entropy_coef = self.entropy_coef_scheduler.update(self, self.agent.env)
+        self.clip_eps = self.clip_eps_scheduler.update(self, self.agent.env)
+        return self.agent.explore_var

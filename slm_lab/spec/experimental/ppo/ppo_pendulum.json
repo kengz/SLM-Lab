@@ -1,6 +1,6 @@
 {
   "ppo_shared_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "PPO",
       "algorithm": {
         "name": "PPO",
@@ -11,7 +11,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 5000
@@ -33,7 +33,9 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 10.0,
         "use_same_optim": false,
@@ -52,15 +54,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -70,27 +68,49 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "ppo_separate_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "PPO",
       "algorithm": {
         "name": "PPO",
@@ -101,7 +121,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 5000
@@ -123,7 +143,9 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": 10.0,
         "use_same_optim": false,
@@ -142,15 +164,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -160,27 +178,49 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "ppo_rnn_shared_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "PPO",
       "algorithm": {
         "name": "PPO",
@@ -191,7 +231,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 5000
@@ -236,15 +276,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -254,27 +290,49 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   },
   "ppo_rnn_separate_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "PPO",
       "algorithm": {
         "name": "PPO",
@@ -285,7 +343,7 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
+          "start_val": 0.1,
           "end_val": 0.01,
           "start_step": 1000,
           "end_step": 5000
@@ -330,15 +388,11 @@
         },
         "gpu": false
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "Pendulum-v1",
       "max_t": null,
       "max_frame": 500
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -348,23 +402,45 @@
       "search": "RandomSearch"
     },
     "search": {
-      "agent": [{
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+      "agent": [
+        {
+          "net": {
+            "hid_layers__choice": [
+              [
+                32
+              ],
+              [
+                64
+              ],
+              [
+                32,
+                16
+              ],
+              [
+                64,
+                32
+              ]
+            ],
+            "hid_layers_activation__choice": [
+              "sigmoid",
+              "relu",
+              "tanh"
+            ],
+            "actor_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            },
+            "critic_optim_spec": {
+              "lr__uniform": [
+                0.0001,
+                0.2
+              ]
+            }
           }
         }
-      }]
+      ]
     }
   }
 }
