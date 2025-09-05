@@ -43,7 +43,7 @@
           "name": "LinearToZero",
           "frame": 10000
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -128,7 +128,7 @@
         },
         "update_type": "replace",
         "update_frequency": 10,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -215,7 +215,7 @@
         },
         "update_type": "replace",
         "update_frequency": 10,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

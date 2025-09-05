@@ -69,6 +69,8 @@ class Reinforce(Algorithm):
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
+            self.agent.mt.register_algo_var('entropy_coef', self.agent)
+            self.agent.mt.register_algo_var('entropy', self.agent)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -137,7 +139,7 @@ class Reinforce(Algorithm):
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
             entropy = action_pd.entropy().mean()
-            self.agent.mean_entropy = entropy.detach()  # update logging variable
+            self.agent.entropy = entropy.detach()  # Update value for logging
             policy_loss += (-self.agent.entropy_coef * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss

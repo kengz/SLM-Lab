@@ -60,7 +60,7 @@
           "step_size": 500,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -181,7 +181,7 @@
           "step_size": 500,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -304,7 +304,7 @@
           "step_size": 500,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -427,7 +427,7 @@
           "step_size": 500,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

@@ -102,6 +102,7 @@ class ActorCritic(Reinforce):
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
+            self.agent.mt.register_algo_var('entropy_coef', self.agent)
         # Select appropriate methods to calculate advs and v_targets for training
         if self.lam is not None:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets

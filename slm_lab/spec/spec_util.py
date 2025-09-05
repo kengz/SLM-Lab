@@ -53,12 +53,11 @@ def check_comp_spec(comp_spec, comp_spec_format):
                 comp_spec[spec_k] = int(comp_spec_v)
 
 
-
 def check_compatibility(spec):
     '''Check compatibility among spec setups'''
     # TODO expand to be more comprehensive
     if spec['meta'].get('distributed') == 'synced':
-        assert ps.get(spec, 'agent.net.gpu') is False, 'Distributed mode "synced" works with CPU only. Set gpu: false.'
+        assert not util.use_gpu(ps.get(spec, 'agent.net.gpu')), 'Distributed mode "synced" works with CPU only. Set gpu: false.'
 
 
 def check(spec):

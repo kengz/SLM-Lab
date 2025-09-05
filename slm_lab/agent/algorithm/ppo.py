@@ -108,6 +108,11 @@ class PPO(ActorCritic):
             self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
+        
+        # Register PPO-specific variables for logging
+        self.agent.mt.register_algo_var('clip_eps', self)
+        if self.entropy_coef_spec is not None:
+            self.agent.mt.register_algo_var('entropy', self.agent)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -157,7 +162,7 @@ class PPO(ActorCritic):
 
         # H entropy regularization
         entropy = action_pd.entropy().mean()
-        self.agent.mean_entropy = entropy.detach()  # update logging variable
+        self.agent.entropy = entropy.detach()  # Update value for logging
         ent_penalty = -self.agent.entropy_coef * entropy
         logger.debug(f'ent_penalty: {ent_penalty}')
 

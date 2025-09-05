@@ -70,7 +70,7 @@
           "lr": 0.0001
         },
         "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -166,7 +166,7 @@
           "lr": 0.0001
         },
         "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {

@@ -69,7 +69,7 @@
         },
         "lr_scheduler_spec": null,
         "update_frequency": 100,
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {

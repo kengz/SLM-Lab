@@ -70,7 +70,7 @@
           "name": "LinearToZero",
           "frame": 10000
         },
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {

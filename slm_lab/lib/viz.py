@@ -163,9 +163,10 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('entropy', 'frame'),
     ]
     for name, time in name_time_pairs:
-        fig = plot_sr(
-            session_df[name], session_df[time], title, name, time)
-        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+        if name in session_df.columns:  # Only plot if column exists
+            fig = plot_sr(
+                session_df[name], session_df[time], title, name, time)
+            save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
 def plot_trial(trial_spec, trial_metrics, ma=False):

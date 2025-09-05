@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.perf import _perf_torch_compile
 
 logger = logger.get_logger(__name__)
@@ -23,7 +23,7 @@ class Net(ABC):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.grad_norms = None  # for debugging
-        if self.net_spec.get('gpu'):
+        if util.use_gpu(self.net_spec.get('gpu')):
             if torch.cuda.device_count():
                 self.device = f'cuda:{net_spec.get("cuda_id", 0)}'
             else:

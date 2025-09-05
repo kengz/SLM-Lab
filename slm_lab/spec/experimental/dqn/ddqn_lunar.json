@@ -50,7 +50,7 @@
         },
         "update_type": "polyak",
         "polyak_coef": 0.9,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

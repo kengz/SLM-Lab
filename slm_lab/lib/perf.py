@@ -78,7 +78,10 @@ def _perf_torch_compile():
     elif compile_mode == "auto" and torch.cuda.is_available():
         try:
             major, _ = torch.cuda.get_device_capability()
-            if major >= 8:  # Only Ampere+ for stability
+            
+            # Only enable on Hopper (9.0+) architecture and newer
+            # These have mature torch.compile support with proven benefits
+            if major >= 9:
                 return True
         except Exception:
             pass
@@ -103,8 +106,12 @@ def _perf_gpu():
         # Enable cuDNN benchmark for consistent input sizes
         torch.backends.cudnn.benchmark = True
 
+        optimizations = ["cuDNN benchmark", "memory fragmentation reduction"]
+        if major >= 8:
+            optimizations.append("TF32 acceleration")
+        
         logger.info(
-            f"GPU optimization applied: {device_name} (compute {major}.{minor})"
+            f"GPU optimizations: {', '.join(optimizations)} | {device_name} (compute {major}.{minor})"
         )
 
     except Exception as e:

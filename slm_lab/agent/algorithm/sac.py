@@ -83,6 +83,8 @@ class SoftActorCritic(ActorCritic):
         # temperature variable to be learned, and its target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
+        # Register alpha for logging
+        self.agent.mt.register_algo_var('alpha', self)
         
         # Target entropy using epsilon-greedy policy bound
         # Epsilon = exploration probability for baseline policy (default 0.1 = 10% exploration)

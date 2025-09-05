@@ -43,7 +43,7 @@
         "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 100,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

@@ -81,7 +81,7 @@
           "name": "LinearToZero",
           "frame": 10000000.0
         },
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {
@@ -196,7 +196,7 @@
           "name": "LinearToZero",
           "frame": 10000000.0
         },
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {

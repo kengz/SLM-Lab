@@ -56,7 +56,7 @@
           "lr": 0.0005
         },
         "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

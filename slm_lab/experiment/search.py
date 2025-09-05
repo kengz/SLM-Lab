@@ -50,7 +50,7 @@ def infer_trial_resources(spec):
     requested_cpu = cpu_per_session * meta_spec['max_session']
     num_cpus = min(util.NUM_CPUS, requested_cpu)
 
-    use_gpu = spec['agent']['net'].get('gpu', False)
+    use_gpu = util.use_gpu(spec['agent']['net'].get('gpu'))
     gpu_per_session = meta_spec.get('num_gpus') or 1
     requested_gpu = gpu_per_session * meta_spec['max_session'] if use_gpu else 0
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0

@@ -63,7 +63,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {

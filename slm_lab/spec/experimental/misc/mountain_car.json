@@ -46,7 +46,7 @@
           "step_size": 160000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -164,7 +164,7 @@
           "step_size": 160000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -290,7 +290,7 @@
           "step_size": 160000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -415,7 +415,7 @@
           "step_size": 160000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -543,7 +543,7 @@
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -664,7 +664,7 @@
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -788,7 +788,7 @@
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -909,7 +909,7 @@
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

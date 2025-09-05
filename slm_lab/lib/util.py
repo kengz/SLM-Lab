@@ -432,11 +432,18 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
+def use_gpu(spec_gpu: str | bool | None) -> bool:
+    '''Check if GPU should be used based on gpu setting: auto, true, false, or legacy boolean'''
+    if spec_gpu in ('auto', None):
+        return torch.cuda.is_available() and torch.cuda.device_count() > 0
+    return spec_gpu not in ('false', False)
+
+
 def set_cuda_id(spec):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
     # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
-    if not spec['agent']['net'].get('gpu'):
+    if not use_gpu(spec['agent']['net'].get('gpu')):
         return
     meta_spec = spec['meta']
     trial_idx = meta_spec['trial'] or 0

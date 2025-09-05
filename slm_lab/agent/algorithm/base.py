@@ -31,6 +31,8 @@ class Algorithm(ABC):
             from slm_lab.agent.algorithm import policy_util
             self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
             self.agent.explore_var = self.explore_var_scheduler.start_val
+            # Register for logging
+            self.agent.mt.register_algo_var('explore_var', self.agent)
 
     @abstractmethod
     @lab_api

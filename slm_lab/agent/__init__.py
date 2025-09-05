@@ -50,7 +50,7 @@ class Agent:
         # Initialize algorithm-specific variables with defaults first
         self.explore_var = np.nan  # action exploration: epsilon or tau
         self.entropy_coef = np.nan  # entropy for exploration
-        self.mean_entropy = np.nan  # mean entropy for tracking
+        self.entropy = np.nan  # entropy for tracking
         
         MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
         self.memory = MemoryClass(self.agent_spec['memory'], self)
@@ -107,18 +107,22 @@ class MetricsTracker:
 
         # debugging/logging variables, set in train or loss function
         self.loss = np.nan
-        self.mean_grad_norm = np.nan
 
         # total_reward_ma from eval for model checkpoint saves
         self.best_total_reward_ma = -np.inf
         self.total_reward_ma = np.nan
 
-        # dataframes to track data for analysis.analyze_session
-        # track training data per episode
-        self.train_df = pd.DataFrame(columns=[
-            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr',
-            'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
-
+        # dataframes to track data - start with core columns only
+        core_columns = ['epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr']
+        self.train_df = pd.DataFrame(columns=core_columns)
+        
+        # Dynamic variables registry
+        self.algo_vars = {}
+        
+        # Register grad_norm if in dev/test mode
+        if net_util.to_check_train_step():
+            self.register_algo_var('grad_norm', self)
+        
         # in train@ mode, override from saved train_df if exists
         if util.in_train_lab_mode() and self.spec['meta']['resume']:
             train_df_filepath = util.get_session_df_path(self.spec, 'train')
@@ -131,6 +135,10 @@ class MetricsTracker:
             self.eval_df = self.train_df.copy()
         else:
             self.eval_df = self.train_df
+
+    def register_algo_var(self, var_name: str, source_obj: object) -> None:
+        """Register a variable for logging. Expects source_obj to have an attribute named var_name."""
+        self.algo_vars[var_name] = source_obj
 
 
     def update(self, state: np.ndarray, action: Union[int, float, np.ndarray], reward: float, next_state: np.ndarray, done: bool) -> None:
@@ -152,11 +160,15 @@ class MetricsTracker:
             warnings.filterwarnings('ignore')
             total_reward = np.nanmean(env.total_reward)  # guard for vec env
 
-        # update debugging variables
+        # Calculate grad_norm only in dev/test mode when training
         if net_util.to_check_train_step():
             grad_norms = net_util.get_grad_norms(self.agent.algorithm)
-            self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+            if not ps.is_empty(grad_norms):
+                self.grad_norm = np.mean(grad_norms)
+            else:
+                self.grad_norm = np.nan
 
+        # Core metrics that are always present
         row_data = {
             # epi and frame are always measured from training env
             'epi': self.env.get('epi'),
@@ -170,11 +182,12 @@ class MetricsTracker:
             'total_reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
-            'explore_var': self.agent.explore_var,
-            'entropy_coef': self.agent.entropy_coef,
-            'entropy': self.agent.mean_entropy,
-            'grad_norm': self.mean_grad_norm,
         }
+        
+        # Add all dynamic variables
+        for var_name, source_obj in self.algo_vars.items():
+            if hasattr(source_obj, var_name):
+                row_data[var_name] = getattr(source_obj, var_name)
         
         # Convert any tensors to scalars
         for key, value in row_data.items():
@@ -182,7 +195,13 @@ class MetricsTracker:
                 row_data[key] = value.cpu().item()
         
         row = pd.Series(row_data, dtype=np.float32)
-        assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
+        
+        # Dynamically add any missing columns to dataframe
+        for col in row.index:
+            if col not in self.train_df.columns:
+                self.train_df[col] = np.nan
+                if hasattr(self, 'eval_df'):
+                    self.eval_df[col] = np.nan
         return row
 
     def ckpt(self, env: 'gym.Env', df_mode: str) -> None:
@@ -240,7 +259,7 @@ class MetricsTracker:
         df = getattr(self, f'{df_mode}_df')
         last_row = df.iloc[-1]
         
-        # Simple format: clean up floats, keep rest as-is
+        # Simple format: clean up floats, keep NaNs for debugging
         items = []
         for k, v in last_row.items():
             if str(v).lower() == 'nan':

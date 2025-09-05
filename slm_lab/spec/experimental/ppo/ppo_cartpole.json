@@ -48,7 +48,7 @@
           "lr": 0.02
         },
         "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -158,7 +158,7 @@
           "step_size": 2000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -270,7 +270,7 @@
           "step_size": 2000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -382,7 +382,7 @@
           "step_size": 2000,
           "gamma": 0.9
         },
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

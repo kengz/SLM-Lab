@@ -145,8 +145,11 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ## TODO
 
-1. check for outdated env, for example I still see bipedalwalker-v2
-2. ppo_cont bipedal is not using gpu. overall the gpu field in spec - should just remove and let it be automatic.
+1. generalize logging, e.g. gradnorm is nan outside of debug and should not show. algo specific like clip_eps for ppo should also log. use a general/dynamic one, e.g. algo_vars collection = [clip_eps, entropy_coef]
+2. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
+3. run with profiler to debug bottleneck. now GPU util still low and with frequent drops
+4. bottleneck - check where is util slowing down.. is it training, or inference (check for loops), or loss calculations, or env stepping?
+5. check data/ file output still a lot of things and might be too big. cleanup too
 
 - [ ] **Atari Production Testing**: Full Pong training run with dstack GPU infrastructure
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)

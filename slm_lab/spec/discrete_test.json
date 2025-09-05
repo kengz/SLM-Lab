@@ -44,7 +44,7 @@
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -106,7 +106,7 @@
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -169,7 +169,7 @@
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -232,7 +232,7 @@
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {

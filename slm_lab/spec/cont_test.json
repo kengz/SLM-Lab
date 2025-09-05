@@ -48,7 +48,7 @@
           "lr": 0.0003
         },
         "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -130,7 +130,7 @@
           "lr": 0.0003
         },
         "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
@@ -215,7 +215,7 @@
           "name": "LinearToZero",
           "frame": 1000000.0
         },
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {
@@ -284,7 +284,7 @@
           "name": "LinearToZero",
           "frame": 1000000.0
         },
-        "gpu": true
+        "gpu": "auto"
       }
     },
     "env": {
