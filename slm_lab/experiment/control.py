@@ -13,7 +13,7 @@ from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import lab_mode
-from slm_lab.lib.perf import optimize, log_perf_setup
+from slm_lab.lib.perf import log_perf_setup, optimize
 from slm_lab.spec import spec_util
 
 
@@ -107,36 +107,20 @@ class Session:
         """Run the main RL loop until clock.max_frame"""
         state, info = self.env.reset()
 
-        # Warm up torch.compile if enabled (compilation time not counted in timing)
-        if hasattr(self.agent.algorithm, "net") and hasattr(
-            self.agent.algorithm.net.forward, "__wrapped__"
-        ):
-            with torch.no_grad():
-                self.agent.act(state)
-
-        # Reset clock timing AFTER torch.compile warmup to get accurate FPS
-        # The ClockWrapper automatically handles timing via reset() and step()
-        self.env.reset_clock()
-
-        done = False
-        while True:
-            if util.epi_done(done):  # before starting another episode
-                self.try_ckpt(self.agent, self.env)
-                if self.env.get() < self.env.max_frame:  # reset and continue
-                    # ClockWrapper automatically ticks episode in reset()
-                    state, info = self.env.reset()
-                    done = False
-            self.try_ckpt(self.agent, self.env)
-            if self.env.get() >= self.env.max_frame:  # finish
-                break
-
-            # Main RL step - now non-invasive with @lab_api profiling
+        while self.env.get() < self.env.max_frame:
             with torch.no_grad():
                 action = self.agent.act(state)
-            next_state, reward, term, trunc, info = self.env.step(action)
-            done = np.logical_or(term, trunc)
+            next_state, reward, terminated, truncated, info = self.env.step(action)
+
+            done = np.logical_or(terminated, truncated)
             self.agent.update(state, action, reward, next_state, done)
-            state = next_state
+
+            self.try_ckpt(self.agent, self.env)
+
+            if util.epi_done(done):
+                state, info = self.env.reset()
+            else:
+                state = next_state
 
     def close(self):
         """Close session and clean up. Save agent, close env."""

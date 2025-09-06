@@ -163,10 +163,8 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 1. with @profile stable, start adding it to the identified bottlenecks above to learn more - but also add them generically instead of ad hoc at algo-specific places. fix identified bottleneck as documented above. verify before and after with @profile.
 
-2. clean up control loop, esp run_rl in control.py - a lot of things seems extraneous or can be absorbed better into logic. run_rl should be conceptually very simple and close to the concept of an RL loop
-
-3. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
-4. check data/ file output still a lot of things and might be too big. cleanup too
+2. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
+3. check data/ file output still a lot of things and might be too big. cleanup too
 
 - [ ] **Start benchmark on classic, box2d, and mujoco envs** - with core algos - PPO, DQN, SAC
 - [ ] **Fix ALE convergence issue**: Start with PPO on Pong. it's not converging; learning is stuck
@@ -180,14 +178,15 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 ### Command to Test Current State
 
 ```bash
-# Basic functionality tests
+# ✅ Validated algorithms (confirmed working)
+uv run slm-lab slm_lab/spec/demo.json dqn_cartpole train                                    # DQN CartPole
+uv run slm-lab slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json reinforce_cartpole train  # REINFORCE
+uv run slm-lab slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json ddqn_per_concat_lunar train   # DDQN PER
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train      # PPO CartPole
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker train            # PPO Continuous
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train                     # PPO Atari
+
+# Development/debugging (faster runs)
 uv run slm-lab slm_lab/spec/demo.json dqn_cartpole dev
 uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole dev
-uv run slm-lab slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json a2c_gae_cartpole dev
-
-# Retrospective analysis (the only custom CLI we kept)
-uv run slm-retro data/experiment_dir
-
-# Performance optimizations (automatic on GPU, manual on CPU)
-uv run slm-lab --torch-compile=true slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train
 ```

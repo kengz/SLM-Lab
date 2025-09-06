@@ -22,8 +22,8 @@ class TestPERMemory:
         assert len(memory.priorities) == memory.max_size
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
-        assert memory.epsilon[0] == 0
-        assert memory.alpha[0] == 1
+        assert memory.epsilon[0] == 0.01
+        assert memory.alpha[0] == 0.6
 
     def test_add_experience(self, test_prioritized_replay_memory):
         '''Adds an experience to the memory. Checks that memory size = 1, and checks that the experience values are equal to the experience added'''

@@ -327,6 +327,8 @@ class MetricsTracker:
 
     def track_tensorboard(self, action: np.ndarray) -> None:
         '''Helper to track variables for tensorboard logging'''
+        if not hasattr(self, 'tb_actions'):
+            self.tb_actions = []
         if self.env.is_venv:
             self.tb_actions.extend(action.tolist())
         else:

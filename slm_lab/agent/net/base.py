@@ -36,6 +36,19 @@ class Net(ABC):
         if _perf_torch_compile():
             import thunder
             self.forward = thunder.compile(self.forward)
+            # Warmup compiled forward pass to avoid first-call compilation overhead
+            self._warmup_compilation()
+
+    def _warmup_compilation(self):
+        """Warm up compiled forward pass with dummy input to trigger compilation"""
+        with torch.no_grad():
+            # Create dummy input based on network's expected input dimension
+            if isinstance(self.in_dim, int):
+                dummy_input = torch.randn(1, self.in_dim, device=self.device)
+            else:
+                # Handle multi-dimensional inputs (e.g., images)
+                dummy_input = torch.randn(1, *self.in_dim, device=self.device)
+            self.forward(dummy_input)
 
     @abstractmethod
     def forward(self):
