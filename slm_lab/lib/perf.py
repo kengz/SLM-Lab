@@ -6,6 +6,7 @@ Centralizes all perf optimizations in one module.
 import os
 import platform
 
+import thunder
 import torch
 
 from slm_lab.lib import logger
@@ -58,7 +59,7 @@ def _perf_cpu_threads():
 
 
 def _perf_torch_compile():
-    """Apply torch.compile optimizations based on hardware."""
+    """Apply lightning thunder optimizations based on hardware."""
     # Respect optimize_perf setting first
     optimize_perf = os.getenv("OPTIMIZE_PERF", "true").lower() == "true"
     if not optimize_perf:
@@ -79,9 +80,9 @@ def _perf_torch_compile():
         try:
             major, _ = torch.cuda.get_device_capability()
             
-            # Only enable on Hopper (9.0+) architecture and newer
-            # These have mature torch.compile support with proven benefits
-            if major >= 9:
+            # Enable on Ampere (8.0+) architecture and newer
+            # These have mature compilation support with proven benefits
+            if major >= 8:
                 return True
         except Exception:
             pass
@@ -127,7 +128,7 @@ def _perf_memory():
 
 def _get_perf_status():
     """Get current perf optimization status for logging."""
-    # Check if torch.compile will actually be enabled (respects hierarchy)
+    # Check if lightning thunder will actually be enabled (respects hierarchy)
     compile_will_be_enabled = _perf_torch_compile()
     profile_enabled = os.getenv("PROFILE", "false").lower() == "true"
     cpu_count = os.cpu_count() or 1
@@ -141,7 +142,7 @@ def _get_perf_status():
         platform_info = f"CPU {cpu_info}"
 
     return {
-        "torch_compile": "enabled" if compile_will_be_enabled else "disabled",
+        "lightning_thunder": "enabled" if compile_will_be_enabled else "disabled",
         "profiler": "enabled" if profile_enabled else "disabled",
         "platform": platform_info,
         "threads": torch.get_num_threads(),

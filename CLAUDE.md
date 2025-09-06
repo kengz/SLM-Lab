@@ -128,7 +128,7 @@ tensorboard --logdir=data/profiler_logs  # View results
 ### Automatic Optimizations (`--optimize-perf=true` by default)
 
 - **CPU Threading**: Uses all cores (up to 32) with intelligent platform detection
-- **torch.compile**: Auto-enabled on compatible GPUs (Ampere+ compute 8.0+)
+- **lightning thunder**: Auto-enabled on compatible GPUs (Ampere+ compute 8.0+)
 - **GPU Optimizations**: TF32 acceleration, cuDNN benchmark, memory management
 - **Universal Support**: Apple Silicon M1/M2, Intel, AMD, ARM64, x86_64
 
@@ -145,16 +145,16 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ## TODO
 
-1. generalize logging, e.g. gradnorm is nan outside of debug and should not show. algo specific like clip_eps for ppo should also log. use a general/dynamic one, e.g. algo_vars collection = [clip_eps, entropy_coef]
-2. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
-3. run with profiler to debug bottleneck. now GPU util still low and with frequent drops
-4. bottleneck - check where is util slowing down.. is it training, or inference (check for loops), or loss calculations, or env stepping?
+1. ✅ try lightning thunder instead of torch compile (but stick to the same flag) read https://github.com/Lightning-AI/lightning-thunder for how to use. also activate on compute capability >= 8.0 instead of 9.0
+2. bottleneck - check where is util slowing down.. is it training, or inference (check for loops), or loss calculations, or env stepping?
+3. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
+4. run with profiler to debug bottleneck. now GPU util still low and with frequent drops
 5. check data/ file output still a lot of things and might be too big. cleanup too
 
 - [ ] **Atari Production Testing**: Full Pong training run with dstack GPU infrastructure
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)
 - [ ] **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch_size×seq_len×input_dim handling
-- [ ] **Comprehensive Benchmarking**: Measure actual speedup gains from torch.compile and vectorization
+- [ ] **Comprehensive Benchmarking**: Measure actual speedup gains from lightning thunder and vectorization
 - [ ] **Ray/Optuna Integration**: Modern hyperparameter search with Optuna backend
 - [ ] **Documentation Updates**: Update gitbook documentation reflecting new API and performance
 

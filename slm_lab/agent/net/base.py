@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+import thunder
 import torch
 import torch.nn as nn
 
@@ -32,9 +33,9 @@ class Net(ABC):
         else:
             self.device = 'cpu'
         
-        # Apply torch.compile if enabled
+        # Apply lightning thunder if enabled
         if _perf_torch_compile():
-            self.forward = torch.compile(self.forward, mode="default", fullgraph=False)
+            self.forward = thunder.compile(self.forward)
 
     @abstractmethod
     def forward(self):

@@ -95,8 +95,8 @@ Intelligent vectorization mode selection:
 # GPU training with dstack
 dstack apply -f .dstack/train.yml
 
-# torch.compile optimization (20-30% speedup)
-uv run slm-lab --torch-compile=true [args]
+# lightning thunder optimization (20-30% speedup)
+uv run slm-lab --torch-compile=true [args]  # Uses lightning thunder internally
 ```
 
 ### **Modern Development Tooling**
@@ -155,7 +155,7 @@ uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole 
 - **Atari Production Testing**: Full Pong training run with dstack GPU infrastructure
 - **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)
 - **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch_size×seq_len×input_dim handling
-- **Comprehensive Benchmarking**: Measure actual speedup gains from torch.compile and vectorization
+- **Comprehensive Benchmarking**: Measure actual speedup gains from lightning thunder and vectorization
 - **Higher Parallelization**: Test performance with more vector environments (>32)
 - **Numba Integration**: Explore for remaining CPU-bound numpy bottlenecks
 
