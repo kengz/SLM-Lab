@@ -1,24 +1,25 @@
 # The control module
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
-from slm_lab import ROOT_DIR
+
+import numpy as np
+import pydash as ps
+import torch
+import torch.multiprocessing as mp
+
 from slm_lab.agent import Agent, MetricsTracker
 from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
-from slm_lab.lib.util import log_dict
+from slm_lab.lib.env_config import lab_mode
 from slm_lab.lib.perf import optimize_perf
+from slm_lab.lib.util import log_dict
 from slm_lab.spec import spec_util
-import numpy as np
-import os
-import pydash as ps
-import torch
-import torch.multiprocessing as mp
 
 
 def make_agent_env(spec, global_nets=None):
-    '''Helper to create agent and env given spec'''
+    """Helper to create agent and env given spec"""
     env = make_env(spec)
     mt = MetricsTracker(env, spec)
     agent = Agent(spec, mt=mt, global_nets=global_nets)
@@ -26,106 +27,101 @@ def make_agent_env(spec, global_nets=None):
 
 
 def mp_run_session(spec, global_nets, mp_dict):
-    '''Wrap for multiprocessing with shared variable'''
+    """Wrap for multiprocessing with shared variable"""
     session = Session(spec, global_nets)
     metrics = session.run()
     mp_dict[session.index] = metrics
 
 
 class Session:
-    '''
+    """
     The base lab unit to run a RL session for a spec.
     Given a spec, it creates the agent and env, runs the RL loop,
     then gather data and analyze it to produce session data.
-    '''
+    """
 
     def __init__(self, spec, global_nets=None):
         self.spec = spec
-        self.index = self.spec['meta']['session']
+        self.index = self.spec["meta"]["session"]
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
-        util.set_logger(self.spec, logger, 'session')
-        spec_util.save(spec, unit='session')
+        util.set_logger(self.spec, logger, "session")
+        spec_util.save(spec, unit="session")
 
         # Apply perf optimizations for all sessions
         self.perf_setup = optimize_perf()
-        
+
         self.agent, self.env = make_agent_env(self.spec, global_nets)
-        if ps.get(self.spec, 'meta.rigorous_eval'):
-            with util.ctx_lab_mode('eval'):
+        if ps.get(self.spec, "meta.rigorous_eval"):
+            with util.ctx_lab_mode("eval"):
                 self.eval_env = make_env(self.spec)
         else:
             self.eval_env = self.env
         if self.index == 0:
-            log_dict(self.perf_setup, 'Performance setup')
-            util.log_self_desc(self.agent.algorithm, omit=["net_spec", "explore_var_spec"])
+            log_dict(self.perf_setup, "Performance setup")
+            util.log_self_desc(
+                self.agent.algorithm, omit=["net_spec", "explore_var_spec"]
+            )
 
-    def to_ckpt(self, env, mode='eval'):
-        '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
-        if mode == 'eval' and util.in_eval_lab_mode():  # avoid double-eval: eval-ckpt in eval mode
+    def to_ckpt(self, env, mode="eval"):
+        """Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end"""
+        if (
+            mode == "eval" and util.in_eval_lab_mode()
+        ):  # avoid double-eval: eval-ckpt in eval mode
             return False
         # ClockWrapper provides direct access to clock methods
         frame = env.get()
-        frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == env.max_frame
+        frequency = env.eval_frequency if mode == "eval" else env.log_frequency
+        to_ckpt = (
+            util.frame_mod(frame, frequency, env.num_envs) or frame == env.max_frame
+        )
         return to_ckpt
 
     def try_ckpt(self, agent, env):
-        '''Check then run checkpoint log/eval'''
+        """Check then run checkpoint log/eval"""
         mt = agent.mt
-        if self.to_ckpt(env, 'log'):
-            mt.ckpt(self.env, 'train')
-            mt.log_summary('train')
+        if self.to_ckpt(env, "log"):
+            mt.ckpt(self.env, "train")
+            mt.log_summary("train")
             agent.save()  # save the latest ckpt
             if mt.total_reward_ma >= mt.best_total_reward_ma:
                 mt.best_total_reward_ma = mt.total_reward_ma
-                agent.save(ckpt='best')
+                agent.save(ckpt="best")
             if len(mt.train_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(self.spec, mt.train_df, 'train', plot=False)
-                mt.log_metrics(metrics['scalar'], 'train')
+                metrics = analysis.analyze_session(
+                    self.spec, mt.train_df, "train", plot=False
+                )
+                mt.log_metrics(metrics["scalar"], "train")
 
-        if ps.get(self.spec, 'meta.rigorous_eval') and self.to_ckpt(env, 'eval'):
-            logger.info('Running eval ckpt')
+        if ps.get(self.spec, "meta.rigorous_eval") and self.to_ckpt(env, "eval"):
+            logger.info("Running eval ckpt")
             analysis.gen_avg_return(agent, self.eval_env)
-            mt.ckpt(self.eval_env, 'eval')
-            mt.log_summary('eval')
+            mt.ckpt(self.eval_env, "eval")
+            mt.log_summary("eval")
             if len(mt.eval_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(self.spec, mt.eval_df, 'eval', plot=False)
-                mt.log_metrics(metrics['scalar'], 'eval')
+                metrics = analysis.analyze_session(
+                    self.spec, mt.eval_df, "eval", plot=False
+                )
+                mt.log_metrics(metrics["scalar"], "eval")
 
     def run_rl(self):
-        '''Run the main RL loop until clock.max_frame'''
-        logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
+        """Run the main RL loop until clock.max_frame"""
+        logger.info(
+            f"Running RL loop for trial {self.spec['meta']['trial']} session {self.index}"
+        )
         state, info = self.env.reset()
-        
+
         # Warm up torch.compile if enabled (compilation time not counted in timing)
-        if hasattr(self.agent.algorithm, 'net') and hasattr(self.agent.algorithm.net.forward, '__wrapped__'):
+        if hasattr(self.agent.algorithm, "net") and hasattr(
+            self.agent.algorithm.net.forward, "__wrapped__"
+        ):
             with torch.no_grad():
                 self.agent.act(state)
-        
-        # Simple profiler setup (only if PROFILE=true and session 0)
-        profiler = None
-        if os.getenv('PROFILE', '').lower() == 'true' and self.index == 0:
-            # Use ROOT_DIR for consistent profiler directory
-            profiler_dir = os.path.join(ROOT_DIR, 'data', 'profiler_logs')
-            os.makedirs(profiler_dir, exist_ok=True)
-            
-            activities = [torch.profiler.ProfilerActivity.CPU]
-            if torch.cuda.is_available():
-                activities.append(torch.profiler.ProfilerActivity.CUDA)
-            profiler = torch.profiler.profile(
-                activities=activities,
-                record_shapes=True,
-                profile_memory=True,
-                on_trace_ready=torch.profiler.tensorboard_trace_handler(profiler_dir)
-            )
-            profiler.start()
-            logger.info(f'Profiler started - will profile first 100 steps to {profiler_dir}')
-        
+
         # Reset clock timing AFTER torch.compile warmup to get accurate FPS
         # The ClockWrapper automatically handles timing via reset() and step()
         self.env.reset_clock()
-        
+
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
@@ -137,7 +133,8 @@ class Session:
             self.try_ckpt(self.agent, self.env)
             if self.env.get() >= self.env.max_frame:  # finish
                 break
-            # ClockWrapper automatically ticks timestep in step()
+
+            # Main RL step - now non-invasive with @lab_api profiling
             with torch.no_grad():
                 action = self.agent.act(state)
             next_state, reward, term, trunc, info = self.env.step(action)
@@ -145,50 +142,42 @@ class Session:
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
 
-            # Profiler step (only first 100 steps to avoid huge files)
-            if profiler and self.env.get() <= 100:
-                profiler.step()
-
-        # Clean up profiler
-        if profiler:
-            profiler.stop()
-            logger.info('Profiler stopped - view results with: tensorboard --logdir=data/profiler_logs')
-
     def close(self):
-        '''Close session and clean up. Save agent, close env.'''
+        """Close session and clean up. Save agent, close env."""
+
         self.agent.close()
         self.env.close()
         self.eval_env.close()
         torch.cuda.empty_cache()
-        logger.info(f'Session {self.index} done')
+        logger.info(f"Session {self.index} done")
 
     def run(self):
         self.run_rl()
-        metrics = analysis.analyze_session(self.spec, self.agent.mt.eval_df, 'eval')
-        self.agent.mt.log_metrics(metrics['scalar'], 'eval')
+        metrics = analysis.analyze_session(self.spec, self.agent.mt.eval_df, "eval")
+        self.agent.mt.log_metrics(metrics["scalar"], "eval")
         self.close()
         return metrics
 
 
 class Trial:
-    '''
+    """
     The lab unit which runs repeated sessions for a same spec, i.e. a trial
     Given a spec and number s, trial creates and runs s sessions,
     then gathers session data and analyze it to produce trial data.
-    '''
+    """
 
     def __init__(self, spec):
         self.spec = spec
-        self.index = self.spec['meta']['trial']
-        util.set_logger(self.spec, logger, 'trial')
-        spec_util.save(spec, unit='trial')
+        self.index = self.spec["meta"]["trial"]
+        util.set_logger(self.spec, logger, "trial")
+        spec_util.save(spec, unit="trial")
 
     def parallelize_sessions(self, global_nets=None):
         mp_dict = mp.Manager().dict()
         workers = []
         spec = deepcopy(self.spec)
-        for _s in range(spec['meta']['max_session']):
-            spec_util.tick(spec, 'session')
+        for _s in range(spec["meta"]["max_session"]):
+            spec_util.tick(spec, "session")
             w = mp.Process(target=mp_run_session, args=(spec, global_nets, mp_dict))
             w.start()
             workers.append(w)
@@ -199,10 +188,12 @@ class Trial:
 
     def run_sessions(self):
         max_session = self.spec["meta"]["max_session"]
-        logger.info(f"Running {max_session} sessions in lab mode: {util.get_lab_mode()}")
+        logger.info(
+            f"Running {max_session} sessions in lab mode: {lab_mode()}"
+        )
         if max_session == 1:
             spec = deepcopy(self.spec)
-            spec_util.tick(spec, 'session')
+            spec_util.tick(spec, "session")
             session_metrics_list = [Session(spec).run()]
         else:
             session_metrics_list = self.parallelize_sessions()
@@ -215,39 +206,39 @@ class Trial:
         return global_nets
 
     def run_distributed_sessions(self):
-        logger.info('Running distributed sessions')
+        logger.info("Running distributed sessions")
         global_nets = self.init_global_nets()
         session_metrics_list = self.parallelize_sessions(global_nets)
         return session_metrics_list
 
     def close(self):
-        logger.info(f'Trial {self.index} done')
+        logger.info(f"Trial {self.index} done")
 
     def run(self):
-        if self.spec['meta'].get('distributed') is False:
+        if self.spec["meta"].get("distributed") is False:
             session_metrics_list = self.run_sessions()
         else:
             session_metrics_list = self.run_distributed_sessions()
         metrics = analysis.analyze_trial(self.spec, session_metrics_list)
         self.close()
-        return metrics['scalar']
+        return metrics["scalar"]
 
 
 class Experiment:
-    '''
+    """
     The lab unit to run experiments.
     It generates a list of specs to search over, then run each as a trial with s repeated session,
     then gathers trial data and analyze it to produce experiment data.
-    '''
+    """
 
     def __init__(self, spec):
         self.spec = spec
-        self.index = self.spec['meta']['experiment']
-        util.set_logger(self.spec, logger, 'trial')
-        spec_util.save(spec, unit='experiment')
+        self.index = self.spec["meta"]["experiment"]
+        util.set_logger(self.spec, logger, "trial")
+        spec_util.save(spec, unit="experiment")
 
     def close(self):
-        logger.info('Experiment done')
+        logger.info("Experiment done")
 
     def run(self):
         trial_data_dict = search.run_ray_search(self.spec)

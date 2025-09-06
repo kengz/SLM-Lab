@@ -50,6 +50,7 @@ def run_spec(spec, lab_mode: str):
     """Run a spec in lab_mode"""
     os.environ["lab_mode"] = lab_mode
     spec = spec_util.override_spec(spec, lab_mode)
+
     if lab_mode in TRAIN_MODES:
         spec_util.save(spec)
         if lab_mode == "search":
@@ -116,11 +117,11 @@ def main(
     cuda_offset: int = typer.Option(
         0, "--cuda-offset", envvar="CUDA_OFFSET", help="GPU device offset"
     ),
-    profile: str = typer.Option(
-        "false",
+    profile: bool = typer.Option(
+        False,
         "--profile",
         envvar="PROFILE",
-        help="Profiling: false|true|gpu|cpu|memory",
+        help="Enable non-invasive performance profiling",
     ),
 ):
     """
@@ -141,17 +142,15 @@ def main(
             "OPTIMIZE_PERF": str(optimize_perf).lower(),
             "TORCH_COMPILE": torch_compile,
             "CUDA_OFFSET": str(cuda_offset),
-            "PROFILE": profile,
+            "PROFILE": str(profile).lower(),
         }
     )
 
     if job is not None:
-        # Batch mode: run experiments from job file
         for spec_file, spec_and_mode in util.read(job).items():
             for spec_name, lab_mode in spec_and_mode.items():
                 run_experiment(spec_file, spec_name, lab_mode)
     else:
-        # Normal experiment mode
         run_experiment(spec_file, spec_name, mode)
 
 

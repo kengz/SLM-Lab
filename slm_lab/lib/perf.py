@@ -10,6 +10,7 @@ import thunder
 import torch
 
 from slm_lab.lib import logger
+from slm_lab.lib.env_config import optimize_perf as perf_enabled, torch_compile as compile_mode, profile
 
 logger = logger.get_logger(__name__)
 
@@ -37,8 +38,7 @@ def _perf_cpu_threads():
     if torch.cuda.is_available():
         return  # Skip CPU optimization if GPU is primary compute
 
-    optimize_perf = os.getenv("OPTIMIZE_PERF", "true").lower() == "true"
-    if not optimize_perf:
+    if not perf_enabled():
         logger.info("CPU optimization disabled via OPTIMIZE_PERF=false")
         return
 
@@ -61,11 +61,10 @@ def _perf_cpu_threads():
 def _perf_torch_compile():
     """Apply lightning thunder optimizations based on hardware."""
     # Respect optimize_perf setting first
-    optimize_perf = os.getenv("OPTIMIZE_PERF", "true").lower() == "true"
-    if not optimize_perf:
+    if not perf_enabled():
         return False
         
-    compile_mode = os.getenv("TORCH_COMPILE", "auto").lower()
+    mode = compile_mode()
 
     # Skip on Apple Silicon CPU (known instability)
     is_apple_cpu = (
@@ -74,9 +73,9 @@ def _perf_torch_compile():
         and not torch.cuda.is_available()
     )
 
-    if compile_mode == "true" and not is_apple_cpu:
+    if mode == "true" and not is_apple_cpu:
         return True  # Will be applied in network initialization
-    elif compile_mode == "auto" and torch.cuda.is_available():
+    elif mode == "auto" and torch.cuda.is_available():
         try:
             major, _ = torch.cuda.get_device_capability()
             
@@ -130,7 +129,7 @@ def _get_perf_status():
     """Get current perf optimization status for logging."""
     # Check if lightning thunder will actually be enabled (respects hierarchy)
     compile_will_be_enabled = _perf_torch_compile()
-    profile_enabled = os.getenv("PROFILE", "false").lower() == "true"
+    profile_enabled = profile()
     cpu_count = os.cpu_count() or 1
 
     if torch.cuda.is_available():

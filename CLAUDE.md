@@ -6,12 +6,6 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 ## Development Environment
 
-### Package Management
-
-- **Always use `uv`** instead of pip/python
-- Installation: `uv add package-name`
-- Running scripts: `uv run script.py`
-
 ### Cloud Compute
 
 - **Use dstack** for GPU-intensive training and development
@@ -20,49 +14,27 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 ## Code Standards
 
-### Style Guide
-
-- **Naming**: Concise and globally consistent for searchability
-  - Use clear, searchable names: `train_ppo()` not `tp()`
-  - Consistent patterns: `*_config`, `*_wrapper`, `*_callback`
-- **Type Hints**: Native Python types preferred, keep simple
-  - `list[str]` over `List[str]`
-  - `dict[str, float]` over `Dict[str, float]`
-  - Simple unions: `str | None` over `Optional[str]`
-- **Code Complexity**: Prioritize readability and brevity
-  - Short functions (max ~20 lines)
-  - Avoid nested complexity - extract to helper functions
-  - Clear variable names over comments when possible
-- **Refactoring**: Be obsessively clean
-  - Refactor immediately when code feels complex
-  - Remove dead code aggressively
-  - Simplify whenever possible - shorter is usually better
-
-### SLM-Lab Best Practices
-
-- Use gymnasium (not gym) for all environments
-- Follow new gymnasium API: `reset()` returns `(obs, info)`, `step()` returns `(obs, reward, terminated, truncated, info)`
-- Handle both discrete and continuous action spaces
-- Use vectorized environments for parallel training
-- Maintain modular algorithm structure with separate agent/network/memory components
-
-## Version Management
-
-- **Versioning**: Follow semantic versioning (SemVer)
-- **Commits**: Use Angular commit convention (`feat:`, `fix:`, `docs:`, etc.)
+- **Package Management**: Always use `uv` instead of pip/python (`uv add package-name`, `uv run script.py`)
+- **Naming**: Clear, searchable names with consistent patterns (`*_config`, `*_wrapper`, `*_callback`)
+- **Type Hints**: Native Python types (`list[str]`, `dict[str, float]`, `str | None`)
+- **Docstrings**: Brief and informative - rely on type hints and clear naming
+- **Structure**: Functions under ~20 lines, imports at module top, avoid deep nesting
+- **Refactoring**: Maintain obsessive cleanliness - refactor immediately, remove dead code aggressively
+- **Commits**: Angular convention (`feat:`, `fix:`, `docs:`, etc.)
+- **Versioning**: Semantic versioning (SemVer)
 
 ## Notes for Claude Code Assistant
 
 When working on this project:
 
-1. **Always suggest `uv` commands** instead of pip/python
-2. **Use dstack** for compute-intensive suggestions
-3. **Expect project structure to evolve** - keep suggestions flexible
-4. **Follow Angular commit convention** for all commits
-5. **Use semantic versioning** for releases
-6. **Use the TODO below** to organize work, check off when done
-7. **When task is done, do quick tests, update TODO, update MIGRATION_CHANGELOG.md, then cleanup and commit**
-8. **Refactor frequently, keep code DRY and simple**
+1. **Use `uv` commands** instead of pip/python for package management
+2. **Use dstack** for compute-intensive operations
+3. **Follow Angular commit convention** and semantic versioning
+4. **Use TODO section in CLAUDE.md** to organize and track work
+5. **On task completion**: cleanup code, test, update docs, then commit
+6. **Stage changes frequently** - commit related work as logical units
+7. **Keep suggestions flexible** - project structure will evolve
+8. **Never hard reset or delete work** - preserve changes even during corruption/errors
 
 ## Framework Design Patterns
 
@@ -145,17 +117,99 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ## TODO
 
-1. ✅ try lightning thunder instead of torch compile (but stick to the same flag) read https://github.com/Lightning-AI/lightning-thunder for how to use. also activate on compute capability >= 8.0 instead of 9.0
-2. bottleneck - check where is util slowing down.. is it training, or inference (check for loops), or loss calculations, or env stepping?
-3. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
-4. run with profiler to debug bottleneck. now GPU util still low and with frequent drops
-5. check data/ file output still a lot of things and might be too big. cleanup too
+### ✅ COMPLETED: Performance Bottleneck Investigation
 
-- [ ] **Atari Production Testing**: Full Pong training run with dstack GPU infrastructure
+**Status**: COMPLETED - Comprehensive analysis identified major bottlenecks
+
+**Key Findings**:
+
+- **PPO**: ~5,200 FPS | **DQN**: ~600-700 FPS (**8.5x slower**)
+- **Root Cause**: Fundamental training frequency difference (PPO: every 128 steps, DQN: every step)
+
+**Critical Bottlenecks Identified**:
+
+1. **🔴 MAJOR: Training Architecture Mismatch**
+
+   - Location: Algorithm training frequency settings
+   - Issue: DQN trains 128x more frequently than PPO
+   - Impact: Prevents resource utilization optimization
+
+2. **🟡 HIGH: Memory Sampling Inefficiency**
+
+   - Location: `slm_lab/lib/util.py:batch_get()`
+   - Issue: `operator.itemgetter(*idxs)(arr)` for list operations
+   - Impact: O(n) memory access vs vectorized operations
+
+3. **🟡 MEDIUM: GPU-CPU Transfers**
+   - Location: `slm_lab/agent/algorithm/dqn.py:108,212`
+   - Issue: `.detach().abs().cpu().numpy()` for PER
+   - Impact: Unnecessary device transfers
+
+**Profiling Infrastructure Created**:
+
+- ✅ Real-time resource monitoring (CPU, memory, GPU)
+- ✅ Timing breakdown (forward/backward/env/memory operations)
+- ✅ Plotly visualization suite with interactive dashboards
+- ✅ Automatic bottleneck detection and analysis
+- ✅ Integrated in training loop with `PROFILE=true` flag
+
+**Next Immediate Actions**:
+
+- [ ] **PRIORITY 1**: Optimize `batch_get()` to use vectorized numpy indexing
+- [ ] **PRIORITY 2**: Implement mini-batch training for DQN to reduce training frequency
+- [ ] **PRIORITY 3**: Test performance improvements with profiler validation
+
+### Current TODO Items
+
+1. profiler: get it working
+
+- remove torch profiler since we don't really do complex pytorch model. main profile of interest is in the rest of the run loop
+
+  1.2 env checks everywhere. scan for `PROFILE`. but we have actual checks in profiler module? use it
+  1.3 in general env checks for env vars set in CLI - figure out cleaner way to do it
+  1.4 profiler also needs to ensure session is 1
+  1.5 logs like \_perf_cpu_threads logs 4 times, one for each session. should be just once like the other perf log we have
+  1.6 I dont like env_config as a name. rename better
+  1.7 with @profile stable, start adding it to the identified bottlenecks above to learn more - but also add them generically instead of ad hoc at algo-specific places
+
+2. test run with thunder compile on a GPU
+
+- thunder needed these additional deps
+  "nvfuser-cu128-torch28>=0.2.31.dev20250901",
+  "nvidia-cudnn-cu12>=9.10.2.21",
+  "nvidia-cudnn-frontend>=1.14.1",
+
+- worse OMG. half the fps. with this warning
+  workflow/.venv/lib/python3.12/site-packages/thunder/executors/torchex.py:1787: UserWarning:
+
+Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:306.)
+
+- Option '--optimize-perf' does not take a value. can;t turn off. it's a bool default to True already.
+- logging is confusing
+  2025-09-06 05:54:14 | INFO | PID:10806 | slm_lab.lib.perf:\_perf_gpu | GPU optimizations: cuDNN benchmark, memory fragmentation reduction, TF32 acceleration | NVIDIA L4 (compute 8.9)
+  ^ this logs even when perf optim is turned off. should log only when relevant
+  2025-09-06 05:54:17 | INFO | PID:10806 | slm_lab.lib.logger:info | Performance setup:
+  lightning_thunder: enabled
+  profiler: disabled
+  platform: GPU NVIDIA L4 (compute 8.9)
+  threads: 64
+  cpu_cores: 128
+  ^ this is confusing. ideally it should be info first, then what's turned on/off (combine previous line of log here)
+
+- fix identify bottleneck
+
+3. clean up control loop, esp run_rl in control.py - a lot of things seems extraneous or can be absorbed better into logic. run_rl should be conceptually very simple and close to the concept of an RL loop
+4. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
+5. ~~run with profiler to debug bottleneck. now GPU util still low and with frequent drops~~ ✅ COMPLETED
+6. check data/ file output still a lot of things and might be too big. cleanup too
+
+- [ ] **Start benchmark on classic, box2d, and mujoco envs** - with core algos - PPO, DQN, SAC
+- [ ] **Fix ALE convergence issue**: Start with PPO on Pong. it's not converging; learning is stuck
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)
+- [ ] **Add Huggingface support to upload benchmark data** - but first reduce each data/ output, e.g. how many model checkpoints we save
+- [ ] **Run full algos-envs benchmark**
 - [ ] **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch_size×seq_len×input_dim handling
-- [ ] **Comprehensive Benchmarking**: Measure actual speedup gains from lightning thunder and vectorization
-- [ ] **Ray/Optuna Integration**: Modern hyperparameter search with Optuna backend
+- [ ] **Ray/Optuna Integration**: Fix hyperparam search, use Optuna for better search than grid/random
 - [ ] **Documentation Updates**: Update gitbook documentation reflecting new API and performance
 
 ### Command to Test Current State

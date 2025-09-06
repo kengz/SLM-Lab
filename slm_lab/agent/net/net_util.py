@@ -1,5 +1,6 @@
 from functools import partial, wraps
 from slm_lab.lib import logger, optimizer, util
+from slm_lab.lib.env_config import lab_mode
 import numpy as np
 import os
 import pydash as ps
@@ -209,7 +210,7 @@ def load_algorithm(algorithm):
     agent = algorithm.agent
     net_names = algorithm.net_names
     model_prepath = agent.spec['meta']['model_prepath']
-    if util.get_lab_mode() == 'enjoy':
+    if lab_mode() == 'enjoy':
         model_prepath += '_ckpt-best'
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {model_prepath}_*.pt')
     for net_name in net_names:
@@ -239,7 +240,7 @@ def polyak_update(src_net, tar_net, old_ratio=0.5):
 
 def to_check_train_step():
     '''Condition for running assert_trained'''
-    return os.environ.get('PY_ENV') == 'test' or util.get_lab_mode() == 'dev'
+    return os.environ.get('PY_ENV') == 'test' or lab_mode() == 'dev'
 
 
 def dev_check_train_step(fn):

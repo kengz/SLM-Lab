@@ -7,6 +7,7 @@ from gymnasium import spaces
 from gymnasium.vector import VectorEnv
 
 from slm_lab.lib import logger, util
+from slm_lab.lib.env_config import render
 from slm_lab.env.wrappers import (
     ClockWrapper,
     TrackReward,
@@ -146,7 +147,7 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     name = env_spec["name"]
     num_envs = env_spec.get("num_envs", 1)
 
-    render_mode = "human" if util.to_render() else None
+    render_mode = "human" if render() else None
 
     if num_envs > 1:  # make vector environment
         vectorization_mode = _get_vectorization_mode(name, num_envs)

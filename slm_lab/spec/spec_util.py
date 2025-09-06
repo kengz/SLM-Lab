@@ -2,6 +2,7 @@
 # Manages specification to run things in lab
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
+from slm_lab.lib.env_config import lab_mode
 from string import Template
 import itertools
 import json
@@ -215,7 +216,7 @@ def tick(spec, unit):
     spec_util.tick(spec, 'session')
     session = Session(spec)
     '''
-    if util.get_lab_mode() == 'enjoy':  # don't tick in enjoy mode
+    if lab_mode() == 'enjoy':  # don't tick in enjoy mode
         return spec
 
     meta_spec = spec['meta']

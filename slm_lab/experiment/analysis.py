@@ -1,4 +1,5 @@
 from slm_lab.lib import logger, util, viz
+from slm_lab.lib.env_config import lab_mode
 from slm_lab.spec import random_baseline
 import numpy as np
 import pandas as pd
@@ -276,7 +277,7 @@ def analyze_trial(trial_spec, session_metrics_list):
     viz.plot_trial(trial_spec, trial_metrics)
     viz.plot_trial(trial_spec, trial_metrics, ma=True)
     # zip files
-    if util.get_lab_mode() == 'train':
+    if lab_mode() == 'train':
         predir, _, _, _, _ = util.prepath_split(info_prepath)
         zipdir = util.smart_path(predir)
         shutil.make_archive(zipdir, 'zip', zipdir)

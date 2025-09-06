@@ -3,6 +3,7 @@ from slm_lab.agent import algorithm, memory
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util, viz
+from slm_lab.lib.env_config import lab_mode
 from slm_lab.lib.decorator import lab_api
 from torch.utils.tensorboard import SummaryWriter
 from typing import Any, Optional, Union
@@ -143,7 +144,7 @@ class MetricsTracker:
 
     def update(self, state: np.ndarray, action: Union[int, float, np.ndarray], reward: float, next_state: np.ndarray, done: bool) -> None:
         '''Interface update method for tracker at agent.update()'''
-        if util.get_lab_mode() == 'dev':  # log tensorboard only on dev mode
+        if lab_mode() == 'dev':  # log tensorboard only on dev mode
             self.track_tensorboard(action)
 
     def __str__(self) -> str:
@@ -277,7 +278,7 @@ class MetricsTracker:
             lines.append('  '.join(chunk))
         
         logger.info('\n'.join(lines))
-        if util.get_lab_mode() == 'dev' and df_mode == 'train':  # log tensorboard only on dev mode and train df data
+        if lab_mode() == 'dev' and df_mode == 'train':  # log tensorboard only on dev mode and train df data
             self.log_tensorboard()
 
     def log_tensorboard(self) -> None:

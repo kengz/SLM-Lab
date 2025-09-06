@@ -4,6 +4,7 @@ from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
+from slm_lab.lib.env_config import lab_mode
 import cv2
 import json
 import numpy as np
@@ -188,8 +189,6 @@ def get_git_sha():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
 
 
-def get_lab_mode():
-    return os.environ.get('lab_mode')
 
 
 def get_port():
@@ -249,12 +248,12 @@ def insert_folder(prepath, folder):
 
 def in_eval_lab_mode():
     '''Check if lab_mode is one of EVAL_MODES'''
-    return get_lab_mode() in EVAL_MODES
+    return lab_mode() in EVAL_MODES
 
 
 def in_train_lab_mode():
     '''Check if lab_mode is one of TRAIN_MODES'''
-    return get_lab_mode() in TRAIN_MODES
+    return lab_mode() in TRAIN_MODES
 
 
 def is_jupyter():
@@ -545,9 +544,6 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
-def to_render():
-    '''Return True if --render flag was passed, False otherwise'''
-    return os.environ.get('RENDER', 'false') == 'true'
 
 
 def to_torch_batch(batch, device, is_episodic):
