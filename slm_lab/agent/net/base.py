@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-import thunder
 import torch
 import torch.nn as nn
 
@@ -35,6 +34,7 @@ class Net(ABC):
         
         # Apply lightning thunder if enabled
         if _perf_torch_compile():
+            import thunder
             self.forward = thunder.compile(self.forward)
 
     @abstractmethod

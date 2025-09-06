@@ -12,7 +12,7 @@ import typer
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment import search
 from slm_lab.experiment.control import Experiment, Session, Trial
-from slm_lab.lib import logger, util
+from slm_lab.lib import env_var, logger, util
 from slm_lab.spec import spec_util
 
 app = typer.Typer(help="Modular deep reinforcement learning framework")
@@ -104,9 +104,9 @@ def main(
     ),
     optimize_perf: bool = typer.Option(
         True,
-        "--optimize-perf",
+        "--optimize-perf/--no-optimize-perf",
         envvar="OPTIMIZE_PERF",
-        help="true|false: Auto-optimize CPU threading, torch.compile, and GPU settings (false disables all)",
+        help="Auto-optimize CPU threading, torch.compile, and GPU settings (use --no-optimize-perf to disable)",
     ),
     torch_compile: str = typer.Option(
         "auto",
@@ -135,15 +135,8 @@ def main(
         slm-lab --job job/experiments.json         # Batch experiments
     """
     # Set environment variables from CLI flags
-    os.environ.update(
-        {
-            "RENDER": str(render).lower(),
-            "LOG_LEVEL": log_level,
-            "OPTIMIZE_PERF": str(optimize_perf).lower(),
-            "TORCH_COMPILE": torch_compile,
-            "CUDA_OFFSET": str(cuda_offset),
-            "PROFILE": str(profile).lower(),
-        }
+    mode = env_var.set_from_cli(
+        render, log_level, optimize_perf, torch_compile, cuda_offset, profile, mode
     )
 
     if job is not None:

@@ -7,7 +7,7 @@ from gymnasium import spaces
 from gymnasium.vector import VectorEnv
 
 from slm_lab.lib import logger, util
-from slm_lab.lib.env_config import render
+from slm_lab.lib.env_var import render
 from slm_lab.env.wrappers import (
     ClockWrapper,
     TrackReward,

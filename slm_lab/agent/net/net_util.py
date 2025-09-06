@@ -1,6 +1,6 @@
 from functools import partial, wraps
 from slm_lab.lib import logger, optimizer, util
-from slm_lab.lib.env_config import lab_mode
+from slm_lab.lib.env_var import lab_mode
 import numpy as np
 import os
 import pydash as ps

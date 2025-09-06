@@ -2,7 +2,7 @@
 # Manages specification to run things in lab
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
-from slm_lab.lib.env_config import lab_mode
+from slm_lab.lib.env_var import lab_mode
 from string import Template
 import itertools
 import json

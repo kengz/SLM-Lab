@@ -1,5 +1,5 @@
 from slm_lab.lib import logger, util, viz
-from slm_lab.lib.env_config import lab_mode
+from slm_lab.lib.env_var import lab_mode
 from slm_lab.spec import random_baseline
 import numpy as np
 import pandas as pd

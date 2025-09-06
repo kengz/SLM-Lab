@@ -161,47 +161,12 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ### Current TODO Items
 
-1. profiler: get it working
+1. with @profile stable, start adding it to the identified bottlenecks above to learn more - but also add them generically instead of ad hoc at algo-specific places. fix identified bottleneck as documented above. verify before and after with @profile.
 
-- remove torch profiler since we don't really do complex pytorch model. main profile of interest is in the rest of the run loop
+2. clean up control loop, esp run_rl in control.py - a lot of things seems extraneous or can be absorbed better into logic. run_rl should be conceptually very simple and close to the concept of an RL loop
 
-  1.2 env checks everywhere. scan for `PROFILE`. but we have actual checks in profiler module? use it
-  1.3 in general env checks for env vars set in CLI - figure out cleaner way to do it
-  1.4 profiler also needs to ensure session is 1
-  1.5 logs like \_perf_cpu_threads logs 4 times, one for each session. should be just once like the other perf log we have
-  1.6 I dont like env_config as a name. rename better
-  1.7 with @profile stable, start adding it to the identified bottlenecks above to learn more - but also add them generically instead of ad hoc at algo-specific places
-
-2. test run with thunder compile on a GPU
-
-- thunder needed these additional deps
-  "nvfuser-cu128-torch28>=0.2.31.dev20250901",
-  "nvidia-cudnn-cu12>=9.10.2.21",
-  "nvidia-cudnn-frontend>=1.14.1",
-
-- worse OMG. half the fps. with this warning
-  workflow/.venv/lib/python3.12/site-packages/thunder/executors/torchex.py:1787: UserWarning:
-
-Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at /pytorch/torch/csrc/autograd/python_variable_indexing.cpp:306.)
-
-- Option '--optimize-perf' does not take a value. can;t turn off. it's a bool default to True already.
-- logging is confusing
-  2025-09-06 05:54:14 | INFO | PID:10806 | slm_lab.lib.perf:\_perf_gpu | GPU optimizations: cuDNN benchmark, memory fragmentation reduction, TF32 acceleration | NVIDIA L4 (compute 8.9)
-  ^ this logs even when perf optim is turned off. should log only when relevant
-  2025-09-06 05:54:17 | INFO | PID:10806 | slm_lab.lib.logger:info | Performance setup:
-  lightning_thunder: enabled
-  profiler: disabled
-  platform: GPU NVIDIA L4 (compute 8.9)
-  threads: 64
-  cpu_cores: 128
-  ^ this is confusing. ideally it should be info first, then what's turned on/off (combine previous line of log here)
-
-- fix identify bottleneck
-
-3. clean up control loop, esp run_rl in control.py - a lot of things seems extraneous or can be absorbed better into logic. run_rl should be conceptually very simple and close to the concept of an RL loop
-4. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
-5. ~~run with profiler to debug bottleneck. now GPU util still low and with frequent drops~~ ✅ COMPLETED
-6. check data/ file output still a lot of things and might be too big. cleanup too
+3. just retune ppo for pong. or try a2c to see of solved then it is a PPO only problem. try breakout too.
+4. check data/ file output still a lot of things and might be too big. cleanup too
 
 - [ ] **Start benchmark on classic, box2d, and mujoco envs** - with core algos - PPO, DQN, SAC
 - [ ] **Fix ALE convergence issue**: Start with PPO on Pong. it's not converging; learning is stuck

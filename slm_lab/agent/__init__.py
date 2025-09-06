@@ -3,7 +3,7 @@ from slm_lab.agent import algorithm, memory
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util, viz
-from slm_lab.lib.env_config import lab_mode
+from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.decorator import lab_api
 from torch.utils.tensorboard import SummaryWriter
 from typing import Any, Optional, Union

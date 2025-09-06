@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger
-from slm_lab.lib.env_config import lab_mode
+from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import torch

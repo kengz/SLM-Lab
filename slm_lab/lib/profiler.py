@@ -16,7 +16,7 @@ import psutil
 from plotly.subplots import make_subplots
 
 from slm_lab.lib import logger, util
-from slm_lab.lib.env_config import profile
+from slm_lab.lib.env_var import profile
 
 logger = logger.get_logger(__name__)
 
@@ -180,7 +180,7 @@ class Profiler:
                 "Function GPU %",
                 "System GPU Memory MB",
                 "Function GPU Memory MB",
-                "Function Total Time (ms)",
+                "Function Total Time (s)",
                 "Function Avg Time (ms)",
             ],
         )
@@ -216,9 +216,9 @@ class Profiler:
                 ]
                 fig.add_trace(go.Bar(x=names, y=values), row=i + 1, col=2)
 
-            # Total time (left) vs average time (right)
+            # Total time (s) vs average time (ms)
             total_times = [
-                sum(c["duration_ms"] for c in calls) for _, calls in top_funcs
+                sum(c["duration_ms"] for c in calls) / 1000.0 for _, calls in top_funcs
             ]
             avg_times = [
                 sum(c["duration_ms"] for c in calls) / len(calls)
@@ -232,12 +232,15 @@ class Profiler:
             title_text="SLM-Lab Performance Profiler: System Resources & Function Analysis",
             showlegend=False,
         )
+        
+        # Rotate x-axis labels for better readability of function names
+        fig.update_xaxes(tickangle=45)
         fig.write_html(Path(out_dir) / "profiling_dashboard.html")
 
     def save_results(self, out_dir=None):
         if out_dir is None:
             log_path = Path(os.environ["LOG_PREPATH"])
-            out_dir = log_path.parent.parent / "profiler" / log_path.name
+            out_dir = log_path.parent.parent / "profiler"
         Path(out_dir).mkdir(parents=True, exist_ok=True)
         util.write(self.get_summary(), Path(out_dir) / "profiler_summary.json")
         self.create_visualization(out_dir)

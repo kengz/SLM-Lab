@@ -4,7 +4,7 @@ from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
-from slm_lab.lib.env_config import lab_mode
+from slm_lab.lib.env_var import lab_mode
 import cv2
 import json
 import numpy as np

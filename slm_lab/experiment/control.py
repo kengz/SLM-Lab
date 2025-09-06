@@ -12,9 +12,8 @@ from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
-from slm_lab.lib.env_config import lab_mode
-from slm_lab.lib.perf import optimize_perf
-from slm_lab.lib.util import log_dict
+from slm_lab.lib.env_var import lab_mode
+from slm_lab.lib.perf import optimize, log_perf_setup
 from slm_lab.spec import spec_util
 
 
@@ -49,7 +48,7 @@ class Session:
         spec_util.save(spec, unit="session")
 
         # Apply perf optimizations for all sessions
-        self.perf_setup = optimize_perf()
+        self.perf_setup = optimize()
 
         self.agent, self.env = make_agent_env(self.spec, global_nets)
         if ps.get(self.spec, "meta.rigorous_eval"):
@@ -58,7 +57,7 @@ class Session:
         else:
             self.eval_env = self.env
         if self.index == 0:
-            log_dict(self.perf_setup, "Performance setup")
+            log_perf_setup()
             util.log_self_desc(
                 self.agent.algorithm, omit=["net_spec", "explore_var_spec"]
             )
@@ -106,9 +105,6 @@ class Session:
 
     def run_rl(self):
         """Run the main RL loop until clock.max_frame"""
-        logger.info(
-            f"Running RL loop for trial {self.spec['meta']['trial']} session {self.index}"
-        )
         state, info = self.env.reset()
 
         # Warm up torch.compile if enabled (compilation time not counted in timing)
@@ -188,9 +184,7 @@ class Trial:
 
     def run_sessions(self):
         max_session = self.spec["meta"]["max_session"]
-        logger.info(
-            f"Running {max_session} sessions in lab mode: {lab_mode()}"
-        )
+        logger.info(f"Running {max_session} sessions in lab mode: {lab_mode()}")
         if max_session == 1:
             spec = deepcopy(self.spec)
             spec_util.tick(spec, "session")
