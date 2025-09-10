@@ -2,7 +2,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api, profile
+from slm_lab.lib.decorator import lab_api
 import numpy as np
 import torch
 
@@ -68,14 +68,7 @@ class VanillaDQN(SARSA):
             'training_iter',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
             'training_start_step',  # how long before starting training
-            'mini_batch_accumulation',  # number of training calls to accumulate before actual training
         ])
-        # Initialize accumulation state
-        self.acc_losses = []
-        self.acc_count = 0
-        # Set default mini_batch_accumulation to 1 (disabled) if not specified
-        if not hasattr(self, 'mini_batch_accumulation'):
-            self.mini_batch_accumulation = 1
         # Call parent to initialize explore_var based on explore_var_spec
         super().init_algorithm_params()
 
@@ -95,7 +88,6 @@ class VanillaDQN(SARSA):
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
-    @profile
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         states = batch['states']
@@ -131,49 +123,30 @@ class VanillaDQN(SARSA):
 
     @lab_api
     def train(self):
-        '''Completes one training step for the agent if it is time to train.'''
-        if self.to_train != 1:
-            return np.nan
-            
-        if self.acc_count == 0:
-            self.net.zero_grad()
-        
-        # Compute losses and gradients
-        loss = torch.tensor(0.0, device=self.net.device)
-        for _ in range(self.training_iter):
-            batch = self.sample()
-            self.agent.env.set_batch_size(len(batch))
-            for _ in range(self.training_batch_iter):
-                l = self.calc_q_loss(batch)
-                (l / self.mini_batch_accumulation).backward()
-                loss += l
-        
-        self.acc_losses.append(loss / (self.training_iter * self.training_batch_iter))
-        self.acc_count += 1
-        
-        # Apply updates when ready
-        if self.acc_count >= self.mini_batch_accumulation:
-            if self.net.clip_grad_val is not None:
-                torch.nn.utils.clip_grad_norm_(self.net.parameters(), self.net.clip_grad_val)
-            if hasattr(self, 'global_net') and self.global_net is not None:
-                net_util.push_global_grads(self.net, self.global_net)
-            self.optim.step()
-            if self.lr_scheduler:
-                self.lr_scheduler.step()
-            
-            avg_loss = sum(self.acc_losses) / len(self.acc_losses)
-            for _ in range(len(self.acc_losses)):
-                self.agent.env.tick_opt_step()
-            
-            self.acc_losses = []
-            self.acc_count = 0
+        '''
+        Completes one training step for the agent if it is time to train.
+        i.e. the environment timestep is greater than the minimum training timestep and a multiple of the training_frequency.
+        Each training step consists of sampling n batches from the agent's memory.
+        For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
+        Otherwise this function does nothing.
+        '''
+        if self.to_train == 1:
+            total_loss = torch.tensor(0.0, device=self.net.device)
+            for _ in range(self.training_iter):
+                batch = self.sample()
+                self.agent.env.set_batch_size(len(batch))
+                for _ in range(self.training_batch_iter):
+                    loss = self.calc_q_loss(batch)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                    self.agent.env.tick_opt_step()
+                    total_loss += loss
+            loss = total_loss / (self.training_iter * self.training_batch_iter)
+            # reset
             self.to_train = 0
-            
-            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {avg_loss:g}')
-            return avg_loss.item()
-        
-        self.to_train = 0
-        return np.nan
+            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
+            return loss.item()
+        else:
+            return np.nan
 
     @lab_api
     def update(self):
@@ -216,7 +189,6 @@ class DQNBase(VanillaDQN):
         self.online_net = self.target_net
         self.eval_net = self.target_net
 
-    @profile
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         states = batch['states']

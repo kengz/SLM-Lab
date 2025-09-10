@@ -1,13 +1,12 @@
 from collections import deque
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api, profile
+from slm_lab.lib.decorator import lab_api
 import numpy as np
 
 logger = logger.get_logger(__name__)
 
 
-@profile
 def sample_next_states(head, max_size, ns_idx_offset, batch_idxs, states, ns_buffer):
     '''Method to sample next_states from states, with proper guard for next_state idx being out of bound'''
     # idxs for next state is state idxs with offset, modded
@@ -144,7 +143,6 @@ class Replay(Memory):
                 batch[k] = util.batch_get(getattr(self, k), self.batch_idxs)
         return batch
 
-    @profile
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.randint(self.size, size=batch_size)

@@ -4,7 +4,6 @@ from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
-from slm_lab.lib.decorator import profile
 from slm_lab.lib.env_var import lab_mode
 import cv2
 import json
@@ -40,7 +39,6 @@ class LabJsonEncoder(json.JSONEncoder):
             return str(obj)
 
 
-@profile
 def batch_get(arr, idxs):
     '''Get multi-idxs from an array depending if it's a python list or np.array'''
     if isinstance(arr, (list, deque)):

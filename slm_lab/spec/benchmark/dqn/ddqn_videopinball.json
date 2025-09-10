@@ -17,8 +17,7 @@
         "training_batch_iter": 1,
         "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 100,
-        "mini_batch_accumulation": 4
+        "training_start_step": 100
       },
       "memory": {
         "name": "PrioritizedReplay",
