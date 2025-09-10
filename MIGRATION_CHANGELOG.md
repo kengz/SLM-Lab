@@ -131,22 +131,6 @@ uv run slm-lab --torch-compile=true [args]  # Uses lightning thunder internally
 
 ## 🚀 **Performance Optimization Achievements**
 
-### **DQN Performance Improvements**
-**Comprehensive analysis and optimization of DQN training bottlenecks:**
-
-- **Problem Identified**: DQN ~250 FPS vs PPO ~2,200-3,200 FPS (8-12x slower)
-- **Root Cause**: 10.6x more training calls with 79,744 calc_q_loss operations consuming 60% of training time
-- **Solution Implemented**: Mini-batch gradient accumulation with intelligent batch size scaling
-- **Results**: 8x=312 FPS (+9.1%), **16x=323 FPS (+12.9% OPTIMAL)**, 32x=303 FPS (+5.9%)
-- **Implementation**: Added `mini_batch_accumulation` parameter to 29+ DQN specification files
-
-### **Q-Loss Computation Analysis**
-**Detailed vectorization investigation with empirical findings:**
-
-- **Baseline Performance**: 0.322ms avg per calc_q_loss call (79,744 calls, 80% of training time)
-- **Vectorization Testing**: All approaches resulted in 12-18% performance degradation
-- **Key Finding**: Small batch sizes (32) make vectorization overhead exceed benefits
-- **Conclusion**: Original implementation already optimal for typical DQN batch sizes
 
 ### **✅ Hyperparameter Search Modernization**
 **COMPLETED - Ray Tune integration with Optuna backend for modern hyperparameter optimization:**
