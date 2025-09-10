@@ -4,6 +4,7 @@
 # IDEs
 .idea/
 .vscode
+.serena
 
 # Python
 __pycache__/

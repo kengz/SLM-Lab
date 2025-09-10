@@ -6,7 +6,7 @@ import platform
 import torch
 
 from slm_lab.lib import logger
-from slm_lab.lib.env_var import optimize_perf, profile, torch_compile
+from slm_lab.lib.env_var import optimize_perf, profile
 
 logger = logger.get_logger(__name__)
 
@@ -14,7 +14,6 @@ logger = logger.get_logger(__name__)
 def optimize():
     """Apply all perf optimizations."""
     _perf_cpu_threads()
-    _perf_torch_compile()
     _perf_gpu()
     _perf_memory()
     return _get_perf_status()
@@ -34,28 +33,6 @@ def _perf_cpu_threads():
             os.environ.setdefault(var, str(optimal))
 
 
-def _perf_torch_compile():
-    """Check if lightning thunder should be enabled."""
-    if not optimize_perf():
-        return False
-
-    mode = torch_compile()
-    is_apple_cpu = (
-        platform.machine() == "arm64"
-        and platform.system() == "Darwin"
-        and not torch.cuda.is_available()
-    )
-
-    if mode == "true" and not is_apple_cpu:
-        return True
-    elif mode == "auto" and torch.cuda.is_available():
-        try:
-            major, _ = torch.cuda.get_device_capability()
-            if major >= 8:  # Ampere+
-                return True
-        except Exception:
-            pass
-    return False
 
 
 def _perf_gpu():
@@ -84,7 +61,6 @@ def _perf_memory():
 
 def _get_perf_status():
     """Get comprehensive performance status including what was optimized."""
-    compile_enabled = _perf_torch_compile()
     prof_enabled = profile()
     perf_enabled = optimize_perf()
     cpu_count = os.cpu_count() or 1
@@ -117,9 +93,6 @@ def _get_perf_status():
                 optimizations.append(f"CPU threads: {current_threads}")
 
     status = {"platform": platform_info}
-
-    if compile_enabled:
-        optimizations.append("lightning thunder: enabled")
 
     if prof_enabled:
         optimizations.append("profiler: enabled")

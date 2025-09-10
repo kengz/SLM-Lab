@@ -6,7 +6,7 @@ from slm_lab.lib import logger
 
 
 def set_from_cli(
-    render, log_level, optimize_perf, torch_compile, cuda_offset, profile, mode
+    render, log_level, optimize_perf, cuda_offset, profile, mode
 ):
     """Set environment variables from CLI flags."""
     # Force dev mode when profiling is enabled
@@ -18,7 +18,6 @@ def set_from_cli(
             "RENDER": str(render).lower(),
             "LOG_LEVEL": log_level,
             "OPTIMIZE_PERF": str(optimize_perf).lower(),
-            "TORCH_COMPILE": torch_compile,
             "CUDA_OFFSET": str(cuda_offset),
             "PROFILE": str(profile).lower(),
         }
@@ -42,9 +41,6 @@ def optimize_perf():
     return os.getenv("OPTIMIZE_PERF", "true").lower() == "true"
 
 
-def torch_compile():
-    """Get --torch-compile flag value."""
-    return os.getenv("TORCH_COMPILE", "auto").lower()
 
 
 def cuda_offset():

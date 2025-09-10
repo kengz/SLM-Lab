@@ -107,13 +107,7 @@ def main(
         True,
         "--optimize-perf/--no-optimize-perf",
         envvar="OPTIMIZE_PERF",
-        help="Auto-optimize CPU threading, torch.compile, and GPU settings (use --no-optimize-perf to disable)",
-    ),
-    torch_compile: str = typer.Option(
-        "auto",
-        "--torch-compile",
-        envvar="TORCH_COMPILE",
-        help="auto|true|false: torch.compile smart detection (auto=Ampere+ only, true=force, may fail Apple Silicon)",
+        help="Auto-optimize CPU threading and GPU settings (use --no-optimize-perf to disable)",
     ),
     cuda_offset: int = typer.Option(
         0, "--cuda-offset", envvar="CUDA_OFFSET", help="GPU device offset"
@@ -148,7 +142,7 @@ def main(
 
     # Set environment variables from CLI flags
     mode = env_var.set_from_cli(
-        render, log_level, optimize_perf, torch_compile, cuda_offset, profile, mode
+        render, log_level, optimize_perf, cuda_offset, profile, mode
     )
 
     if job is not None:
