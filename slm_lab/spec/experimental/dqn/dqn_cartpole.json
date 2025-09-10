@@ -57,8 +57,7 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     },
     "search": {
       "agent": [
@@ -164,8 +163,7 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     },
     "search": {
       "agent": [
@@ -274,8 +272,7 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 2,
-      "max_trial": 16,
-      "search": "RandomSearch"
+      "max_trial": 16
     },
     "search": {
       "agent": [
@@ -365,8 +362,7 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
       "agent": [
@@ -477,8 +473,7 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
       "agent": [
@@ -589,8 +584,7 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
       "agent": [

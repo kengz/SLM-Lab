@@ -1,0 +1,78 @@
+{
+  "box2d_search_test": {
+    "agent": {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.2,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 500000
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 0,
+          "end_step": 500000
+        },
+        "val_loss_coef": 0.5,
+        "minibatch_size": 32,
+        "time_horizon": 256,
+        "training_frequency": 1,
+        "training_batch_iter": 4,
+        "training_iter": 4
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": true,
+        "hid_layers": [
+          64,
+          64
+        ],
+        "hid_layers_activation": "tanh",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "PPOLoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 3e-4
+        },
+        "lr_scheduler_spec": null,
+        "gpu": false
+      }
+    },
+    "env": {
+      "name": "${env}",
+      "max_t": 1600,
+      "max_frame": 2000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 3
+    },
+    "search": {
+      "env": {
+        "name__grid_search": [
+          "BipedalWalker-v3",
+          "LunarLander-v3",
+          "CarRacing-v3"
+        ]
+      }
+    }
+  }
+}

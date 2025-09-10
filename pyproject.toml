@@ -34,6 +34,7 @@ dependencies = [
     "torch>=2.8.0",
     "opencv-python>=4.11.0.86",
     "ray[tune]>=2.44.0",
+    "optuna>=4.4.0",
     "tensorboard>=2.19.0",
     "gymnasium[box2d,classic-control,mujoco]==1.2.0",
     "kaleido==0.2.0",

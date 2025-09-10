@@ -1,152 +1,117 @@
+import os
 from copy import deepcopy
-from slm_lab.lib import logger, util
-from slm_lab.spec import spec_util
-import numpy as np
+
 import pydash as ps
-import random
 import ray
 import ray.tune as tune
 import torch
+from ray.tune.search.optuna import OptunaSearch
+
+from slm_lab import ROOT_DIR
+from slm_lab.experiment.analysis import METRICS_COLS
+from slm_lab.lib import logger, util
 
 logger = logger.get_logger(__name__)
 
 
-def build_config_space(spec):
-    '''
-    Build ray config space from flattened spec.search
-    Specify a config space in spec using `"{key}__{space_type}": {v}`.
-    Where `{space_type}` is `grid_search` of `ray.tune`, or any function name of `np.random`:
-    - `grid_search`: str/int/float. v = list of choices
-    - `choice`: str/int/float. v = list of choices
-    - `randint`: int. v = [low, high)
-    - `uniform`: float. v = [low, high)
-    - `normal`: float. v = [mean, stdev)
+def build_param_space(spec):
+    """
+    Build Ray Tune parameter space from SLM-Lab spec.
 
-    For example:
-    - `"explore_anneal_epi__randint": [10, 60],` will sample integers uniformly from 10 to 60 for `explore_anneal_epi`,
-    - `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using `np.random.uniform(0.001, 0.1)`
+    Specify a config space in spec using `"{key}__{space_type}": [args]` format.
+    Where `{space_type}` is any Ray Tune search space function from:
+    https://docs.ray.io/en/latest/tune/api/search_space.html
 
-    If any key uses `grid_search`, it will be combined exhaustively in combination with other random sampling.
-    '''
-    space_types = ('grid_search', 'choice', 'randint', 'uniform', 'normal')
-    config_space = {}
-    for k, v in util.flatten_dict(spec['search']).items():
-        key, space_type = k.split('__')
-        assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
-        if space_type == 'grid_search':
-            config_space[key] = tune.grid_search(v)
-        elif space_type == 'choice':
-            config_space[key] = tune.sample_from(lambda spec, v=v: random.choice(v))
-        else:
-            np_fn = getattr(np.random, space_type)
-            config_space[key] = tune.sample_from(lambda spec, v=v: np_fn(*v))
-    return config_space
+    Two argument patterns:
+    - Most functions: use `[arg1, arg2, ...]` → `tune.func(*args)`
+    - choice: use `[item1, item2, ...]` → `tune.choice([items])`
 
-
-def infer_trial_resources(spec):
-    '''Infer the resources_per_trial for ray from spec'''
-    meta_spec = spec['meta']
-    cpu_per_session = meta_spec.get('num_cpus') or 1
-    requested_cpu = cpu_per_session * meta_spec['max_session']
-    num_cpus = min(util.NUM_CPUS, requested_cpu)
-
-    use_gpu = util.use_gpu(spec['agent']['net'].get('gpu'))
-    gpu_per_session = meta_spec.get('num_gpus') or 1
-    requested_gpu = gpu_per_session * meta_spec['max_session'] if use_gpu else 0
-    gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
-    num_gpus = min(gpu_count, requested_gpu)
-    resources_per_trial = {'cpu': num_cpus, 'gpu': num_gpus}
-    return resources_per_trial
+    Examples:
+    - `"gamma__uniform": [0.95, 0.999]` → `tune.uniform(0.95, 0.999)`
+    - `"lr__loguniform": [0.0001, 0.01]` → `tune.loguniform(0.0001, 0.01)`
+    - `"temperature__randn": [1.0, 0.1]` → `tune.randn(1.0, 0.1)`
+    - `"batch_size__choice": [16, 32, 64]` → `tune.choice([16, 32, 64])`
+    """
+    use_list_args = ("choice",)
+    param_space = {}
+    for k, v in util.flatten_dict(spec["search"]).items():
+        key, dist = k.split("__")
+        if dist == "grid_search":
+            raise ValueError(
+                f"grid_search is not supported with Optuna. Use 'choice' instead: {k}"
+            )
+        search_fn = getattr(tune, dist)
+        param_space[key] = search_fn(v) if dist in use_list_args else search_fn(*v)
+    return param_space
 
 
 def inject_config(spec, config):
-    '''Inject flattened config into SLM Lab spec.'''
+    """Inject flattened config into SLM Lab spec."""
     spec = deepcopy(spec)
-    spec.pop('search', None)
+    spec.pop("search", None)
+
+    # Get trial index from Ray Tune trial dir, e.g. /tmp/ray/.../run_trial_da41e96b_1_...
+    trial_dir = ray.tune.get_context().get_trial_dir()
+    trial_name = ray.tune.get_context().get_trial_name()
+    trial_folder = trial_dir.split("/")[-1]
+    trial_index = int(trial_folder.replace(f"{trial_name}_", "").split("_")[0]) - 1
+    ps.set_(spec, "meta.trial", trial_index)
+
     for k, v in config.items():
         ps.set_(spec, k, v)
     return spec
 
 
-def ray_trainable(config, reporter):
-    '''
-    Create an instance of a trainable function for ray: https://ray.readthedocs.io/en/latest/tune-usage.html#training-api
-    Lab needs a spec and a trial_index to be carried through config, pass them with config in ray.run() like so:
-    config = {
-        'spec': spec,
-        'trial_index': tune.sample_from(lambda spec: gen_trial_index()),
-        ... # normal ray config with sample, grid search etc.
-    }
-    '''
-    import os
-    os.environ.pop('CUDA_VISIBLE_DEVICES', None)  # remove CUDA id restriction from ray
-    from slm_lab.experiment.control import Trial
-    # restore data carried from ray.run() config
-    spec = config.pop('spec')
-    spec = inject_config(spec, config)
-    # tick trial_index with proper offset
-    trial_index = config.pop('trial_index')
-    spec['meta']['trial'] = trial_index - 1
-    spec_util.tick(spec, 'trial')
-    # run SLM Lab trial
-    metrics = Trial(spec).run()
-    metrics.update(config)  # carry config for analysis too
-    # ray report to carry data in ray trial.last_result
-    reporter(trial_data={trial_index: metrics})
+def build_run_trial(base_spec):
+    """Create a Ray Tune trial runner with the base spec."""
+
+    def run_trial(config):
+        from slm_lab.experiment.control import Trial
+
+        os.environ.pop("CUDA_VISIBLE_DEVICES", None)
+        spec = inject_config(base_spec, config)
+        scalar_metrics = Trial(spec).run()
+        tune.report(metrics=scalar_metrics)
+        return scalar_metrics
+
+    return run_trial
+
+
+def get_trial_resources(spec):
+    """Build resource configuration for Ray Tune trials."""
+    max_session = spec["meta"]["max_session"]
+    return {"cpu": max_session, "gpu": max_session if torch.cuda.is_available() else 0}
+
+
+def extract_trial_results(results):
+    """Extract trial results into SLM-Lab format."""
+    trial_results = {}
+    for i, result in enumerate(results):
+        metrics_data = ps.pick(result.metrics, *METRICS_COLS)
+        trial_results[i] = {**result.config, **metrics_data}
+    return trial_results
 
 
 def run_ray_search(spec):
-    '''
-    Method to run ray search from experiment. Uses RandomSearch now.
-    TODO support for other ray search algorithms: https://ray.readthedocs.io/en/latest/tune-searchalg.html
-    '''
-    logger.info(f'Running ray search for spec {spec["name"]}')
-    # generate trial index to pass into Lab Trial
-    global trial_index  # make gen_trial_index passable into ray.run
-    trial_index = -1
+    """Ray Tune search using Tuner API with Optuna integration."""
+    name, num_trials = spec["name"], spec["meta"]["max_trial"]
+    logger.info(f"Running Ray Tune for spec {name} with {num_trials} trials")
+    logger.info("Note: use 'slm-lab --kill-ray' to stop (Ray SIGTERM issue)")
 
-    def gen_trial_index():
-        global trial_index
-        trial_index += 1
-        return trial_index
-
-    ray.init()
-
-    ray_trials = tune.run(
-        ray_trainable,
-        name=spec['name'],
-        config={
-            'spec': spec,
-            'trial_index': tune.sample_from(lambda spec: gen_trial_index()),
-            **build_config_space(spec)
-        },
-        resources_per_trial=infer_trial_resources(spec),
-        num_samples=spec['meta']['max_trial'],
-        reuse_actors=False,
-        server_port=util.get_port(),
+    tuner = tune.Tuner(
+        tune.with_resources(build_run_trial(spec), get_trial_resources(spec)),
+        param_space=build_param_space(spec),
+        tune_config=tune.TuneConfig(
+            metric="final_return_ma",
+            mode="max",
+            search_alg=OptunaSearch(),
+            num_samples=num_trials,
+        ),
+        run_config=tune.RunConfig(
+            name=name,
+            storage_path=os.path.join(ROOT_DIR, "data", "ray_tune"),
+        ),
     )
-    trial_data_dict = {}  # data for Lab Experiment to analyze
-    for ray_trial in ray_trials:
-        ray_trial_data = ray_trial.last_result['trial_data']
-        trial_data_dict.update(ray_trial_data)
 
-    ray.shutdown()
-    return trial_data_dict
-
-
-def run_param_specs(param_specs):
-    '''Run the given param_specs in parallel trials using ray. Used for benchmarking.'''
-    ray.init()
-    tune.run(
-        ray_trainable,
-        name='param_specs',
-        config={
-            'spec': tune.grid_search(param_specs),
-            'trial_index': 0,
-        },
-        resources_per_trial=infer_trial_resources(param_specs[0]),
-        num_samples=1,
-        reuse_actors=False,
-        server_port=util.get_port(),
-    )
-    ray.shutdown()
+    results = tuner.fit()
+    return extract_trial_results(results)

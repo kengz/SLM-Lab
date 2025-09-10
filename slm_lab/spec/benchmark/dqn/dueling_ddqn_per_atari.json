@@ -85,11 +85,11 @@
       "log_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 4,
       "num_gpus": 1
     },
-    "spec_params": {
-      "env": [
+    "search": {
+      "env.name__choice": [
         "ALE/Breakout-v5",
         "ALE/Pong-v5",
         "ALE/Qbert-v5",
@@ -183,11 +183,11 @@
       "log_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 61,
       "num_gpus": 1
     },
-    "spec_params": {
-      "env": [
+    "search": {
+      "env.name__choice": [
         "ALE/Adventure-v5",
         "ALE/AirRaid-v5",
         "ALE/Alien-v5",

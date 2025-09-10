@@ -3,8 +3,6 @@
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import lab_mode
-from string import Template
-import itertools
 import json
 import os
 import pydash as ps
@@ -140,21 +138,6 @@ def get(spec_file, spec_name, experiment_ts=None):
     return spec
 
 
-def get_param_specs(spec):
-    '''Return a list of specs with substituted spec_params'''
-    assert 'spec_params' in spec, 'Parametrized spec needs a spec_params key'
-    spec_params = spec.pop('spec_params')
-    spec_template = Template(json.dumps(spec))
-    keys = spec_params.keys()
-    specs = []
-    for idx, vals in enumerate(itertools.product(*spec_params.values())):
-        spec_str = spec_template.substitute(dict(zip(keys, vals)))
-        spec = json.loads(spec_str)
-        spec['name'] += f'_{"_".join(vals)}'
-        # offset to prevent parallel-run GPU competition, to mod in util.set_cuda_id
-        spec['meta']['cuda_offset'] += idx * spec['meta']['max_session']
-        specs.append(spec)
-    return specs
 
 
 def _override_dev_spec(spec):

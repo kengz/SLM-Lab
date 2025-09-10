@@ -60,8 +60,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   }
 }

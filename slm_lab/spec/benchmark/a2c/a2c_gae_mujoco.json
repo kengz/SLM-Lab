@@ -63,10 +63,10 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 7
     },
-    "spec_params": {
-      "env": [
+    "search": {
+      "env.name__choice": [
         "Ant-v5",
         "HalfCheetah-v5",
         "Hopper-v5",

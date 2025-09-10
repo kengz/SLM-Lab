@@ -3,6 +3,7 @@ SLM-Lab CLI using typer.
 """
 
 import os
+import subprocess
 from glob import glob
 from typing import Optional
 
@@ -10,7 +11,6 @@ import torch.multiprocessing as mp
 import typer
 
 from slm_lab import EVAL_MODES, TRAIN_MODES
-from slm_lab.experiment import search
 from slm_lab.experiment.control import Experiment, Session, Trial
 from slm_lab.lib import env_var, logger, util
 from slm_lab.spec import spec_util
@@ -67,6 +67,12 @@ def run_spec(spec, lab_mode: str):
         )
 
 
+def kill_ray_processes():
+    """Kill all Ray processes (workaround for Ray signal handling bug)"""
+    subprocess.run(["pkill", "-f", "ray"])
+    logger.info("Killed Ray processes")
+
+
 def run_experiment(spec_file: str, spec_name: str, lab_mode: str):
     """Core experiment runner"""
     if "@" in lab_mode:  # process lab_mode@{predir/prename}
@@ -75,12 +81,7 @@ def run_experiment(spec_file: str, spec_name: str, lab_mode: str):
         pre_ = None
 
     spec = get_spec(spec_file, spec_name, lab_mode, pre_)
-
-    if "spec_params" not in spec:
-        run_spec(spec, lab_mode)
-    else:  # spec is parametrized
-        param_specs = spec_util.get_param_specs(spec)
-        search.run_param_specs(param_specs)
+    run_spec(spec, lab_mode)
 
 
 def main(
@@ -123,6 +124,11 @@ def main(
         envvar="PROFILE",
         help="Enable non-invasive performance profiling",
     ),
+    kill_ray: bool = typer.Option(
+        False,
+        "--kill-ray",
+        help="Kill all Ray processes (workaround for Ray signal handling bug)",
+    ),
 ):
     """
     Run SLM-Lab experiments. Defaults to CartPole demo in dev mode.
@@ -133,7 +139,13 @@ def main(
         slm-lab spec.json spec_name dev            # Custom experiment
         slm-lab spec.json spec_name train          # Custom experiment
         slm-lab --job job/experiments.json         # Batch experiments
+        slm-lab --kill-ray                         # Kill all Ray processes (force stop search)
     """
+    # Handle --kill-ray flag first
+    if kill_ray:
+        kill_ray_processes()
+        return
+
     # Set environment variables from CLI flags
     mode = env_var.set_from_cli(
         render, log_level, optimize_perf, torch_compile, cuda_offset, profile, mode

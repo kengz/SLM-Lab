@@ -63,8 +63,7 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 62,
-      "search": "RandomSearch"
+      "max_trial": 62
     }
   }
 }

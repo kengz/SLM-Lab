@@ -331,11 +331,15 @@ def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
     trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
-    # sort by trial id
-    trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=lambda k: util.prepath_to_idxs(k)[0]))
+    # sort by trial id (handle Ray Tune paths gracefully)
+    def safe_sort_key(path):
+        trial_idx = util.prepath_to_idxs(path)[0]
+        return trial_idx if trial_idx is not None else 0
+    trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=safe_sort_key))
 
     # get trial indices to build legends
-    trial_idxs = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+    # Use trial indices from experiment_df instead of parsing from paths (Ray Tune compatibility)
+    trial_idxs = experiment_df['trial'].tolist()
     legend_list = get_trial_legends(experiment_df, trial_idxs, metrics_cols)
 
     title = f'multi trial graph: {experiment_spec["name"]}'
