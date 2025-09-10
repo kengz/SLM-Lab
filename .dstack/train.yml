@@ -23,6 +23,6 @@ volumes:
 
 resources:
   cpu: 4
-  gpu: T4
+  gpu: L4
 
 backends: [gcp]

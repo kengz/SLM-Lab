@@ -11,7 +11,6 @@ def set_from_cli(
     """Set environment variables from CLI flags."""
     # Force dev mode when profiling is enabled
     if profile and mode != "dev":
-        logger.info(f"Profiling enabled: forcing dev mode (was: {mode})")
         mode = "dev"
 
     os.environ.update(

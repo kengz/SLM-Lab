@@ -15,7 +15,7 @@ inactivity_duration: 30m
 # - data-volume:/workflow/data
 
 resources:
-  cpu: 12
+  cpu: 4
   gpu: L4
 
-backends: [runpod]
+backends: [gcp]

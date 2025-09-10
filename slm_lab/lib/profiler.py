@@ -33,6 +33,28 @@ def _calc_stats(vals):
     return {"avg": sum(vals) / len(vals), "peak": max(vals)}
 
 
+def _log_profiler_setup():
+    """Log comprehensive profiler setup information."""
+    from slm_lab.lib.env_var import lab_mode
+    
+    lines = ["Profiler setup:"]
+    
+    # Mode info if forced to dev
+    current_mode = lab_mode()
+    if current_mode == "dev":
+        lines.append("• Mode: dev (required for profiling)")
+    
+    # System monitoring
+    lines.append("• Monitoring: CPU, memory, GPU utilization, function timing")
+    
+    # Output info
+    log_path = Path(os.environ.get("LOG_PREPATH", "data/profiler"))
+    out_dir = log_path.parent.parent / "profiler" if "LOG_PREPATH" in os.environ else Path("data/profiler")
+    lines.append(f"• Results: {out_dir}/profiling_dashboard.html")
+    
+    logger.info('\n'.join(lines))
+
+
 def get_profiler(spec=None):
     """Get global profiler instance if enabled."""
     global PROFILER, LOCK, CLEANUP_REGISTERED
@@ -45,7 +67,7 @@ def get_profiler(spec=None):
     with LOCK:
         if PROFILER is None:
             PROFILER = Profiler(spec=spec)
-            logger.info("Lab profiler initialized")
+            _log_profiler_setup()
         if not CLEANUP_REGISTERED:
             import atexit
 

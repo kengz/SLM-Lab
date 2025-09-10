@@ -4,7 +4,6 @@ import os
 import platform
 
 import torch
-import yaml
 
 from slm_lab.lib import logger
 from slm_lab.lib.env_var import optimize_perf, profile, torch_compile
@@ -65,8 +64,7 @@ def _perf_gpu():
         return
 
     try:
-        major, minor = torch.cuda.get_device_capability()
-        device_name = torch.cuda.get_device_name()
+        major, _ = torch.cuda.get_device_capability()
 
         if major >= 8:  # Ampere+
             torch.backends.cuda.matmul.allow_tf32 = True
@@ -94,53 +92,52 @@ def _get_perf_status():
 
     # Platform info and optimization details
     optimizations = []
-    
+
     if torch.cuda.is_available():
         device_name = torch.cuda.get_device_name()
         major, minor = torch.cuda.get_device_capability()
         platform_info = f"GPU {device_name} (compute {major}.{minor})"
-        
+
         # GPU optimizations
         if perf_enabled:
             gpu_opts = ["cuDNN benchmark", "memory management"]
             if major >= 8:  # Ampere+
                 gpu_opts.append("TF32 acceleration")
-            optimizations.append(f"GPU: {', '.join(gpu_opts)}")
+            optimizations.extend([f"GPU {opt}: enabled" for opt in gpu_opts])
     else:
         cpu_info = f"{platform.processor()} ({platform.machine()})"
         platform_info = f"CPU {cpu_info}"
-        
-        # CPU optimizations
+
+        # CPU optimizations - show before/after for threads
         if perf_enabled:
             optimal_threads = min(cpu_count, 32)
-            if current_threads >= optimal_threads:
-                optimizations.append(f"CPU threads: {current_threads} (optimized from 4)")
+            if current_threads >= optimal_threads and current_threads > 4:
+                optimizations.append(f"CPU threads: 4 → {current_threads} (optimized)")
             else:
                 optimizations.append(f"CPU threads: {current_threads}")
 
     status = {"platform": platform_info}
-    
+
     if compile_enabled:
-        optimizations.append("lightning_thunder: enabled")
-    
+        optimizations.append("lightning thunder: enabled")
+
     if prof_enabled:
         optimizations.append("profiler: enabled")
-    
-    if optimizations:
-        status["optimizations"] = optimizations
-    else:
-        status["optimizations"] = ["disabled"]
 
+    if not perf_enabled:
+        optimizations = ["disabled (--no-optimize-perf)"]
+
+    status["optimizations"] = optimizations
     return status
 
 
 def log_perf_setup():
     """Log performance setup."""
     status = _get_perf_status()
-    lines = [f'Performance setup:']
-    lines.append(f'platform: {status["platform"]}')
-    
+    lines = ["Performance setup:"]
+    lines.append(f"Platform: {status['platform']}")
+
     for opt in status["optimizations"]:
-        lines.append(f'{opt}')
-    
-    logger.info('\n'.join(lines))
+        lines.append(f"• {opt}")
+
+    logger.info("\n".join(lines))

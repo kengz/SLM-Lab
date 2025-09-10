@@ -117,25 +117,10 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ## TODO
 
-### Active TODO Items
-
-**PRIORITY 1: Memory & Batch Optimization** (Target: 15-25% FPS improvement)
-
-- [ ] **Implement tensor buffer pooling** to reduce memory allocations
-- [ ] **Optimize batch processing** with larger effective batch sizes
-- [ ] **Vectorize memory sampling operations** across environments
-
-**PRIORITY 2: Environment & Integration Issues**
-
 - [ ] **Fix ALE convergence issue**: PPO on Pong not converging; try A2C/other algorithms
-- [ ] **Implement adaptive training frequency** based on environment complexity
-
-**PRIORITY 3: Performance & Quality**
-
-- [ ] **Clean up data/ output**: Reduce file sizes and checkpoint frequency
+- [ ] **Clean up data/ output**: Reduce file sizes and checkpoint frequency  
 - [ ] **Start comprehensive benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
-- [ ] **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch×seq×input handling
 - [ ] **Documentation Updates**: Update gitbook with new performance optimizations
 
 ### Command to Test Current State
