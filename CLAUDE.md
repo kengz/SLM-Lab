@@ -27,7 +27,7 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 When working on this project:
 
-1. **Use `uv` commands** instead of pip/python for package management
+1. **Use `uv`** instead of base python/pip
 2. **Use dstack** for compute-intensive operations
 3. **Follow Angular commit convention** and semantic versioning
 4. **Use TODO section in CLAUDE.md** to organize and track work

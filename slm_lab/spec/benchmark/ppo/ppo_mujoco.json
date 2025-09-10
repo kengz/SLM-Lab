@@ -46,13 +46,11 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Lookahead",
-          "optimizer": "RAdam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "critic_optim_spec": {
-          "name": "Lookahead",
-          "optimizer": "RAdam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "lr_scheduler_spec": null,
@@ -132,13 +130,11 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Lookahead",
-          "optimizer": "RAdam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "critic_optim_spec": {
-          "name": "Lookahead",
-          "optimizer": "RAdam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "lr_scheduler_spec": null,

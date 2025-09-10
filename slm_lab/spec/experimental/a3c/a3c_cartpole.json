@@ -126,8 +126,7 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Lookahead",
-          "optimizer": "RAdam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "lr_scheduler_spec": null,
