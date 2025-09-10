@@ -117,94 +117,25 @@ slm-lab --optimize-perf=false spec.json spec_name dev
 
 ## TODO
 
-### ✅ COMPLETED: Performance Bottleneck Investigation & Optimization
+### Active TODO Items
 
-**Status**: COMPLETED - Comprehensive analysis completed with actionable optimization roadmap
-
-**Key Achievements**:
-
-- ✅ **Mini-batch gradient accumulation** implemented for DQN (793c3fdb)
-- ✅ **29 DQN specification files** updated with intelligent defaults
-- ✅ **Comprehensive bottleneck analysis** completed with detailed profiler data
-- ✅ **Performance optimization roadmap** created with 4 priority levels
-
-**Performance Gap Quantified**:
-
-- **PPO**: ~2,200-3,200 FPS | **DQN**: ~250 FPS (**8-12x slower**)
-- **Root Cause**: Training architecture inefficiency (DQN: 10.6x more training calls than PPO)
-
-**Critical Bottlenecks Identified**:
-
-1. **🔴 MAJOR: Training Loop Architecture**
-
-   - DQN: 79,744 calc_q_loss calls consuming 60% of training time
-   - PPO: Efficient batched training with minimal overhead
-   - Impact: 1,317x difference in training overhead
-
-2. **🔴 HIGH: Q-Loss Computation Inefficiency**
-
-   - Average 0.378ms per calc_q_loss call (should be <0.1ms)
-   - Small batch tensor operations instead of vectorized batches
-   - Target: 30-40% FPS improvement through vectorization
-
-3. **🟡 MEDIUM: Memory Access Patterns**
-   - 59,808 batch_get operations with frequent allocations
-   - Target: 15-20% FPS improvement through buffer reuse
-
-**Optimization Roadmap Created**: `data/comprehensive_bottleneck_analysis/PERFORMANCE_BOTTLENECK_ANALYSIS.md`
-
-### Current TODO Items
-
-**✅ COMPLETED: Q-Loss Computation Vectorization Analysis**
-
-**Key Findings from Comprehensive Optimization**:
-
-- **Baseline Performance**: calc_q_loss @ 0.322ms avg per call (79,744 calls, 80% of training time)
-- **Vectorization Attempts**: All approaches resulted in 12-18% performance degradation
-- **Root Cause**: Small batch sizes (32) make vectorization overhead > benefits
-- **Conclusion**: For typical DQN batch sizes, original implementation is already optimal
-
-**Tested Approaches**:
-
-- Combined forward passes (cat/split): 18% slower (0.382ms vs 0.322ms)
-- Pre-allocated tensor buffers: No measurable improvement
-- Simplified optimizations: 12% slower (0.362ms vs 0.322ms)
-
-**Key Learning**: Micro-optimizations ineffective for small batches; focus on architectural changes instead.
-
-**✅ COMPLETED: Advanced Training Architecture** (Target: 4-8x FPS improvement - ACHIEVED)
-
-- ✅ **Extend mini-batch accumulation** to 8-16x for complex environments
-- ✅ **Mini-batch accumulation results**: 8x=312 FPS (+9.1%), **16x=323 FPS (+12.9% OPTIMAL)**, 32x=303 FPS (+5.9%)
-- ✅ **Implementation**: Added `mini_batch_accumulation` parameter with gradient accumulation to all 29+ DQN specs
-- [ ] **Implement adaptive training frequency** based on environment complexity
-- [ ] **Optimize gradient accumulation patterns** for maximum efficiency
-
-**PRIORITY 3: Memory & Batch Optimization** (Target: 15-25% FPS improvement)
+**PRIORITY 1: Memory & Batch Optimization** (Target: 15-25% FPS improvement)
 
 - [ ] **Implement tensor buffer pooling** to reduce memory allocations
 - [ ] **Optimize batch processing** with larger effective batch sizes
 - [ ] **Vectorize memory sampling operations** across environments
 
-**Other Items**:
-
-1. lookahead breaks - just remove nonstandard optims
-2. is choice with optuna really gonna cover all? and max_trial still makes sense
-3. also is ray tune trial parsing really reliable. cuz u get things like this
-   ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-   │ Trial name status ...0.algorithm.gamma ...net.optim_spec.lr iter total time (s) final_return_ma strength max_strength final_strength │
-   ├────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-   │ run_trial_86e47a99 TERMINATED 0.95 0.01 2 2.79195 29.3 6.33 45.03 24.03 │
-   │ run_trial_5caae353 TERMINATED 0.9 0.1 2 2.26375 17.3 -5.67 20.03 5.03 │
-   │ run_trial_2c000da6 TERMINATED 0.9 0.01 2 1.96189 21.6 -1.37 70.03 -11.97 │
-   ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+**PRIORITY 2: Environment & Integration Issues**
 
 - [ ] **Fix ALE convergence issue**: PPO on Pong not converging; try A2C/other algorithms
+- [ ] **Implement adaptive training frequency** based on environment complexity
+
+**PRIORITY 3: Performance & Quality**
+
 - [ ] **Clean up data/ output**: Reduce file sizes and checkpoint frequency
 - [ ] **Start comprehensive benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
 - [ ] **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch×seq×input handling
-- [ ] **Ray/Optuna Integration**: Fix hyperparam search with modern optimization
 - [ ] **Documentation Updates**: Update gitbook with new performance optimizations
 
 ### Command to Test Current State
