@@ -34,17 +34,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -151,17 +146,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -276,17 +266,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -400,17 +385,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -528,13 +508,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.006
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -648,13 +623,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -771,13 +741,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.004
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -891,13 +856,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 160000,
-          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 200,

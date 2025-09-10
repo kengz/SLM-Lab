@@ -59,7 +59,6 @@
           "name": "GlobalAdam",
           "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
@@ -141,7 +140,6 @@
           "name": "GlobalAdam",
           "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
@@ -223,7 +221,6 @@
           "name": "GlobalAdam",
           "lr": 0.00025
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,

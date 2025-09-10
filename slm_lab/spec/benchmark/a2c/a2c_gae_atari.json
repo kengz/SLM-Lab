@@ -73,7 +73,6 @@
           "alpha": 0.99,
           "eps": 1e-05
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -94,7 +93,7 @@
     "search": {
       "env.name__choice": [
         "ALE/Breakout-v5",
-        "ALE/Pong-v5", 
+        "ALE/Pong-v5",
         "ALE/Qbert-v5",
         "ALE/Seaquest-v5"
       ]
@@ -174,7 +173,6 @@
           "alpha": 0.99,
           "eps": 1e-05
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

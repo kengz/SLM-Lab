@@ -31,10 +31,9 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": null
+        }
       }
     },
     "env": {
@@ -83,10 +82,9 @@
           "name": "CrossEntropyLoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": null
+        }
       }
     },
     "env": {

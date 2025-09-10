@@ -32,15 +32,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0005
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -88,39 +81,7 @@
               ]
             }
           },
-          "net": {
-            "lr_scheduler_spec": {
-              "milestones__choice": [
-                [
-                  60000
-                ],
-                [
-                  70000
-                ],
-                [
-                  80000
-                ],
-                [
-                  60000,
-                  80000
-                ],
-                [
-                  70000,
-                  90000
-                ],
-                [
-                  80000,
-                  100000
-                ]
-              ],
-              "gamma__choice": [
-                0.1,
-                0.25,
-                0.5,
-                0.75
-              ]
-            }
-          }
+          "net": {}
         }
       ]
     }
@@ -162,15 +123,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -219,37 +173,6 @@
             }
           },
           "net": {
-            "lr_scheduler_spec": {
-              "milestones__choice": [
-                [
-                  60000
-                ],
-                [
-                  70000
-                ],
-                [
-                  80000
-                ],
-                [
-                  60000,
-                  80000
-                ],
-                [
-                  70000,
-                  90000
-                ],
-                [
-                  80000,
-                  100000
-                ]
-              ],
-              "gamma__choice": [
-                0.1,
-                0.25,
-                0.5,
-                0.75
-              ]
-            },
             "seq_len__choice": [
               2,
               3,
@@ -303,19 +226,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.1
         },
         "gpu": "auto"
       }
@@ -363,39 +279,7 @@
               ]
             }
           },
-          "net": {
-            "lr_scheduler_spec": {
-              "milestones__choice": [
-                [
-                  60000
-                ],
-                [
-                  70000
-                ],
-                [
-                  80000
-                ],
-                [
-                  60000,
-                  80000
-                ],
-                [
-                  70000,
-                  90000
-                ],
-                [
-                  80000,
-                  100000
-                ]
-              ],
-              "gamma__choice": [
-                0.1,
-                0.25,
-                0.5,
-                0.75
-              ]
-            }
-          }
+          "net": {}
         }
       ]
     }
@@ -440,19 +324,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -501,37 +378,6 @@
             }
           },
           "net": {
-            "lr_scheduler_spec": {
-              "milestones__choice": [
-                [
-                  60000
-                ],
-                [
-                  70000
-                ],
-                [
-                  80000
-                ],
-                [
-                  60000,
-                  80000
-                ],
-                [
-                  70000,
-                  90000
-                ],
-                [
-                  80000,
-                  100000
-                ]
-              ],
-              "gamma__choice": [
-                0.1,
-                0.25,
-                0.5,
-                0.75
-              ]
-            },
             "seq_len__choice": [
               2,
               3,
@@ -585,19 +431,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -651,39 +490,7 @@
               ]
             }
           },
-          "net": {
-            "lr_scheduler_spec": {
-              "milestones__choice": [
-                [
-                  60000
-                ],
-                [
-                  70000
-                ],
-                [
-                  80000
-                ],
-                [
-                  60000,
-                  80000
-                ],
-                [
-                  70000,
-                  90000
-                ],
-                [
-                  80000,
-                  100000
-                ]
-              ],
-              "gamma__choice": [
-                0.1,
-                0.25,
-                0.5,
-                0.75
-              ]
-            }
-          }
+          "net": {}
         }
       ]
     }
@@ -728,19 +535,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -794,51 +594,7 @@
               ]
             }
           },
-          "net": {
-            "lr_scheduler_spec": {
-              "milestones__choice": [
-                [
-                  60000
-                ],
-                [
-                  70000
-                ],
-                [
-                  80000
-                ],
-                [
-                  60000,
-                  80000
-                ],
-                [
-                  70000,
-                  90000
-                ],
-                [
-                  80000,
-                  100000
-                ]
-              ],
-              "gamma__choice": [
-                0.1,
-                0.25,
-                0.5,
-                0.75
-              ],
-              "seq_len__choice": [
-                2,
-                3,
-                4,
-                5,
-                6
-              ],
-              "rnn_hidden_size__choice": [
-                32,
-                64,
-                128
-              ]
-            }
-          }
+          "net": {}
         }
       ]
     }
@@ -885,19 +641,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1001,19 +750,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1112,19 +854,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1222,19 +957,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1344,19 +1072,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1449,19 +1170,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1567,19 +1281,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1691,19 +1398,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1803,19 +1503,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -1913,19 +1606,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2025,19 +1711,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2136,19 +1815,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2257,19 +1929,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2377,19 +2042,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2501,19 +2159,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2618,19 +2269,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2749,19 +2393,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -2879,19 +2516,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.008
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }

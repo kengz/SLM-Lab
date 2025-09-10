@@ -61,7 +61,6 @@
           "name": "RMSprop",
           "lr": 0.01
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -140,7 +139,6 @@
           "name": "RMSprop",
           "lr": 0.01
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

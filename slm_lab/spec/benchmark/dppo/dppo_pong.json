@@ -77,7 +77,6 @@
           "name": "GlobalAdam",
           "lr": 0.0007
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

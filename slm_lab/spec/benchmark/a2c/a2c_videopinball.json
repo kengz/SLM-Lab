@@ -72,7 +72,6 @@
           "alpha": 0.99,
           "eps": 1e-05
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -164,7 +163,6 @@
           "alpha": 0.99,
           "eps": 1e-05
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

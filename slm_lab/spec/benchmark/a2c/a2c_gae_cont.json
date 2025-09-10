@@ -40,14 +40,13 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -122,16 +121,12 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 1000000.0
         },
         "gpu": "auto"
       }

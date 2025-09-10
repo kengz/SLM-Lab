@@ -69,7 +69,6 @@
           "name": "GlobalAdam",
           "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -157,7 +156,6 @@
           "name": "GlobalAdam",
           "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

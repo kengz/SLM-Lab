@@ -35,19 +35,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -159,19 +152,12 @@
         "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.9
         },
         "gpu": "auto"
       }

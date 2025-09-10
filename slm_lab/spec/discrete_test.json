@@ -37,10 +37,9 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -99,10 +98,9 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -162,10 +160,9 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -225,10 +222,9 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0,

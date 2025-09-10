@@ -32,8 +32,7 @@
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": null
+        }
       }
     },
     "env": {
@@ -100,8 +99,7 @@
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": null
+        }
       }
     },
     "env": {

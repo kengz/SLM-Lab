@@ -36,13 +36,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -144,13 +139,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9
         },
         "update_type": "polyak",
         "update_frequency": 1,

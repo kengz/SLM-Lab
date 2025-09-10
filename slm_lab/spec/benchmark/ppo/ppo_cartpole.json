@@ -44,14 +44,13 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

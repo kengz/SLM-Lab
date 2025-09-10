@@ -37,16 +37,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000,
-            100000
-          ],
-          "gamma": 0.5
         },
         "update_type": "polyak",
         "polyak_coef": 0.9,

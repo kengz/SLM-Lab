@@ -63,10 +63,9 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 2.5e-05
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 1000,
         "gpu": "auto"

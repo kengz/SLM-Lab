@@ -37,15 +37,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80033
-          ],
-          "gamma": 0.1
         },
         "update_type": "polyak",
         "polyak_coef": 0.9,
@@ -116,15 +109,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80033
-          ],
-          "gamma": 0.1
         },
         "update_type": "replace",
         "update_frequency": 100,
@@ -197,15 +183,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            80000
-          ],
-          "gamma": 0.1
         },
         "gpu": "auto"
       }

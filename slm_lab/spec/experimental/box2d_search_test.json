@@ -46,10 +46,9 @@
           "name": "PPOLoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 3e-4
+          "name": "AdamW",
+          "lr": 0.0003
         },
-        "lr_scheduler_spec": null,
         "gpu": false
       }
     },

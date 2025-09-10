@@ -45,7 +45,6 @@
           "name": "AdamW",
           "lr": 0.0003
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -121,7 +120,6 @@
           "name": "AdamW",
           "lr": 0.0003
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },

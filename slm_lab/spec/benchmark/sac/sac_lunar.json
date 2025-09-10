@@ -29,10 +29,9 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,

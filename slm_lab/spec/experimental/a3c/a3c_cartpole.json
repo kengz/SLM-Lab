@@ -34,17 +34,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.001
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -129,7 +124,6 @@
           "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
@@ -210,17 +204,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.007
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -304,17 +293,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }
@@ -398,17 +382,12 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9
         },
         "gpu": "auto"
       }

@@ -70,16 +70,12 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.00025
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.00025
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 10000000.0
         },
         "gpu": "auto"
       }
@@ -185,16 +181,12 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.00025
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.00025
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 10000000.0
         },
         "gpu": "auto"
       }

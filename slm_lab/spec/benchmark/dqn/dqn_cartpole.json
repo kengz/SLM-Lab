@@ -36,12 +36,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 10000
         },
         "gpu": "auto"
       }
@@ -119,12 +115,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 30000
         },
         "update_type": "replace",
         "update_frequency": 10,
@@ -206,12 +198,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.005
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 30000
         },
         "update_type": "replace",
         "update_frequency": 10,

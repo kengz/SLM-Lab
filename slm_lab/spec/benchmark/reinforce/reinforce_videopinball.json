@@ -60,10 +60,9 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
         },
-        "lr_scheduler_spec": null,
         "gpu": "auto"
       }
     },
