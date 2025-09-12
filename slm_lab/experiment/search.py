@@ -10,6 +10,7 @@ from ray.tune.search.optuna import OptunaSearch
 from slm_lab import ROOT_DIR
 from slm_lab.experiment.analysis import METRICS_COLS
 from slm_lab.lib import logger, util
+from slm_lab.spec import spec_util
 
 logger = logger.get_logger(__name__)
 
@@ -18,19 +19,29 @@ def build_param_space(spec):
     """
     Build Ray Tune parameter space from SLM-Lab spec.
 
-    Specify a config space in spec using `"{key}__{space_type}": [args]` format.
-    Where `{space_type}` is any Ray Tune search space function from:
-    https://docs.ray.io/en/latest/tune/api/search_space.html
+    Specify a config space in spec using "{key}__{space_type}": [args] format.
+    Where {space_type} is any Ray Tune search space function.
 
     Two argument patterns:
-    - Most functions: use `[arg1, arg2, ...]` → `tune.func(*args)`
-    - choice: use `[item1, item2, ...]` → `tune.choice([items])`
+    - Most functions: use [arg1, arg2, ...] → tune.func(*args)
+    - choice: use [item1, item2, ...] → tune.choice([items])
 
     Examples:
-    - `"gamma__uniform": [0.95, 0.999]` → `tune.uniform(0.95, 0.999)`
-    - `"lr__loguniform": [0.0001, 0.01]` → `tune.loguniform(0.0001, 0.01)`
-    - `"temperature__randn": [1.0, 0.1]` → `tune.randn(1.0, 0.1)`
-    - `"batch_size__choice": [16, 32, 64]` → `tune.choice([16, 32, 64])`
+    - "gamma__uniform": [0.95, 0.999] → tune.uniform(0.95, 0.999)
+    - "batch_size__choice": [16, 32, 64] → tune.choice([16, 32, 64])
+
+    Available search space types (see https://docs.ray.io/en/latest/tune/api/search_space.html):
+    - uniform(0.95, 0.999): Sample float uniformly between 0.95 and 0.999
+    - quniform(3.2, 5.4, 0.2): uniform + round to multiples of 0.2
+    - loguniform(1e-4, 1e-2): uniform in log space between 0.0001 and 0.01
+    - qloguniform(1e-4, 1e-1, 5e-5): loguniform + round to multiples of 0.00005
+    - randn(10, 2): Sample from normal distribution with mean=10, sd=2
+    - qrandn(10, 2, 0.2): randn + round to multiples of 0.2
+    - randint(-9, 15): Sample integer uniformly [-9, 15)
+    - qrandint(-21, 12, 3): randint + round to multiples of 3 (12 inclusive)
+    - lograndint(1, 10): randint in log space [1, 10)
+    - qlograndint(1, 10, 2): lograndint + round to multiples of 2 (10 inclusive)
+    - choice([16, 32, 64]): Sample uniformly from discrete choices
     """
     use_list_args = ("choice",)
     param_space = {}
@@ -55,7 +66,10 @@ def inject_config(spec, config):
     trial_name = ray.tune.get_context().get_trial_name()
     trial_folder = trial_dir.split("/")[-1]
     trial_index = int(trial_folder.replace(f"{trial_name}_", "").split("_")[0]) - 1
-    ps.set_(spec, "meta.trial", trial_index)
+    
+    # Set trial index then call tick to properly set all prepaths
+    spec["meta"]["trial"] = trial_index - 1  # Set to -1 so tick increments to correct value
+    spec_util.tick(spec, "trial")
 
     for k, v in config.items():
         ps.set_(spec, k, v)
@@ -95,8 +109,8 @@ def extract_trial_results(results):
 def run_ray_search(spec):
     """Ray Tune search using Tuner API with Optuna integration."""
     name, num_trials = spec["name"], spec["meta"]["max_trial"]
-    logger.info(f"Running Ray Tune for spec {name} with {num_trials} trials")
-    logger.info("Note: use 'slm-lab --kill-ray' to stop (Ray SIGTERM issue)")
+    logger.info(f"Running Ray Tune for {name} with {num_trials} trials")
+    logger.info("Note: use 'slm-lab --stop-ray' to stop Ray cluster")
 
     tuner = tune.Tuner(
         tune.with_resources(build_run_trial(spec), get_trial_resources(spec)),
@@ -109,7 +123,7 @@ def run_ray_search(spec):
         ),
         run_config=tune.RunConfig(
             name=name,
-            storage_path=os.path.join(ROOT_DIR, "data", "ray_tune"),
+            storage_path=os.path.join(ROOT_DIR, spec["meta"]["prepath"], "ray_tune"),
         ),
     )
 

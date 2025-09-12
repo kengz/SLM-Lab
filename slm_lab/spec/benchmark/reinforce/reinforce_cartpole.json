@@ -51,7 +51,7 @@
     "search": {
       "agent": {
         "algorithm": {
-          "gamma__grid_search": [
+          "gamma__choice": [
             0.1,
             0.5,
             0.7,
@@ -116,7 +116,7 @@
     "search": {
       "agent": {
         "algorithm": {
-          "center_return__grid_search": [
+          "center_return__choice": [
             true,
             false
           ]

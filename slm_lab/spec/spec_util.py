@@ -230,7 +230,4 @@ def tick(spec, unit):
         assert os.path.exists(folder_predir)
         meta_spec[f'{folder}_prepath'] = folder_prepath
     
-    # Log the data output path only when first created (experiment, trial, and session all start at 0)
-    if meta_spec['experiment'] == 0 and meta_spec['trial'] == 0 and meta_spec['session'] == 0:
-        logger.info(f"Data output: {prepath}")
     return spec

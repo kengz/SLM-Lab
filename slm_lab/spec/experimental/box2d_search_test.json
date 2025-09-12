@@ -66,7 +66,7 @@
     },
     "search": {
       "env": {
-        "name__grid_search": [
+        "name__choice": [
           "BipedalWalker-v3",
           "LunarLander-v3",
           "CarRacing-v3"

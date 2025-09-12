@@ -97,7 +97,7 @@
       "agent": {
         "algorithm": {
           "clip_eps_spec": {
-            "start_val__grid_search": [
+            "start_val__choice": [
               0.1,
               0.2,
               0.3,
@@ -206,7 +206,7 @@
       "agent": {
         "algorithm": {
           "clip_eps_spec": {
-            "start_val__grid_search": [
+            "start_val__choice": [
               0.1,
               0.2,
               0.3,
@@ -315,7 +315,7 @@
       "agent": {
         "algorithm": {
           "clip_eps_spec": {
-            "start_val__grid_search": [
+            "start_val__choice": [
               0.1,
               0.2,
               0.3,

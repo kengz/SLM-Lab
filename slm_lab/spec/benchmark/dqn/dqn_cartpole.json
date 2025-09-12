@@ -56,7 +56,7 @@
     "search": {
       "agent": {
         "net": {
-          "hid_layers__grid_search": [
+          "hid_layers__choice": [
             [
               32
             ],
@@ -135,7 +135,7 @@
     "search": {
       "agent": {
         "net": {
-          "hid_layers__grid_search": [
+          "hid_layers__choice": [
             [
               32
             ],
@@ -216,7 +216,7 @@
     "search": {
       "agent": {
         "net": {
-          "hid_layers__grid_search": [
+          "hid_layers__choice": [
             [
               32
             ],

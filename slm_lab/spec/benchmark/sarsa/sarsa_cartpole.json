@@ -50,7 +50,7 @@
       "agent": {
         "net": {
           "optim_spec": {
-            "lr__grid_search": [
+            "lr__choice": [
               0.0005,
               0.001,
               0.001,

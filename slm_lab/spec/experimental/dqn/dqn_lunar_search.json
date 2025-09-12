@@ -59,7 +59,7 @@
     "search": {
       "agent": {
         "net": {
-          "polyak_coef__grid_search": [
+          "polyak_coef__choice": [
             0.8,
             0.9,
             0.95,
@@ -129,7 +129,7 @@
     "search": {
       "agent": {
         "net": {
-          "update_frequency__grid_search": [
+          "update_frequency__choice": [
             10,
             100,
             250,

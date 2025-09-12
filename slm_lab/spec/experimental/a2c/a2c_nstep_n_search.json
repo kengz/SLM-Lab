@@ -92,7 +92,7 @@
     "search": {
       "agent": {
         "algorithm": {
-          "num_step_returns__grid_search": [
+          "num_step_returns__choice": [
             1,
             3,
             5,
@@ -197,7 +197,7 @@
     "search": {
       "agent": {
         "algorithm": {
-          "num_step_returns__grid_search": [
+          "num_step_returns__choice": [
             1,
             3,
             5,

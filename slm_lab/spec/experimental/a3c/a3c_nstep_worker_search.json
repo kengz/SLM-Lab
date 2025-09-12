@@ -87,7 +87,7 @@
     },
     "search": {
       "meta": {
-        "max_session__grid_search": [
+        "max_session__choice": [
           2,
           4,
           8,

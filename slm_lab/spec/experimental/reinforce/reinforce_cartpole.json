@@ -101,7 +101,7 @@
     "search": {
       "agent": {
         "algorithm": {
-          "gamma__grid_search": [
+          "gamma__choice": [
             0.1,
             0.5,
             0.7,

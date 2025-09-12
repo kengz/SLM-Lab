@@ -46,18 +46,26 @@ def get_spec(spec_file: str, spec_name: str, lab_mode: str, pre_: Optional[str])
     return spec
 
 
-def run_spec(spec, lab_mode: str):
+def run_spec(spec, lab_mode: str, spec_file: str = "", spec_name: str = ""):
     """Run a spec in lab_mode"""
     os.environ["lab_mode"] = lab_mode
     spec = spec_util.override_spec(spec, lab_mode)
 
     if lab_mode in TRAIN_MODES:
-        spec_util.save(spec)
         if lab_mode == "search":
             spec_util.tick(spec, "experiment")
+            logger.info(
+                f"SLM-Lab: Running {spec_file} {spec_name} {lab_mode} | output: {spec['meta']['prepath']}"
+            )
+            spec_util.save(spec)
             Experiment(spec).run()
         else:
             spec_util.tick(spec, "trial")
+            max_session = spec["meta"]["max_session"]
+            logger.info(
+                f"SLM-Lab: Running {spec_file} {spec_name} {lab_mode} with {max_session} sessions | output: {spec['meta']['prepath']}"
+            )
+            spec_util.save(spec)
             Trial(spec).run()
     elif lab_mode in EVAL_MODES:
         Session(spec).run()
@@ -67,23 +75,21 @@ def run_spec(spec, lab_mode: str):
         )
 
 
-def kill_ray_processes():
-    """Kill all Ray processes (workaround for Ray signal handling bug)"""
-    subprocess.run(["pkill", "-f", "ray"])
-    logger.info("Killed Ray processes")
+def stop_ray_processes():
+    """Stop all Ray processes using Ray CLI"""
+    subprocess.run(["uv", "run", "ray", "stop"])
+    logger.info("Stopped Ray cluster")
 
 
 def run_experiment(spec_file: str, spec_name: str, lab_mode: str):
     """Core experiment runner"""
-    logger.info(f"SLM-Lab: Running {spec_file} {spec_name} {lab_mode}")
-    
     if "@" in lab_mode:  # process lab_mode@{predir/prename}
         lab_mode, pre_ = lab_mode.split("@")
     else:
         pre_ = None
 
     spec = get_spec(spec_file, spec_name, lab_mode, pre_)
-    run_spec(spec, lab_mode)
+    run_spec(spec, lab_mode, spec_file, spec_name)
 
 
 def main(
@@ -126,10 +132,10 @@ def main(
         envvar="LOG_EXTRA",
         help="Enable extra metrics logging (strength, stability, efficiency)",
     ),
-    kill_ray: bool = typer.Option(
+    stop_ray: bool = typer.Option(
         False,
-        "--kill-ray",
-        help="Kill all Ray processes (workaround for Ray signal handling bug)",
+        "--stop-ray",
+        help="Stop all Ray processes using Ray CLI",
     ),
 ):
     """
@@ -141,11 +147,11 @@ def main(
         slm-lab spec.json spec_name dev            # Custom experiment
         slm-lab spec.json spec_name train          # Custom experiment
         slm-lab --job job/experiments.json         # Batch experiments
-        slm-lab --kill-ray                         # Kill all Ray processes (force stop search)
+        slm-lab --stop-ray                         # Stop all Ray processes (force stop search)
     """
-    # Handle --kill-ray flag first
-    if kill_ray:
-        kill_ray_processes()
+    # Handle --stop-ray flag first
+    if stop_ray:
+        stop_ray_processes()
         return
 
     # Set environment variables from CLI flags
