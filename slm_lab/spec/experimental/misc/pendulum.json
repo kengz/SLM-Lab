@@ -57,63 +57,61 @@
       "max_trial": 190
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              4,
-              8
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            4,
+            8
+          ],
+          "lam__uniform": [
+            0.95,
+            0.99
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "lam__uniform": [
-              0.95,
-              0.99
+            "end_val__uniform": [
+              0.0001,
+              0.001
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                100000,
-                125000,
-                150000
-              ],
-              "end_step__choice": [
-                150000,
-                175000,
-                200000,
-                250000
-              ]
-            }
-          },
-          "net": {
-            "hid_layers__choice": [
-              [
-                400,
-                200
-              ],
-              [
-                256,
-                128
-              ]
+            "start_step__choice": [
+              100000,
+              125000,
+              150000
             ],
-            "actor_optim_spec": {
-              "lr__choice": [
-                0.0001,
-                0.0005,
-                0.001,
-                0.005,
-                0.01
-              ]
-            }
+            "end_step__choice": [
+              150000,
+              175000,
+              200000,
+              250000
+            ]
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              400,
+              200
+            ],
+            [
+              256,
+              128
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__choice": [
+              0.0001,
+              0.0005,
+              0.001,
+              0.005,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_nstep_separate_pendulum": {
@@ -174,71 +172,69 @@
       "max_trial": 190
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              4,
-              8
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            4,
+            8
+          ],
+          "num_step_returns__choice": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "num_step_returns__choice": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10
+            "end_val__uniform": [
+              0.0001,
+              0.001
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                100000,
-                125000,
-                150000
-              ],
-              "end_step__choice": [
-                150000,
-                175000,
-                200000,
-                250000
-              ]
-            }
-          },
-          "net": {
-            "hid_layers__choice": [
-              [
-                400,
-                200
-              ],
-              [
-                256,
-                128
-              ]
+            "start_step__choice": [
+              100000,
+              125000,
+              150000
             ],
-            "actor_optim_spec": {
-              "lr__choice": [
-                0.0001,
-                0.0005,
-                0.001,
-                0.005,
-                0.01
-              ]
-            }
+            "end_step__choice": [
+              150000,
+              175000,
+              200000,
+              250000
+            ]
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              400,
+              200
+            ],
+            [
+              256,
+              128
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__choice": [
+              0.0001,
+              0.0005,
+              0.001,
+              0.005,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   }
 }

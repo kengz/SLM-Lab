@@ -525,7 +525,9 @@ def smart_path(data_path, as_dir=False):
 def split_minibatch(batch, mb_size):
     '''Split a batch into minibatches of mb_size or smaller, without replacement'''
     size = len(batch['rewards'])
-    assert mb_size < size, f'Minibatch size {mb_size} must be < batch size {size}'
+    # If minibatch size >= batch size, just return the whole batch
+    if mb_size >= size:
+        return [batch]
     idxs = np.arange(size)
     np.random.shuffle(idxs)
     chunks = int(size / mb_size)

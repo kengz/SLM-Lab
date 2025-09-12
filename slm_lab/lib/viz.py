@@ -4,6 +4,7 @@ from glob import glob
 from plotly import graph_objs as go, io as pio, subplots
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
+from slm_lab.lib.env_var import log_extra
 import colorlover as cl
 import os
 import pydash as ps
@@ -136,13 +137,18 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
     title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
 
     local_metrics = session_metrics['local']
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames'),
-    ]
+    # Always plot mean_returns
+    name_time_pairs = [('mean_returns', 'frames')]
+    
+    # Only add extra metrics if log_extra is enabled
+    if log_extra():
+        name_time_pairs.extend([
+            ('strengths', 'frames'),
+            ('sample_efficiencies', 'frames'),
+            ('training_efficiencies', 'opt_steps'),
+            ('stabilities', 'frames'),
+        ])
+    
     for name, time in name_time_pairs:
         sr = local_metrics[name]
         if ma:
@@ -181,14 +187,19 @@ def plot_trial(trial_spec, trial_metrics, ma=False):
     title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
 
     local_metrics = trial_metrics['local']
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames'),
-        ('consistencies', 'frames'),
-    ]
+    # Always plot mean_returns
+    name_time_pairs = [('mean_returns', 'frames')]
+    
+    # Only add extra metrics if log_extra is enabled
+    if log_extra():
+        name_time_pairs.extend([
+            ('strengths', 'frames'),
+            ('sample_efficiencies', 'frames'),
+            ('training_efficiencies', 'opt_steps'),
+            ('stabilities', 'frames'),
+            ('consistencies', 'frames'),
+        ])
+    
     for name, time in name_time_pairs:
         if name == 'consistencies':
             sr = local_metrics[name]
@@ -288,13 +299,16 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
     if frame_scales is not None:
         for idx, scale in frame_scales:
             local_metrics_list[idx]['frames'] = local_metrics_list[idx]['frames'] * scale
-    name_time_pairs = name_time_pairs or [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames')
-    ]
+    # Always plot mean_returns, only add extra metrics if log_extra is enabled
+    if name_time_pairs is None:
+        name_time_pairs = [('mean_returns', 'frames')]
+        if log_extra():
+            name_time_pairs.extend([
+                ('strengths', 'frames'),
+                ('sample_efficiencies', 'frames'),
+                ('training_efficiencies', 'opt_steps'),
+                ('stabilities', 'frames')
+            ])
     for name, time in name_time_pairs:
         if ma:
             for local_metrics in local_metrics_list:

@@ -1,18 +1,20 @@
 # The agent module
+import os
+from typing import Any, Optional, Union
+
+import gymnasium as gym
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.tensorboard import SummaryWriter
+
 from slm_lab.agent import algorithm, memory
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util, viz
-from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.decorator import lab_api
-from torch.utils.tensorboard import SummaryWriter
-from typing import Any, Optional, Union
-import gymnasium as gym
-import numpy as np
-import os
-import pandas as pd
+from slm_lab.lib.env_var import lab_mode, log_extra
 import pydash as ps
-import torch
 import warnings
 
 logger = logger.get_logger(__name__)
@@ -245,9 +247,8 @@ class MetricsTracker:
 
     def log_metrics(self, metrics: dict[str, float], df_mode: str) -> None:
         '''Log session metrics'''
-        import os
-        # Skip logging metrics unless LOG_METRICS=true
-        if not os.environ.get('LOG_METRICS', 'false').lower() == 'true':
+        # Skip extra metrics unless enabled
+        if not log_extra():
             return
         prefix = self.get_log_prefix()
         row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])

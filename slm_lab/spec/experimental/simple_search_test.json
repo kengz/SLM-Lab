@@ -59,26 +59,24 @@
       "max_trial": 3
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "gamma__choice": [
-              0.9,
-              0.95,
-              0.99
+      "agent": {
+        "algorithm": {
+          "gamma__choice": [
+            0.9,
+            0.95,
+            0.99
+          ]
+        },
+        "net": {
+          "optim_spec": {
+            "lr__choice": [
+              0.001,
+              0.01,
+              0.1
             ]
-          },
-          "net": {
-            "optim_spec": {
-              "lr__choice": [
-                0.001,
-                0.01,
-                0.1
-              ]
-            }
           }
         }
-      ]
+      }
     }
   }
 }

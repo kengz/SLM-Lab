@@ -75,6 +75,8 @@ def kill_ray_processes():
 
 def run_experiment(spec_file: str, spec_name: str, lab_mode: str):
     """Core experiment runner"""
+    logger.info(f"SLM-Lab: Running {spec_file} {spec_name} {lab_mode}")
+    
     if "@" in lab_mode:  # process lab_mode@{predir/prename}
         lab_mode, pre_ = lab_mode.split("@")
     else:
@@ -118,6 +120,12 @@ def main(
         envvar="PROFILE",
         help="Enable non-invasive performance profiling",
     ),
+    log_extra: bool = typer.Option(
+        False,
+        "--log-extra",
+        envvar="LOG_EXTRA",
+        help="Enable extra metrics logging (strength, stability, efficiency)",
+    ),
     kill_ray: bool = typer.Option(
         False,
         "--kill-ray",
@@ -142,7 +150,7 @@ def main(
 
     # Set environment variables from CLI flags
     mode = env_var.set_from_cli(
-        render, log_level, optimize_perf, cuda_offset, profile, mode
+        render, log_level, optimize_perf, cuda_offset, profile, log_extra, mode
     )
 
     if job is not None:

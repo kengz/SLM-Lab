@@ -57,32 +57,30 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                1000,
-                5000,
-                10000
-              ]
-            }
-          },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.01
-              ]
-            }
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              1000,
+              5000,
+              10000
+            ]
+          }
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ddqn_epsilon_greedy_cartpole": {
@@ -143,49 +141,47 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                1000,
-                3000,
-                5000,
-                10000
-              ]
-            }
-          },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
             ],
-            "hid_layers_activation__choice": [
-              "sigmoid",
-              "relu",
-              "tanh"
+            [
+              64
             ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.2
-              ]
-            }
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ddrqn_boltzmann_cartpole": {
@@ -248,49 +244,47 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                1000,
-                3000,
-                5000,
-                10000
-              ]
-            }
-          },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
             ],
-            "hid_layers_activation__choice": [
-              "sigmoid",
-              "relu",
-              "tanh"
+            [
+              64
             ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.2
-              ]
-            }
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ddrqn_epsilon_greedy_cartpole": {
@@ -353,49 +347,47 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                1000,
-                3000,
-                5000,
-                10000
-              ]
-            }
-          },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
             ],
-            "hid_layers_activation__choice": [
-              "sigmoid",
-              "relu",
-              "tanh"
+            [
+              64
             ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.2
-              ]
-            }
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      ]
+      }
     }
   }
 }

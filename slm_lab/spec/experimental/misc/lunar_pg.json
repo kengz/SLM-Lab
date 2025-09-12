@@ -50,40 +50,38 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                90000,
-                100000,
-                110000,
-                120000
-              ],
-              "end_step__choice": [
-                150000,
-                160000,
-                170000,
-                180000
-              ]
-            }
-          },
-          "net": {}
-        }
-      ]
+            "end_val__uniform": [
+              0.0001,
+              0.001
+            ],
+            "start_step__choice": [
+              90000,
+              100000,
+              110000,
+              120000
+            ],
+            "end_step__choice": [
+              150000,
+              160000,
+              170000,
+              180000
+            ]
+          }
+        },
+        "net": {}
+      }
     }
   },
   "reinforce_rnn_lunar": {
@@ -141,53 +139,51 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                90000,
-                100000,
-                110000,
-                120000
-              ],
-              "end_step__choice": [
-                150000,
-                160000,
-                170000,
-                180000
-              ]
-            }
-          },
-          "net": {
-            "seq_len__choice": [
-              2,
-              3,
-              4,
-              5,
-              6
+            "end_val__uniform": [
+              0.0001,
+              0.001
             ],
-            "rnn_hidden_size__choice": [
-              32,
-              64,
-              128
+            "start_step__choice": [
+              90000,
+              100000,
+              110000,
+              120000
+            ],
+            "end_step__choice": [
+              150000,
+              160000,
+              170000,
+              180000
             ]
           }
+        },
+        "net": {
+          "seq_len__choice": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "rnn_hidden_size__choice": [
+            32,
+            64,
+            128
+          ]
         }
-      ]
+      }
     }
   },
   "a2c_gae_mlp_separate_lunar": {
@@ -248,40 +244,38 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                90000,
-                100000,
-                110000,
-                120000
-              ],
-              "end_step__choice": [
-                150000,
-                160000,
-                170000,
-                180000
-              ]
-            }
-          },
-          "net": {}
-        }
-      ]
+            "end_val__uniform": [
+              0.0001,
+              0.001
+            ],
+            "start_step__choice": [
+              90000,
+              100000,
+              110000,
+              120000
+            ],
+            "end_step__choice": [
+              150000,
+              160000,
+              170000,
+              180000
+            ]
+          }
+        },
+        "net": {}
+      }
     }
   },
   "a2c_gae_rnn_separate_lunar": {
@@ -346,53 +340,51 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                90000,
-                100000,
-                110000,
-                120000
-              ],
-              "end_step__choice": [
-                150000,
-                160000,
-                170000,
-                180000
-              ]
-            }
-          },
-          "net": {
-            "seq_len__choice": [
-              2,
-              3,
-              4,
-              5,
-              6
+            "end_val__uniform": [
+              0.0001,
+              0.001
             ],
-            "rnn_hidden_size__choice": [
-              32,
-              64,
-              128
+            "start_step__choice": [
+              90000,
+              100000,
+              110000,
+              120000
+            ],
+            "end_step__choice": [
+              150000,
+              160000,
+              170000,
+              180000
             ]
           }
+        },
+        "net": {
+          "seq_len__choice": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "rnn_hidden_size__choice": [
+            32,
+            64,
+            128
+          ]
         }
-      ]
+      }
     }
   },
   "a2c_nstep_mlp_separate_lunar": {
@@ -453,46 +445,44 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "num_step_returns__choice": [
+            1,
+            2,
+            5,
+            10
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "num_step_returns__choice": [
-              1,
-              2,
-              5,
-              10
+            "end_val__uniform": [
+              0.0001,
+              0.001
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                90000,
-                100000,
-                110000,
-                120000
-              ],
-              "end_step__choice": [
-                150000,
-                160000,
-                170000,
-                180000
-              ]
-            }
-          },
-          "net": {}
-        }
-      ]
+            "start_step__choice": [
+              90000,
+              100000,
+              110000,
+              120000
+            ],
+            "end_step__choice": [
+              150000,
+              160000,
+              170000,
+              180000
+            ]
+          }
+        },
+        "net": {}
+      }
     }
   },
   "a2c_nstep_rnn_separate_lunar": {
@@ -557,46 +547,44 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "num_step_returns__choice": [
+            1,
+            2,
+            5,
+            10
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ],
-            "num_step_returns__choice": [
-              1,
-              2,
-              5,
-              10
+            "end_val__uniform": [
+              0.0001,
+              0.001
             ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ],
-              "end_val__uniform": [
-                0.0001,
-                0.001
-              ],
-              "start_step__choice": [
-                90000,
-                100000,
-                110000,
-                120000
-              ],
-              "end_step__choice": [
-                150000,
-                160000,
-                170000,
-                180000
-              ]
-            }
-          },
-          "net": {}
-        }
-      ]
+            "start_step__choice": [
+              90000,
+              100000,
+              110000,
+              120000
+            ],
+            "end_step__choice": [
+              150000,
+              160000,
+              170000,
+              180000
+            ]
+          }
+        },
+        "net": {}
+      }
     }
   },
   "ppo_mlp_separate_lunar": {
@@ -663,45 +651,43 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_rnn_separate_lunar": {
@@ -772,50 +758,48 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_gae_mlp_shared_lunar": {
@@ -876,45 +860,43 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "lam__uniform": [
-              0.9,
+      "agent": {
+        "algorithm": {
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
               1.0
             ]
           },
-          "net": {
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              80000,
-              100000
-            ],
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "lam__uniform": [
+            0.9,
+            1.0
+          ]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            50000,
+            60000,
+            80000,
+            100000
+          ],
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2csil_gae_mlp_separate_lunar": {
@@ -979,57 +961,55 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              1,
-              2
-            ],
-            "entropy_coef__uniform": [
-              0.04,
-              0.09
-            ],
-            "lam__uniform": [
-              0.9,
-              1.0
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            1,
+            2
+          ],
+          "entropy_coef__uniform": [
+            0.04,
+            0.09
+          ],
+          "lam__uniform": [
+            0.9,
+            1.0
+          ]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            40000,
+            60000,
+            80000,
+            100000
+          ],
+          "lr_anneal_timestep__choice": [
+            200000,
+            250000,
+            300000,
+            350000,
+            400000
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.004,
+              0.008
             ]
           },
-          "net": {
-            "lr_decay_frequency__choice": [
-              40000,
-              60000,
-              80000,
-              100000
-            ],
-            "lr_anneal_timestep__choice": [
-              200000,
-              250000,
-              300000,
-              350000,
-              400000
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.004,
-                0.008
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.001
-              ]
-            }
-          },
-          "memory": {
-            "use_cer__choice": [
-              true,
-              false
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.001
             ]
           }
+        },
+        "memory": {
+          "use_cer__choice": [
+            true,
+            false
+          ]
         }
-      ]
+      }
     }
   },
   "a2c_gae_rnn_shared_lunar": {
@@ -1094,44 +1074,42 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
-              1.0
-            ],
-            "lam__uniform": [
-              0.9,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "lam__uniform": [
+            0.9,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_nstep_mlp_shared_lunar": {
@@ -1192,53 +1170,51 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              3,
-              4
-            ],
-            "training_batch_iter_choice": [
-              4,
-              6,
-              8,
-              10
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.001,
-                0.05
-              ]
-            },
-            "num_step_returns__choice": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              10
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            3,
+            4
+          ],
+          "training_batch_iter_choice": [
+            4,
+            6,
+            8,
+            10
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
+              0.001,
+              0.05
             ]
           },
-          "net": {
-            "use_same_optim__choice": [
-              true,
-              false
-            ],
-            "clip_grad__choice": [
-              true,
-              false
-            ],
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+          "num_step_returns__choice": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            10
+          ]
+        },
+        "net": {
+          "use_same_optim__choice": [
+            true,
+            false
+          ],
+          "clip_grad__choice": [
+            true,
+            false
+          ],
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2csil_nstep_mlp_separate_lunar": {
@@ -1303,59 +1279,57 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              1,
-              2,
-              3
-            ],
-            "entropy_coef__uniform": [
-              0.01,
-              0.1
-            ],
-            "num_step_returns__choice": [
-              1,
-              4,
-              5
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            1,
+            2,
+            3
+          ],
+          "entropy_coef__uniform": [
+            0.01,
+            0.1
+          ],
+          "num_step_returns__choice": [
+            1,
+            4,
+            5
+          ]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            40000,
+            60000,
+            80000,
+            100000
+          ],
+          "lr_anneal_timestep__choice": [
+            200000,
+            250000,
+            300000,
+            350000,
+            400000
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.008
             ]
           },
-          "net": {
-            "lr_decay_frequency__choice": [
-              40000,
-              60000,
-              80000,
-              100000
-            ],
-            "lr_anneal_timestep__choice": [
-              200000,
-              250000,
-              300000,
-              350000,
-              400000
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.008
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.001
-              ]
-            }
-          },
-          "memory": {
-            "use_cer__choice": [
-              true,
-              false
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.001
             ]
           }
+        },
+        "memory": {
+          "use_cer__choice": [
+            true,
+            false
+          ]
         }
-      ]
+      }
     }
   },
   "a2c_nstep_rnn_shared_lunar": {
@@ -1420,45 +1394,43 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "num_step_returns__choice": [
-              1,
-              4,
-              8
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "num_step_returns__choice": [
+            1,
+            4,
+            8
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_mlp_shared_lunar": {
@@ -1525,39 +1497,37 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_rnn_shared_lunar": {
@@ -1628,44 +1598,42 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_sil_mlp_shared_lunar": {
@@ -1733,43 +1701,41 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_sil_mlp_separate_lunar": {
@@ -1837,49 +1803,47 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_sil_rnn_shared_lunar": {
@@ -1951,48 +1915,46 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_sil_rnn_separate_lunar": {
@@ -2064,54 +2026,52 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_sil_mlp_shared_lunar": {
@@ -2181,47 +2141,45 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_sil_mlp_separate_lunar": {
@@ -2291,53 +2249,51 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_sil_rnn_shared_lunar": {
@@ -2415,52 +2371,50 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ppo_sil_rnn_separate_lunar": {
@@ -2538,58 +2492,56 @@
       "max_trial": 95
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "clip_eps__uniform": [
-              0.1,
-              1.0
-            ],
-            "entropy_coef_spec": {
-              "start_val__uniform": [
-                0.01,
-                1.0
-              ]
-            },
-            "val_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_policy_loss_coef__uniform": [
-              0.01,
-              1.0
-            ],
-            "sil_val_loss_coef__uniform": [
+      "agent": {
+        "algorithm": {
+          "clip_eps__uniform": [
+            0.1,
+            1.0
+          ],
+          "entropy_coef_spec": {
+            "start_val__uniform": [
               0.01,
               1.0
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "tanh",
-              "relu",
-              "selu"
-            ],
-            "rnn_hidden_size__choice": [
-              16,
-              32,
-              64
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                1e-05,
-                0.01
-              ]
-            }
+          "val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_policy_loss_coef__uniform": [
+            0.01,
+            1.0
+          ],
+          "sil_val_loss_coef__uniform": [
+            0.01,
+            1.0
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "tanh",
+            "relu",
+            "selu"
+          ],
+          "rnn_hidden_size__choice": [
+            16,
+            32,
+            64
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [
+              1e-05,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   }
 }

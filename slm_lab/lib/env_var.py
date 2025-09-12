@@ -2,11 +2,9 @@
 
 import os
 
-from slm_lab.lib import logger
-
 
 def set_from_cli(
-    render, log_level, optimize_perf, cuda_offset, profile, mode
+    render, log_level, optimize_perf, cuda_offset, profile, log_extra, mode
 ):
     """Set environment variables from CLI flags."""
     # Force dev mode when profiling is enabled
@@ -20,6 +18,7 @@ def set_from_cli(
             "OPTIMIZE_PERF": str(optimize_perf).lower(),
             "CUDA_OFFSET": str(cuda_offset),
             "PROFILE": str(profile).lower(),
+            "LOG_EXTRA": str(log_extra).lower(),
         }
     )
 
@@ -41,8 +40,6 @@ def optimize_perf():
     return os.getenv("OPTIMIZE_PERF", "true").lower() == "true"
 
 
-
-
 def cuda_offset():
     """Get CUDA device offset."""
     return int(os.getenv("CUDA_OFFSET", "0"))
@@ -51,6 +48,11 @@ def cuda_offset():
 def profile():
     """Check if --profile flag is enabled."""
     return os.getenv("PROFILE", "false").lower() == "true"
+
+
+def log_extra():
+    """Check if extra metrics logging is enabled."""
+    return os.getenv("LOG_EXTRA", "false").lower() == "true"
 
 
 def lab_mode():

@@ -5,15 +5,16 @@ from typing import Any
 import gymnasium as gym
 from gymnasium import spaces
 from gymnasium.vector import VectorEnv
+from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation
 
-from slm_lab.lib import logger, util
-from slm_lab.lib.env_var import render
 from slm_lab.env.wrappers import (
     ClockWrapper,
     TrackReward,
     VectorClockWrapper,
     VectorTrackReward,
 )
+from slm_lab.lib import logger, util
+from slm_lab.lib.env_var import render
 
 # Alias ClockWrapper as Clock for backward compatibility
 Clock = ClockWrapper
@@ -158,8 +159,12 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         # Add reward tracking for SLM-Lab compatibility
         env = VectorTrackReward(env)
     else:
-        # Use gymnasium's standard make which handles all preprocessing automatically
         env = gym.make(name, render_mode=render_mode)
+        # gymnasium forgot to do this for single Atari env like in make_vec
+        if name.startswith("ALE/"):
+            env = FrameStackObservation(
+                AtariPreprocessing(env, frame_skip=1), stack_size=4
+            )
         # Add reward tracking for SLM-Lab compatibility
         env = TrackReward(env)
 

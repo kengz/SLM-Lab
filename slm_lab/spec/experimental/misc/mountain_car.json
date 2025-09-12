@@ -56,55 +56,53 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              4,
-              8
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            4,
+            8
+          ],
+          "lam__uniform": [
+            0.9,
+            0.99
+          ]
+        },
+        "net": {
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [
+              100
             ],
-            "lam__uniform": [
-              0.9,
-              0.99
+            [
+              200
+            ],
+            [
+              400
+            ],
+            [
+              200,
+              100
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
             ]
           },
-          "net": {
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
-            ],
-            "hid_layers__choice": [
-              [
-                100
-              ],
-              [
-                200
-              ],
-              [
-                400
-              ],
-              [
-                200,
-                100
-              ]
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_gae_rnn_separate_mountain_car": {
@@ -168,67 +166,65 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              4,
-              8
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            4,
+            8
+          ],
+          "lam__uniform": [
+            0.9,
+            0.99
+          ]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [],
+            [
+              100
             ],
-            "lam__uniform": [
-              0.9,
-              0.99
+            [
+              200
+            ]
+          ],
+          "rnn_hidden_size__choice": [
+            32,
+            64,
+            128
+          ],
+          "seq_len__choice": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
             ]
           },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
-            ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
-            ],
-            "hid_layers__choice": [
-              [],
-              [
-                100
-              ],
-              [
-                200
-              ]
-            ],
-            "rnn_hidden_size__choice": [
-              32,
-              64,
-              128
-            ],
-            "seq_len__choice": [
-              2,
-              3,
-              4,
-              5,
-              6
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_nstep_mlp_separate_mountain_car": {
@@ -288,62 +284,60 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              4,
-              8
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            4,
+            8
+          ],
+          "num_step_returns__choice": [
+            2,
+            4,
+            8
+          ]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [
+              100
             ],
-            "num_step_returns__choice": [
-              2,
-              4,
-              8
+            [
+              200
+            ],
+            [
+              400
+            ],
+            [
+              200,
+              100
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
             ]
           },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
-            ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
-            ],
-            "hid_layers__choice": [
-              [
-                100
-              ],
-              [
-                200
-              ],
-              [
-                400
-              ],
-              [
-                200,
-                100
-              ]
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_nstep_rnn_separate_mountain_car": {
@@ -407,67 +401,65 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_frequency__choice": [
-              2,
-              4,
-              8
+      "agent": {
+        "algorithm": {
+          "training_frequency__choice": [
+            2,
+            4,
+            8
+          ],
+          "lam__uniform": [
+            0.9,
+            0.99
+          ]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [],
+            [
+              100
             ],
-            "lam__uniform": [
-              0.9,
-              0.99
+            [
+              200
+            ]
+          ],
+          "rnn_hidden_size__choice": [
+            32,
+            64,
+            128
+          ],
+          "seq_len__choice": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
             ]
           },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
-            ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
-            ],
-            "hid_layers__choice": [
-              [],
-              [
-                100
-              ],
-              [
-                200
-              ]
-            ],
-            "rnn_hidden_size__choice": [
-              32,
-              64,
-              128
-            ],
-            "seq_len__choice": [
-              2,
-              3,
-              4,
-              5,
-              6
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "dqn_boltzmann_mountain_car": {
@@ -529,57 +521,55 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                20000,
-                40000,
-                80000
-              ]
-            }
-          },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              20000,
+              40000,
+              80000
+            ]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "polyak_coef__uniform": [
+            0.8,
+            1.0
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [
+              100
             ],
-            "polyak_coef__uniform": [
-              0.8,
-              1.0
+            [
+              200
             ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
+            [
+              400
             ],
-            "hid_layers__choice": [
-              [
-                100
-              ],
-              [
-                200
-              ],
-              [
-                400
-              ],
-              [
-                200,
-                100
-              ]
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+            [
+              200,
+              100
+            ]
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "drqn_boltzmann_mountain_car": {
@@ -644,63 +634,61 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                20000,
-                40000,
-                80000
-              ]
-            }
-          },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              20000,
+              40000,
+              80000
+            ]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "polyak_coef__uniform": [
+            0.8,
+            1.0
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [],
+            [
+              100
             ],
-            "polyak_coef__uniform": [
-              0.8,
-              1.0
-            ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
-            ],
-            "hid_layers__choice": [
-              [],
-              [
-                100
-              ],
-              [
-                200
-              ]
-            ],
-            "rnn_hidden_size__choice": [
-              32,
-              64,
-              128
-            ],
-            "seq_len__choice": [
-              2,
-              3,
-              4,
-              5,
-              6
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+            [
+              200
+            ]
+          ],
+          "rnn_hidden_size__choice": [
+            32,
+            64,
+            128
+          ],
+          "seq_len__choice": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ddqn_boltzmann_mountain_car": {
@@ -762,57 +750,55 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                20000,
-                40000,
-                80000
-              ]
-            }
-          },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              20000,
+              40000,
+              80000
+            ]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "polyak_coef__uniform": [
+            0.8,
+            1.0
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [
+              100
             ],
-            "polyak_coef__uniform": [
-              0.8,
-              1.0
+            [
+              200
             ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
+            [
+              400
             ],
-            "hid_layers__choice": [
-              [
-                100
-              ],
-              [
-                200
-              ],
-              [
-                400
-              ],
-              [
-                200,
-                100
-              ]
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+            [
+              200,
+              100
+            ]
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   },
   "ddrqn_boltzmann_mountain_car": {
@@ -877,63 +863,61 @@
       "max_trial": 200
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "explore_var_spec": {
-              "end_step__choice": [
-                20000,
-                40000,
-                80000
-              ]
-            }
-          },
-          "net": {
-            "lr_decay_frequency__choice": [
-              5000,
-              10000,
-              50000,
-              10000
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              20000,
+              40000,
+              80000
+            ]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [
+            5000,
+            10000,
+            50000,
+            10000
+          ],
+          "polyak_coef__uniform": [
+            0.8,
+            1.0
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "selu",
+            "sigmoid"
+          ],
+          "hid_layers__choice": [
+            [],
+            [
+              100
             ],
-            "polyak_coef__uniform": [
-              0.8,
-              1.0
-            ],
-            "hid_layers_activation__choice": [
-              "relu",
-              "selu",
-              "sigmoid"
-            ],
-            "hid_layers__choice": [
-              [],
-              [
-                100
-              ],
-              [
-                200
-              ]
-            ],
-            "rnn_hidden_size__choice": [
-              32,
-              64,
-              128
-            ],
-            "seq_len__choice": [
-              2,
-              3,
-              4,
-              5,
-              6
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
-            }
+            [
+              200
+            ]
+          ],
+          "rnn_hidden_size__choice": [
+            32,
+            64,
+            128
+          ],
+          "seq_len__choice": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "optim_spec": {
+            "lr__uniform": [
+              0.001,
+              0.01
+            ]
           }
         }
-      ]
+      }
     }
   }
 }

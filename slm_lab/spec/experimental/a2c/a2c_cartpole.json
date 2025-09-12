@@ -56,34 +56,32 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "gamma__uniform": [
-              0.9,
-              0.99
-            ],
-            "lam__uniform": [
-              0.1,
-              1.0
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_separate_cartpole": {
@@ -143,34 +141,32 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "gamma__uniform": [
-              0.9,
-              0.99
-            ],
-            "lam__uniform": [
-              0.1,
-              1.0
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_concat_cartpole": {
@@ -230,34 +226,32 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "gamma__uniform": [
-              0.9,
-              0.99
-            ],
-            "lam__uniform": [
-              0.1,
-              1.0
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_rnn_shared_cartpole": {
@@ -319,34 +313,32 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "gamma__uniform": [
-              0.9,
-              0.99
-            ],
-            "lam__uniform": [
-              0.1,
-              1.0
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "a2c_rnn_separate_cartpole": {
@@ -408,34 +400,32 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "gamma__uniform": [
-              0.9,
-              0.99
-            ],
-            "lam__uniform": [
-              0.1,
-              1.0
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   }
 }

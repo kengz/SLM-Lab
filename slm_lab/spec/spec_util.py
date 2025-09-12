@@ -1,12 +1,12 @@
 # The spec module
 # Manages specification to run things in lab
+import os
+
+import pydash as ps
+
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import lab_mode
-import json
-import os
-import pydash as ps
-
 
 SPEC_DIR = 'slm_lab/spec'
 '''
@@ -229,4 +229,8 @@ def tick(spec, unit):
         os.makedirs(folder_predir, exist_ok=True)
         assert os.path.exists(folder_predir)
         meta_spec[f'{folder}_prepath'] = folder_prepath
+    
+    # Log the data output path only when first created (experiment, trial, and session all start at 0)
+    if meta_spec['experiment'] == 0 and meta_spec['trial'] == 0 and meta_spec['session'] == 0:
+        logger.info(f"Data output: {prepath}")
     return spec

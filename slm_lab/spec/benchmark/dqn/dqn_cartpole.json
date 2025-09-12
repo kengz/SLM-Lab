@@ -54,28 +54,26 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [
-        {
-          "net": {
-            "hid_layers__grid_search": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
+      "agent": {
+        "net": {
+          "hid_layers__grid_search": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
             ]
-          }
+          ]
         }
-      ]
+      }
     }
   },
   "dqn_boltzmann_cartpole": {
@@ -135,28 +133,26 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [
-        {
-          "net": {
-            "hid_layers__grid_search": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
+      "agent": {
+        "net": {
+          "hid_layers__grid_search": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
             ]
-          }
+          ]
         }
-      ]
+      }
     }
   },
   "ddqn_per_boltzmann_cartpole": {
@@ -218,28 +214,26 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [
-        {
-          "net": {
-            "hid_layers__grid_search": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
+      "agent": {
+        "net": {
+          "hid_layers__grid_search": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
             ]
-          }
+          ]
         }
-      ]
+      }
     }
   }
 }

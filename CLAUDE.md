@@ -14,11 +14,11 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 ## Code Standards
 
-- **Package Management**: Always use `uv` instead of pip/python (`uv add package-name`, `uv run script.py`)
-- **Naming**: Clear, searchable names with consistent patterns (`*_config`, `*_wrapper`, `*_callback`)
+- **Package Management**: Always use `uv` instead of pip/python (`uv add package-name`, `uv run script.py`), rely on pyproject.toml
+- **Style**: DRY & KISS principles - code should be concise and simple to read and understand; avoid deep indents, avoid in-method imports, avoid defensive coding
+- **Naming**: Short and obvious names, globally consistent for easy search
 - **Type Hints**: Native Python types (`list[str]`, `dict[str, float]`, `str | None`)
-- **Docstrings**: Brief and informative - rely on type hints and clear naming
-- **Style**: Concise functions, no deep indents, always import at module top, no defensive coding
+- **Docstrings**: Concise and informative - rely on clear naming and type hints
 - **Refactoring**: Maintain obsessive cleanliness - refactor immediately, remove dead code aggressively
 - **Commits**: Angular convention (`feat:`, `fix:`, `docs:`, etc.)
 - **Versioning**: Semantic versioning (SemVer)
@@ -27,14 +27,11 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 When working on this project:
 
-1. **Use `uv`** instead of base python/pip
-2. **Use dstack** for compute-intensive operations
-3. **Follow Angular commit convention** and semantic versioning
-4. **Use TODO section in CLAUDE.md** to organize and track work
-5. **On task completion**: cleanup code, test, update docs, then commit
-6. **Stage changes frequently** - commit related work as logical units
-7. **Keep suggestions flexible** - project structure will evolve
-8. **Never hard reset or delete work** - preserve changes even during corruption/errors
+1. **Use TODO section in instruction** to plan and do work autonomously
+2. **Stage changes frequently** - commit related work as logical units
+3. **Never hard reset or delete work** - preserve changes even during corruption/errors
+4. **On task completion**: cleanup code, test, update docs, then commit
+5. **Document major changes** in `MIGRATION_CHANGELOG.md`
 
 ## Framework Design Patterns
 
@@ -57,84 +54,35 @@ SLM-Lab follows a modular design pattern with these core components:
 - **Memory systems**: Experience replay, prioritized replay
 - **Experiment management**: Hyperparameter search, distributed training
 
-### Migration Status
-
-Currently migrating from:
-
-- `gym` → `gymnasium` (new API with `terminated`/`truncated`)
-- `roboschool` → removed (deprecated)
-- Atari environments → `ale-py` under gymnasium
-- PyTorch updates → modern optimizers and schedulers
-
 ## How to Run SLM-Lab
 
 ```bash
 # Basic usage
 uv tool install --editable .          # Install first
+slm-lab --help                        # help menu
 slm-lab                               # CartPole demo
 slm-lab --render                      # with rendering
 slm-lab spec.json spec_name dev       # custom experiment
 slm-lab --job job.json                # batch experiments
 
-# Modes: dev (debug), train (fast), train@latest (resume), enjoy@session (replay)
-
-# Performance profiling (for GPU bottleneck analysis)
-slm-lab --profile=true spec.json spec_name train
-tensorboard --logdir=data/profiler_logs  # View results
-```
-
-## Migration Status
-
-✅ **Framework Migration Complete** - See `MIGRATION_CHANGELOG.md` for detailed progress tracking.
-
-**Key achievements:**
-
-- Complete gymnasium migration with 1600-2000 FPS performance
-- Universal action shape compatibility (8 environment type combinations)
-- Centralized performance optimizations with 18% CPU improvement
-- Modern toolchain: uv, dstack GPU, PyTorch 2.8.0, ALE-py 0.11.2
-- Professional git history suitable for production deployment
-
-## Current Performance Features
-
-### Automatic Optimizations (`--optimize-perf=true` by default)
-
-- **CPU Threading**: Uses all cores (up to 32) with intelligent platform detection
-- **lightning thunder**: Auto-enabled on compatible GPUs (Ampere+ compute 8.0+)
-- **GPU Optimizations**: TF32 acceleration, cuDNN benchmark, memory management
-- **Universal Support**: Apple Silicon M1/M2, Intel, AMD, ARM64, x86_64
-
-### Profiling & Debugging
-
-```bash
-# Profile performance bottlenecks
-slm-lab --profile=true spec.json spec_name train
-tensorboard --logdir=data/profiler_logs
-
-# Disable optimizations for debugging
-slm-lab --optimize-perf=false spec.json spec_name dev
+# ✅ Validated algorithms (confirmed working)
+# DQN CartPole
+uv run slm-lab slm_lab/spec/demo.json dqn_cartpole train
+# REINFORCE
+uv run slm-lab slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json reinforce_cartpole train
+# DDQN PER
+uv run slm-lab slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json ddqn_per_concat_lunar train
+# PPO CartPole
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train
+# PPO Continuous
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker train
+# PPO Atari
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train
 ```
 
 ## TODO
 
 - [ ] **Fix ALE convergence issue**: PPO on Pong not converging; try A2C/other algorithms
-- [ ] **Clean up data/ output**: Reduce file sizes and checkpoint frequency  
 - [ ] **Start comprehensive benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
 - [ ] **Documentation Updates**: Update gitbook with new performance optimizations
-
-### Command to Test Current State
-
-```bash
-# ✅ Validated algorithms (confirmed working)
-uv run slm-lab slm_lab/spec/demo.json dqn_cartpole train                                    # DQN CartPole
-uv run slm-lab slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json reinforce_cartpole train  # REINFORCE
-uv run slm-lab slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json ddqn_per_concat_lunar train   # DDQN PER
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train      # PPO CartPole
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker train            # PPO Continuous
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train                     # PPO Atari
-
-# Development/debugging (faster runs)
-uv run slm-lab slm_lab/spec/demo.json dqn_cartpole dev
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole dev
-```

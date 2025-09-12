@@ -168,7 +168,9 @@ class Trial:
 
     def run_sessions(self):
         max_session = self.spec["meta"]["max_session"]
-        logger.info(f"Running {max_session} sessions in lab mode: {lab_mode()}")
+        logger.info(
+            f"Running Trial {self.index} with {max_session} sessions in lab mode: {lab_mode()}"
+        )
         if max_session == 1:
             spec = deepcopy(self.spec)
             spec_util.tick(spec, "session")

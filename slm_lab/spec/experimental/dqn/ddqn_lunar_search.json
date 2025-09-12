@@ -58,33 +58,31 @@
       "max_trial": 32
     },
     "search": {
-      "agent": [
-        {
-          "agent": {
-            "training_batch_iter__randint": [
-              1,
-              5
+      "agent": {
+        "agent": {
+          "training_batch_iter__randint": [
+            1,
+            5
+          ]
+        },
+        "net": {
+          "update_frequency__choice": [
+            0.8,
+            0.9,
+            0.925,
+            0.95
+          ],
+          "optim_spec": {
+            "lr__choice": [
+              0.001,
+              0.003,
+              0.005,
+              0.007,
+              0.01
             ]
-          },
-          "net": {
-            "update_frequency__choice": [
-              0.8,
-              0.9,
-              0.925,
-              0.95
-            ],
-            "optim_spec": {
-              "lr__choice": [
-                0.001,
-                0.003,
-                0.005,
-                0.007,
-                0.01
-              ]
-            }
           }
         }
-      ]
+      }
     }
   }
 }

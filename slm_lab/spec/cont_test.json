@@ -64,20 +64,18 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "lam__grid_search": [
-              0.5,
-              0.7,
-              0.9,
-              0.95,
-              0.97,
-              0.99
-            ]
-          }
+      "agent": {
+        "algorithm": {
+          "lam__grid_search": [
+            0.5,
+            0.7,
+            0.9,
+            0.95,
+            0.97,
+            0.99
+          ]
         }
-      ]
+      }
     }
   },
   "a2c_gae_bipedalwalker": {
@@ -145,20 +143,18 @@
       "max_trial": 1
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "lam__grid_search": [
-              0.5,
-              0.7,
-              0.9,
-              0.95,
-              0.97,
-              0.99
-            ]
-          }
+      "agent": {
+        "algorithm": {
+          "lam__grid_search": [
+            0.5,
+            0.7,
+            0.9,
+            0.95,
+            0.97,
+            0.99
+          ]
         }
-      ]
+      }
     }
   },
   "a2c_gae_pendulum_single": {

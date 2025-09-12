@@ -64,48 +64,46 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_iter__choice": [
-              1,
-              4,
-              8,
+      "agent": {
+        "algorithm": {
+          "training_iter__choice": [
+            1,
+            4,
+            8,
+            16
+          ]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
               16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "sil_separate_cartpole": {
@@ -173,48 +171,46 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_iter__choice": [
-              1,
-              4,
-              8,
+      "agent": {
+        "algorithm": {
+          "training_iter__choice": [
+            1,
+            4,
+            8,
+            16
+          ]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
               16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "sil_rnn_shared_cartpole": {
@@ -284,48 +280,46 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_iter__choice": [
-              1,
-              4,
-              8,
+      "agent": {
+        "algorithm": {
+          "training_iter__choice": [
+            1,
+            4,
+            8,
+            16
+          ]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
               16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   },
   "sil_rnn_separate_cartpole": {
@@ -395,48 +389,46 @@
       "max_trial": 100
     },
     "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "training_iter__choice": [
-              1,
-              4,
-              8,
+      "agent": {
+        "algorithm": {
+          "training_iter__choice": [
+            1,
+            4,
+            8,
+            16
+          ]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
               16
+            ],
+            [
+              64,
+              32
+            ]
+          ],
+          "actor_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
             ]
           },
-          "net": {
-            "hid_layers__choice": [
-              [
-                32
-              ],
-              [
-                64
-              ],
-              [
-                32,
-                16
-              ],
-              [
-                64,
-                32
-              ]
-            ],
-            "actor_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            },
-            "critic_optim_spec": {
-              "lr__uniform": [
-                0.0001,
-                0.1
-              ]
-            }
+          "critic_optim_spec": {
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      ]
+      }
     }
   }
 }
