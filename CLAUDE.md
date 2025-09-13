@@ -10,7 +10,8 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 - **Use dstack** for GPU-intensive training and development
 - Setup: Follow [dstack documentation](https://dstack.ai/docs/)
-- Run: `dstack apply -f .dstack/workflows/<file>.yml`
+- Run: `slm-lab spec.json spec_name train --dstack run-name`
+- **Customize hardware**: Edit `.dstack/run.yml` to change GPU type, CPU count, or backends
 
 ## Code Standards
 
@@ -78,11 +79,16 @@ uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole 
 uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker train
 # PPO Atari
 uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train
+
+# Variable substitution for specs with ${var} placeholders
+slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari dev
+slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco dev
 ```
 
 ## TODO
 
-- [ ] **Fix ALE convergence issue**: PPO on Pong not converging; try A2C/other algorithms
+- [ ] test mujoco first to have final clear
+- [ ] write to Huggingface
 - [ ] **Start comprehensive benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
 - [ ] **Documentation Updates**: Update gitbook with new performance optimizations

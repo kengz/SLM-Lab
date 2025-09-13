@@ -2,10 +2,10 @@
 SLM-Lab CLI using typer.
 """
 
+import json
 import os
 import subprocess
 from glob import glob
-from typing import Optional
 
 import torch.multiprocessing as mp
 import typer
@@ -19,7 +19,18 @@ app = typer.Typer(help="Modular deep reinforcement learning framework")
 logger = logger.get_logger(__name__)
 
 
-def get_spec(spec_file: str, spec_name: str, lab_mode: str, pre_: Optional[str]):
+def set_variables(spec, sets: list[str] | None):
+    """Replace ${var} in spec with set values"""
+    if not sets:
+        return spec
+    spec_str = json.dumps(spec)
+    for item in sets:
+        key, value = item.split("=", 1)
+        spec_str = spec_str.replace(f"${{{key}}}", value)
+    return json.loads(spec_str)
+
+
+def get_spec(spec_file: str, spec_name: str, lab_mode: str, pre_: str | None, sets: list[str] | None = None):
     """Get spec using args processed from inputs"""
     if lab_mode in TRAIN_MODES:
         if pre_ is None:  # new train trial
@@ -43,6 +54,9 @@ def get_spec(spec_file: str, spec_name: str, lab_mode: str, pre_: Optional[str])
         raise ValueError(
             f"Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}"
         )
+    
+    # Set variables if provided
+    spec = set_variables(spec, sets)
     return spec
 
 
@@ -81,14 +95,14 @@ def stop_ray_processes():
     logger.info("Stopped Ray cluster")
 
 
-def run_experiment(spec_file: str, spec_name: str, lab_mode: str):
+def run_experiment(spec_file: str, spec_name: str, lab_mode: str, sets: list[str] | None = None):
     """Core experiment runner"""
     if "@" in lab_mode:  # process lab_mode@{predir/prename}
         lab_mode, pre_ = lab_mode.split("@")
     else:
         pre_ = None
 
-    spec = get_spec(spec_file, spec_name, lab_mode, pre_)
+    spec = get_spec(spec_file, spec_name, lab_mode, pre_, sets)
     run_spec(spec, lab_mode, spec_file, spec_name)
 
 
@@ -99,10 +113,13 @@ def main(
     spec_name: str = typer.Argument("dqn_cartpole", help="Spec name within the file"),
     mode: str = typer.Argument("dev", help="Execution mode: dev|train|search|enjoy"),
     # Flags ordered by relevance
+    sets: list[str] = typer.Option(
+        [], "--set", "-s", help="Set spec variables: KEY=VALUE (can be used multiple times)"
+    ),
     render: bool = typer.Option(
         False, "--render", envvar="RENDER", help="Enable environment rendering"
     ),
-    job: Optional[str] = typer.Option(
+    job: str | None = typer.Option(
         None, "--job", help="Run batch experiments from job file"
     ),
     log_level: str = typer.Option(
@@ -137,21 +154,42 @@ def main(
         "--stop-ray",
         help="Stop all Ray processes using Ray CLI",
     ),
+    dstack: str | None = typer.Option(
+        None,
+        "--dstack",
+        help="Run on dstack with given name (e.g., --dstack ppo-pong-16)",
+    ),
 ):
     """
     Run SLM-Lab experiments. Defaults to CartPole demo in dev mode.
 
     Examples:
-        slm-lab                                    # CartPole demo (no rendering)
-        slm-lab --render                           # CartPole demo with rendering
-        slm-lab spec.json spec_name dev            # Custom experiment
-        slm-lab spec.json spec_name train          # Custom experiment
-        slm-lab --job job/experiments.json         # Batch experiments
-        slm-lab --stop-ray                         # Stop all Ray processes (force stop search)
+        slm-lab                                                        # CartPole demo (no rendering)
+        slm-lab --render                                               # CartPole demo with rendering
+        slm-lab spec.json spec_name dev                                # Custom experiment
+        slm-lab spec.json spec_name train                              # Custom experiment
+        slm-lab --set env=ALE/Breakout-v5 spec.json atari_spec dev     # Run with specific environment
+        slm-lab -s env=HalfCheetah-v4 -s lr=0.001 spec.json spec_name dev  # Multiple overrides
+        slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train --dstack ppo-pong-16  # Run on dstack
+        slm-lab --job job/experiments.json                             # Batch experiments
+        slm-lab --stop-ray                                             # Stop all Ray processes (force stop search)
     """
     # Handle --stop-ray flag first
     if stop_ray:
         stop_ray_processes()
+        return
+
+    # Handle --dstack flag to run on cloud
+    if dstack:
+        cmd = ["uv", "run", "dstack", "apply", "-f", ".dstack/run.yml", "-y", "--name", dstack]
+        env = os.environ.copy()
+        env["SPEC_FILE"] = spec_file
+        env["SPEC_NAME"] = spec_name
+        env["LAB_MODE"] = mode
+        env["SET_ARGS"] = " ".join(f"-s {item}" for item in sets) if sets else ""
+        
+        logger.info(f"Running on dstack: {' '.join(cmd)}")
+        subprocess.run(cmd, env=env)
         return
 
     # Set environment variables from CLI flags
@@ -162,9 +200,9 @@ def main(
     if job is not None:
         for spec_file, spec_and_mode in util.read(job).items():
             for spec_name, lab_mode in spec_and_mode.items():
-                run_experiment(spec_file, spec_name, lab_mode)
+                run_experiment(spec_file, spec_name, lab_mode, sets)
     else:
-        run_experiment(spec_file, spec_name, mode)
+        run_experiment(spec_file, spec_name, mode, sets)
 
 
 def cli():

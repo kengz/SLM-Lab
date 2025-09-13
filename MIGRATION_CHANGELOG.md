@@ -90,13 +90,17 @@ Intelligent vectorization mode selection:
 
 ## 🔧 **New Features**
 
-### **GPU Training Infrastructure**
+### **Enhanced CLI Features**
 ```bash
-# GPU training with dstack
-dstack apply -f .dstack/train.yml
+# Variable substitution in specs
+uv run slm-lab --set env=CartPole-v1 spec.json spec_name dev
+uv run slm-lab -s env=HalfCheetah-v4 -s lr=0.001 spec.json spec_name dev
 
-# lightning thunder optimization (20-30% speedup)
-uv run slm-lab --torch-compile=true [args]  # Uses lightning thunder internally
+# Integrated cloud GPU training
+uv run slm-lab spec.json spec_name train --dstack run-name
+uv run slm-lab spec.json spec_name train --dstack run-name --set env=Ant-v5
+
+# Customize hardware by editing .dstack/run.yml (change GPU, CPU, backends)
 ```
 
 ### **Modern Development Tooling**
