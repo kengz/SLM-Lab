@@ -57,12 +57,13 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 30000
+      "max_frame": 50000
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 1000,
       "eval_frequency": 100,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1
     },
     "search": {

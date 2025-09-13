@@ -11,18 +11,18 @@ env:
 commands:
   # Install minimal dependencies for OpenCV and RL environments
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
-  # Install Python dependencies
-  - uv sync
+  # Change to project directory and install Python dependencies
+  - cd /workflow && uv sync
   # Run SLM Lab training
-  - uv run slm-lab ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE}
+  - cd /workflow && uv run slm-lab ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE}
 
 # mount to persist
-volumes:
-  - cache-volume:/root/.cache
-  - data-volume:/workflow/data
+# volumes:
+#   - cache-volume:/root/.cache
+#   - data-volume:/workflow/data
 
 resources:
-  cpu: 4
+  # cpu: 4
   gpu: L4
 
-backends: [gcp]
+backends: [runpod]

@@ -208,9 +208,19 @@ uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole 
 
 ## 🔮 **Future Development**
 
+### **✅ Environment Timing System Fix**
+**COMPLETED - ClockWrapper timing correction for accurate algorithm timesteps (commit 5b067841):**
+
+- **Algorithm Timestep Fix**: Timesteps (t) now increment by 1 for correct training frequency calculation
+- **Frame Counting**: Environment frames increment by num_envs to track total environment interaction
+- **Clock Speed Removal**: Eliminated confusing clock_speed parameter that was causing timing issues
+- **Atari Convergence**: Fixed convergence issues in PPO Pong after gymnasium migration
+- **FPS Display**: Corrected to show actual environment frame throughput
+- **Status**: ✅ COMPLETED - Accurate training timing restored across all algorithms
+
 ### **Next Priorities**
 - **Memory & Batch Optimization**: Tensor buffer pooling and vectorized memory sampling (target: 15-25% FPS improvement)
-- **ALE Convergence**: Fix PPO Pong convergence issues, explore A2C alternatives  
+- **ALE Convergence**: Continue monitoring PPO Pong convergence with corrected timing
 - **Adaptive Training**: Implement environment-complexity-based training frequency
 - **Extended Gymnasium Support**: Explore new gymnasium environments (https://farama.org/projects)
 - **RNN Sequence Input Optimization**: Enhance RecurrentNet for proper batch_size×seq_len×input_dim handling

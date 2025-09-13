@@ -86,17 +86,17 @@ class VectorTrackReward(gym.vector.VectorWrapper):
 class ClockMixin:
     """Mixin class providing Clock timing functionality for environment wrappers"""
 
-    def init_clock(self, max_frame: int = int(1e7), clock_speed: int = 1):
+    def init_clock(self, max_frame: int = int(1e7)):
         """Initialize clock attributes"""
         self.max_frame = max_frame
-        self.clock_speed = int(clock_speed)
+        # num_envs already exists as env attribute
         self.reset_clock()
 
     def reset_clock(self) -> None:
         """Reset all clock counters"""
         self.t = 0
         self.frame = 0  # i.e. total_t
-        self.epi = 0
+        self.epi = 0 if self.num_envs == 1 else None  # epi only for single envs
         self.start_wall_t = time.time()
         self.wall_t = 0
         self.batch_size = 1  # multiplier to accurately count opt steps
@@ -125,13 +125,14 @@ class ClockMixin:
 
     def tick_timestep(self) -> None:
         """Tick timestep - called automatically in step()"""
-        self.t += self.clock_speed
-        self.frame += self.clock_speed
+        self.t += 1  # timestep: invariant of num_envs
+        self.frame += self.num_envs  # frame: exists by _set_env_attributes
         self.wall_t = self.get_elapsed_wall_t()
 
     def tick_episode(self) -> None:
-        """Tick episode - called automatically in reset() when episode done"""
-        self.epi += 1
+        """Tick episode - called automatically in reset() when episode done (single env only)"""
+        if self.t > 0:  # Only tick if we had a previous episode
+            self.epi += 1
         self.t = 0
 
     def tick_opt_step(self) -> None:
@@ -156,14 +157,13 @@ class ClockWrapper(ClockMixin, gym.Wrapper):
     Eliminates the need for manual clock.tick() calls in the control loop.
     """
 
-    def __init__(self, env: gym.Env, max_frame: int = int(1e7), clock_speed: int = 1):
+    def __init__(self, env: gym.Env, max_frame: int = int(1e7)):
         gym.Wrapper.__init__(self, env)
-        self.init_clock(max_frame, clock_speed)
+        self.init_clock(max_frame)
 
     def reset(self, **kwargs) -> tuple[np.ndarray, dict[str, Any]]:
         """Reset environment and handle episode clock logic"""
-        if self.t > 0:  # Only tick episode if we had a previous episode
-            self.tick_episode()
+        self.tick_episode()
         return self.env.reset(**kwargs)
 
     def step(
@@ -188,19 +188,15 @@ class ClockWrapper(ClockMixin, gym.Wrapper):
 class VectorClockWrapper(ClockMixin, gym.vector.VectorWrapper):
     """
     Vector environment wrapper that automatically handles Clock timing functionality.
-    Eliminates the need for manual clock.tick() calls in the control loop.
     """
 
-    def __init__(
-        self, env: gym.vector.VectorEnv, max_frame: int = int(1e7), clock_speed: int = 1
-    ):
+    def __init__(self, env: gym.vector.VectorEnv, max_frame: int = int(1e7)):
         gym.vector.VectorWrapper.__init__(self, env)
-        self.init_clock(max_frame, clock_speed)
+        self.init_clock(max_frame)
 
     def reset(self, **kwargs) -> tuple[np.ndarray, dict[str, Any]]:
-        """Reset environment and handle episode clock logic"""
-        if self.t > 0:  # Only tick episode if we had a previous episode
-            self.tick_episode()
+        """Reset environment - only called at initialization for vector envs"""
+        # Note: Don't call tick_episode() because epi tracking not meaningful for vector envs
         return self.env.reset(**kwargs)
 
     def step(

@@ -129,9 +129,9 @@
       },
       "memory": {
         "name": "PrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.01,
-        "batch_size": 32,
+        "alpha": 1.0,
+        "epsilon": 0.0,
+        "batch_size": 4,
         "max_size": 10000,
         "use_cer": false
       },

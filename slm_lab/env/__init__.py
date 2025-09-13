@@ -125,9 +125,6 @@ def _set_timing_config(env: gym.Env, spec: dict[str, Any]) -> None:
     if spec["meta"]["distributed"] is not False:
         env.max_frame = int(env.max_frame / spec["meta"]["max_session"])
 
-    # Clock speed accounts for vector environments
-    env.clock_speed = env.num_envs
-
     # Initialize tracking attributes
     env.done = False
 
@@ -174,6 +171,6 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     # Wrap with appropriate ClockWrapper for automatic timing
     # Use attributes set by _set_env_attributes instead of recomputing
     ClockWrapperClass = VectorClockWrapper if env.is_venv else ClockWrapper
-    env = ClockWrapperClass(env, env.max_frame, env.clock_speed)
+    env = ClockWrapperClass(env, env.max_frame)
 
     return env

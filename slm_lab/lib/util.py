@@ -118,7 +118,8 @@ def downcast_float32(df):
 def epi_done(done):
     '''
     General method to check if episode is done for both single and vectorized env
-    Only return True for singleton done since vectorized env does not have a natural episode boundary
+    Vector environments handle their own resets automatically via gymnasium,
+    so only single environments need explicit reset in control loop.
     '''
     return np.isscalar(done) and done
 
