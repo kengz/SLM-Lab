@@ -41,7 +41,7 @@
     "env": {
       "name": "LunarLander-v3",
       "max_t": null,
-      "max_frame": 800000.0,
+      "max_frame": 8e5,
       "num_envs": 8
     },
     "meta": {

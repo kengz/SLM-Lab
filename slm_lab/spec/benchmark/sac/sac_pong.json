@@ -69,7 +69,7 @@
       "name": "ALE/Pong-v5",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 1000000.0
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,

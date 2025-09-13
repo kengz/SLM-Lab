@@ -54,7 +54,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 4000000.0
+      "max_frame": 4e6
     },
     "meta": {
       "distributed": false,
@@ -119,7 +119,7 @@
       "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1000000.0
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,

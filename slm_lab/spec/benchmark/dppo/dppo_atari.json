@@ -84,7 +84,7 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 10000000.0
+      "max_frame": 1e7
     },
     "meta": {
       "distributed": "synced",

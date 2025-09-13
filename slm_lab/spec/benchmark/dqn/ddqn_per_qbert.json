@@ -75,7 +75,7 @@
       "name": "ALE/Qbert-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 4000000.0
+      "max_frame": 4e6
     },
     "meta": {
       "distributed": false,

@@ -41,7 +41,7 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 4000000.0
+      "max_frame": 4e6
     },
     "meta": {
       "distributed": "shared",
@@ -105,7 +105,7 @@
       "name": "Humanoid-v5",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 50000000.0
+      "max_frame": 5e7
     },
     "meta": {
       "distributed": "shared",
