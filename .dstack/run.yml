@@ -4,6 +4,7 @@ name: train
 python: 3.12
 
 env:
+  - HF_TOKEN
   - SPEC_FILE
   - SPEC_NAME
   - LAB_MODE=train

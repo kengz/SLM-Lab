@@ -33,6 +33,7 @@ When working on this project:
 3. **Never hard reset or delete work** - preserve changes even during corruption/errors
 4. **On task completion**: cleanup code, test, update docs, then commit
 5. **Document major changes** in `MIGRATION_CHANGELOG.md`
+6. **Use Serena MCP** for efficient work
 
 ## Framework Design Patterns
 
@@ -87,8 +88,8 @@ slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_muj
 
 ## TODO
 
-- [ ] test mujoco first to have final clear
-- [ ] write to Huggingface
-- [ ] **Start comprehensive benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
+- [ ] implement ASHA in Ray Tune for more efficient benchmark
+- [ ] use ASHA to search and solve mujoco, then some atari (pong, breakout)
+- [ ] **Start comprehensive search then benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
 - [ ] **Documentation Updates**: Update gitbook with new performance optimizations

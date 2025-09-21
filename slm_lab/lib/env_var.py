@@ -4,7 +4,7 @@ import os
 
 
 def set_from_cli(
-    render, log_level, optimize_perf, cuda_offset, profile, log_extra, mode
+    render, log_level, optimize_perf, cuda_offset, profile, log_extra, upload_hf, mode
 ):
     """Set environment variables from CLI flags."""
     # Force dev mode when profiling is enabled
@@ -19,6 +19,7 @@ def set_from_cli(
             "CUDA_OFFSET": str(cuda_offset),
             "PROFILE": str(profile).lower(),
             "LOG_EXTRA": str(log_extra).lower(),
+            "UPLOAD_HF": upload_hf or "false",
         }
     )
 
@@ -53,6 +54,11 @@ def profile():
 def log_extra():
     """Check if extra metrics logging is enabled."""
     return os.getenv("LOG_EXTRA", "false").lower() == "true"
+
+
+def upload_hf():
+    """Check if Hugging Face upload is enabled."""
+    return os.getenv("UPLOAD_HF", "false") == "auto"
 
 
 def lab_mode():

@@ -13,7 +13,7 @@ import pydash as ps
 
 # declare file patterns
 trial_metrics_scalar_path = '*trial_metrics_scalar.json'
-trial_metrics_path = '*t0_trial_metrics.pkl'
+trial_metrics_path = '*t0_trial_metrics.json'
 env_name_map = {
     'lunar': 'LunarLander',
     'breakout': 'Breakout',

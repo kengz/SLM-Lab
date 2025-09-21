@@ -171,7 +171,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
         'local': local,
     }
     if info_prepath is not None:  # auto-save if info_prepath is given
-        util.write(metrics, f'{info_prepath}_session_metrics_{df_mode}.pkl')
+        util.write(metrics, f'{info_prepath}_session_metrics_{df_mode}.json')
         util.write(scalar, f'{info_prepath}_session_metrics_scalar_{df_mode}.json')
         # save important metrics in info_prepath directly
         util.write(scalar, f'{info_prepath.replace("info/", "")}_session_metrics_scalar_{df_mode}.json')
@@ -227,7 +227,7 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
         'local': local,
     }
     if info_prepath is not None:  # auto-save if info_prepath is given
-        util.write(metrics, f'{info_prepath}_trial_metrics.pkl')
+        util.write(metrics, f'{info_prepath}_trial_metrics.json')
         util.write(scalar, f'{info_prepath}_trial_metrics_scalar.json')
         # save important metrics in info_prepath directly
         util.write(scalar, f'{info_prepath.replace("info/", "")}_trial_metrics_scalar.json')

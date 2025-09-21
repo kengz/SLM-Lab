@@ -13,6 +13,7 @@ import typer
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment.control import Experiment, Session, Trial
 from slm_lab.lib import env_var, logger, util
+from slm_lab.lib.hf import upload
 from slm_lab.spec import spec_util
 
 app = typer.Typer(help="Modular deep reinforcement learning framework")
@@ -81,6 +82,9 @@ def run_spec(spec, lab_mode: str, spec_file: str = "", spec_name: str = ""):
             )
             spec_util.save(spec)
             Trial(spec).run()
+        
+        # Upload after training completion
+        upload(spec)
     elif lab_mode in EVAL_MODES:
         Session(spec).run()
     else:
@@ -90,9 +94,16 @@ def run_spec(spec, lab_mode: str, spec_file: str = "", spec_name: str = ""):
 
 
 def stop_ray_processes():
-    """Stop all Ray processes using Ray CLI"""
+    """Stop all Ray processes and related Python processes"""
+    # First stop Ray cluster
     subprocess.run(["uv", "run", "ray", "stop"])
-    logger.info("Stopped Ray cluster")
+    
+    # Kill entire process group 
+    try:
+        subprocess.run(["pkill", "-f", "slm-lab"], check=False)
+        logger.info("Stopped Ray cluster and killed SLM-Lab processes")
+    except Exception as e:
+        logger.warning(f"Failed to kill processes: {e}")
 
 
 def run_experiment(spec_file: str, spec_name: str, lab_mode: str, sets: list[str] | None = None):
@@ -108,7 +119,7 @@ def run_experiment(spec_file: str, spec_name: str, lab_mode: str, sets: list[str
 
 def main(
     spec_file: str = typer.Argument(
-        "slm_lab/spec/demo.json", help="JSON spec file path"
+        "slm_lab/spec/demo.json", help="JSON spec file path (or experiment dir for --upload-dir)"
     ),
     spec_name: str = typer.Argument("dqn_cartpole", help="Spec name within the file"),
     mode: str = typer.Argument("dev", help="Execution mode: dev|train|search|enjoy"),
@@ -159,6 +170,12 @@ def main(
         "--dstack",
         help="Run on dstack with given name (e.g., --dstack ppo-pong-16)",
     ),
+    upload_hf: str | None = typer.Option(
+        None,
+        "--upload-hf",
+        envvar="UPLOAD_HF",
+        help="Upload to HF: auto after training (--upload-hf auto) or specify path for existing experiment",
+    ),
 ):
     """
     Run SLM-Lab experiments. Defaults to CartPole demo in dev mode.
@@ -173,10 +190,17 @@ def main(
         slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train --dstack ppo-pong-16  # Run on dstack
         slm-lab --job job/experiments.json                             # Batch experiments
         slm-lab --stop-ray                                             # Stop all Ray processes (force stop search)
+        slm-lab --upload-hf auto                                       # Auto-upload after training
+        slm-lab --upload-hf data/dqn_cartpole_2025_09_21_173017        # Upload existing experiment to HF
     """
     # Handle --stop-ray flag first
     if stop_ray:
         stop_ray_processes()
+        return
+    
+    # Handle --upload-hf for retroactive uploads (when it's a path)  
+    if upload_hf and upload_hf != "auto":
+        upload(upload_hf)
         return
 
     # Handle --dstack flag to run on cloud
@@ -194,9 +218,9 @@ def main(
 
     # Set environment variables from CLI flags
     mode = env_var.set_from_cli(
-        render, log_level, optimize_perf, cuda_offset, profile, log_extra, mode
+        render, log_level, optimize_perf, cuda_offset, profile, log_extra, upload_hf, mode
     )
-
+    
     if job is not None:
         for spec_file, spec_and_mode in util.read(job).items():
             for spec_name, lab_mode in spec_and_mode.items():

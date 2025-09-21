@@ -344,7 +344,7 @@ def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
 def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
-    trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
+    trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.json')
     # sort by trial id (handle Ray Tune paths gracefully)
     def safe_sort_key(path):
         trial_idx = util.prepath_to_idxs(path)[0]

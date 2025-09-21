@@ -45,7 +45,7 @@ def _retro_analyze_trial(trial_spec_path):
     trial_spec = util.read(trial_spec_path)
     meta_spec = trial_spec['meta']
     info_prepath = meta_spec['info_prepath']
-    session_metrics_list = [util.read(f'{info_prepath}_s{s}_session_metrics_eval.pkl') for s in range(meta_spec['max_session'])]
+    session_metrics_list = [util.read(f'{info_prepath}_s{s}_session_metrics_eval.json') for s in range(meta_spec['max_session'])]
     analysis.analyze_trial(trial_spec, session_metrics_list)
 
 

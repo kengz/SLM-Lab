@@ -90,6 +90,28 @@ Intelligent vectorization mode selection:
 
 ## 🔧 **New Features**
 
+### **Hugging Face Dataset Integration**
+**Automated experiment data sharing for benchmark reproduction:**
+
+- **Configurable Repository**: Upload to custom HF dataset via `HF_DATASET_REPO` env var (defaults to `SLM-Lab/benchmark`)
+- **Automatic Upload**: Training completions automatically upload with `--upload-hf` flag
+- **Authentication Required**: Requires `HF_TOKEN` environment variable for Hugging Face authentication
+- **Retroactive Upload**: CLI command for uploading existing experiments: `slm-lab --help` (retro_upload)
+- **Confirmation System**: Built-in file size calculation and user confirmation prompts
+- **Environment Integration**: Full integration with existing CLI flag patterns and env_var.py
+
+**Setup Requirements:**
+```bash
+# Option 1: Direct environment variables
+export HF_TOKEN=your_token_here          # Required for authentication
+export HF_DATASET_REPO=your/repo-name   # Optional: custom dataset repo
+
+# Option 2: Using .env file (recommended for persistent tokens)
+cp .env.example .env                     # Copy template  
+# Edit .env with your tokens
+export $(cat .env | xargs) && uv run slm-lab --upload-hf auto
+```
+
 ### **Enhanced CLI Features**
 ```bash
 # Variable substitution in specs

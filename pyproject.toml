@@ -46,6 +46,7 @@ dependencies = [
     "nvidia-cudnn-cu12>=9.10.2.21; platform_system == 'Linux'",
     "nvidia-cudnn-frontend>=1.14.1; platform_system == 'Linux'",
     "gputil>=1.4.0",
+    "huggingface-hub>=0.34.4",
 ]
 
 [dependency-groups]
