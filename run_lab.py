@@ -41,7 +41,7 @@ def get_spec(spec_file: str, spec_name: str, lab_mode: str, pre_: str | None, se
             predir = pre_
             if predir == "latest":
                 predir = sorted(glob(f"data/{spec_name}*/"))[-1]
-            _, _, _, _, experiment_ts = util.prepath_split(predir)
+            experiment_ts = util.get_experiment_ts(predir)
             logger.info(f"Resolved to train@{predir}")
             spec = spec_util.get(spec_file, spec_name, experiment_ts)
     elif lab_mode == "enjoy":
@@ -95,8 +95,8 @@ def run_spec(spec, lab_mode: str, spec_file: str = "", spec_name: str = ""):
 
 def stop_ray_processes():
     """Stop all Ray processes and related Python processes"""
-    # First stop Ray cluster
-    subprocess.run(["uv", "run", "ray", "stop"])
+    # First stop Ray cluster with force
+    subprocess.run(["uv", "run", "ray", "stop", "--force"])
     
     # Kill entire process group 
     try:
@@ -122,7 +122,7 @@ def main(
         "slm_lab/spec/demo.json", help="JSON spec file path (or experiment dir for --upload-dir)"
     ),
     spec_name: str = typer.Argument("dqn_cartpole", help="Spec name within the file"),
-    mode: str = typer.Argument("dev", help="Execution mode: dev|train|search|enjoy"),
+    mode: str = typer.Argument("dev", help="Execution mode: dev|train|search|enjoy. Note: search_scheduler and max_session>1 are mutually exclusive"),
     # Flags ordered by relevance
     sets: list[str] = typer.Option(
         [], "--set", "-s", help="Set spec variables: KEY=VALUE (can be used multiple times)"

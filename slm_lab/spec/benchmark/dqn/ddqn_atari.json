@@ -82,14 +82,6 @@
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 4
-    },
-    "search": {
-      "env.name__choice": [
-        "ALE/Breakout-v5",
-        "ALE/Pong-v5",
-        "ALE/Qbert-v5",
-        "ALE/Seaquest-v5"
-      ]
     }
   }
 }

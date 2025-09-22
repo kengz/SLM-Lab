@@ -3,6 +3,7 @@
 from glob import glob
 from plotly import graph_objs as go, io as pio, subplots
 from plotly.offline import init_notebook_mode, iplot
+from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import log_extra
 import colorlover as cl
@@ -46,11 +47,18 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
-        legend=dict(x=0.0, y=-0.25, orientation='h'),
+        legend=dict(
+            x=0.0, y=-0.15,  # below plot
+            orientation='h',  # horizontal, wraps naturally with compact legends
+            font=dict(size=8),
+            bgcolor='rgba(255,255,255,0.8)',  # semi-transparent background
+            bordercolor='rgba(0,0,0,0.2)',
+            borderwidth=1
+        ),
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.layout.Margin(l=60, r=30, t=60, b=60),
+        margin=go.layout.Margin(l=60, r=30, t=60, b=100),  # moderate bottom margin
     )
     layout.update(layout_kwargs)
     return layout
@@ -76,10 +84,9 @@ def plot(*args, **kwargs):
 
 def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
     '''Plot a series'''
-    x = time_sr.tolist()
     color = color or get_palette(1)[0]
     main_trace = go.Scatter(
-        x=x, y=sr, mode='lines', showlegend=False,
+        x=time_sr, y=sr, mode='lines', showlegend=False,
         line={'color': color, 'width': 1},
     )
     data = [main_trace]
@@ -226,7 +233,9 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
     y_cols = metrics_cols
-    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols + ['trial'])
+    # Handle both pandas Index and list columns
+    columns = experiment_df.columns.tolist() if hasattr(experiment_df.columns, 'tolist') else list(experiment_df.columns)
+    x_cols = ps.difference(columns, y_cols + ['trial'])
     fig = subplots.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()
@@ -276,6 +285,25 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title,
     return fig
 
 
+def restore_metric_types(local_metrics: dict) -> None:
+    """Restore pandas types after JSON deserialization (JSON converts Series to lists)."""
+    import pandas as pd
+
+    # Convert time axes (single Series)
+    for key in ['frames', 'opt_steps']:
+        if isinstance(local_metrics.get(key), list):
+            local_metrics[key] = pd.Series(local_metrics[key])
+
+    # Convert metric lists (list of Series)
+    for key in ['mean_returns', 'strengths', 'sample_efficiencies', 'training_efficiencies', 'stabilities']:
+        if key in local_metrics and isinstance(local_metrics[key], list):
+            local_metrics[key] = [pd.Series(sr) if isinstance(sr, list) else sr for sr in local_metrics[key]]
+
+    # consistencies is a single Series
+    if isinstance(local_metrics.get('consistencies'), list):
+        local_metrics['consistencies'] = pd.Series(local_metrics['consistencies'])
+
+
 def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None, showlegend=True):
     '''
     Plot multiple trial graphs together
@@ -295,6 +323,9 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
     viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     '''
     local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
+    for local_metrics in local_metrics_list:
+        restore_metric_types(local_metrics)
+    
     # for plotting with async runs to adjust frame scale
     if frame_scales is not None:
         for idx, scale in frame_scales:
@@ -324,27 +355,46 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
 
 
 def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
-    '''Format trial variables in experiment_df into legend strings'''
+    '''Format trial variables in experiment_df into compact legend strings'''
     var_df = experiment_df.drop(metrics_cols, axis=1).set_index('trial')
     trial_legends = []
+    max_params = 4  # Show only first 4 params to keep compact
+
     for trial_idx in trial_idxs:
         trial_vars = var_df.loc[trial_idx].to_dict()
         var_list = []
         for k, v in trial_vars.items():
             if hasattr(v, '__round__'):
-                v = round(v, 8)  # prevent long float digits in formatting
-            var_list.append(f'{k.split(".").pop()} {v}')
-        var_str = ' '.join(var_list)
-        legend = f't{trial_idx}: {var_str}'
+                v = round(v, 3)  # 3 decimal places for readability
+            # Keep last 2 segments of nested keys for context (e.g. clip_eps_spec.start_val)
+            key_parts = k.split('.')
+            short_key = '.'.join(key_parts[-2:]) if len(key_parts) > 1 else key_parts[-1]
+            var_list.append(f'{short_key}={v}')
+
+        # Keep compact: show first N params, truncate rest
+        if len(var_list) > max_params:
+            shown = ', '.join(var_list[:max_params])
+            legend = f't{trial_idx}: {shown}, ...'
+        else:
+            var_str = ', '.join(var_list)
+            legend = f't{trial_idx}: {var_str}'
+
         trial_legends.append(legend)
-    trial_legends
     return trial_legends
 
 
 def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
+    
+    # Always look in info_prepath for trial_metrics.json files
+    # Trials save to the main info directory, not Ray Tune subdirectories
     trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.json')
+    
+    if not trial_metrics_path_list:
+        logger.warning(f'No trial metrics found for multi-trial plot')
+        return
+    
     # sort by trial id (handle Ray Tune paths gracefully)
     def safe_sort_key(path):
         trial_idx = util.prepath_to_idxs(path)[0]

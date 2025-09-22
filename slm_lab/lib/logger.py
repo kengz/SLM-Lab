@@ -27,23 +27,24 @@ CONSOLE_FORMAT = (
 # Setup console logging with shorter tracebacks
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 loguru_logger.add(
-    sys.stdout, 
-    format=CONSOLE_FORMAT, 
-    level=log_level, 
+    sys.stdout,
+    format=CONSOLE_FORMAT,
+    level=log_level,
     colorize=True,
     backtrace=False,  # Disable deep traceback for cleaner errors
     diagnose=False    # Disable variable inspection
 )
 
 # Setup file logging if LOG_PREPATH is set
+# File logging always at INFO level for detailed records
 if os.environ.get('LOG_PREPATH'):
     warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
     log_filepath = os.environ['LOG_PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
     loguru_logger.add(
-        log_filepath, 
-        format=LOG_FORMAT, 
-        level=log_level,
+        log_filepath,
+        format=LOG_FORMAT,
+        level='INFO',  # Always INFO for file logs
         backtrace=True,   # Keep full traceback in files for debugging
         diagnose=True     # Keep variable inspection in files
     )

@@ -50,17 +50,6 @@
       "rigorous_eval": 0,
       "max_session": 8,
       "max_trial": 7
-    },
-    "search": {
-      "env.name__choice": [
-        "Ant-v5",
-        "HalfCheetah-v5",
-        "Hopper-v5",
-        "InvertedDoublePendulum-v5",
-        "InvertedPendulum-v5",
-        "Reacher-v5",
-        "Walker2d-v5"
-      ]
     }
   },
   "async_sac_humanoid": {

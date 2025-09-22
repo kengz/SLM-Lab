@@ -2,6 +2,7 @@
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 
+import gymnasium as gym
 import numpy as np
 import pydash as ps
 import torch
@@ -12,7 +13,6 @@ from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
-from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.perf import log_perf_setup, optimize
 from slm_lab.spec import spec_util
 
@@ -39,13 +39,12 @@ class Session:
     then gather data and analyze it to produce session data.
     """
 
-    def __init__(self, spec, global_nets=None):
+    def __init__(self, spec: dict, global_nets=None):
         self.spec = spec
         self.index = self.spec["meta"]["session"]
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, "session")
-        spec_util.save(spec, unit="session")
 
         # Apply perf optimizations for all sessions
         self.perf_setup = optimize()
@@ -62,7 +61,7 @@ class Session:
                 self.agent.algorithm, omit=["net_spec", "explore_var_spec"]
             )
 
-    def to_ckpt(self, env, mode="eval"):
+    def to_ckpt(self, env: gym.Env, mode: str = "eval") -> bool:
         """Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end"""
         if (
             mode == "eval" and util.in_eval_lab_mode()
@@ -71,37 +70,39 @@ class Session:
         # ClockWrapper provides direct access to clock methods
         frame = env.get()
         frequency = env.eval_frequency if mode == "eval" else env.log_frequency
-        to_ckpt = (
-            util.frame_mod(frame, frequency, env.num_envs) or frame == env.max_frame
-        )
+        is_final_frame = frame == env.max_frame
+        to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or is_final_frame
         return to_ckpt
 
-    def try_ckpt(self, agent, env):
+    def try_ckpt(self, agent: Agent, env: gym.Env):
         """Check then run checkpoint log/eval"""
         mt = agent.mt
         if self.to_ckpt(env, "log"):
             mt.ckpt(self.env, "train")
             mt.log_summary("train")
+            mt.calc_log_metrics(self.spec, "train")
+            search.report(mt)  # for Ray Tune scheduler
+
             agent.save()  # save the latest ckpt
             if mt.total_reward_ma >= mt.best_total_reward_ma:
                 mt.best_total_reward_ma = mt.total_reward_ma
                 agent.save(ckpt="best")
-            if len(mt.train_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(
-                    self.spec, mt.train_df, "train", plot=False
+
+            # For Ray Tune trials, save trial outputs at every checkpoint
+            # This ensures early-terminated trials have outputs
+            from slm_lab.experiment.search import in_ray_tune_context
+            if in_ray_tune_context() and self.spec["meta"]["max_session"] == 1 and len(mt.train_df) > 2:
+                session_metrics = analysis.analyze_session(
+                    self.spec, mt.train_df, "eval", plot=False
                 )
-                mt.log_metrics(metrics["scalar"], "train")
+                analysis.analyze_trial(self.spec, [session_metrics])
 
         if ps.get(self.spec, "meta.rigorous_eval") and self.to_ckpt(env, "eval"):
             logger.info("Running eval ckpt")
             analysis.gen_avg_return(agent, self.eval_env)
             mt.ckpt(self.eval_env, "eval")
             mt.log_summary("eval")
-            if len(mt.eval_df) > 2:  # need more rows to calculate metrics
-                metrics = analysis.analyze_session(
-                    self.spec, mt.eval_df, "eval", plot=False
-                )
-                mt.log_metrics(metrics["scalar"], "eval")
+            mt.calc_log_metrics(self.spec, "eval")
 
     def run_rl(self):
         """Run the main RL loop until clock.max_frame"""
@@ -114,7 +115,6 @@ class Session:
 
             done = np.logical_or(terminated, truncated)
             self.agent.update(state, action, reward, next_state, done)
-
             self.try_ckpt(self.agent, self.env)
 
             if util.epi_done(done):
@@ -135,6 +135,13 @@ class Session:
         self.run_rl()
         metrics = analysis.analyze_session(self.spec, self.agent.mt.eval_df, "eval")
         self.agent.mt.log_metrics(metrics["scalar"], "eval")
+
+        # For single-session trials in Ray Tune, save trial outputs immediately
+        # This ensures early-terminated trials have outputs
+        from slm_lab.experiment.search import in_ray_tune_context
+        if in_ray_tune_context() and self.spec["meta"]["max_session"] == 1:
+            analysis.analyze_trial(self.spec, [metrics])
+
         self.close()
         return metrics
 

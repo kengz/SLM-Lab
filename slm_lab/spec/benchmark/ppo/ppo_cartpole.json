@@ -35,7 +35,7 @@
         "type": "MLPNet",
         "shared": true,
         "hid_layers": [
-          64
+          128
         ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 0.5,
@@ -57,36 +57,67 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000
+      "max_frame": 20000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
+      "log_frequency": 500,
       "eval_frequency": 100,
       "max_session": 1,
-      "max_trial": 1
+      "max_trial": 3,
+      "search_scheduler": {
+        "grace_period": 3000,
+        "reduction_factor": 2
+      }
     },
     "search": {
       "agent": {
         "algorithm": {
-          "lam__choice": [
-            0.7,
-            0.8,
+          "gamma__uniform": [
             0.9,
-            0.95
+            0.999
           ],
-          "training_frequency__choice": [
-            16,
-            32
+          "lam__uniform": [
+            0.7,
+            0.98
+          ],
+          "clip_eps_spec": {
+            "start_val__uniform": [
+              0.05,
+              0.4
+            ]
+          },
+          "entropy_coef_spec": {
+            "start_val__loguniform": [
+              1e-4,
+              0.1
+            ]
+          },
+          "val_loss_coef__loguniform": [
+            0.01,
+            1.0
+          ],
+          "time_horizon__choice": [
+            128,
+            256
+          ],
+          "training_epoch__choice": [
+            4,
+            6,
+            8
           ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__choice": [
-              0.05,
-              0.01,
-              0.005,
-              0.001
+            "lr__loguniform": [
+              1e-4,
+              0.05
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__loguniform": [
+              1e-4,
+              0.05
             ]
           }
         }

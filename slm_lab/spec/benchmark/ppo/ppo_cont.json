@@ -68,8 +68,109 @@
       "distributed": false,
       "log_frequency": 10000,
       "eval_frequency": 10000,
-      "max_session": 4,
-      "max_trial": 1
+      "max_session": 1,
+      "max_trial": 50,
+      "search_scheduler": {
+        "grace_period": 200000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.95,
+            0.999
+          ],
+          "lam__uniform": [
+            0.8,
+            0.99
+          ],
+          "clip_eps_spec": {
+            "start_val__uniform": [
+              0.05,
+              0.4
+            ]
+          },
+          "entropy_coef_spec": {
+            "start_val__loguniform": [
+              1e-4,
+              0.05
+            ]
+          },
+          "val_loss_coef__loguniform": [
+            0.05,
+            5.0
+          ],
+          "time_horizon__choice": [
+            256,
+            512,
+            1024
+          ],
+          "minibatch_size__choice": [
+            2048,
+            4096,
+            8192
+          ],
+          "training_epoch__randint": [
+            8,
+            31
+          ]
+        },
+        "net": {
+          "shared__choice": [
+            true,
+            false
+          ],
+          "hid_layers__choice": [
+            [
+              128,
+              64
+            ],
+            [
+              256,
+              128
+            ],
+            [
+              256,
+              256
+            ],
+            [
+              512,
+              256
+            ],
+            [
+              256,
+              128,
+              64
+            ]
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "tanh"
+          ],
+          "init_fn__choice": [
+            "orthogonal_",
+            "xavier_uniform_"
+          ],
+          "normalize__choice": [
+            true,
+            false
+          ],
+          "actor_optim_spec": {
+            "lr__loguniform": [
+              1e-5,
+              3e-3
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__loguniform": [
+              1e-5,
+              3e-3
+            ]
+          }
+        }
+      }
     }
   },
   "ppo_pendulum": {
@@ -142,7 +243,107 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "max_session": 1,
-      "max_trial": 1
+      "max_trial": 30,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [
+            0.95,
+            0.999
+          ],
+          "lam__uniform": [
+            0.8,
+            0.99
+          ],
+          "clip_eps_spec": {
+            "start_val__uniform": [
+              0.05,
+              0.4
+            ]
+          },
+          "entropy_coef_spec": {
+            "start_val__loguniform": [
+              1e-4,
+              0.05
+            ]
+          },
+          "val_loss_coef__loguniform": [
+            0.05,
+            5.0
+          ],
+          "time_horizon__choice": [
+            256,
+            512,
+            1024
+          ],
+          "minibatch_size__choice": [
+            1024,
+            2048,
+            4096
+          ],
+          "training_epoch__randint": [
+            8,
+            26
+          ]
+        },
+        "net": {
+          "shared__choice": [
+            true,
+            false
+          ],
+          "hid_layers__choice": [
+            [
+              64,
+              64
+            ],
+            [
+              128,
+              64
+            ],
+            [
+              256,
+              128
+            ],
+            [
+              128,
+              128
+            ],
+            [
+              256,
+              256
+            ]
+          ],
+          "hid_layers_activation__choice": [
+            "relu",
+            "tanh"
+          ],
+          "init_fn__choice": [
+            "orthogonal_",
+            "xavier_uniform_"
+          ],
+          "normalize__choice": [
+            true,
+            false
+          ],
+          "actor_optim_spec": {
+            "lr__loguniform": [
+              1e-5,
+              5e-3
+            ]
+          },
+          "critic_optim_spec": {
+            "lr__loguniform": [
+              1e-5,
+              5e-3
+            ]
+          }
+        }
+      }
     }
   }
 }

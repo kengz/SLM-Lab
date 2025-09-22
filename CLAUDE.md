@@ -76,6 +76,8 @@ uv run slm-lab slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json reinforc
 uv run slm-lab slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json ddqn_per_concat_lunar train
 # PPO CartPole
 uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train
+# PPO Lunar
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_lunar.json ppo_lunar train
 # PPO Continuous
 uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker train
 # PPO Atari
@@ -86,10 +88,176 @@ slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_
 slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco dev
 ```
 
+## ASHA Hyperparameter Search
+
+SLM-Lab now uses **ASHA (Async Successive Halving Algorithm)** by default for efficient deep RL hyperparameter search:
+
+### Features
+
+- **Early termination** of poor-performing trials
+- **10x more configurations** explored with same compute budget
+- **Noise-robust** successive halving for volatile RL returns
+- **Timestep-based** progress tracking (works with vec envs)
+- **Zero configuration** - works automatically with any search spec
+
+### Usage
+
+**IMPORTANT**: ASHA scheduler and multi-session trials are **mutually exclusive**:
+
+- **ASHA scheduler** (`search_scheduler` specified): Requires `max_session=1` for periodic metric reporting and early termination
+- **Multi-session trials** (`max_session>1`): Must omit `search_scheduler` - trials run to completion for robust statistics
+
+Basic search without early termination:
+
+```json
+{
+  "meta": {
+    "max_session": 1 // or omit search_scheduler
+  },
+  "search": {
+    "agent": {
+      "algorithm": {
+        "gamma__choice": [0.9, 0.95, 0.99]
+      }
+    }
+  }
+}
+```
+
+### ASHA Early Termination (Recommended for Fast Exploration)
+
+Enable ASHA scheduler by adding `search_scheduler` to meta:
+
+```json
+{
+  "meta": {
+    "max_session": 1, // REQUIRED: single-session for periodic reporting
+    "search_scheduler": {
+      "grace_period": 1000, // min frames before termination
+      "reduction_factor": 3 // trial elimination rate
+    }
+  },
+  "search": {
+    "agent": {
+      "algorithm": {
+        "gamma__choice": [0.9, 0.95, 0.99]
+      }
+    }
+  }
+}
+```
+
+### Multi-Session Search (Robust Evaluation)
+
+For high-variance environments, use multi-session WITHOUT scheduler:
+
+```json
+{
+  "meta": {
+    "max_session": 3 // REQUIRED: must omit search_scheduler
+    // "search_scheduler": null  // must not be specified
+  },
+  "search": {
+    "agent": {
+      "algorithm": {
+        "gamma__choice": [0.9, 0.95, 0.99]
+      }
+    }
+  }
+}
+```
+
+### Examples
+
+- `slm_lab/spec/experimental/asha_search_test.json` - Simple DQN CartPole
+- `slm_lab/spec/experimental/ppo_asha_example.json` - PPO CartPole with extensive search
+
+### Run ASHA Search
+
+```bash
+# Any search spec now uses ASHA automatically
+uv run slm-lab slm_lab/spec/experimental/asha_search_test.json asha_search_test search
+uv run slm-lab slm_lab/spec/experimental/ppo_asha_example.json ppo_asha_cartpole search
+```
+
+### Multi-Session Behavior
+
+**Single-session trials** (`max_session=1`):
+
+- ✅ Support early termination via ASHA
+- ✅ Periodic metric reporting at `log_frequency`
+- ✅ Fast exploration of hyperparameter space
+- Best for: Initial search, exploration phase
+
+**Multi-session trials** (`max_session>1`):
+
+- ❌ No early termination (always run to `max_frame`)
+- ✅ Robust statistics across multiple runs
+- ✅ Reduced variance in metric evaluation
+- Best for: Final evaluation, production configs
+
+**Recommendation**: Use `max_session=1` for search to leverage ASHA early termination, then run best configs with `max_session>1` for robust final evaluation.
+
 ## TODO
 
-- [ ] implement ASHA in Ray Tune for more efficient benchmark
-- [ ] use ASHA to search and solve mujoco, then some atari (pong, breakout)
-- [ ] **Start comprehensive search then benchmark**: Classic, Box2D, and MuJoCo envs with PPO, DQN, SAC
+- [ ] Ray Tune graph has no plots. also experiment df tries to report the now-nonstandard columns like efficiency etc - which arent calculated? check
+
+- [ ] **ASHA Hyperparameter Search Strategy**:
+
+  **Phase 1: Wide ASHA Search (single-session, early termination)**
+
+  - Find optimal hyperparameters using ASHA scheduler for efficient exploration
+  - All searches use `max_session=1` with ASHA early termination
+
+  **Phase 2: Robust Evaluation (multi-session, no early termination)**
+
+  - Validate best configs from Phase 1 with `max_session>1` for production use
+
+  - [ ] **PPO Classic Control (Local)**:
+
+    ```bash
+    # Run locally until best hparams found
+    slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole search
+    slm-lab slm_lab/spec/benchmark/ppo/ppo_lunar.json ppo_lunar search
+    ```
+
+  - [ ] **PPO Continuous Control (dstack)**:
+
+    ```bash
+    # MuJoCo requires more compute - use dstack
+    slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker search --dstack ppo-bipedal-search
+    slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_pendulum search --dstack ppo-pendulum-search
+    slm-lab --set env=HalfCheetah-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-halfcheetah-search
+    slm-lab --set env=Ant-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-ant-search
+    slm-lab --set env=Hopper-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-hopper-search
+    slm-lab --set env=Walker2d-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-walker-search
+    slm-lab --set env=Humanoid-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-humanoid-search
+    ```
+
+  - [ ] **PPO Atari (dstack)**:
+
+    ```bash
+    # GPU-accelerated Atari training
+    slm-lab --set env=ALE/Pong-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-pong-search
+    slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-breakout-search
+    slm-lab --set env=ALE/Qbert-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-qbert-search
+    slm-lab --set env=ALE/Seaquest-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-seaquest-search
+    ```
+
+  - [ ] **DQN Atari (dstack)**:
+
+    ```bash
+    # DQN variants for discrete action Atari
+    slm-lab slm_lab/spec/benchmark/dqn/dqn_breakout.json dqn_breakout search --dstack dqn-breakout-search
+    slm-lab slm_lab/spec/benchmark/dqn/dqn_pong.json dqn_pong search --dstack dqn-pong-search
+    ```
+
+  - [ ] **SAC Continuous Control (dstack)**:
+    ```bash
+    # SAC for continuous control benchmarks
+    slm-lab --set env=HalfCheetah-v5 slm_lab/spec/benchmark/sac/sac_mujoco.json sac_mujoco search --dstack sac-halfcheetah-search
+    slm-lab --set env=Ant-v5 slm_lab/spec/benchmark/sac/sac_mujoco.json sac_mujoco search --dstack sac-ant-search
+    ```
+
 - [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
 - [ ] **Documentation Updates**: Update gitbook with new performance optimizations

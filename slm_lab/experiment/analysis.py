@@ -1,16 +1,18 @@
-from slm_lab.lib import logger, util, viz
-from slm_lab.lib.env_var import lab_mode
-from slm_lab.spec import random_baseline
+import shutil
+import warnings
+
 import numpy as np
 import pandas as pd
 import pydash as ps
-import shutil
 import torch
-import warnings
 
+from slm_lab.lib import logger, util, viz
+from slm_lab.lib.env_var import lab_mode
+from slm_lab.spec import random_baseline
 
 METRICS_COLS = [
-    'final_return_ma',
+    'frame',
+    'total_reward_ma',
     'strength', 'max_strength', 'final_strength',
     'sample_efficiency', 'training_efficiency',
     'stability', 'consistency',
@@ -131,13 +133,14 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     # Protect against insufficient data points
     if len(mean_returns) == 0:
         logger.warning('Empty session data - using NaN metrics')
-        final_return_ma = np.nan
+        total_reward_ma = np.nan
         str_, local_strs = np.nan, pd.Series(dtype=float)
         max_str, final_str = np.nan, np.nan
     else:
         # Use available data if less than PLOT_MA_WINDOW
         window_size = min(len(mean_returns), viz.PLOT_MA_WINDOW)
-        final_return_ma = mean_returns[-window_size:].mean()
+        # total_reward_ma: same calculation as real-time total_reward_ma, but computed post-hoc for final analysis
+        total_reward_ma = mean_returns[-window_size:].mean()
         str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
         max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     with warnings.catch_warnings():  # mute np.nanmean warning
@@ -148,7 +151,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
 
     # all the scalar session metrics
     scalar = {
-        'final_return_ma': final_return_ma,
+        'total_reward_ma': total_reward_ma,
         'strength': str_,
         'max_strength': max_str,
         'final_strength': final_str,
@@ -173,8 +176,6 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     if info_prepath is not None:  # auto-save if info_prepath is given
         util.write(metrics, f'{info_prepath}_session_metrics_{df_mode}.json')
         util.write(scalar, f'{info_prepath}_session_metrics_scalar_{df_mode}.json')
-        # save important metrics in info_prepath directly
-        util.write(scalar, f'{info_prepath.replace("info/", "")}_session_metrics_scalar_{df_mode}.json')
     return metrics
 
 
@@ -201,7 +202,8 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
 
     # all the scalar trial metrics
     scalar = {
-        'final_return_ma': mean_scalar['final_return_ma'],
+        'frame': frames.iloc[-1] if len(frames) > 0 else 0,
+        'total_reward_ma': mean_scalar['total_reward_ma'],
         'strength': mean_scalar['strength'],
         'max_strength': mean_scalar['max_strength'],
         'final_strength': mean_scalar['final_strength'],
@@ -229,7 +231,7 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     if info_prepath is not None:  # auto-save if info_prepath is given
         util.write(metrics, f'{info_prepath}_trial_metrics.json')
         util.write(scalar, f'{info_prepath}_trial_metrics_scalar.json')
-        # save important metrics in info_prepath directly
+        # save important trial metrics in predir for easy access
         util.write(scalar, f'{info_prepath.replace("info/", "")}_trial_metrics_scalar.json')
     return metrics
 
@@ -246,7 +248,7 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
     experiment_df.insert(0, 'trial', experiment_df.index.astype(int))
     if info_prepath is not None:
         util.write(experiment_df, f'{info_prepath}_experiment_df.csv')
-        # save important metrics in info_prepath directly
+        # save important experiment df in predir for easy access
         util.write(experiment_df, f'{info_prepath.replace("info/", "")}_experiment_df.csv')
     return experiment_df
 
@@ -278,7 +280,7 @@ def analyze_trial(trial_spec, session_metrics_list):
     viz.plot_trial(trial_spec, trial_metrics, ma=True)
     # zip files
     if lab_mode() == 'train':
-        predir, _, _, _, _ = util.prepath_split(info_prepath)
+        predir = trial_spec['meta']['predir']
         zipdir = util.smart_path(predir)
         shutil.make_archive(zipdir, 'zip', zipdir)
         logger.info(f'All trial data zipped to {predir}.zip')
@@ -295,7 +297,7 @@ def analyze_experiment(spec, trial_data_dict):
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
     viz.plot_experiment_trials(spec, experiment_df, METRICS_COLS)
     # zip files
-    predir, _, _, _, _ = util.prepath_split(info_prepath)
+    predir = spec['meta']['predir']
     zipdir = util.smart_path(predir)
     shutil.make_archive(zipdir, 'zip', zipdir)
     logger.info(f'All experiment data zipped to {predir}.zip')

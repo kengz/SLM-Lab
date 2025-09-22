@@ -50,7 +50,7 @@ def get_trial_metrics_scalar(algo, env, data_folder):
         return util.read(filepath)
     except Exception:
         # blank fill
-        return {'final_return_ma': ''}
+        return {'total_reward_ma': ''}
 
 
 def get_latex_row(algos, env, data_folder):
@@ -58,7 +58,7 @@ def get_latex_row(algos, env, data_folder):
     Get an environment's latex row where each column cell is an algorithm's reward.
     Max value in a row is formatted with textbf
     '''
-    env_ret_ma_list = [get_trial_metrics_scalar(algo, env, data_folder)['final_return_ma'] for algo in algos]
+    env_ret_ma_list = [get_trial_metrics_scalar(algo, env, data_folder)['total_reward_ma'] for algo in algos]
     try:
         max_val = ps.max_([k for k in env_ret_ma_list if isinstance(k, (int, float))])
     except Exception:

@@ -1,15 +1,15 @@
 """Hugging Face dataset upload for SLM-Lab experiment data."""
 
-from pathlib import Path
-
 import os
+from pathlib import Path
 
 import typer
 from huggingface_hub import HfApi, create_repo, upload_folder
 
-from slm_lab.lib import env_var, logger, util
+from slm_lab.lib import env_var, logger
 
 logger = logger.get_logger(__name__)
+
 
 def get_repo_id():
     """Get HF dataset repo ID from env var or default."""
@@ -22,35 +22,32 @@ def upload(spec_or_predir: dict | str):
     if isinstance(spec_or_predir, dict) and not env_var.upload_hf():
         return
 
-    # Extract predir and experiment info
-    prepath = (
-        spec_or_predir["meta"]["prepath"]
-        if isinstance(spec_or_predir, dict)
-        else spec_or_predir
-    )
-    predir, _, _, spec_name, experiment_ts = util.prepath_split(prepath)
+    # Extract predir directly from spec or use the passed predir string
+    if isinstance(spec_or_predir, dict):
+        predir = spec_or_predir["meta"]["predir"]
+    else:
+        predir = spec_or_predir
 
     if not Path(predir).exists():
         logger.error(f"Directory not found: {predir}")
         return
 
     repo_id = get_repo_id()
-    
+
     try:
         HfApi().whoami()
         create_repo(repo_id, repo_type="dataset", exist_ok=True)
 
-        folder_name = f"data/{spec_name}_{experiment_ts}"
-        logger.info(f"Uploading {predir} to {repo_id}/{folder_name}...")
-        
+        logger.info(f"Uploading {predir} to {repo_id}/{predir}...")
         commit_info = upload_folder(
-            folder_path=predir, 
-            repo_id=repo_id, 
-            repo_type="dataset", 
-            path_in_repo=folder_name
+            folder_path=predir,
+            repo_id=repo_id,
+            repo_type="dataset",
+            path_in_repo=predir,
         )
-        
-        logger.info(f"✅ Upload complete: {commit_info.pr_url or commit_info.commit_url}")
+        logger.info(
+            f"✅ Upload complete: {commit_info.pr_url or commit_info.commit_url}"
+        )
 
     except Exception as e:
         logger.error(f"HF upload failed: {e}")
@@ -68,7 +65,10 @@ def retro_upload(
         raise typer.Exit(1)
 
     if not yes:
-        size_mb = sum(f.stat().st_size for f in Path(predir).rglob("*") if f.is_file()) / 1024**2
+        size_mb = (
+            sum(f.stat().st_size for f in Path(predir).rglob("*") if f.is_file())
+            / 1024**2
+        )
         if not typer.confirm(f"Upload {predir} ({size_mb:.1f} MB) to {get_repo_id()}?"):
             return
 

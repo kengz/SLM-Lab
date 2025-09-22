@@ -1,21 +1,42 @@
 import os
+import warnings
 from copy import deepcopy
 
+import numpy as np
 import pydash as ps
 import ray
 import ray.tune as tune
 import torch
+from ray.tune.schedulers import AsyncHyperBandScheduler
 from ray.tune.search.optuna import OptunaSearch
 
 from slm_lab import ROOT_DIR
+from slm_lab.agent import MetricsTracker
 from slm_lab.experiment.analysis import METRICS_COLS
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 
 logger = logger.get_logger(__name__)
 
+# Default meta.search spec, uses fields from tune.report()
+BASE_SCHEDULER_SPEC = {
+    "time_attr": "frame",
+    "metric": "total_reward_ma",
+    "mode": "max",
+}
 
-def build_param_space(spec):
+
+def in_ray_tune_context() -> bool:
+    """Check if currently executing within Ray Tune trial."""
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return ray.tune.get_context().get_trial_dir() is not None
+    except Exception:
+        return False
+
+
+def build_param_space(spec: dict) -> dict:
     """
     Build Ray Tune parameter space from SLM-Lab spec.
 
@@ -56,7 +77,7 @@ def build_param_space(spec):
     return param_space
 
 
-def inject_config(spec, config):
+def inject_config(spec: dict, config: dict) -> dict:
     """Inject flattened config into SLM Lab spec."""
     spec = deepcopy(spec)
     spec.pop("search", None)
@@ -66,9 +87,11 @@ def inject_config(spec, config):
     trial_name = ray.tune.get_context().get_trial_name()
     trial_folder = trial_dir.split("/")[-1]
     trial_index = int(trial_folder.replace(f"{trial_name}_", "").split("_")[0]) - 1
-    
+
     # Set trial index then call tick to properly set all prepaths
-    spec["meta"]["trial"] = trial_index - 1  # Set to -1 so tick increments to correct value
+    spec["meta"]["trial"] = (
+        trial_index - 1
+    )  # Set to -1 so tick increments to correct value
     spec_util.tick(spec, "trial")
 
     for k, v in config.items():
@@ -76,56 +99,135 @@ def inject_config(spec, config):
     return spec
 
 
-def build_run_trial(base_spec):
+def build_run_trial(base_spec: dict) -> callable:
     """Create a Ray Tune trial runner with the base spec."""
 
-    def run_trial(config):
-        from slm_lab.experiment.control import Trial
+    def run_trial(config: dict) -> dict:
+        from slm_lab.experiment.control import Session, Trial
 
         os.environ.pop("CUDA_VISIBLE_DEVICES", None)
         spec = inject_config(base_spec, config)
-        scalar_metrics = Trial(spec).run()
-        tune.report(metrics=scalar_metrics)
+
+        # Run trial: single-session directly, multi-session via Trial wrapper
+        if spec["meta"]["max_session"] == 1:
+            spec_copy = deepcopy(spec)
+            spec_util.tick(spec_copy, "session")
+            session_metrics = Session(spec_copy).run()
+            scalar_metrics = session_metrics["scalar"]
+        else:
+            scalar_metrics = Trial(spec).run()
+
+        # Report final metrics to Ray Tune scheduler
+        if in_ray_tune_context():
+            metric = scalar_metrics[BASE_SCHEDULER_SPEC["metric"]]
+            metric = 0.0 if np.isnan(metric) else float(metric)
+            ray.tune.report({
+                BASE_SCHEDULER_SPEC["time_attr"]: spec["env"]["max_frame"],
+                BASE_SCHEDULER_SPEC["metric"]: metric
+            })
+
         return scalar_metrics
 
     return run_trial
 
 
-def get_trial_resources(spec):
+def get_trial_resources(spec: dict) -> dict:
     """Build resource configuration for Ray Tune trials."""
     max_session = spec["meta"]["max_session"]
     return {"cpu": max_session, "gpu": max_session if torch.cuda.is_available() else 0}
 
 
-def extract_trial_results(results):
-    """Extract trial results into SLM-Lab format."""
+def extract_trial_results(results: tune.ResultGrid, spec: dict) -> dict:
+    """Extract trial results from saved trial metrics files."""
     trial_results = {}
+    info_dir = os.path.join(ROOT_DIR, spec['meta']['predir'], 'info')
+    spec_name = spec['name']
+
     for i, result in enumerate(results):
-        metrics_data = ps.pick(result.metrics, *METRICS_COLS)
+        # For single-session trials, files are named with session index
+        # Try both patterns: _t{i}_trial_metrics and _t{i}_s0_trial_metrics
+        metrics_path = os.path.join(info_dir, f'{spec_name}_t{i}_trial_metrics_scalar.json')
+        if not os.path.exists(metrics_path):
+            metrics_path = os.path.join(info_dir, f'{spec_name}_t{i}_s0_trial_metrics_scalar.json')
+
+        if os.path.exists(metrics_path):
+            metrics_data = util.read(metrics_path)
+        else:
+            logger.warning(f"Trial {i} has no saved metrics")
+            metrics_data = {col: np.nan for col in METRICS_COLS}
+
         trial_results[i] = {**result.config, **metrics_data}
+
     return trial_results
 
 
-def run_ray_search(spec):
-    """Ray Tune search using Tuner API with Optuna integration."""
-    name, num_trials = spec["name"], spec["meta"]["max_trial"]
-    logger.info(f"Running Ray Tune for {name} with {num_trials} trials")
-    logger.info("Note: use 'slm-lab --stop-ray' to stop Ray cluster")
+def report(mt: MetricsTracker):
+    """Report metrics to Ray Tune scheduler at log_frequency."""
+    if not in_ray_tune_context():
+        return
 
+    frame = mt.env.get()
+    if frame >= mt.env.max_frame:
+        return  # Skip final frame, metrics reported after trial.run()
+
+    try:
+        ray.tune.report({
+            BASE_SCHEDULER_SPEC["time_attr"]: frame,
+            BASE_SCHEDULER_SPEC["metric"]: mt.total_reward_ma
+        })
+    except Exception as e:
+        logger.warning(f"Failed to report metrics: {e}")
+
+
+def run_ray_search(spec: dict) -> dict:
+    """Ray Tune search using Tuner API with Optuna integration and optional ASHA scheduling."""
+    name, num_trials = spec["name"], spec["meta"]["max_trial"]
+    max_session = spec["meta"]["max_session"]
+    use_scheduler = spec["meta"].get("search_scheduler") is not None
+
+    # Validate mutually exclusive options
+    if max_session > 1 and use_scheduler:
+        raise ValueError(
+            f"search_scheduler and max_session>1 are mutually exclusive.\n"
+            f"Reason: ASHA scheduler requires periodic metric reporting to make early termination decisions, "
+            f"but multi-session trials aggregate metrics only at the end (no periodic reporting).\n"
+            f"Solution: Either use max_session=1 with search_scheduler for fast exploration with early termination, "
+            f"or use max_session>1 without search_scheduler for robust evaluation without early termination."
+        )
+
+    metric, mode = ps.at(BASE_SCHEDULER_SPEC, "metric", "mode")
+
+    # Configure scheduler only for single-session with search_scheduler specified
+    scheduler = None
+    if use_scheduler:
+        scheduler_spec = {
+            **BASE_SCHEDULER_SPEC,
+            "max_t": spec["env"]["max_frame"],
+            **spec["meta"]["search_scheduler"],
+        }
+        scheduler = AsyncHyperBandScheduler(**scheduler_spec)
+        logger.info(f"Single-session search with ASHA early termination (grace_period={scheduler_spec.get('grace_period', 'default')} frames)")
+    elif max_session > 1:
+        logger.info(f"Multi-session search (max_session={max_session}): trials run to completion (no early termination)")
+    else:
+        logger.info(f"Single-session search without scheduler: trials run to completion")
+
+    logger.info(
+        f"Ray Tune search: {num_trials} trials, {metric} ({mode}) | Dashboard: http://127.0.0.1:8265 | Stop: slm-lab --stop-ray"
+    )
     tuner = tune.Tuner(
         tune.with_resources(build_run_trial(spec), get_trial_resources(spec)),
         param_space=build_param_space(spec),
         tune_config=tune.TuneConfig(
-            metric="final_return_ma",
-            mode="max",
-            search_alg=OptunaSearch(),
+            search_alg=OptunaSearch(metric=metric, mode=mode),
+            scheduler=scheduler,  # None for multi-session or when search_scheduler not specified
             num_samples=num_trials,
         ),
         run_config=tune.RunConfig(
-            name=name,
-            storage_path=os.path.join(ROOT_DIR, spec["meta"]["prepath"], "ray_tune"),
+            name="ray_tune",
+            storage_path=os.path.join(ROOT_DIR, spec["meta"]["predir"]),
         ),
     )
 
     results = tuner.fit()
-    return extract_trial_results(results)
+    return extract_trial_results(results, spec)

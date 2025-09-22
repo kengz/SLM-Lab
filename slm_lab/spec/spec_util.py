@@ -138,8 +138,6 @@ def get(spec_file, spec_name, experiment_ts=None):
     return spec
 
 
-
-
 def _override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
@@ -221,7 +219,8 @@ def tick(spec, unit):
         meta_spec['session'] += 1
     else:
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
-    # set prepath since it is determined at this point
+    # set prepath and predir since they are determined at this point
+    meta_spec['predir'] = util.get_predir(spec)
     meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
     for folder in ('graph', 'info', 'log', 'model'):
         folder_prepath = util.insert_folder(prepath, folder)
@@ -229,5 +228,5 @@ def tick(spec, unit):
         os.makedirs(folder_predir, exist_ok=True)
         assert os.path.exists(folder_predir)
         meta_spec[f'{folder}_prepath'] = folder_prepath
-    
+
     return spec

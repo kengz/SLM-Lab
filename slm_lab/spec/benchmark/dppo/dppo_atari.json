@@ -92,14 +92,6 @@
       "eval_frequency": 10000,
       "max_session": 16,
       "max_trial": 4
-    },
-    "search": {
-      "env.name__choice": [
-        "ALE/Breakout-v5",
-        "ALE/Pong-v5",
-        "ALE/Qbert-v5",
-        "ALE/Seaquest-v5"
-      ]
     }
   }
 }

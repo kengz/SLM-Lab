@@ -189,14 +189,25 @@ def get_git_sha():
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
 
 
-
-
 def get_port():
     '''Get a unique port number for a run time as 4xxx, where xxx is the last 3 digits from the PID, front-padded with 0'''
     # get 3 digits from pid
     xxx = ps.pad_start(str(os.getpid())[-3:], 3, 0)
     port = int(f'4{xxx}')
     return port
+
+
+def get_predir(spec):
+    """Get the parent directory for experiment data."""
+    spec_name = spec["name"]
+    meta_spec = spec["meta"]
+    predir = f"data/{spec_name}_{meta_spec['experiment_ts']}"
+    return predir
+
+def get_experiment_ts(path):
+    """Extract experiment timestamp from a path like 'data/exp_name_2025_09_26_123456'."""
+    matches = RE_FILE_TS.findall(path)
+    return matches[0] if matches else None
 
 
 def get_prepath(spec, unit='experiment'):
@@ -303,28 +314,6 @@ def parallelize(fn, args, num_cpus=NUM_CPUS):
     with mp.Pool(num_cpus, maxtasksperchild=1) as pool:
         results = pool.starmap(fn, args)
     return results
-
-
-def prepath_split(prepath):
-    '''
-    Split prepath into useful names. Works with predir (prename will be None)
-    prepath: data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0
-    predir: data/dqn_pong_2018_12_02_082510
-    prefolder: dqn_pong_2018_12_02_082510
-    prename: dqn_pong_t0_s0
-    spec_name: dqn_pong
-    experiment_ts: 2018_12_02_082510
-    '''
-    prepath = prepath.strip('_')
-    tail = prepath.split('data/')[-1]
-    if '/' in tail:  # tail = prefolder/prename
-        prefolder, prename = tail.split('/', 1)
-    else:
-        prefolder, prename = tail, None
-    predir = f'data/{prefolder}'
-    spec_name = RE_FILE_TS.sub('', prefolder).strip('_')
-    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
-    return predir, prefolder, prename, spec_name, experiment_ts
 
 
 def prepath_to_idxs(prepath):
