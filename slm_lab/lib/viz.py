@@ -48,17 +48,19 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
     layout = go.Layout(
         title=title,
         legend=dict(
-            x=0.0, y=-0.15,  # below plot
-            orientation='h',  # horizontal, wraps naturally with compact legends
-            font=dict(size=8),
-            bgcolor='rgba(255,255,255,0.8)',  # semi-transparent background
-            bordercolor='rgba(0,0,0,0.2)',
-            borderwidth=1
+            x=0.0, y=-0.25,  # further below plot to avoid clipping
+            orientation='h',  # horizontal
+            font=dict(size=9),
+            bgcolor='rgba(0,0,0,0)',  # transparent background (no box)
+            bordercolor='rgba(0,0,0,0)',  # no border
+            borderwidth=0,
+            tracegroupgap=0,  # enable multi-column wrapping
+            itemsizing='constant',  # consistent spacing
         ),
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.layout.Margin(l=60, r=30, t=60, b=100),  # moderate bottom margin
+        margin=go.layout.Margin(l=60, r=30, t=60, b=140),  # more bottom margin for lower legend
     )
     layout.update(layout_kwargs)
     return layout
@@ -164,8 +166,6 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         fig = plot_sr(
             sr, local_metrics[time], title, name, time)
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
-            save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
     if ma:
         return
@@ -232,10 +232,19 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     Plot the metrics vs. specs parameters of an experiment, where each point is a trial.
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
-    y_cols = metrics_cols
+    # Exclude frame from Y-axis (not a meaningful metric to plot vs hparams)
+    y_cols = [col for col in metrics_cols if col != 'frame']
+
+    # Filter extra metrics if log_extra is disabled
+    if not log_extra():
+        extra_metrics = ['strength', 'sample_efficiency', 'training_efficiency', 'stability', 'consistency',
+                        'max_strength', 'final_strength']
+        y_cols = [col for col in y_cols if col not in extra_metrics]
+
     # Handle both pandas Index and list columns
     columns = experiment_df.columns.tolist() if hasattr(experiment_df.columns, 'tolist') else list(experiment_df.columns)
-    x_cols = ps.difference(columns, y_cols + ['trial'])
+    # Exclude all metrics_cols from x-axis (not just y_cols), only show hparams on x-axis
+    x_cols = ps.difference(columns, metrics_cols + ['trial'])
     fig = subplots.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()
@@ -277,11 +286,19 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title,
         fig = plot_mean_sr(
             local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
         if legend_list is not None:
-            # update legend for the main trace
-            fig.data[0].update({'showlegend': showlegend, 'name': legend_list[idx]})
+            # update legend for the main trace - only show line in legend (no rectangle)
+            fig.data[0].update({
+                'showlegend': showlegend,
+                'name': legend_list[idx],
+            })
+            # Hide envelope trace from legend (it makes rectangles)
+            if len(fig.data) > 1:
+                fig.data[1].update({'showlegend': False})
         all_data += list(fig.data)
     layout = create_layout(title, name, time)
     fig = go.Figure(all_data, layout)
+    # Update layout to make legend symbols show as thin lines
+    fig.update_layout(legend=dict(tracegroupgap=5))  # Add spacing between items
     return fig
 
 
@@ -355,32 +372,9 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
 
 
 def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
-    '''Format trial variables in experiment_df into compact legend strings'''
-    var_df = experiment_df.drop(metrics_cols, axis=1).set_index('trial')
-    trial_legends = []
-    max_params = 4  # Show only first 4 params to keep compact
-
-    for trial_idx in trial_idxs:
-        trial_vars = var_df.loc[trial_idx].to_dict()
-        var_list = []
-        for k, v in trial_vars.items():
-            if hasattr(v, '__round__'):
-                v = round(v, 3)  # 3 decimal places for readability
-            # Keep last 2 segments of nested keys for context (e.g. clip_eps_spec.start_val)
-            key_parts = k.split('.')
-            short_key = '.'.join(key_parts[-2:]) if len(key_parts) > 1 else key_parts[-1]
-            var_list.append(f'{short_key}={v}')
-
-        # Keep compact: show first N params, truncate rest
-        if len(var_list) > max_params:
-            shown = ', '.join(var_list[:max_params])
-            legend = f't{trial_idx}: {shown}, ...'
-        else:
-            var_str = ', '.join(var_list)
-            legend = f't{trial_idx}: {var_str}'
-
-        trial_legends.append(legend)
-    return trial_legends
+    '''Format trial legends as simple trial numbers (hparams visible in experiment_graph)'''
+    # Just show trial number - hparams are already visible in experiment_graph
+    return [f't{trial_idx}' for trial_idx in trial_idxs]
 
 
 def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
@@ -401,9 +395,9 @@ def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
         return trial_idx if trial_idx is not None else 0
     trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=safe_sort_key))
 
-    # get trial indices to build legends
+    # get trial indices to build legends - sorted for consistent ordering
     # Use trial indices from experiment_df instead of parsing from paths (Ray Tune compatibility)
-    trial_idxs = experiment_df['trial'].tolist()
+    trial_idxs = sorted(experiment_df['trial'].tolist())
     legend_list = get_trial_legends(experiment_df, trial_idxs, metrics_cols)
 
     title = f'multi trial graph: {experiment_spec["name"]}'

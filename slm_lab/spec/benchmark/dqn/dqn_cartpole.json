@@ -235,5 +235,61 @@
         }
       }
     }
+  },
+  "dqn_epsilon_greedy_cartpole": {
+    "agent": {
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 5000
+        },
+        "gamma": 0.995,
+        "training_batch_iter": 1,
+        "training_iter": 2,
+        "training_frequency": 2,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 64,
+        "max_size": 100000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [128],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 10.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.00789
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": null,
+      "max_frame": 50000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 1
+    }
   }
 }

@@ -95,6 +95,11 @@ class PPO(ActorCritic):
             self.minibatch_size = math.ceil(self.minibatch_size / num_envs) * num_envs
             self.time_horizon = math.ceil(self.time_horizon / num_envs) * num_envs
             logger.info(f'minibatch_size and time_horizon needs to be multiples of num_envs; autocorrected values: minibatch_size: {self.minibatch_size}  time_horizon {self.time_horizon}')
+        # Ensure minibatch_size doesn't exceed batch_size
+        batch_size = self.time_horizon * num_envs
+        if self.minibatch_size > batch_size:
+            self.minibatch_size = batch_size
+            logger.info(f'minibatch_size cannot exceed batch_size ({batch_size}); autocorrected to: {self.minibatch_size}')
         self.training_frequency = self.time_horizon  # since all memories stores num_envs by batch in list
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -143,6 +148,9 @@ class PPO(ActorCritic):
             states = math_util.venv_unpack(states)
             actions = math_util.venv_unpack(actions)
 
+        # Ensure advs is always 1D regardless of venv to match log_probs shape
+        advs = advs.view(-1)
+
         # L^CLIP
         log_probs = action_pd.log_prob(actions)
         with torch.no_grad():
@@ -151,6 +159,7 @@ class PPO(ActorCritic):
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
+        logger.debug(f'calc_policy_loss shapes: advs={advs.shape}, log_probs={log_probs.shape}, ratios={ratios.shape}')
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs

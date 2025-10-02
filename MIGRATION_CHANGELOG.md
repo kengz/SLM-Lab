@@ -169,6 +169,79 @@ uv run slm-lab spec.json spec_name train --dstack run-name --set env=Ant-v5
 - **PPO ASHA Specs**: Comprehensive search configurations for CartPole, Lunar, BipedalWalker, Pendulum, MuJoCo
 - **Status**: ✅ COMPLETED - Production-ready efficient hyperparameter optimization with full environment coverage
 
+**🚨 CRITICAL: ASHA and Multi-Session are Mutually Exclusive**
+
+ASHA scheduler requires `max_session=1` for periodic metric reporting and early termination. Multi-session trials (`max_session>1`) **must not** specify `search_scheduler` as they need to run to completion for robust statistics.
+
+## 🎯 **3-Step ASHA Hyperparameter Optimization Workflow**
+
+**Recommended workflow for empirically validated benchmark configurations:**
+
+### **Step 1: Wide Exploration Search**
+Explore large search space with ASHA early termination:
+- **Trials**: 50 (wide hyperparameter ranges)
+- **Grace Period**: Environment-appropriate (e.g., 50k frames for CartPole)
+- **Coverage**: Target 5-15% search space coverage minimum
+- **Purpose**: Identify promising hyperparameter regions quickly
+
+```bash
+# Example: CartPole wide search (50 trials, ~12 minutes)
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole_search.json ppo_cartpole_search search
+```
+
+### **Step 2: Narrowed Refinement Search**
+Refine around best performers from Step 1:
+- **Trials**: 30 (narrowed ranges based on top trials)
+- **Search Space**: Reduce ranges by ~50-70% around best config
+- **Purpose**: Find optimal configuration within promising region
+
+**Narrowing Strategy:**
+- Fix clearly superior discrete choices (e.g., `training_epoch=10`)
+- Reduce continuous ranges to ±20-30% of best trial values
+- Keep 2-3 architecture choices that performed well
+- Maintain learning rate ranges but narrow by 50%
+
+```bash
+# Example: CartPole narrowed search (30 trials, ~6 minutes)
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole_search2.json ppo_cartpole_search2 search
+```
+
+### **Step 3: Validation Run**
+Validate best configuration with normal training:
+- **Update benchmark spec** with best hyperparameters from Step 2
+- **Run normal training** (not search) to confirm performance
+- **Verify metrics** match or exceed search results
+
+```bash
+# Example: Validate optimized CartPole config
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train
+```
+
+### **Real-World Example: PPO CartPole**
+
+**Step 1 Results** (`ppo_cartpole_search.json`):
+- 50 trials, 500k frames, grace_period=50k
+- Best: Trial #23 with reward_ma=261.9
+- Key findings: training_epoch=10, [128,128] architecture, gamma~0.96-0.98
+
+**Step 2 Results** (`ppo_cartpole_search2.json`):
+- 30 trials with narrowed ranges
+- Best: Trial #1 with reward_ma=267.67 ✅ (2.2% improvement)
+- Final config: gamma=0.9793, lam=0.9204, [128,128] net, training_epoch=10
+
+**Step 3 Validation** (`ppo_cartpole.json`):
+- Updated spec with optimized hyperparameters
+- Confirmed performance with normal training run
+- Production-ready benchmark configuration ✅
+
+### **Performance vs Accuracy Trade-offs**
+
+**Two-Stage vs Three-Stage:**
+- **Two-Stage** (Wide + Multi-Session): Better for final benchmarks, trades speed for robustness
+- **Three-Stage** (Wide + Narrow + Validation): Optimal for development, finds better configs faster
+
+See `CLAUDE.md` for additional methodology notes and `/tmp/ppo_search_results_final.md` for complete analysis.
+
 ### **✅ Hyperparameter Search Modernization**
 **COMPLETED - Ray Tune integration with Optuna backend for modern hyperparameter optimization:**
 

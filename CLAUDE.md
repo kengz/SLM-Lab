@@ -198,28 +198,90 @@ uv run slm-lab slm_lab/spec/experimental/ppo_asha_example.json ppo_asha_cartpole
 
 **Recommendation**: Use `max_session=1` for search to leverage ASHA early termination, then run best configs with `max_session>1` for robust final evaluation.
 
+## Two-Stage Hyperparameter Search Methodology
+
+Use this proven two-stage approach for finding robust hyperparameters:
+
+### Stage 1: Wide ASHA Exploration (Fast, High Variance)
+
+**Goal**: Efficiently explore large search space to identify promising hyperparameter ranges
+
+**Configuration**:
+- `max_session=1` (single session, high variance but fast)
+- `search_scheduler` enabled with ASHA early termination
+- Wide search space with many trials (e.g., 30 trials)
+
+**Example**:
+```json
+{
+  "meta": {
+    "max_session": 1,
+    "max_trial": 30,
+    "search_scheduler": {
+      "grace_period": 30000,
+      "reduction_factor": 3
+    }
+  },
+  "search": {
+    "agent.algorithm.gamma__uniform": [0.95, 0.999],
+    "agent.algorithm.lr__loguniform": [1e-5, 5e-3]
+  }
+}
+```
+
+**Workflow**:
+1. Run wide ASHA search: `slm-lab spec.json spec_name search`
+2. Analyze `experiment_df.csv` to identify top-performing trials
+3. Look for patterns in successful hyperparameter combinations
+4. Define narrower search ranges around promising values
+
+### Stage 2: Narrow Multi-Session Validation (Robust, Low Variance)
+
+**Goal**: Validate best hyperparameter ranges with reliable averaged results
+
+**Configuration**:
+- `max_session=4` (multi-session averaging, low variance, reliable)
+- **NO** `search_scheduler` (must be omitted or null)
+- Narrow search space focused on promising ranges (e.g., 8-12 trials)
+
+**Example**:
+```json
+{
+  "meta": {
+    "max_session": 4,
+    "max_trial": 8
+    // search_scheduler MUST be omitted
+  },
+  "search": {
+    "agent.algorithm.gamma__choice": [0.97, 0.98, 0.99],
+    "agent.algorithm.lr__choice": [0.0001, 0.0003]
+  }
+}
+```
+
+**Workflow**:
+1. Create narrowed spec based on Stage 1 patterns
+2. Run multi-session search: `slm-lab spec_narrow.json spec_name search`
+3. Select best config from averaged `total_reward_ma` across 4 sessions
+4. Update spec with winning hyperparameters as defaults
+5. Keep `search` section in spec for reference/documentation
+
+**Key Principle**: Stage 1 identifies promising ranges quickly (single session, ASHA). Stage 2 validates with reliable statistics (multi-session, no early termination). Never use ASHA with multi-session.
+
 ## TODO
 
 - [ ] Ray Tune graph has no plots. also experiment df tries to report the now-nonstandard columns like efficiency etc - which arent calculated? check
 
-- [ ] **ASHA Hyperparameter Search Strategy**:
+- [ ] **Two-Stage Hyperparameter Search**:
 
-  **Phase 1: Wide ASHA Search (single-session, early termination)**
-
-  - Find optimal hyperparameters using ASHA scheduler for efficient exploration
-  - All searches use `max_session=1` with ASHA early termination
-
-  **Phase 2: Robust Evaluation (multi-session, no early termination)**
-
-  - Validate best configs from Phase 1 with `max_session>1` for production use
-
-  - [ ] **PPO Classic Control (Local)**:
-
-    ```bash
-    # Run locally until best hparams found
-    slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole search
-    slm-lab slm_lab/spec/benchmark/ppo/ppo_lunar.json ppo_lunar search
-    ```
+  - [ ] **PPO CartPole**: Comprehensive optimization
+    - Stage 1 (ASHA): `slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole_search1.json ppo_cartpole_search1 search`
+      - 200 trials, max_frame=200k, ASHA early termination
+      - Search: gamma, lam, clip_eps, entropy_coef, val_loss_coef, time_horizon, minibatch_size, training_epoch, loss_spec, actor_lr, critic_lr
+      - After completion: analyze `experiment_df.csv` to identify top hyperparameter ranges
+    - Stage 2 (Multi-session): Create `ppo_cartpole_search2.json` based on Stage 1 results
+      - ~12 trials, 4 sessions, narrowed ranges
+      - Validates best hyperparameters with robust averaged statistics
 
   - [ ] **PPO Continuous Control (dstack)**:
 

@@ -25,7 +25,7 @@
         },
         "val_loss_coef": 1.0,
         "time_horizon": 512,
-        "minibatch_size": 32,
+        "minibatch_size": 64,
         "training_epoch": 10
       },
       "memory": {
@@ -82,39 +82,29 @@
             0.999
           ],
           "lam__uniform": [
-            0.85,
+            0.9,
             0.99
           ],
           "clip_eps_spec": {
             "start_val__uniform": [
-              0.05,
-              0.4
+              0.1,
+              0.3
             ]
           },
           "entropy_coef_spec": {
             "start_val__loguniform": [
-              1e-5,
-              0.03
+              0.0001,
+              0.01
             ]
           },
-          "val_loss_coef__loguniform": [
-            0.1,
-            3.0
+          "val_loss_coef__uniform": [
+            0.5,
+            2.0
           ],
-          "time_horizon__choice": [
-            256,
-            512,
-            1024
-          ],
-          "minibatch_size__choice": [
-            16,
-            32,
-            64,
-            128
-          ],
-          "training_epoch__randint": [
-            3,
-            26
+          "training_epoch__choice": [
+            5,
+            10,
+            15
           ]
         },
         "net": {
@@ -123,10 +113,6 @@
             false
           ],
           "hid_layers__choice": [
-            [
-              128,
-              128
-            ],
             [
               256,
               256
@@ -138,34 +124,18 @@
             [
               256,
               128
-            ],
-            [
-              128,
-              64
             ]
-          ],
-          "hid_layers_activation__choice": [
-            "relu",
-            "tanh"
-          ],
-          "init_fn__choice": [
-            "orthogonal_",
-            "xavier_uniform_"
-          ],
-          "use_same_optim__choice": [
-            true,
-            false
           ],
           "actor_optim_spec": {
             "lr__loguniform": [
-              1e-5,
-              2e-3
+              0.00005,
+              0.001
             ]
           },
           "critic_optim_spec": {
             "lr__loguniform": [
-              1e-5,
-              2e-3
+              0.00005,
+              0.001
             ]
           }
         }

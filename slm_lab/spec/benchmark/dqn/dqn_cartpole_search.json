@@ -1,0 +1,73 @@
+{
+  "dqn_cartpole_search": {
+    "agent": {
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 10000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 64,
+        "max_size": 50000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [128],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.001
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": null,
+      "max_frame": 50000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "log_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 30,
+      "search_scheduler": {
+        "grace_period": 5000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__choice": [0.95, 0.99, 0.995],
+      "agent.algorithm.training_frequency__choice": [1, 2, 4],
+      "agent.memory.batch_size__choice": [32, 64, 128],
+      "agent.memory.use_cer__choice": [false, true],
+      "agent.net.hid_layers__choice": [[64], [128], [256], [128, 64]],
+      "agent.net.hid_layers_activation__choice": ["relu", "selu"],
+      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.01],
+      "agent.net.polyak_coef__loguniform": [0.001, 0.01]
+    }
+  }
+}

@@ -79,54 +79,37 @@
       "agent": {
         "algorithm": {
           "gamma__uniform": [
-            0.95,
+            0.98,
             0.999
           ],
           "lam__uniform": [
-            0.8,
-            0.99
+            0.92,
+            0.98
           ],
           "clip_eps_spec": {
             "start_val__uniform": [
-              0.05,
-              0.4
+              0.1,
+              0.3
             ]
           },
           "entropy_coef_spec": {
             "start_val__loguniform": [
-              1e-4,
-              0.05
+              0.0001,
+              0.01
             ]
           },
-          "val_loss_coef__loguniform": [
-            0.05,
-            5.0
+          "val_loss_coef__uniform": [
+            0.2,
+            2.0
           ],
-          "time_horizon__choice": [
-            256,
-            512,
-            1024
-          ],
-          "minibatch_size__choice": [
-            2048,
-            4096,
-            8192
-          ],
-          "training_epoch__randint": [
-            8,
-            31
+          "training_epoch__choice": [
+            10,
+            15,
+            20
           ]
         },
         "net": {
-          "shared__choice": [
-            true,
-            false
-          ],
           "hid_layers__choice": [
-            [
-              128,
-              64
-            ],
             [
               256,
               128
@@ -138,35 +121,18 @@
             [
               512,
               256
-            ],
-            [
-              256,
-              128,
-              64
             ]
-          ],
-          "hid_layers_activation__choice": [
-            "relu",
-            "tanh"
-          ],
-          "init_fn__choice": [
-            "orthogonal_",
-            "xavier_uniform_"
-          ],
-          "normalize__choice": [
-            true,
-            false
           ],
           "actor_optim_spec": {
             "lr__loguniform": [
-              1e-5,
-              3e-3
+              0.0001,
+              0.001
             ]
           },
           "critic_optim_spec": {
             "lr__loguniform": [
-              1e-5,
-              3e-3
+              0.0001,
+              0.001
             ]
           }
         }
@@ -257,51 +223,34 @@
             0.999
           ],
           "lam__uniform": [
-            0.8,
-            0.99
+            0.9,
+            0.98
           ],
           "clip_eps_spec": {
             "start_val__uniform": [
-              0.05,
-              0.4
+              0.1,
+              0.3
             ]
           },
           "entropy_coef_spec": {
             "start_val__loguniform": [
-              1e-4,
-              0.05
+              0.0001,
+              0.01
             ]
           },
-          "val_loss_coef__loguniform": [
-            0.05,
-            5.0
+          "val_loss_coef__uniform": [
+            0.2,
+            2.0
           ],
-          "time_horizon__choice": [
-            256,
-            512,
-            1024
-          ],
-          "minibatch_size__choice": [
-            1024,
-            2048,
-            4096
-          ],
-          "training_epoch__randint": [
-            8,
-            26
+          "training_epoch__choice": [
+            10,
+            15,
+            20
           ]
         },
         "net": {
-          "shared__choice": [
-            true,
-            false
-          ],
           "hid_layers__choice": [
             [
-              64,
-              64
-            ],
-            [
               128,
               64
             ],
@@ -312,34 +261,18 @@
             [
               128,
               128
-            ],
-            [
-              256,
-              256
             ]
-          ],
-          "hid_layers_activation__choice": [
-            "relu",
-            "tanh"
-          ],
-          "init_fn__choice": [
-            "orthogonal_",
-            "xavier_uniform_"
-          ],
-          "normalize__choice": [
-            true,
-            false
           ],
           "actor_optim_spec": {
             "lr__loguniform": [
-              1e-5,
-              5e-3
+              0.0001,
+              0.002
             ]
           },
           "critic_optim_spec": {
             "lr__loguniform": [
-              1e-5,
-              5e-3
+              0.0001,
+              0.002
             ]
           }
         }

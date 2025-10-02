@@ -10,22 +10,22 @@
         "gamma": 0.99,
         "lam": 0.95,
         "clip_eps_spec": {
-          "name": "no_decay",
-          "start_val": 0.2,
-          "end_val": 0.05,
+          "name": "linear_decay",
+          "start_val": 0.1702,
+          "end_val": 0.1339,
           "start_step": 0,
-          "end_step": 10000
+          "end_step": 500000
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000
+          "start_val": 0.00107,
+          "end_val": 0.00143,
+          "start_step": 0,
+          "end_step": 500000
         },
-        "val_loss_coef": 0.1,
-        "time_horizon": 32,
-        "minibatch_size": 16,
+        "val_loss_coef": 0.2488,
+        "time_horizon": 64,
+        "minibatch_size": 32,
         "training_epoch": 4
       },
       "memory": {
@@ -35,13 +35,13 @@
         "type": "MLPNet",
         "shared": true,
         "hid_layers": [
-          128
+          64
         ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "actor_optim_spec": {
           "name": "AdamW",
@@ -57,71 +57,15 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 20000
+      "max_frame": 200000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
-      "eval_frequency": 100,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 3,
-      "search_scheduler": {
-        "grace_period": 3000,
-        "reduction_factor": 2
-      }
-    },
-    "search": {
-      "agent": {
-        "algorithm": {
-          "gamma__uniform": [
-            0.9,
-            0.999
-          ],
-          "lam__uniform": [
-            0.7,
-            0.98
-          ],
-          "clip_eps_spec": {
-            "start_val__uniform": [
-              0.05,
-              0.4
-            ]
-          },
-          "entropy_coef_spec": {
-            "start_val__loguniform": [
-              1e-4,
-              0.1
-            ]
-          },
-          "val_loss_coef__loguniform": [
-            0.01,
-            1.0
-          ],
-          "time_horizon__choice": [
-            128,
-            256
-          ],
-          "training_epoch__choice": [
-            4,
-            6,
-            8
-          ]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__loguniform": [
-              1e-4,
-              0.05
-            ]
-          },
-          "critic_optim_spec": {
-            "lr__loguniform": [
-              1e-4,
-              0.05
-            ]
-          }
-        }
-      }
+      "max_trial": 1
     }
   }
 }
