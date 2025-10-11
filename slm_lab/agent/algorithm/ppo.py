@@ -151,6 +151,10 @@ class PPO(ActorCritic):
         # Ensure advs is always 1D regardless of venv to match log_probs shape
         advs = advs.view(-1)
 
+        # Normalize advantages per minibatch (like SB3)
+        if len(advs) > 1:
+            advs = math_util.standardize(advs)
+
         # L^CLIP
         log_probs = action_pd.log_prob(actions)
         with torch.no_grad():

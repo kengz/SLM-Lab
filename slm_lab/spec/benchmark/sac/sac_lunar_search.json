@@ -1,5 +1,5 @@
 {
-  "sac_lunar": {
+  "sac_lunar_search_asha": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
@@ -51,8 +51,36 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 1
+      "max_session": 1,
+      "max_trial": 30,
+      "search_scheduler": {
+        "grace_period": 30000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent": {
+        "algorithm": {
+          "gamma__choice": [0.97, 0.98, 0.99],
+          "target_entropy_epsilon__uniform": [0.05, 0.2],
+          "alpha_lr__loguniform": [1e-5, 1e-4]
+        },
+        "memory": {
+          "batch_size__choice": [128, 256, 512]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [64, 64],
+            [64, 64, 32],
+            [128, 128]
+          ],
+          "hid_layers_activation__choice": ["relu", "tanh"],
+          "optim_spec": {
+            "lr__loguniform": [1e-4, 1e-3]
+          },
+          "polyak_coef__loguniform": [0.001, 0.01]
+        }
+      }
     }
   }
 }

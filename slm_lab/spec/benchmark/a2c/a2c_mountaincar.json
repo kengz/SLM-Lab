@@ -1,5 +1,5 @@
 {
-  "a2c_gae_cartpole": {
+  "a2c_gae_mountaincar": {
     "agent": {
       "name": "A2C",
       "algorithm": {
@@ -15,7 +15,7 @@
           "start_val": 0.01,
           "end_val": 0.0,
           "start_step": 0,
-          "end_step": 200000
+          "end_step": 500000
         },
         "val_loss_coef": 0.5,
         "training_frequency": 32
@@ -26,10 +26,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          64,
-          64
-        ],
+        "hid_layers": [64, 64],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -51,43 +48,17 @@
       }
     },
     "env": {
-      "name": "CartPole-v1",
+      "name": "MountainCar-v0",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 200000
+      "max_frame": 500000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
-      "log_frequency": 256,
+      "eval_frequency": 10000,
+      "log_frequency": 1024,
       "max_session": 4,
       "max_trial": 1
-    },
-    "search": {
-      "agent": {
-        "algorithm": {
-          "lam__choice": [
-            0.7,
-            0.8,
-            0.9,
-            0.95
-          ],
-          "training_frequency__choice": [
-            16,
-            32
-          ]
-        },
-        "net": {
-          "actor_optim_spec": {
-            "lr__choice": [
-              0.05,
-              0.01,
-              0.005,
-              0.001
-            ]
-          }
-        }
-      }
     }
   }
 }

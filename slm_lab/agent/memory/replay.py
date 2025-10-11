@@ -81,7 +81,7 @@ class Replay(Memory):
         self.ns_idx_offset = agent.env.num_envs if agent.env.is_venv else 1
         self.ns_buffer = deque(maxlen=self.ns_idx_offset)
         # declare what data keys to store
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'terminateds', 'truncateds']
         self.reset()
 
     def reset(self):
@@ -96,15 +96,31 @@ class Replay(Memory):
         self.ns_buffer.clear()
 
     @lab_api
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state, action, reward, next_state, done, terminated, truncated):
         '''Interface method to update memory'''
         if self.agent.env.is_venv:
-            for sarsd in zip(state, action, reward, next_state, done):
-                self.add_experience(*sarsd)
+            for s, a, r, ns, d, term, trunc in zip(state, action, reward, next_state, done, terminated, truncated):
+                self.add_experience(
+                    state=s,
+                    action=a,
+                    reward=r,
+                    next_state=ns,
+                    done=d,
+                    terminated=term,
+                    truncated=trunc
+                )
         else:
-            self.add_experience(state, action, reward, next_state, done)
+            self.add_experience(
+                state=state,
+                action=action,
+                reward=reward,
+                next_state=next_state,
+                done=done,
+                terminated=terminated,
+                truncated=truncated
+            )
 
-    def add_experience(self, state, action, reward, next_state, done):
+    def add_experience(self, *, state, action, reward, next_state, done, terminated, truncated):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
@@ -113,6 +129,8 @@ class Replay(Memory):
         self.rewards[self.head] = reward
         self.ns_buffer.append(next_state.astype(np.float16))
         self.dones[self.head] = done
+        self.terminateds[self.head] = terminated
+        self.truncateds[self.head] = truncated
         # Actually occupied size of memory
         if self.size < self.max_size:
             self.size += 1

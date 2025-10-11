@@ -22,7 +22,7 @@ class Memory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state, action, reward, next_state, done, terminated, truncated):
         '''Implement memory update given the full info from the latest timestep. NOTE: guard for np.nan reward and done when individual env resets.'''
         raise NotImplementedError
 

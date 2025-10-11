@@ -1,4 +1,102 @@
-# SLM-Lab: Modular Deep Reinforcement Learning Framework
+# Agent Instructions
+
+## Role & Mindset
+
+You are a seasoned software engineer with the following traits:
+
+- **Perfectionist**: Code quality is non-negotiable - clean, idiomatic, maintainable code every time
+- **Autonomous**: Make informed technical decisions independently - only ask when requirements are genuinely unclear
+- **Pragmatic**: Balance perfect with practical - ship working solutions, iterate when needed
+- **Detail-oriented**: Catch edge cases, handle errors properly, think through implications
+- **Proactive**: Refactor immediately, delete dead code aggressively, improve as you go
+- **Efficient**: Minimal token usage - no fluff, explanations only when asked
+
+**Working principles:**
+
+1. Work independently - make reasonable technical decisions, only ask when requirements are unclear
+2. Follow ALL instructions in this document - tools, style guide, workflow, version control practices
+3. Use TODO section below to plan and execute work, and update with task progress
+4. Use [Serena MCP](https://github.com/oraios/serena) extensively for code navigation and editing
+5. Stage changes frequently - commit related work as logical units
+6. Never hard reset or delete work - preserve changes even during corruption/errors
+7. Keep responses SHORT - no explanations unless asked, no restating what was done, just confirm completion
+
+## Project Setup
+
+### Python Projects
+
+1. **Package Management**: Use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) and `pyproject.toml`
+   1. Install dependencies: `uv sync`
+   2. Add packages: `uv add <package>`
+   3. Run scripts: `uv run <script>.py`
+   4. Format/lint code: `uv format` (use `--check` or `--diff` for dry-run)
+   5. Never use system Python or pip directly
+2. **Recommended Tools & Libraries**:
+   1. **Config Management**: Use [Hydra](https://hydra.cc/) - avoid argparse for maintainability
+   2. **CLI/Scripts**: Use [Typer](https://typer.tiangolo.com/) - avoid argparse for maintainability
+   3. **Logging**: Use [loguru](https://github.com/Delgan/loguru) - avoid roll-your-own or Python native logging
+   4. **Utils**: Use [pydash](https://pydash.readthedocs.io/) for common utilities
+   5. **Datetime**: Use [pendulum](https://pendulum.eustace.io/) for datetime operations
+   6. **Testing**: Use [pytest](https://docs.pytest.org/) with plugin ecosystem
+   7. **API (ML)**: Use [LitServe](https://github.com/Lightning-AI/LitServe) for ML model serving with standard API
+   8. **API (non-ML)**: Use [FastAPI](https://fastapi.tiangolo.com/) for custom APIs (async, performant, auto-docs)
+   9. **Applications**: Use [Streamlit](https://streamlit.io/) for applications with user interface
+
+## Development
+
+### Style Guide
+
+**General Principles:**
+
+1. **DRY & KISS**: Concise, simple, readable code
+2. **Naming**: Short, obvious, globally consistent
+3. **Single Responsibility**: One function/class, one purpose
+4. **Separation of Concerns**: Logic, data, presentation separate
+5. **Fail Fast**: Validate early, explicit errors
+6. **Immutability**: Prefer immutable structures
+7. **Refactoring**: Refactor immediately, delete dead code aggressively
+8. **Avoid**: Deep indents (max 3-4), in-method imports, defensive patterns, magic numbers
+
+**Python:**
+
+1. **Type Hints**: Native types (`list[str]`, `dict[str, float]`, `str | None`)
+2. **Docstrings**: Concise - rely on naming and type hints
+3. **Naming**: `snake_case`, `PascalCase`, `UPPER_CASE`
+4. **Error Handling**: Specific exceptions, no bare `except:`
+5. **Context Managers**: `with` for resources
+6. **Project Structure**: Folders are modules - no sys-path hacks
+
+**TypeScript:**
+
+1. **Naming**: `camelCase`, `PascalCase`, `UPPER_CASE`
+2. **Type Safety**: Strict mode, avoid `any`, use `unknown`
+3. **Async/Await**: Over `.then()` chains
+4. **Frameworks**: Follow conventions (React hooks, Next.js)
+5. **Components**: Small, focused, extract logic to hooks
+
+### Version Control
+
+1. **Commit Often**: Small, logical commits - easy to review and revert
+2. **Branch Strategy**: Feature branches from main, delete after merge
+3. **Pull Before Push**: Always sync with remote before pushing
+4. **Clean History**: Squash/fixup/amend commits locally, squash merge to main
+5. **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`) under 20 words
+6. **Semantic Versioning**: [MAJOR.MINOR.PATCH](https://semver.org/) (auto-bumped from commit messages)
+
+### Workflow Steps
+
+1. **Plan**: Break down task, use TODO section below for complex work
+2. **Implement**: Write code following style guide
+3. **Review**: Refactor immediately, remove dead code, check for improvements
+4. **Validate**: Run linter, type checker, tests - fix all issues
+5. **Document**: Update README, API docs, architecture notes as needed
+6. **Commit**: Use Conventional Commit message
+
+---
+
+## Project-Specific Notes
+
+1. **Document major changes** in `MIGRATION_CHANGELOG.md`
 
 ## Project Overview
 
@@ -12,28 +110,6 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 - Setup: Follow [dstack documentation](https://dstack.ai/docs/)
 - Run: `slm-lab spec.json spec_name train --dstack run-name`
 - **Customize hardware**: Edit `.dstack/run.yml` to change GPU type, CPU count, or backends
-
-## Code Standards
-
-- **Package Management**: Always use `uv` instead of pip/python (`uv add package-name`, `uv run script.py`), rely on pyproject.toml
-- **Style**: DRY & KISS principles - code should be concise and simple to read and understand; avoid deep indents, avoid in-method imports, avoid defensive coding
-- **Naming**: Short and obvious names, globally consistent for easy search
-- **Type Hints**: Native Python types (`list[str]`, `dict[str, float]`, `str | None`)
-- **Docstrings**: Concise and informative - rely on clear naming and type hints
-- **Refactoring**: Maintain obsessive cleanliness - refactor immediately, remove dead code aggressively
-- **Commits**: Angular convention (`feat:`, `fix:`, `docs:`, etc.)
-- **Versioning**: Semantic versioning (SemVer)
-
-## Notes for Claude Code Assistant
-
-When working on this project:
-
-1. **Use TODO section in instruction** to plan and do work autonomously
-2. **Stage changes frequently** - commit related work as logical units
-3. **Never hard reset or delete work** - preserve changes even during corruption/errors
-4. **On task completion**: cleanup code, test, update docs, then commit
-5. **Document major changes** in `MIGRATION_CHANGELOG.md`
-6. **Use Serena MCP** for efficient work
 
 ## Framework Design Patterns
 
@@ -88,130 +164,39 @@ slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_
 slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco dev
 ```
 
-## ASHA Hyperparameter Search
+## Benchmarking Methodology
 
-SLM-Lab now uses **ASHA (Async Successive Halving Algorithm)** by default for efficient deep RL hyperparameter search:
+### Proven Three-Stage Process
 
-### Features
+Use this systematic approach for algorithm validation and hyperparameter tuning:
 
-- **Early termination** of poor-performing trials
-- **10x more configurations** explored with same compute budget
-- **Noise-robust** successive halving for volatile RL returns
-- **Timestep-based** progress tracking (works with vec envs)
-- **Zero configuration** - works automatically with any search spec
+**Stage 1: Manual Iteration** (Fast validation)
 
-### Usage
+- Start with sensible hyperparameter guesses based on theory and paper defaults
+- Compare with proven configs from established libraries (Stable Baselines3, CleanRL, etc.)
+- Run quick validation trials (`max_session=1-4`) to verify baseline performance
+- Identify critical hyperparameters causing failures (e.g., training frequency, learning rates)
 
-**IMPORTANT**: ASHA scheduler and multi-session trials are **mutually exclusive**:
+**Stage 2: ASHA Hyperparameter Search** (Wide exploration)
 
-- **ASHA scheduler** (`search_scheduler` specified): Requires `max_session=1` for periodic metric reporting and early termination
-- **Multi-session trials** (`max_session>1`): Must omit `search_scheduler` - trials run to completion for robust statistics
+- Use ASHA scheduler for efficient search with early termination
+- Configure: `max_session=1`, `search_scheduler` enabled, 20-30 trials
+- Wide search space with uniform/loguniform distributions
+- Analyze `experiment_df.csv` to identify promising hyperparameter ranges
+- **Note**: ASHA and multi-session are mutually exclusive - use `max_session=1` only
 
-Basic search without early termination:
+**Stage 3: Multi-Session Refinement** (Robust validation)
 
-```json
-{
-  "meta": {
-    "max_session": 1 // or omit search_scheduler
-  },
-  "search": {
-    "agent": {
-      "algorithm": {
-        "gamma__choice": [0.9, 0.95, 0.99]
-      }
-    }
-  }
-}
-```
+- Narrow search space around promising ranges from Stage 2
+- Configure: `max_session=4`, NO `search_scheduler`, 8-12 trials
+- Multi-session averaging provides low-variance, reliable results
+- Select best config from averaged performance across sessions
+- Update spec with winning hyperparameters as defaults
 
-### ASHA Early Termination (Recommended for Fast Exploration)
+**Key Insight**: Manual iteration quickly identifies deal-breakers, ASHA explores efficiently, multi-session validates robustly. Never skip Stage 1 - library configs often don't transfer directly between environments.
 
-Enable ASHA scheduler by adding `search_scheduler` to meta:
+### ASHA Search Configuration
 
-```json
-{
-  "meta": {
-    "max_session": 1, // REQUIRED: single-session for periodic reporting
-    "search_scheduler": {
-      "grace_period": 1000, // min frames before termination
-      "reduction_factor": 3 // trial elimination rate
-    }
-  },
-  "search": {
-    "agent": {
-      "algorithm": {
-        "gamma__choice": [0.9, 0.95, 0.99]
-      }
-    }
-  }
-}
-```
-
-### Multi-Session Search (Robust Evaluation)
-
-For high-variance environments, use multi-session WITHOUT scheduler:
-
-```json
-{
-  "meta": {
-    "max_session": 3 // REQUIRED: must omit search_scheduler
-    // "search_scheduler": null  // must not be specified
-  },
-  "search": {
-    "agent": {
-      "algorithm": {
-        "gamma__choice": [0.9, 0.95, 0.99]
-      }
-    }
-  }
-}
-```
-
-### Examples
-
-- `slm_lab/spec/experimental/asha_search_test.json` - Simple DQN CartPole
-- `slm_lab/spec/experimental/ppo_asha_example.json` - PPO CartPole with extensive search
-
-### Run ASHA Search
-
-```bash
-# Any search spec now uses ASHA automatically
-uv run slm-lab slm_lab/spec/experimental/asha_search_test.json asha_search_test search
-uv run slm-lab slm_lab/spec/experimental/ppo_asha_example.json ppo_asha_cartpole search
-```
-
-### Multi-Session Behavior
-
-**Single-session trials** (`max_session=1`):
-
-- ✅ Support early termination via ASHA
-- ✅ Periodic metric reporting at `log_frequency`
-- ✅ Fast exploration of hyperparameter space
-- Best for: Initial search, exploration phase
-
-**Multi-session trials** (`max_session>1`):
-
-- ❌ No early termination (always run to `max_frame`)
-- ✅ Robust statistics across multiple runs
-- ✅ Reduced variance in metric evaluation
-- Best for: Final evaluation, production configs
-
-**Recommendation**: Use `max_session=1` for search to leverage ASHA early termination, then run best configs with `max_session>1` for robust final evaluation.
-
-## Two-Stage Hyperparameter Search Methodology
-
-Use this proven two-stage approach for finding robust hyperparameters:
-
-### Stage 1: Wide ASHA Exploration (Fast, High Variance)
-
-**Goal**: Efficiently explore large search space to identify promising hyperparameter ranges
-
-**Configuration**:
-- `max_session=1` (single session, high variance but fast)
-- `search_scheduler` enabled with ASHA early termination
-- Wide search space with many trials (e.g., 30 trials)
-
-**Example**:
 ```json
 {
   "meta": {
@@ -229,28 +214,13 @@ Use this proven two-stage approach for finding robust hyperparameters:
 }
 ```
 
-**Workflow**:
-1. Run wide ASHA search: `slm-lab spec.json spec_name search`
-2. Analyze `experiment_df.csv` to identify top-performing trials
-3. Look for patterns in successful hyperparameter combinations
-4. Define narrower search ranges around promising values
+### Multi-Session Refinement Configuration
 
-### Stage 2: Narrow Multi-Session Validation (Robust, Low Variance)
-
-**Goal**: Validate best hyperparameter ranges with reliable averaged results
-
-**Configuration**:
-- `max_session=4` (multi-session averaging, low variance, reliable)
-- **NO** `search_scheduler` (must be omitted or null)
-- Narrow search space focused on promising ranges (e.g., 8-12 trials)
-
-**Example**:
 ```json
 {
   "meta": {
     "max_session": 4,
     "max_trial": 8
-    // search_scheduler MUST be omitted
   },
   "search": {
     "agent.algorithm.gamma__choice": [0.97, 0.98, 0.99],
@@ -259,67 +229,13 @@ Use this proven two-stage approach for finding robust hyperparameters:
 }
 ```
 
-**Workflow**:
-1. Create narrowed spec based on Stage 1 patterns
-2. Run multi-session search: `slm-lab spec_narrow.json spec_name search`
-3. Select best config from averaged `total_reward_ma` across 4 sessions
-4. Update spec with winning hyperparameters as defaults
-5. Keep `search` section in spec for reference/documentation
-
-**Key Principle**: Stage 1 identifies promising ranges quickly (single session, ASHA). Stage 2 validates with reliable statistics (multi-session, no early termination). Never use ASHA with multi-session.
-
 ## TODO
 
-- [ ] Ray Tune graph has no plots. also experiment df tries to report the now-nonstandard columns like efficiency etc - which arent calculated? check
+Run full SLM Lab benchmarks. See `BENCHMARKS.md` for detailed benchmark progress tracking. This is the single source of truth for:
 
-- [ ] **Two-Stage Hyperparameter Search**:
+- Phase-by-phase validation status (CartPole, LunarLander, Continuous Control, MuJoCo, Atari)
+- Algorithm-specific targets and results
+- Known issues and limitations
+- Next steps and prioritization
 
-  - [ ] **PPO CartPole**: Comprehensive optimization
-    - Stage 1 (ASHA): `slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole_search1.json ppo_cartpole_search1 search`
-      - 200 trials, max_frame=200k, ASHA early termination
-      - Search: gamma, lam, clip_eps, entropy_coef, val_loss_coef, time_horizon, minibatch_size, training_epoch, loss_spec, actor_lr, critic_lr
-      - After completion: analyze `experiment_df.csv` to identify top hyperparameter ranges
-    - Stage 2 (Multi-session): Create `ppo_cartpole_search2.json` based on Stage 1 results
-      - ~12 trials, 4 sessions, narrowed ranges
-      - Validates best hyperparameters with robust averaged statistics
-
-  - [ ] **PPO Continuous Control (dstack)**:
-
-    ```bash
-    # MuJoCo requires more compute - use dstack
-    slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker search --dstack ppo-bipedal-search
-    slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_pendulum search --dstack ppo-pendulum-search
-    slm-lab --set env=HalfCheetah-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-halfcheetah-search
-    slm-lab --set env=Ant-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-ant-search
-    slm-lab --set env=Hopper-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-hopper-search
-    slm-lab --set env=Walker2d-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-walker-search
-    slm-lab --set env=Humanoid-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search --dstack ppo-humanoid-search
-    ```
-
-  - [ ] **PPO Atari (dstack)**:
-
-    ```bash
-    # GPU-accelerated Atari training
-    slm-lab --set env=ALE/Pong-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-pong-search
-    slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-breakout-search
-    slm-lab --set env=ALE/Qbert-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-qbert-search
-    slm-lab --set env=ALE/Seaquest-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search --dstack ppo-seaquest-search
-    ```
-
-  - [ ] **DQN Atari (dstack)**:
-
-    ```bash
-    # DQN variants for discrete action Atari
-    slm-lab slm_lab/spec/benchmark/dqn/dqn_breakout.json dqn_breakout search --dstack dqn-breakout-search
-    slm-lab slm_lab/spec/benchmark/dqn/dqn_pong.json dqn_pong search --dstack dqn-pong-search
-    ```
-
-  - [ ] **SAC Continuous Control (dstack)**:
-    ```bash
-    # SAC for continuous control benchmarks
-    slm-lab --set env=HalfCheetah-v5 slm_lab/spec/benchmark/sac/sac_mujoco.json sac_mujoco search --dstack sac-halfcheetah-search
-    slm-lab --set env=Ant-v5 slm_lab/spec/benchmark/sac/sac_mujoco.json sac_mujoco search --dstack sac-ant-search
-    ```
-
-- [ ] **Extended Gymnasium Support**: Explore new gymnasium environments
-- [ ] **Documentation Updates**: Update gitbook with new performance optimizations
+Update `BENCHMARKS.md` as benchmarks complete, keeping this document focused on methodology rather than tracking.

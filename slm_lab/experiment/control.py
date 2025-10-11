@@ -114,7 +114,15 @@ class Session:
             next_state, reward, terminated, truncated, info = self.env.step(action)
 
             done = np.logical_or(terminated, truncated)
-            self.agent.update(state, action, reward, next_state, done)
+            self.agent.update(
+                state=state,
+                action=action,
+                reward=reward,
+                next_state=next_state,
+                done=done,
+                terminated=terminated,
+                truncated=truncated
+            )
             self.try_ckpt(self.agent, self.env)
 
             if util.epi_done(done):

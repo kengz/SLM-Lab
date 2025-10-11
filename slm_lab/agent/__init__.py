@@ -85,12 +85,22 @@ class Agent:
         reward: float,
         next_state: np.ndarray,
         done: bool,
+        terminated: bool,
+        truncated: bool,
     ) -> Optional[dict[str, float]]:
-        """Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net"""
+        """Update per timestep after env transitions"""
         self.mt.update(state, action, reward, next_state, done)
-        if util.in_eval_lab_mode():  # eval does not update agent for training
+        if util.in_eval_lab_mode():
             return
-        self.memory.update(state, action, reward, next_state, done)
+        self.memory.update(
+            state=state,
+            action=action,
+            reward=reward,
+            next_state=next_state,
+            done=done,
+            terminated=terminated,
+            truncated=truncated
+        )
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
             self.mt.loss = loss

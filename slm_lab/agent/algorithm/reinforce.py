@@ -120,7 +120,7 @@ class Reinforce(Algorithm):
 
     def calc_ret_advs(self, batch):
         '''Calculate plain returns; which is generalized to advantage in ActorCritic'''
-        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        rets = math_util.calc_returns(batch['rewards'], batch['terminateds'], self.gamma)
         if self.center_return:
             rets = math_util.center_mean(rets)
         advs = rets

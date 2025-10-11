@@ -116,19 +116,27 @@ class PrioritizedReplay(Replay):
         self.epsilon = np.full((1,), self.epsilon)
         self.alpha = np.full((1,), self.alpha)
         # adds a 'priorities' scalar to the data_keys and call reset again
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'terminateds', 'truncateds', 'priorities']
         self.reset()
 
     def reset(self):
         super().reset()
         self.tree = SumTree(self.max_size)
 
-    def add_experience(self, state, action, reward, next_state, done, error=100000):
+    def add_experience(self, *, state, action, reward, next_state, done, terminated, truncated, error=100000):
         '''
         Implementation for update() to add experience to memory, expanding the memory size if necessary.
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
-        super().add_experience(state, action, reward, next_state, done)
+        super().add_experience(
+            state=state,
+            action=action,
+            reward=reward,
+            next_state=next_state,
+            done=done,
+            terminated=terminated,
+            truncated=truncated
+        )
         priority = self.get_priority(error)
         self.priorities[self.head] = priority
         self.tree.add(priority, self.head)

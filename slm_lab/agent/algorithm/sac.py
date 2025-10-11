@@ -176,7 +176,7 @@ class SoftActorCritic(ActorCritic):
             next_target_q1_preds = self.calc_q(next_states, next_actions, self.target_q1_net)
             next_target_q2_preds = self.calc_q(next_states, next_actions, self.target_q2_net)
             next_target_q_preds = torch.min(next_target_q1_preds, next_target_q2_preds)
-            q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * (next_target_q_preds - self.alpha * next_log_probs)
+            q_targets = batch['rewards'] + self.gamma * (1 - batch['terminateds']) * (next_target_q_preds - self.alpha * next_log_probs)
         return q_targets
 
     def calc_reg_loss(self, preds, targets):

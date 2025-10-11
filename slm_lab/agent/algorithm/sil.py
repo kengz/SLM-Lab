@@ -93,8 +93,9 @@ class SIL(ActorCritic):
         if self.agent.memory.is_episodic:
             batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
         for idx in range(len(batch['dones'])):
-            tuples = [batch[k][idx] for k in self.replay_memory.data_keys]
-            self.replay_memory.add_experience(*tuples)
+            # Build kwargs dict from batch data
+            kwargs = {k: batch[k][idx] for k in self.replay_memory.data_keys}
+            self.replay_memory.add_experience(**kwargs)
         batch = util.to_torch_batch(batch, self.net.device, self.replay_memory.is_episodic)
         return batch
 
@@ -112,7 +113,7 @@ class SIL(ActorCritic):
         This is called on a randomly-sample batch from experience replay
         '''
         v_preds = self.calc_v(batch['states'], use_cache=False)
-        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        rets = math_util.calc_returns(batch['rewards'], batch['terminateds'], self.gamma)
         clipped_advs = torch.clamp(rets - v_preds, min=0.0)
 
         action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)

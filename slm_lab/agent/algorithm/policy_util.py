@@ -143,12 +143,15 @@ def random(state, algorithm) -> torch.Tensor:
 
 
 def epsilon_greedy(state, algorithm):
-    '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
+    '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do greedy argmax.'''
     epsilon = algorithm.agent.explore_var
     if epsilon > np.random.rand():
         return random(state, algorithm)
     else:
-        return default(state, algorithm)
+        # Epsilon-greedy must use argmax (greedy), NOT stochastic sampling
+        pdparam = calc_pdparam(state, algorithm)
+        action = pdparam.argmax(dim=-1)
+        return action
 
 
 def boltzmann(state, algorithm):

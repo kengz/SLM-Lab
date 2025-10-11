@@ -99,7 +99,7 @@ class SARSA(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.agent.memory.sample()
-        # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
+        # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['terminateds'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
         batch = util.to_torch_batch(batch, self.net.device, self.agent.memory.is_episodic)
@@ -120,7 +120,7 @@ class SARSA(Algorithm):
             next_q_preds = math_util.venv_pack(next_q_preds, self.agent.env.num_envs)
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         act_next_q_preds = next_q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
-        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
+        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['terminateds']) * act_next_q_preds
         logger.debug(f'act_q_preds: {act_q_preds}\nact_q_targets: {act_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
         return q_loss

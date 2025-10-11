@@ -82,7 +82,8 @@ def run_spec(spec, lab_mode: str, spec_file: str = "", spec_name: str = ""):
             )
             spec_util.save(spec)
             Trial(spec).run()
-        
+
+        logger.info(f"Output: {spec['meta']['predir']}")
         # Upload after training completion
         upload(spec)
     elif lab_mode in EVAL_MODES:

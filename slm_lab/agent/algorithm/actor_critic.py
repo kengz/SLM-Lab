@@ -211,7 +211,7 @@ class ActorCritic(Reinforce):
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.agent.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.agent.env.num_envs)
-        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        rets = math_util.calc_returns(batch['rewards'], batch['terminateds'], self.gamma)
         advs = rets - v_preds
         v_targets = rets
         if self.agent.env.is_venv:
@@ -233,7 +233,7 @@ class ActorCritic(Reinforce):
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.agent.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.agent.env.num_envs)
-        nstep_rets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
+        nstep_rets = math_util.calc_nstep_returns(batch['rewards'], batch['terminateds'], next_v_pred, self.gamma, self.num_step_returns)
         advs = nstep_rets - v_preds
         v_targets = nstep_rets
         if self.agent.env.is_venv:
@@ -257,9 +257,9 @@ class ActorCritic(Reinforce):
             v_preds = math_util.venv_pack(v_preds, self.agent.env.num_envs)
             next_v_pred = next_v_pred.unsqueeze(dim=0)
         v_preds_all = torch.cat((v_preds, next_v_pred), dim=0)
-        advs = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds_all, self.gamma, self.lam)
+        advs = math_util.calc_gaes(batch['rewards'], batch['terminateds'], v_preds_all, self.gamma, self.lam)
         v_targets = advs + v_preds
-        advs = math_util.standardize(advs)  # standardize only for advs, not v_targets
+        # NOTE: Advantage normalization moved to per-minibatch in training loop (like SB3)
         if self.agent.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)

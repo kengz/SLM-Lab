@@ -1,13 +1,12 @@
 {
-  "sac_cartpole": {
+  "sac_mountaincar_continuous": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "GumbelSoftmax",
+        "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_epsilon": 0.2,
         "training_frequency": 1
       },
       "memory": {
@@ -18,11 +17,8 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          64,
-          64
-        ],
-        "hid_layers_activation": "tanh",
+        "hid_layers": [128, 128],
+        "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -30,7 +26,7 @@
         },
         "optim_spec": {
           "name": "AdamW",
-          "lr": 0.003
+          "lr": 0.0003
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -39,17 +35,17 @@
       }
     },
     "env": {
-      "name": "CartPole-v1",
+      "name": "MountainCarContinuous-v0",
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 200000,
-      "num_envs": 8
+      "max_frame": 500000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
       "rigorous_eval": 0,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 1
     }
   }

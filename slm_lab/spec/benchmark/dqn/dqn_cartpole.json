@@ -14,8 +14,8 @@
           "end_step": 4000
         },
         "gamma": 0.99,
-        "training_batch_iter": 8,
-        "training_iter": 4,
+        "training_batch_iter": 2,
+        "training_iter": 2,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -85,12 +85,12 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "start_val": 5.0,
-          "end_val": 0.5,
+          "start_val": 1.0,
+          "end_val": 0.08,
           "start_step": 0,
-          "end_step": 4000
+          "end_step": 6000
         },
-        "gamma": 0.99,
+        "gamma": 0.995,
         "training_batch_iter": 2,
         "training_iter": 2,
         "training_frequency": 4,
@@ -98,61 +98,40 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": false
+        "batch_size": 64,
+        "max_size": 50000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [
-          64
+          256,
+          128
         ],
         "hid_layers_activation": "selu",
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 0.55,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "AdamW",
-          "lr": 0.02
+          "name": "Adam",
+          "lr": 0.0003
         },
         "update_type": "replace",
-        "update_frequency": 10,
+        "update_frequency": 75,
         "gpu": "auto"
       }
     },
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 30000
+      "max_frame": 100000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
+      "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 1
-    },
-    "search": {
-      "agent": {
-        "net": {
-          "hid_layers__choice": [
-            [
-              32
-            ],
-            [
-              64
-            ],
-            [
-              32,
-              16
-            ],
-            [
-              64,
-              32
-            ]
-          ]
-        }
-      }
     }
   },
   "ddqn_per_boltzmann_cartpole": {
@@ -205,7 +184,7 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 30000
+      "max_frame": 40000
     },
     "meta": {
       "distributed": false,
@@ -241,38 +220,40 @@
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Categorical",
+        "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.01,
+          "end_val": 0.1,
           "start_step": 0,
-          "end_step": 5000
+          "end_step": 3000
         },
-        "gamma": 0.995,
-        "training_batch_iter": 1,
+        "gamma": 0.99,
+        "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 2,
+        "training_frequency": 4,
         "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 64,
-        "max_size": 100000,
+        "batch_size": 32,
+        "max_size": 50000,
         "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128],
+        "hid_layers": [
+          256
+        ],
         "hid_layers_activation": "selu",
-        "clip_grad_val": 10.0,
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.00789
+          "lr": 0.0003
         },
         "update_type": "replace",
         "update_frequency": 100,
@@ -282,11 +263,10 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000
+      "max_frame": 100000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 1

@@ -40,7 +40,7 @@ class OnPolicyReplay(Memory):
         self.size = 0  # total experiences stored
         self.seen_size = 0  # total experiences seen cumulatively
         # declare what data keys to store
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'terminateds', 'truncateds']
         self.reset()
 
     @lab_api
@@ -53,13 +53,21 @@ class OnPolicyReplay(Memory):
         self.size = 0
 
     @lab_api
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state, action, reward, next_state, done, terminated, truncated):
         '''Interface method to update memory'''
-        self.add_experience(state, action, reward, next_state, done)
+        self.add_experience(
+            state=state,
+            action=action,
+            reward=reward,
+            next_state=next_state,
+            done=done,
+            terminated=terminated,
+            truncated=truncated
+        )
 
-    def add_experience(self, state, action, reward, next_state, done):
+    def add_experience(self, *, state, action, reward, next_state, done, terminated, truncated):
         '''Interface helper method for update() to add experience to memory'''
-        self.most_recent = (state, action, reward, next_state, done)
+        self.most_recent = (state, action, reward, next_state, done, terminated, truncated)
         for idx, k in enumerate(self.data_keys):
             self.cur_epi_data[k].append(self.most_recent[idx])
         # If episode ended, add to memory and clear cur_epi_data
@@ -68,7 +76,6 @@ class OnPolicyReplay(Memory):
                 getattr(self, k).append(self.cur_epi_data[k])
             self.cur_epi_data = {k: [] for k in self.data_keys}
             # If agent has collected the desired number of episodes, it is ready to train
-            # length is num of epis due to nested structure
             if len(self.states) == self.agent.algorithm.training_frequency:
                 self.agent.algorithm.to_train = 1
         # Track memory size and num experiences
@@ -111,9 +118,9 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         super().__init__(memory_spec, agent)
         self.is_episodic = False
 
-    def add_experience(self, state, action, reward, next_state, done):
+    def add_experience(self, *, state, action, reward, next_state, done, terminated, truncated):
         '''Interface helper method for update() to add experience to memory'''
-        self.most_recent = [state, action, reward, next_state, done]
+        self.most_recent = [state, action, reward, next_state, done, terminated, truncated]
         for idx, k in enumerate(self.data_keys):
             getattr(self, k).append(self.most_recent[idx])
         # Track memory size and num experiences

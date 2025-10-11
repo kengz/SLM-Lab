@@ -11,6 +11,7 @@ from slm_lab.env.wrappers import (
     ClockWrapper,
     TrackReward,
     VectorClockWrapper,
+    VectorRenderAll,
     VectorTrackReward,
 )
 from slm_lab.lib import logger, util
@@ -151,10 +152,13 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         vectorization_mode = _get_vectorization_mode(name, num_envs)
         # Note: For Atari, gymnasium's make_vec automatically includes FrameStackObservation + AtariPreprocessing
         env = gym.make_vec(
-            name, num_envs=num_envs, vectorization_mode=vectorization_mode
+            name, num_envs=num_envs, vectorization_mode=vectorization_mode, render_mode="rgb_array" if render_mode else None
         )
         # Add reward tracking for SLM-Lab compatibility
         env = VectorTrackReward(env)
+        # Add grid rendering for all envs
+        if render_mode:
+            env = VectorRenderAll(env)
     else:
         env = gym.make(name, render_mode=render_mode)
         # gymnasium forgot to do this for single Atari env like in make_vec

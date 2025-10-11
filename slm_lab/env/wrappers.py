@@ -14,31 +14,33 @@ from slm_lab.lib import util
 
 
 class TrackReward(gym.Wrapper):
-    """Track cumulative reward for SLM-Lab compatibility"""
+    """Track cumulative reward for SLM-Lab compatibility
+    
+    Reports the last completed episode reward.
+    Metrics layer will compute moving averages.
+    """
 
     def __init__(self, env: gym.Env):
         super().__init__(env)
-        self.total_reward = 0.0
+        self.ongoing_reward = 0.0
+        self.total_reward = 0.0  # Last completed episode reward
         self.episode_count = 0
 
     def reset(self, **kwargs) -> tuple[np.ndarray, dict[str, Any]]:
-        # Reset total reward at episode start
-        self.total_reward = 0.0
+        # Reset ongoing reward at episode start
+        self.ongoing_reward = 0.0
         state, info = self.env.reset(**kwargs)
-        # Add total_reward to info for consistency
-        info["total_reward"] = self.total_reward
         return state, info
 
     def step(
         self, action: Union[int, float, np.ndarray]
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         state, reward, terminated, truncated, info = self.env.step(action)
-        self.total_reward += reward
-
-        # Always set total_reward for SLM-Lab compatibility
-        info["total_reward"] = self.total_reward
+        self.ongoing_reward += reward
 
         if terminated or truncated:
+            # Save completed episode reward before reset
+            self.total_reward = self.ongoing_reward
             info["episode_reward"] = self.total_reward
             info["episode_count"] = self.episode_count
             self.episode_count += 1
@@ -47,22 +49,39 @@ class TrackReward(gym.Wrapper):
 
 
 class VectorTrackReward(gym.vector.VectorWrapper):
-    """Track cumulative reward for vector environments"""
+    """Track cumulative reward for vector environments
+
+    Reports the last completed episode reward for each env.
+    Metrics layer will compute moving averages.
+    """
 
     def __init__(self, env: gym.vector.VectorEnv) -> None:
         super().__init__(env)
+        # Ongoing episode rewards for each env
         self.total_rewards: np.ndarray = np.zeros(self.num_envs, dtype=np.float32)
+        # Last completed episode reward for each env
+        self.last_episode_rewards: np.ndarray = np.zeros(self.num_envs, dtype=np.float32)
         self.episode_counts: np.ndarray = np.zeros(self.num_envs, dtype=int)
 
     def reset(self, **kwargs) -> tuple[np.ndarray, dict[str, Any]]:
-        # Reset total rewards at episode start
+        # Reset ongoing rewards at episode start
         self.total_rewards.fill(0.0)
         observations, infos = self.env.reset(**kwargs)
-        # Add total_reward to info for consistency
-        if not isinstance(infos, dict):
-            infos = {}
-        infos["total_reward"] = self.total_rewards.copy()
         return observations, infos
+
+    @property
+    def total_reward(self) -> float:
+        """Return mean of last completed episode reward per env
+
+        Each env slot holds its most recent completed episode reward.
+        Early in training when no episodes completed yet, uses ongoing rewards.
+        """
+        if self.episode_counts.sum() > 0:
+            # Use last completed episode rewards (always complete episodes)
+            return np.mean(self.last_episode_rewards)
+        else:
+            # Fallback: average of ongoing rewards (very early in training)
+            return np.mean(self.total_rewards)
 
     def step(
         self, actions: np.ndarray
@@ -70,17 +89,20 @@ class VectorTrackReward(gym.vector.VectorWrapper):
         observations, rewards, terminations, truncations, infos = self.env.step(actions)
         self.total_rewards += rewards
 
-        # Ensure infos is a dict with total_reward for SLM-Lab compatibility
-        if not isinstance(infos, dict):
-            infos = {}
-        infos["total_reward"] = self.total_rewards.copy()
-
-        # Reset rewards for terminated/truncated environments and update episode counts
+        # Save completed episode rewards before resetting
         dones = np.logical_or(terminations, truncations)
-        self.episode_counts[dones] += 1
-        self.total_rewards[dones] = 0.0
+        if np.any(dones):
+            # Update last completed reward for each done env
+            self.last_episode_rewards[dones] = self.total_rewards[dones]
+            self.episode_counts[dones] += 1
+            # Reset ongoing rewards for done envs
+            self.total_rewards[dones] = 0.0
 
         return observations, rewards, terminations, truncations, infos
+
+    def __getattr__(self, name):
+        """Pass through all attributes to the wrapped environment"""
+        return getattr(self.env, name)
 
 
 class ClockMixin:
@@ -136,8 +158,9 @@ class ClockMixin:
         self.t = 0
 
     def tick_opt_step(self) -> None:
-        """Tick optimizer step - call this manually during training"""
-        self.opt_step += self.batch_size
+        """Tick optimizer step - call this manually during training
+        Note: opt_step counts the number of optimizer update calls, not samples"""
+        self.opt_step += 1
 
     @property
     def total_reward(self):
@@ -210,3 +233,85 @@ class VectorClockWrapper(ClockMixin, gym.vector.VectorWrapper):
     def __getattr__(self, name):
         """Pass through all attributes to the wrapped environment"""
         return getattr(self.env, name)
+
+
+class VectorRenderAll(gym.vector.VectorWrapper):
+    """Render all environments in a vector env as a grid
+    
+    Displays all environments in a tiled grid layout using pygame.
+    Renders every N steps to maintain high training speed.
+    """
+
+    def __init__(self, env: gym.vector.VectorEnv, render_freq: int = 32):
+        super().__init__(env)
+        self.render_freq = render_freq  # Render every N steps
+        self.step_count = 0
+        self.window = None
+        self.clock = None
+        
+        # Calculate grid dimensions (roughly square)
+        import math
+        self.grid_cols = int(math.ceil(math.sqrt(self.num_envs)))
+        self.grid_rows = int(math.ceil(self.num_envs / self.grid_cols))
+        
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
+        
+    def step(self, actions):
+        result = self.env.step(actions)
+        self.step_count += 1
+        # Only render every render_freq steps
+        if self.step_count % self.render_freq == 0:
+            self._render_grid()
+        return result
+        
+    def _render_grid(self):
+        """Render all environments in a grid"""
+        try:
+            import pygame
+        except ImportError:
+            return  # Silent fail if pygame not available
+            
+        # Get frames from all environments
+        frames = self.env.call("render")
+        if frames is None or frames[0] is None:
+            return
+            
+        # Initialize pygame window on first render
+        if self.window is None:
+            pygame.init()
+            frame_h, frame_w = frames[0].shape[:2]
+            window_w = frame_w * self.grid_cols
+            window_h = frame_h * self.grid_rows
+            self.window = pygame.display.set_mode((window_w, window_h))
+            pygame.display.set_caption(f"Vector Env ({self.num_envs} envs)")
+            self.clock = pygame.time.Clock()
+            
+        # Blit frames to grid
+        frame_h, frame_w = frames[0].shape[:2]
+        surface = pygame.Surface((frame_w * self.grid_cols, frame_h * self.grid_rows))
+        
+        for i, frame in enumerate(frames):
+            if frame is None:
+                continue
+            row = i // self.grid_cols
+            col = i % self.grid_cols
+            frame_surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+            surface.blit(frame_surface, (col * frame_w, row * frame_h))
+            
+        self.window.blit(surface, (0, 0))
+        pygame.display.flip()
+        # No FPS cap - render as fast as possible
+        
+        # Handle pygame events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                self.window = None
+                
+    def close(self):
+        if self.window is not None:
+            import pygame
+            pygame.quit()
+            self.window = None
+        return super().close()
