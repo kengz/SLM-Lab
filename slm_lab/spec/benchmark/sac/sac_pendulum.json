@@ -1,29 +1,28 @@
 {
-  "sac_lunar": {
+  "sac_pendulum": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "Categorical",
+        "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
         "target_entropy_epsilon": 0.1,
-        "alpha_lr": 3e-05,
-        "training_frequency": 1
+        "training_iter": 16,
+        "training_frequency": 100,
+        "training_start_step": 5000
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 256,
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
+        "batch_size": 2048,
         "max_size": 100000,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          64,
-          64,
-          32
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -35,21 +34,20 @@
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "update_frequency": 1,
         "polyak_coef": 0.005,
         "gpu": "auto"
       }
     },
     "env": {
-      "name": "LunarLander-v3",
+      "name": "Pendulum-v1",
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 300000,
-      "num_envs": 8
+      "max_frame": 100000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 500,
+      "log_frequency": 500,
+      "eval_frequency": 2000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1

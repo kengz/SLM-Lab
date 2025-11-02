@@ -3,7 +3,6 @@
 from glob import glob
 from plotly import graph_objs as go, io as pio, subplots
 from plotly.offline import init_notebook_mode, iplot
-from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import log_extra
 import colorlover as cl
@@ -383,10 +382,16 @@ def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     
     # Always look in info_prepath for trial_metrics.json files
     # Trials save to the main info directory, not Ray Tune subdirectories
-    trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.json')
+    # For single-session trials, prefer _s0 suffix files, fallback to non-suffixed
+    trial_metrics_path_list = glob(f'{info_prepath}*_s0_trial_metrics.json')
+    if not trial_metrics_path_list:
+        # Fallback to non-suffixed pattern for backward compatibility
+        trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.json')
+        # Filter out _s0 files if they somehow got included
+        trial_metrics_path_list = [p for p in trial_metrics_path_list if '_s0_trial_metrics.json' not in p]
     
     if not trial_metrics_path_list:
-        logger.warning(f'No trial metrics found for multi-trial plot')
+        logger.warning('No trial metrics found for multi-trial plot')
         return
     
     # sort by trial id (handle Ray Tune paths gracefully)

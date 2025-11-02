@@ -51,7 +51,8 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 1,
+      "log_frequency": 500
     },
     "search": {
       "agent": {

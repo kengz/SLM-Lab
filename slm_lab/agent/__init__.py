@@ -141,17 +141,17 @@ class MetricsTracker:
         self.best_total_reward_ma = -np.inf
         self.total_reward_ma = np.nan
 
-        # dataframes to track data - start with core columns only
+        # dataframes to track data - start with core columns in priority order
         core_columns = [
-            "epi",
-            "t",
-            "wall_t",
-            "opt_step",
-            "frame",
-            "fps",
             "total_reward",
             "total_reward_ma",
             "loss",
+            "fps",
+            "frame",
+            "wall_t",
+            "t",
+            "epi",
+            "opt_step",
             "lr",
         ]
         self.train_df = pd.DataFrame(columns=core_columns)
@@ -216,19 +216,19 @@ class MetricsTracker:
             else:
                 self.grad_norm = np.nan
 
-        # Core metrics that are always present
+        # Core metrics in priority order (most important first for display)
         row_data = {
-            # epi and frame are always measured from training env
-            "epi": self.env.get("epi"),
             # t and reward are measured from a given env or eval_env
-            "t": env.get("t"),
-            "wall_t": wall_t,
-            "opt_step": self.env.get("opt_step"),
-            "frame": frame,
-            "fps": fps,
             "total_reward": total_reward,
             "total_reward_ma": np.nan,  # update outside
             "loss": self.loss,
+            "fps": fps,
+            # epi and frame are always measured from training env
+            "frame": frame,
+            "wall_t": wall_t,
+            "t": env.get("t"),
+            "epi": self.env.get("epi"),
+            "opt_step": self.env.get("opt_step"),
             "lr": self.get_mean_lr(),
         }
 
@@ -339,6 +339,8 @@ class MetricsTracker:
         for k, v in last_row.items():
             if str(v).lower() == "nan":
                 items.append(f"{k}:nan")
+            elif k in ("total_reward", "total_reward_ma"):
+                items.append(f"{k}:{v:.2f}")
             elif isinstance(v, float) and not v.is_integer():
                 items.append(f"{k}:{v:.3g}")
             else:

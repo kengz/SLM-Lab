@@ -67,6 +67,9 @@ class Replay(Memory):
 
     def __init__(self, memory_spec, agent):
         super().__init__(memory_spec, agent)
+        util.set_attr(self, dict(
+            use_cer=False,
+        ))
         util.set_attr(self, self.memory_spec, [
             'batch_size',
             'max_size',
@@ -77,6 +80,7 @@ class Replay(Memory):
         self.size = 0  # total experiences stored
         self.seen_size = 0  # total experiences seen cumulatively
         self.head = -1  # index of most recent experience
+        self.last_sample_head = -1  # head at last sample (for CER)
         # generic next_state buffer to store last next_states (allow for multiple for venv)
         self.ns_idx_offset = agent.env.num_envs if agent.env.is_venv else 1
         self.ns_buffer = deque(maxlen=self.ns_idx_offset)
@@ -93,6 +97,7 @@ class Replay(Memory):
                 setattr(self, k, [None] * self.max_size)
         self.size = 0
         self.head = -1
+        self.last_sample_head = -1
         self.ns_buffer.clear()
 
     @lab_api
@@ -161,9 +166,20 @@ class Replay(Memory):
                 batch[k] = util.batch_get(getattr(self, k), self.batch_idxs)
         return batch
 
+    def apply_cer(self, batch_idxs):
+        '''Apply CER: replace some indices with new experiences, return modified indices'''
+        num_new_total = (self.head - self.last_sample_head) % self.max_size
+        num_new = min(num_new_total, len(batch_idxs), self.size)
+        if num_new > 0:
+            # Replace last num_new indices with new experiences
+            new_idxs = (self.last_sample_head + 1 + np.arange(num_new)) % self.max_size
+            batch_idxs = np.concatenate([batch_idxs[:-num_new] if num_new < len(batch_idxs) else np.array([], dtype=int), new_idxs])
+            self.last_sample_head = (self.last_sample_head + num_new) % self.max_size
+        return batch_idxs
+
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.randint(self.size, size=batch_size)
-        if self.use_cer:  # add the latest sample
-            batch_idxs[-1] = self.head
+        if self.use_cer:
+            batch_idxs = self.apply_cer(batch_idxs)
         return batch_idxs

@@ -143,13 +143,6 @@ class Session:
         self.run_rl()
         metrics = analysis.analyze_session(self.spec, self.agent.mt.eval_df, "eval")
         self.agent.mt.log_metrics(metrics["scalar"], "eval")
-
-        # For single-session trials in Ray Tune, save trial outputs immediately
-        # This ensures early-terminated trials have outputs
-        from slm_lab.experiment.search import in_ray_tune_context
-        if in_ray_tune_context() and self.spec["meta"]["max_session"] == 1:
-            analysis.analyze_trial(self.spec, [metrics])
-
         self.close()
         return metrics
 

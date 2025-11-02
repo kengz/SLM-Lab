@@ -47,7 +47,8 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 1,
+      "log_frequency": 500
     },
     "search": {
       "agent": {
@@ -89,7 +90,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -120,14 +124,50 @@
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.95, 0.999],
-      "agent.algorithm.center_return__choice": [true, false],
-      "agent.algorithm.entropy_coef_spec.start_val__uniform": [0.0, 0.01],
-      "agent.algorithm.entropy_coef_spec.end_step__choice": [100000, 150000, 200000],
-      "agent.algorithm.training_frequency__choice": [128, 256, 512],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 128], [256, 256]],
-      "agent.net.hid_layers_activation__choice": ["relu", "tanh"],
-      "agent.net.optim_spec.lr__loguniform": [1e-4, 5e-3]
+      "agent.algorithm.gamma__uniform": [
+        0.95,
+        0.999
+      ],
+      "agent.algorithm.center_return__choice": [
+        true,
+        false
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__uniform": [
+        0.0,
+        0.01
+      ],
+      "agent.algorithm.entropy_coef_spec.end_step__choice": [
+        100000,
+        150000,
+        200000
+      ],
+      "agent.algorithm.training_frequency__choice": [
+        128,
+        256,
+        512
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "agent.net.hid_layers_activation__choice": [
+        "relu",
+        "tanh"
+      ],
+      "agent.net.optim_spec.lr__loguniform": [
+        0.0001,
+        0.005
+      ]
     }
   },
   "reinforce_baseline_cartpole": {
@@ -215,7 +255,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -265,7 +308,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -315,7 +361,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -365,7 +414,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -392,10 +444,36 @@
       "max_trial": 12
     },
     "search": {
-      "agent.algorithm.gamma__choice": [0.96, 0.97, 0.98],
-      "agent.net.hid_layers__choice": [[256, 256], [256, 128], [128, 128, 128]],
-      "agent.net.optim_spec.lr__choice": [0.0015, 0.002, 0.0025],
-      "agent.algorithm.entropy_coef_spec.start_val__choice": [0.002, 0.003, 0.004]
+      "agent.algorithm.gamma__choice": [
+        0.96,
+        0.97,
+        0.98
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          128,
+          128,
+          128
+        ]
+      ],
+      "agent.net.optim_spec.lr__choice": [
+        0.0015,
+        0.002,
+        0.0025
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__choice": [
+        0.002,
+        0.003,
+        0.004
+      ]
     }
   },
   "reinforce_cartpole_search_refine": {
@@ -422,7 +500,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -449,10 +530,36 @@
       "max_trial": 8
     },
     "search": {
-      "agent.algorithm.gamma__choice": [0.97, 0.974, 0.98],
-      "agent.algorithm.entropy_coef_spec.start_val__choice": [0.005, 0.0095, 0.01],
-      "agent.net.hid_layers__choice": [[256, 256], [256, 128], [128, 128, 128]],
-      "agent.net.optim_spec.lr__choice": [0.0015, 0.002, 0.0025]
+      "agent.algorithm.gamma__choice": [
+        0.97,
+        0.974,
+        0.98
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__choice": [
+        0.005,
+        0.0095,
+        0.01
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          128,
+          128,
+          128
+        ]
+      ],
+      "agent.net.optim_spec.lr__choice": [
+        0.0015,
+        0.002,
+        0.0025
+      ]
     }
   }
 }

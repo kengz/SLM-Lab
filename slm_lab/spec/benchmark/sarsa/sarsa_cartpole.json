@@ -21,7 +21,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128],
+        "hid_layers": [
+          128
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": 0.344,
         "loss_spec": {
@@ -43,7 +45,8 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_trial": 1,
-      "max_session": 4
+      "max_session": 4,
+      "log_frequency": 500
     }
   },
   "sarsa_epsilon_greedy_cartpole_final": {
@@ -68,7 +71,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128],
+        "hid_layers": [
+          128
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": 0.35,
         "loss_spec": {
@@ -94,11 +99,28 @@
       "max_trial": 12
     },
     "search": {
-      "agent.algorithm.gamma__choice": [0.985, 0.99, 0.995],
-      "agent.algorithm.explore_var_spec.end_val__choice": [0.055, 0.06],
-      "agent.algorithm.explore_var_spec.end_step__choice": [10000, 12000, 15000],
-      "agent.net.clip_grad_val__uniform": [0.32, 0.40],
-      "agent.net.optim_spec.lr__uniform": [0.0065, 0.0095]
+      "agent.algorithm.gamma__choice": [
+        0.985,
+        0.99,
+        0.995
+      ],
+      "agent.algorithm.explore_var_spec.end_val__choice": [
+        0.055,
+        0.06
+      ],
+      "agent.algorithm.explore_var_spec.end_step__choice": [
+        10000,
+        12000,
+        15000
+      ],
+      "agent.net.clip_grad_val__uniform": [
+        0.32,
+        0.4
+      ],
+      "agent.net.optim_spec.lr__uniform": [
+        0.0065,
+        0.0095
+      ]
     }
   },
   "sarsa_boltzmann_cartpole": {

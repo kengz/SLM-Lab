@@ -27,7 +27,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -51,7 +54,8 @@
       "distributed": false,
       "eval_frequency": 5000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 1,
+      "log_frequency": 500
     }
   },
   "dqn_boltzmann_acrobot": {
@@ -82,7 +86,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.54,
         "loss_spec": {

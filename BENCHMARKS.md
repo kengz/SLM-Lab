@@ -35,11 +35,11 @@
 
 - **REINFORCE**: Vanilla policy gradient (CartPole only - educational baseline)
 - **A2C**: Advantage Actor-Critic with GAE (CartPole only - educational baseline)
-- **PPO**: Proximal Policy Optimization (all environments)
+- **PPO**: Proximal Policy Optimization (all environments - strongest general-purpose algorithm)
 - **SARSA**: On-policy TD learning (CartPole only - educational baseline)
 - **DQN**: Deep Q-Network (discrete only, use DDQN+PER for best results)
 - **DDQN+PER**: Double DQN with Prioritized Experience Replay (strongest DQN variant)
-- **SAC**: Soft Actor-Critic (continuous control)
+- **SAC**: Soft Actor-Critic (discrete and continuous - rivals PPO for continuous control)
 
 **Excluded**:
 
@@ -59,14 +59,14 @@
 - **A2C (GAE)**: GAE advantage estimation
 - **A2C (n-step)**: n-step returns (alternative)
 - **PPO**: Primary policy gradient
-- **SAC**: Discrete action variant (Lunar only)
+- **SAC**: Discrete action variant (experimental - underperforms on simple tasks like CartPole)
 
 **Continuous environments** (Pendulum, BipedalWalker, MuJoCo):
 
 - **A2C (GAE)**: GAE advantage estimation
 - **A2C (n-step)**: n-step returns (alternative)
-- **PPO**: Primary policy gradient
-- **SAC**: Primary off-policy
+- **PPO**: Primary on-policy algorithm
+- **SAC**: Primary off-policy algorithm (rivals PPO)
 
 ---
 
@@ -82,6 +82,7 @@
 - **Action Space**: Discrete(2) - push left/right
 - **State Space**: Box(4) - position, velocity, angle, angular velocity
 - **max_frames**: 200k
+- **log_frequency**: 500
 - **Target total_reward_ma**: > 400
 
 | Algorithm     | MA    | FPS  | Spec File                                                                           | Spec Name                       | Status | Notes                          |
@@ -90,7 +91,8 @@
 | **A2C**       | 488.7 | 3.5k | [a2c_gae_cartpole.json](slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json)           | `a2c_gae_cartpole`              | ✅     | 122.2% of target               |
 | **DQN**       | 437.8 | 1k   | [dqn_cartpole.json](slm_lab/spec/benchmark/dqn/dqn_cartpole.json)                   | `dqn_boltzmann_cartpole`        | ✅     | 109.5% of target, 3-stage ASHA |
 | **REINFORCE** | 427.2 | 14k  | [reinforce_cartpole.json](slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole`            | ✅     | 106.8% of target               |
-| **SARSA**     | 392.9 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.2% of target, 3-stage ASHA  |
+| **SARSA**     | 393.2 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.3% of target, 3-stage ASHA  |
+| **SAC**       | 422.0 | ~850 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole_extreme`          | ✅     | 105.5% of target, requires extreme training (iter=100) |
 
 ---
 
@@ -100,6 +102,7 @@
 - **Action Space**: Discrete(3) - apply torque (-1, 0, +1)
 - **State Space**: Box(6) - link positions and angular velocities
 - **max_frames**: 300k
+- **log_frequency**: 500
 - **Target total_reward_ma**: > -100
 
 | Algorithm           | MA     | FPS  | Spec File                                                                 | Spec Name                    | Status | Notes                            |
@@ -109,6 +112,7 @@
 | **DDQN+PER**        | -83.0  | ~700 | [ddqn_per_acrobot.json](slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot`           | ✅     | Solves target                    |
 | **A2C**             | -84.2  | 3.4k | [a2c_gae_acrobot.json](slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json)   | `a2c_gae_acrobot`            | ✅     | Solves target                    |
 | **DQN (ε-greedy)**  | -104.0 | ~720 | [dqn_acrobot.json](slm_lab/spec/benchmark/dqn/dqn_acrobot.json)           | `dqn_epsilon_greedy_acrobot` | ✅     | Misses target (4% below)         |
+| **SAC**             | -      | -    | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | ⏸️     | Discrete action variant          |
 
 ---
 
@@ -118,14 +122,16 @@
 - **Action Space**: Discrete(3) - accelerate left/none/right
 - **State Space**: Box(2) - position, velocity
 - **max_frames**: TBD
+- **log_frequency**: 500
 - **Target total_reward_ma**: > -110
 
-| Algorithm    | MA  | FPS | Spec File                                                                         | Spec Name              | Status | Notes        |
-| ------------ | --- | --- | --------------------------------------------------------------------------------- | ---------------------- | ------ | ------------ |
-| **PPO**      | -   | -   | [ppo_mountaincar.json](slm_lab/spec/benchmark/ppo/ppo_mountaincar.json)           | `ppo_mountaincar`      | ⏸️     | Primary      |
-| **A2C**      | -   | -   | [a2c_mountaincar.json](slm_lab/spec/benchmark/a2c/a2c_mountaincar.json)           | `a2c_mountaincar`      | ⏸️     | Secondary    |
-| **DQN**      | -   | -   | [dqn_mountaincar.json](slm_lab/spec/benchmark/dqn/dqn_mountaincar.json)           | `dqn_mountaincar`      | ⏸️     | Baseline     |
-| **DDQN+PER** | -   | -   | [ddqn_per_mountaincar.json](slm_lab/spec/benchmark/dqn/ddqn_per_mountaincar.json) | `ddqn_per_mountaincar` | ⏸️     | Enhanced DQN |
+| Algorithm    | MA  | FPS | Spec File                                                                         | Spec Name              | Status | Notes                   |
+| ------------ | --- | --- | --------------------------------------------------------------------------------- | ---------------------- | ------ | ----------------------- |
+| **PPO**      | -   | -   | [ppo_mountaincar.json](slm_lab/spec/benchmark/ppo/ppo_mountaincar.json)           | `ppo_mountaincar`      | ⏸️     | Primary                 |
+| **A2C**      | -   | -   | [a2c_mountaincar.json](slm_lab/spec/benchmark/a2c/a2c_mountaincar.json)           | `a2c_mountaincar`      | ⏸️     | Secondary               |
+| **DQN**      | -   | -   | [dqn_mountaincar.json](slm_lab/spec/benchmark/dqn/dqn_mountaincar.json)           | `dqn_mountaincar`      | ⏸️     | Baseline                |
+| **DDQN+PER** | -   | -   | [ddqn_per_mountaincar.json](slm_lab/spec/benchmark/dqn/ddqn_per_mountaincar.json) | `ddqn_per_mountaincar` | ⏸️     | Enhanced DQN            |
+| **SAC**      | -   | -   | [sac_mountaincar.json](slm_lab/spec/benchmark/sac/sac_mountaincar.json)           | `sac_mountaincar`      | ⏸️     | Discrete action variant |
 
 ---
 
@@ -135,6 +141,7 @@
 - **Action Space**: Box(1) - continuous force [-1, 1]
 - **State Space**: Box(2) - position, velocity
 - **max_frames**: TBD
+- **log_frequency**: 500
 - **Target total_reward_ma**: > 90
 
 | Algorithm | MA  | FPS | Spec File                                                 | Spec Name                    | Status | Notes              |
@@ -150,6 +157,7 @@
 - **Action Space**: Box(1) - torque [-2, 2]
 - **State Space**: Box(3) - cos(theta), sin(theta), angular velocity
 - **max_frames**: TBD
+- **log_frequency**: 500
 - **Target total_reward_ma**: > -200
 
 | Algorithm | MA  | FPS | Spec File                                                 | Spec Name      | Status | Notes                        |
@@ -172,14 +180,16 @@
 - **Action Space**: Discrete(4) - no-op, fire left/main/right engine
 - **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
 - **max_frames**: TBD
+- **log_frequency**: 1000 (episodes ~400-500 steps)
 - **Target total_reward_ma**: > 200
 
-| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes        |
-| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ------------ |
-| **PPO**       | -   | -   | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json)           | `ppo_lunar`             | ⏸️     | Primary      |
-| **DDQN+PER**  | -   | -   | [ddqn_per_lunar.json](slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` | ⏸️     | Enhanced DQN |
-| **A2C (GAE)** | -   | -   | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar`         | ⏸️     | Secondary    |
-| **DQN**       | -   | -   | [dqn_lunar.json](slm_lab/spec/benchmark/dqn/dqn_lunar.json)           | `dqn_lunar`             | ⏸️     | Baseline     |
+| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes                   |
+| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ----------------------- |
+| **PPO**       | -   | -   | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json)           | `ppo_lunar`             | ⏸️     | Primary                 |
+| **DDQN+PER**  | -   | -   | [ddqn_per_lunar.json](slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` | ⏸️     | Enhanced DQN            |
+| **A2C (GAE)** | -   | -   | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar`         | ⏸️     | Secondary               |
+| **DQN**       | -   | -   | [dqn_lunar.json](slm_lab/spec/benchmark/dqn/dqn_lunar.json)           | `dqn_lunar`             | ⏸️     | Baseline                |
+| **SAC**       | -   | -   | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar`             | ⏸️     | Discrete action variant |
 
 ---
 
@@ -189,6 +199,7 @@
 - **Action Space**: Box(2) - main engine [-1, 1], side engines [-1, 1]
 - **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
 - **max_frames**: TBD
+- **log_frequency**: 1000
 - **Target total_reward_ma**: > 200
 
 | Algorithm     | MA  | FPS | Spec File                                                 | Spec Name                  | Status | Notes      |
@@ -205,6 +216,7 @@
 - **Action Space**: Box(4) - motor speeds for 4 joints [-1, 1]
 - **State Space**: Box(24) - hull state, joint positions, velocities, lidar
 - **max_frames**: TBD
+- **log_frequency**: 1600 (episodes max 1600 steps)
 - **Target total_reward_ma**: > 300
 
 | Algorithm | MA  | FPS | Spec File                                                 | Spec Name           | Status | Notes       |
@@ -220,6 +232,7 @@
 - **Action Space**: Box(3) or Discrete(5) - steering, gas, brake
 - **State Space**: Box(96, 96, 3) - RGB image top-down view
 - **max_frames**: TBD
+- **log_frequency**: 1000 (episodes ~1000 steps)
 - **Target total_reward_ma**: > 900
 
 | Algorithm | MA  | FPS | Spec File                                                           | Spec Name       | Status | Notes    |
@@ -261,6 +274,7 @@
 
 **Target**: Baseline performance established
 **Max Frames**: TBD
+**log_frequency**: 1000 (episodes ~1000 steps)
 **Hardware**: GPU via dstack
 
 | Environment        | PPO MA | SAC MA | Status | Notes      |
@@ -278,6 +292,7 @@
 - **Action Space**: Box(17)
 - **State Space**: Box(376)
 - **max_frames**: TBD
+- **log_frequency**: 1000
 - **Target total_reward_ma**: > 6000
 
 | Algorithm | MA  | FPS | Spec File                                                     | Spec Name    | Status | Notes       |
@@ -311,13 +326,15 @@
 
 - **Environment**: https://gymnasium.farama.org/environments/atari/pong/
 - **max_frames**: TBD
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 18
 
-| Algorithm    | MA  | FPS | Spec File                                                           | Spec Name       | Status | Notes       |
-| ------------ | --- | --- | ------------------------------------------------------------------- | --------------- | ------ | ----------- |
-| **PPO**      | -   | -   | [ppo_pong.json](slm_lab/spec/benchmark/ppo/ppo_pong.json)           | `ppo_pong`      | ⏸️     | Primary     |
-| **DQN**      | -   | -   | [dqn_pong.json](slm_lab/spec/benchmark/dqn/dqn_pong.json)           | `dqn_pong`      | ⏸️     | Value-based |
-| **DDQN+PER** | -   | -   | [ddqn_per_pong.json](slm_lab/spec/benchmark/dqn/ddqn_per_pong.json) | `ddqn_per_pong` | ⏸️     | Enhanced    |
+| Algorithm    | MA  | FPS | Spec File                                                           | Spec Name       | Status | Notes                   |
+| ------------ | --- | --- | ------------------------------------------------------------------- | --------------- | ------ | ----------------------- |
+| **PPO**      | -   | -   | [ppo_pong.json](slm_lab/spec/benchmark/ppo/ppo_pong.json)           | `ppo_pong`      | ⏸️     | Primary                 |
+| **DQN**      | -   | -   | [dqn_pong.json](slm_lab/spec/benchmark/dqn/dqn_pong.json)           | `dqn_pong`      | ⏸️     | Value-based             |
+| **DDQN+PER** | -   | -   | [ddqn_per_pong.json](slm_lab/spec/benchmark/dqn/ddqn_per_pong.json) | `ddqn_per_pong` | ⏸️     | Enhanced                |
+| **SAC**      | -   | -   | [sac_pong.json](slm_lab/spec/benchmark/sac/sac_pong.json)           | `sac_pong`      | ⏸️     | Discrete action variant |
 
 ---
 
@@ -325,13 +342,15 @@
 
 - **Environment**: https://gymnasium.farama.org/environments/atari/qbert/
 - **max_frames**: TBD
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 15000
 
-| Algorithm    | MA  | FPS | Spec File                                                             | Spec Name        | Status | Notes       |
-| ------------ | --- | --- | --------------------------------------------------------------------- | ---------------- | ------ | ----------- |
-| **PPO**      | -   | -   | [ppo_qbert.json](slm_lab/spec/benchmark/ppo/ppo_qbert.json)           | `ppo_qbert`      | ⏸️     | Primary     |
-| **DQN**      | -   | -   | [dqn_qbert.json](slm_lab/spec/benchmark/dqn/dqn_qbert.json)           | `dqn_qbert`      | ⏸️     | Value-based |
-| **DDQN+PER** | -   | -   | [ddqn_per_qbert.json](slm_lab/spec/benchmark/dqn/ddqn_per_qbert.json) | `ddqn_per_qbert` | ⏸️     | Enhanced    |
+| Algorithm    | MA  | FPS | Spec File                                                             | Spec Name        | Status | Notes                   |
+| ------------ | --- | --- | --------------------------------------------------------------------- | ---------------- | ------ | ----------------------- |
+| **PPO**      | -   | -   | [ppo_qbert.json](slm_lab/spec/benchmark/ppo/ppo_qbert.json)           | `ppo_qbert`      | ⏸️     | Primary                 |
+| **DQN**      | -   | -   | [dqn_qbert.json](slm_lab/spec/benchmark/dqn/dqn_qbert.json)           | `dqn_qbert`      | ⏸️     | Value-based             |
+| **DDQN+PER** | -   | -   | [ddqn_per_qbert.json](slm_lab/spec/benchmark/dqn/ddqn_per_qbert.json) | `ddqn_per_qbert` | ⏸️     | Enhanced                |
+| **SAC**      | -   | -   | [sac_qbert.json](slm_lab/spec/benchmark/sac/sac_qbert.json)           | `sac_qbert`      | ⏸️     | Discrete action variant |
 
 ---
 
@@ -339,12 +358,14 @@
 
 - **Environment**: https://gymnasium.farama.org/environments/atari/breakout/
 - **max_frames**: TBD
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 400
 
-| Algorithm | MA  | FPS | Spec File                                                   | Spec Name   | Status | Notes       |
-| --------- | --- | --- | ----------------------------------------------------------- | ----------- | ------ | ----------- |
-| **PPO**   | -   | -   | [ppo_atari.json](slm_lab/spec/benchmark/ppo/ppo_atari.json) | `ppo_atari` | ⏸️     | Primary     |
-| **DQN**   | -   | -   | [dqn_atari.json](slm_lab/spec/benchmark/dqn/dqn_atari.json) | `dqn_atari` | ⏸️     | Value-based |
+| Algorithm | MA  | FPS | Spec File                                                   | Spec Name   | Status | Notes                   |
+| --------- | --- | --- | ----------------------------------------------------------- | ----------- | ------ | ----------------------- |
+| **PPO**   | -   | -   | [ppo_atari.json](slm_lab/spec/benchmark/ppo/ppo_atari.json) | `ppo_atari` | ⏸️     | Primary                 |
+| **DQN**   | -   | -   | [dqn_atari.json](slm_lab/spec/benchmark/dqn/dqn_atari.json) | `dqn_atari` | ⏸️     | Value-based             |
+| **SAC**   | -   | -   | [sac_atari.json](slm_lab/spec/benchmark/sac/sac_atari.json) | `sac_atari` | ⏸️     | Discrete action variant |
 
 ---
 

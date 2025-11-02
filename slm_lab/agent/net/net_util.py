@@ -236,6 +236,28 @@ def polyak_update(src_net, tar_net, old_ratio=0.5):
         tar_param.data.copy_(old_ratio * src_param.data + (1.0 - old_ratio) * tar_param.data)
 
 
+def update_target_net(src_net, tar_net, frame, num_envs):
+    '''
+    Update target network using replace or polyak strategy.
+    For replace: only updates every update_frequency frames.
+    For polyak: updates every call with exponential moving average.
+    
+    @param src_net: Source network to copy/blend from
+    @param tar_net: Target network to update
+    @param frame: Current training frame for frequency gating
+    @param num_envs: Number of parallel environments (for frame_mod calculation)
+    '''
+    from slm_lab.lib import util
+    
+    if src_net.update_type == 'replace':
+        if util.frame_mod(frame, src_net.update_frequency, num_envs):
+            copy(src_net, tar_net)
+    elif src_net.update_type == 'polyak':
+        polyak_update(src_net, tar_net, src_net.polyak_coef)
+    else:
+        raise ValueError(f'Unknown update_type "{src_net.update_type}". Should be "replace" or "polyak".')
+
+
 def to_check_train_step():
     '''Condition for running assert_trained'''
     return os.environ.get('PY_ENV') == 'test' or lab_mode() == 'dev'

@@ -27,7 +27,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128],
+        "hid_layers": [
+          128
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -51,22 +53,44 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_session": 4,
-      "max_trial": 8
+      "max_trial": 8,
+      "log_frequency": 500
     },
     "search": {
       "agent": {
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [2000, 2500, 3000]
+            "end_step__choice": [
+              2000,
+              2500,
+              3000
+            ]
           },
-          "training_batch_iter__choice": [8, 10]
+          "training_batch_iter__choice": [
+            8,
+            10
+          ]
         },
         "net": {
-          "hid_layers__choice": [[128], [256]],
+          "hid_layers__choice": [
+            [
+              128
+            ],
+            [
+              256
+            ]
+          ],
           "optim_spec": {
-            "lr__choice": [0.00010, 0.00012, 0.00015]
+            "lr__choice": [
+              0.0001,
+              0.00012,
+              0.00015
+            ]
           },
-          "update_frequency__choice": [80, 100]
+          "update_frequency__choice": [
+            80,
+            100
+          ]
         }
       }
     }

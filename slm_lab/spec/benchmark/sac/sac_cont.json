@@ -17,7 +17,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -42,7 +45,7 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 5000,
+      "log_frequency": 500,
       "eval_frequency": 5000,
       "rigorous_eval": 0,
       "max_session": 4,

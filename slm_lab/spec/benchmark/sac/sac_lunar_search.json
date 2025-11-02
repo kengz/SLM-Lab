@@ -8,7 +8,7 @@
         "action_policy": "default",
         "gamma": 0.99,
         "target_entropy_epsilon": 0.1,
-        "alpha_lr": 0.00003,
+        "alpha_lr": 3e-05,
         "training_frequency": 1
       },
       "memory": {
@@ -48,7 +48,7 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
+      "log_frequency": 1000,
       "eval_frequency": 500,
       "rigorous_eval": 0,
       "max_session": 1,
@@ -61,24 +61,57 @@
     "search": {
       "agent": {
         "algorithm": {
-          "gamma__choice": [0.97, 0.98, 0.99],
-          "target_entropy_epsilon__uniform": [0.05, 0.2],
-          "alpha_lr__loguniform": [1e-5, 1e-4]
+          "gamma__choice": [
+            0.97,
+            0.98,
+            0.99
+          ],
+          "target_entropy_epsilon__uniform": [
+            0.05,
+            0.2
+          ],
+          "alpha_lr__loguniform": [
+            1e-05,
+            0.0001
+          ]
         },
         "memory": {
-          "batch_size__choice": [128, 256, 512]
+          "batch_size__choice": [
+            128,
+            256,
+            512
+          ]
         },
         "net": {
           "hid_layers__choice": [
-            [64, 64],
-            [64, 64, 32],
-            [128, 128]
+            [
+              64,
+              64
+            ],
+            [
+              64,
+              64,
+              32
+            ],
+            [
+              128,
+              128
+            ]
           ],
-          "hid_layers_activation__choice": ["relu", "tanh"],
+          "hid_layers_activation__choice": [
+            "relu",
+            "tanh"
+          ],
           "optim_spec": {
-            "lr__loguniform": [1e-4, 1e-3]
+            "lr__loguniform": [
+              0.0001,
+              0.001
+            ]
           },
-          "polyak_coef__loguniform": [0.001, 0.01]
+          "polyak_coef__loguniform": [
+            0.001,
+            0.01
+          ]
         }
       }
     }

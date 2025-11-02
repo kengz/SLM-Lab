@@ -11,8 +11,8 @@
         "lam": 0.9539,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.2360,
-          "end_val": 0.20,
+          "start_val": 0.236,
+          "end_val": 0.2,
           "start_step": 0,
           "end_step": 300000
         },
@@ -35,7 +35,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -62,7 +65,7 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1024,
+      "log_frequency": 1000,
       "eval_frequency": 1024,
       "max_session": 4,
       "max_trial": 1
@@ -104,7 +107,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -141,17 +147,62 @@
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.95, 0.999],
-      "agent.algorithm.lam__uniform": [0.9, 0.99],
-      "agent.algorithm.clip_eps_spec.start_val__uniform": [0.15, 0.3],
-      "agent.algorithm.entropy_coef_spec.start_val__uniform": [0.0, 0.05],
-      "agent.algorithm.val_loss_coef__uniform": [0.5, 1.5],
-      "agent.algorithm.time_horizon__choice": [512, 1024, 2048],
-      "agent.algorithm.minibatch_size__choice": [128, 256],
-      "agent.algorithm.training_epoch__choice": [10, 15],
-      "agent.net.hid_layers__choice": [[128, 128], [256, 128], [256, 256, 128]],
-      "agent.net.actor_optim_spec.lr__loguniform": [1e-4, 1e-3],
-      "agent.net.critic_optim_spec.lr__loguniform": [1e-4, 5e-3]
+      "agent.algorithm.gamma__uniform": [
+        0.95,
+        0.999
+      ],
+      "agent.algorithm.lam__uniform": [
+        0.9,
+        0.99
+      ],
+      "agent.algorithm.clip_eps_spec.start_val__uniform": [
+        0.15,
+        0.3
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__uniform": [
+        0.0,
+        0.05
+      ],
+      "agent.algorithm.val_loss_coef__uniform": [
+        0.5,
+        1.5
+      ],
+      "agent.algorithm.time_horizon__choice": [
+        512,
+        1024,
+        2048
+      ],
+      "agent.algorithm.minibatch_size__choice": [
+        128,
+        256
+      ],
+      "agent.algorithm.training_epoch__choice": [
+        10,
+        15
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          256,
+          256,
+          128
+        ]
+      ],
+      "agent.net.actor_optim_spec.lr__loguniform": [
+        0.0001,
+        0.001
+      ],
+      "agent.net.critic_optim_spec.lr__loguniform": [
+        0.0001,
+        0.005
+      ]
     }
   },
   "ppo_lunar_search_refine": {
@@ -167,7 +218,7 @@
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.22,
-          "end_val": 0.20,
+          "end_val": 0.2,
           "start_step": 0,
           "end_step": 300000
         },
@@ -190,7 +241,11 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256, 128],
+        "hid_layers": [
+          256,
+          256,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -223,15 +278,56 @@
       "max_trial": 10
     },
     "search": {
-      "agent.algorithm.gamma__choice": [0.985, 0.99, 0.995],
-      "agent.algorithm.lam__choice": [0.96, 0.97, 0.98],
-      "agent.algorithm.clip_eps_spec.start_val__choice": [0.20, 0.22, 0.25],
-      "agent.algorithm.entropy_coef_spec.start_val__choice": [0.03, 0.035, 0.04],
-      "agent.algorithm.val_loss_coef__choice": [1.0, 1.2, 1.4],
-      "agent.algorithm.training_epoch__choice": [12, 15],
-      "agent.net.hid_layers__choice": [[256, 128], [256, 256, 128]],
-      "agent.net.actor_optim_spec.lr__choice": [0.0002, 0.00025, 0.0003],
-      "agent.net.critic_optim_spec.lr__choice": [0.0004, 0.00056, 0.0007]
+      "agent.algorithm.gamma__choice": [
+        0.985,
+        0.99,
+        0.995
+      ],
+      "agent.algorithm.lam__choice": [
+        0.96,
+        0.97,
+        0.98
+      ],
+      "agent.algorithm.clip_eps_spec.start_val__choice": [
+        0.2,
+        0.22,
+        0.25
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__choice": [
+        0.03,
+        0.035,
+        0.04
+      ],
+      "agent.algorithm.val_loss_coef__choice": [
+        1.0,
+        1.2,
+        1.4
+      ],
+      "agent.algorithm.training_epoch__choice": [
+        12,
+        15
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          256,
+          128
+        ],
+        [
+          256,
+          256,
+          128
+        ]
+      ],
+      "agent.net.actor_optim_spec.lr__choice": [
+        0.0002,
+        0.00025,
+        0.0003
+      ],
+      "agent.net.critic_optim_spec.lr__choice": [
+        0.0004,
+        0.00056,
+        0.0007
+      ]
     }
   }
 }

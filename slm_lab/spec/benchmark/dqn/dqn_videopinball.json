@@ -79,7 +79,8 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_trial": 1,
-      "max_session": 1
+      "max_session": 1,
+      "log_frequency": 10000
     }
   }
 }

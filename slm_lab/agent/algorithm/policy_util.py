@@ -138,7 +138,7 @@ def random(state, algorithm) -> torch.Tensor:
         _action = [algorithm.agent.action_space.sample() for _ in range(algorithm.agent.env.num_envs)]
     else:
         _action = [algorithm.agent.action_space.sample()]
-    action = torch.tensor(_action)
+    action = torch.from_numpy(np.array(_action))
     return action
 
 

@@ -103,19 +103,13 @@ def build_run_trial(base_spec: dict) -> callable:
     """Create a Ray Tune trial runner with the base spec."""
 
     def run_trial(config: dict) -> dict:
-        from slm_lab.experiment.control import Session, Trial
+        from slm_lab.experiment.control import Trial
 
         os.environ.pop("CUDA_VISIBLE_DEVICES", None)
         spec = inject_config(base_spec, config)
 
-        # Run trial: single-session directly, multi-session via Trial wrapper
-        if spec["meta"]["max_session"] == 1:
-            spec_copy = deepcopy(spec)
-            spec_util.tick(spec_copy, "session")
-            session_metrics = Session(spec_copy).run()
-            scalar_metrics = session_metrics["scalar"]
-        else:
-            scalar_metrics = Trial(spec).run()
+        # Trial saves spec in __init__, handles both single and multi-session
+        scalar_metrics = Trial(spec).run()
 
         # Report final metrics to Ray Tune scheduler
         if in_ray_tune_context():

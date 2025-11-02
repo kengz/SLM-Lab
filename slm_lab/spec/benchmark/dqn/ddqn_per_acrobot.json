@@ -29,7 +29,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -54,7 +57,8 @@
       "distributed": false,
       "eval_frequency": 5000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 1,
+      "log_frequency": 500
     }
   }
 }

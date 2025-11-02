@@ -214,19 +214,10 @@ class DQNBase(VanillaDQN):
             self.agent.memory.update_priorities(errors)
         return q_loss
 
-    def update_nets(self):
-        if util.frame_mod(self.agent.env.get('frame'), self.net.update_frequency, self.agent.env.num_envs):
-            if self.net.update_type == 'replace':
-                net_util.copy(self.net, self.target_net)
-            elif self.net.update_type == 'polyak':
-                net_util.polyak_update(self.net, self.target_net, self.net.polyak_coef)
-            else:
-                raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
-
     @lab_api
     def update(self):
         '''Updates self.target_net and the explore variables'''
-        self.update_nets()
+        net_util.update_target_net(self.net, self.target_net, self.agent.env.get('frame'), self.agent.env.num_envs)
         return super().update()
 
 

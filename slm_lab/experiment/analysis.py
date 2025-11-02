@@ -1,5 +1,5 @@
-import shutil
 import warnings
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -7,8 +7,7 @@ import pydash as ps
 import torch
 
 from slm_lab.lib import logger, util, viz
-from slm_lab.lib.env_var import lab_mode
-from slm_lab.spec import random_baseline
+from slm_lab.spec import random_baseline, spec_util
 
 METRICS_COLS = [
     'frame',
@@ -272,6 +271,12 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
 
 def analyze_trial(trial_spec, session_metrics_list):
     '''Analyze trial and save data, then return metrics'''
+    # Guard: detect if session spec passed instead of trial spec (session >= 0)
+    # Restore to trial_spec which has its own meta prepaths without session infix
+    if trial_spec['meta']['session'] >= 0:
+        trial_spec = deepcopy(trial_spec)
+        trial_spec['meta']['trial'] -= 1
+        spec_util.tick(trial_spec, 'trial')
     info_prepath = trial_spec['meta']['info_prepath']
     # calculate metrics
     trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)

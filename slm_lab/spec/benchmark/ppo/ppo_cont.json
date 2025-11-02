@@ -62,11 +62,11 @@
       "name": "BipedalWalker-v3",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 4e6
+      "max_frame": 4000000.0
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
+      "log_frequency": 1600,
       "eval_frequency": 10000,
       "max_session": 1,
       "max_trial": 50,
@@ -202,7 +202,7 @@
       "name": "Pendulum-v1",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 1000000.0
     },
     "meta": {
       "distributed": false,
@@ -314,7 +314,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -337,7 +340,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": false,
@@ -382,7 +385,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -450,7 +456,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -519,7 +528,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -543,7 +555,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": false,
@@ -588,7 +600,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -598,7 +613,7 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.00001
+          "lr": 1e-05
         },
         "critic_optim_spec": {
           "name": "Adam",
@@ -656,7 +671,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -679,7 +697,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 3e6
+      "max_frame": 3000000.0
     },
     "meta": {
       "distributed": false,
@@ -724,7 +742,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -747,7 +768,7 @@
       "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 1000000.0
     },
     "meta": {
       "distributed": false,
@@ -792,7 +813,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -815,7 +839,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": false,
@@ -825,15 +849,60 @@
       "max_trial": 10
     },
     "search": {
-      "agent.algorithm.gamma__choice": [0.975, 0.98, 0.985],
-      "agent.algorithm.lam__choice": [0.955, 0.964, 0.975],
-      "agent.algorithm.clip_eps_spec.start_val__choice": [0.15, 0.163, 0.18],
-      "agent.algorithm.entropy_coef_spec.start_val__choice": [0.005, 0.0065, 0.008],
-      "agent.algorithm.val_loss_coef__choice": [1.3, 1.47, 1.6],
-      "agent.algorithm.training_epoch__choice": [18, 20, 22],
-      "agent.net.hid_layers__choice": [[256, 128], [256, 256], [384, 192]],
-      "agent.net.actor_optim_spec.lr__choice": [0.0003, 0.000424, 0.0005],
-      "agent.net.critic_optim_spec.lr__choice": [0.00008, 0.000115, 0.00015]
+      "agent.algorithm.gamma__choice": [
+        0.975,
+        0.98,
+        0.985
+      ],
+      "agent.algorithm.lam__choice": [
+        0.955,
+        0.964,
+        0.975
+      ],
+      "agent.algorithm.clip_eps_spec.start_val__choice": [
+        0.15,
+        0.163,
+        0.18
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__choice": [
+        0.005,
+        0.0065,
+        0.008
+      ],
+      "agent.algorithm.val_loss_coef__choice": [
+        1.3,
+        1.47,
+        1.6
+      ],
+      "agent.algorithm.training_epoch__choice": [
+        18,
+        20,
+        22
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          256,
+          128
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          384,
+          192
+        ]
+      ],
+      "agent.net.actor_optim_spec.lr__choice": [
+        0.0003,
+        0.000424,
+        0.0005
+      ],
+      "agent.net.critic_optim_spec.lr__choice": [
+        8e-05,
+        0.000115,
+        0.00015
+      ]
     }
   },
   "ppo_bipedalwalker_refined_asha": {
@@ -871,7 +940,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -894,7 +966,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 3e6
+      "max_frame": 3000000.0
     },
     "meta": {
       "distributed": false,
@@ -908,17 +980,67 @@
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.95, 0.995],
-      "agent.algorithm.lam__uniform": [0.9, 0.98],
-      "agent.algorithm.clip_eps_spec.start_val__uniform": [0.1, 0.3],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.02],
-      "agent.algorithm.val_loss_coef__uniform": [0.3, 2.0],
-      "agent.algorithm.training_epoch__choice": [10, 15, 20],
-      "agent.algorithm.minibatch_size__choice": [64, 128, 256],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 128], [256, 128], [256, 256]],
-      "agent.net.clip_grad_val__choice": [0.5, 1.0, 2.0],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.00005, 0.001],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.00005, 0.002]
+      "agent.algorithm.gamma__uniform": [
+        0.95,
+        0.995
+      ],
+      "agent.algorithm.lam__uniform": [
+        0.9,
+        0.98
+      ],
+      "agent.algorithm.clip_eps_spec.start_val__uniform": [
+        0.1,
+        0.3
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
+        0.001,
+        0.02
+      ],
+      "agent.algorithm.val_loss_coef__uniform": [
+        0.3,
+        2.0
+      ],
+      "agent.algorithm.training_epoch__choice": [
+        10,
+        15,
+        20
+      ],
+      "agent.algorithm.minibatch_size__choice": [
+        64,
+        128,
+        256
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "agent.net.clip_grad_val__choice": [
+        0.5,
+        1.0,
+        2.0
+      ],
+      "agent.net.actor_optim_spec.lr__loguniform": [
+        5e-05,
+        0.001
+      ],
+      "agent.net.critic_optim_spec.lr__loguniform": [
+        5e-05,
+        0.002
+      ]
     }
   },
   "ppo_mountaincar_continuous": {
@@ -956,7 +1078,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [128, 128],
+        "hid_layers": [
+          128,
+          128
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,

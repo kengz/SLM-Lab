@@ -1,0 +1,61 @@
+{
+  "sac_cartpole": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "Categorical",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "target_entropy_scale": 0.584,
+        "training_iter": 100,
+        "training_frequency": 12,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 128,
+        "max_size": 1000000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256],
+        "hid_layers_activation": "tanh",
+        "init_fn": "xavier_uniform_",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0003
+        },
+        "update_type": "polyak",
+        "polyak_coef": 0.017,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 200000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 500,
+      "eval_frequency": 500,
+      "max_session": 1,
+      "max_trial": 25,
+      "search_scheduler": {
+        "grace_period": 30000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.training_iter__choice": [20, 30, 40, 50, 60],
+      "agent.memory.batch_size__choice": [256, 512, 1024, 2048, 4096],
+      "agent.algorithm.training_frequency__choice": [8, 12, 16, 20]
+    }
+  }
+}

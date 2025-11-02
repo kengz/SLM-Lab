@@ -26,7 +26,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -56,7 +59,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
-      "log_frequency": 1024,
+      "log_frequency": 500,
       "max_session": 4,
       "max_trial": 1
     }

@@ -168,7 +168,9 @@ slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_muj
 
 ### Proven Three-Stage Process
 
-Use this systematic approach for algorithm validation and hyperparameter tuning:
+Use this systematic approach for algorithm validation and hyperparameter tuning.
+
+> NOTE use the `search` mode instead of `train`, e.g. `uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole search`
 
 **Stage 1: Manual Iteration** (Fast validation)
 
@@ -194,6 +196,8 @@ Use this systematic approach for algorithm validation and hyperparameter tuning:
 - Update spec with winning hyperparameters as defaults
 
 **Key Insight**: Manual iteration quickly identifies deal-breakers, ASHA explores efficiently, multi-session validates robustly. Never skip Stage 1 - library configs often don't transfer directly between environments.
+
+**Spec Organization**: Keep spec files minimal - one spec per environment with inline `"search"` block. Never create separate `_search` specs or files.
 
 ### ASHA Search Configuration
 
@@ -230,6 +234,16 @@ Use this systematic approach for algorithm validation and hyperparameter tuning:
 ```
 
 ## TODO
+
+### SAC
+
+Let's do search of SAC on the Benchmark envs first, balancing between fps and performance to hit optimal speed and high score. the main things to adjust for speed is the training_iter, training_freq, batch_size.
+
+Let's first do CartPole, then Pendulum, then the other
+
+---
+
+### Benchmark
 
 Run full SLM Lab benchmarks. See `BENCHMARKS.md` for detailed benchmark progress tracking. This is the single source of truth for:
 

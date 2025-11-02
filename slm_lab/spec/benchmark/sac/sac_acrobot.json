@@ -1,36 +1,38 @@
 {
-  "sac_cartpole": {
+  "sac_acrobot": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "GumbelSoftmax",
+        "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_epsilon": 0.2,
+        "target_entropy_scale": 0.89,
+        "alpha_lr": 0.0003,
+        "training_iter": 1,
         "training_frequency": 1
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
-        "max_size": 100000,
-        "use_cer": true
+        "batch_size": 512,
+        "max_size": 1000000,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [
-          64,
-          64
+          256,
+          256
         ],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "AdamW",
-          "lr": 0.003
+          "name": "Adam",
+          "lr": 0.0003
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -39,17 +41,16 @@
       }
     },
     "env": {
-      "name": "CartPole-v1",
+      "name": "Acrobot-v1",
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 200000,
-      "num_envs": 8
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 500,
-      "eval_frequency": 500,
-      "rigorous_eval": 0,
-      "max_session": 1,
+      "eval_frequency": 5000,
+      "max_session": 4,
       "max_trial": 1
     }
   }

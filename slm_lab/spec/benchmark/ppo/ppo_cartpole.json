@@ -35,7 +35,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -61,7 +64,7 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 256,
+      "log_frequency": 500,
       "eval_frequency": 256,
       "max_session": 4,
       "max_trial": 1
@@ -103,7 +106,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -132,24 +138,30 @@
       "log_frequency": 2048,
       "eval_frequency": 2048,
       "max_session": 1,
-      "max_trial": 30,
+      "max_trial": 4,
       "search_scheduler": {
         "grace_period": 30000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.95, 0.999],
-      "agent.algorithm.lam__uniform": [0.9, 0.99],
-      "agent.algorithm.clip_eps_spec.start_val__uniform": [0.1, 0.3],
-      "agent.algorithm.entropy_coef_spec.start_val__uniform": [0.0, 0.01],
-      "agent.algorithm.val_loss_coef__uniform": [0.3, 0.8],
-      "agent.algorithm.time_horizon__choice": [256, 512, 1024, 2048],
-      "agent.algorithm.minibatch_size__choice": [64, 128],
-      "agent.algorithm.training_epoch__choice": [8, 10, 15],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 128]],
-      "agent.net.actor_optim_spec.lr__loguniform": [1e-4, 1e-3],
-      "agent.net.critic_optim_spec.lr__loguniform": [3e-4, 3e-3]
+      "agent.algorithm.gamma__uniform": [
+        0.95,
+        0.999
+      ],
+      "agent.algorithm.lam__uniform": [
+        0.9,
+        0.99
+      ],
+      "agent.algorithm.time_horizon__choice": [
+        512,
+        1024,
+        2048
+      ],
+      "agent.net.actor_optim_spec.lr__loguniform": [
+        0.0001,
+        0.001
+      ]
     }
   },
   "ppo_cartpole_search_refine": {
@@ -188,7 +200,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -220,15 +235,54 @@
       "max_trial": 10
     },
     "search": {
-      "agent.algorithm.gamma__choice": [0.985, 0.99, 0.995],
-      "agent.algorithm.lam__choice": [0.94, 0.95, 0.96],
-      "agent.algorithm.clip_eps_spec.start_val__choice": [0.18, 0.20, 0.22],
-      "agent.algorithm.val_loss_coef__choice": [0.4, 0.5, 0.6],
-      "agent.algorithm.time_horizon__choice": [1024, 2048],
-      "agent.algorithm.training_epoch__choice": [8, 10],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 128]],
-      "agent.net.actor_optim_spec.lr__choice": [0.0002, 0.0003, 0.0004],
-      "agent.net.critic_optim_spec.lr__choice": [0.0008, 0.001, 0.0012]
+      "agent.algorithm.gamma__choice": [
+        0.985,
+        0.99,
+        0.995
+      ],
+      "agent.algorithm.lam__choice": [
+        0.94,
+        0.95,
+        0.96
+      ],
+      "agent.algorithm.clip_eps_spec.start_val__choice": [
+        0.18,
+        0.2,
+        0.22
+      ],
+      "agent.algorithm.val_loss_coef__choice": [
+        0.4,
+        0.5,
+        0.6
+      ],
+      "agent.algorithm.time_horizon__choice": [
+        1024,
+        2048
+      ],
+      "agent.algorithm.training_epoch__choice": [
+        8,
+        10
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          64,
+          64
+        ],
+        [
+          128,
+          128
+        ]
+      ],
+      "agent.net.actor_optim_spec.lr__choice": [
+        0.0002,
+        0.0003,
+        0.0004
+      ],
+      "agent.net.critic_optim_spec.lr__choice": [
+        0.0008,
+        0.001,
+        0.0012
+      ]
     }
   }
 }

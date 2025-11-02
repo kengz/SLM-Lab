@@ -54,11 +54,11 @@
       "name": "BipedalWalker-v3",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 4e6
+      "max_frame": 4000000.0
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
+      "log_frequency": 1600,
       "eval_frequency": 10000,
       "max_session": 4,
       "max_trial": 1
@@ -133,7 +133,7 @@
       "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 1000000.0
     },
     "meta": {
       "distributed": false,
@@ -170,7 +170,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [
+          64,
+          64
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,

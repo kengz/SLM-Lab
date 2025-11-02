@@ -157,9 +157,15 @@ class PrioritizedReplay(Replay):
             tree_idxs[i] = tree_idx
 
         batch_idxs = np.asarray(batch_idxs).astype(int)
+        if self.use_cer:
+            old_batch_idxs = batch_idxs.copy()
+            batch_idxs = self.apply_cer(batch_idxs)
+            # Mark tree_idxs as -1 for CER indices (to skip priority updates)
+            num_cer = np.sum(batch_idxs != old_batch_idxs)
+            if num_cer > 0:
+                # CER replaces last num_cer indices
+                tree_idxs[-num_cer:] = -1
         self.tree_idxs = tree_idxs
-        if self.use_cer:  # add the latest sample
-            batch_idxs[-1] = self.head
         return batch_idxs
 
     def update_priorities(self, errors):
@@ -172,4 +178,5 @@ class PrioritizedReplay(Replay):
         for idx, p in zip(self.batch_idxs, priorities):
             self.priorities[idx] = p
         for p, i in zip(priorities, self.tree_idxs):
-            self.tree.update(i, p)
+            if i != -1:  # Skip CER indices without valid tree_idx
+                self.tree.update(i, p)
