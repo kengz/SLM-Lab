@@ -65,7 +65,7 @@
     "meta": {
       "distributed": false,
       "log_frequency": 500,
-      "eval_frequency": 5000,
+      "eval_frequency": 500,
       "max_session": 4,
       "max_trial": 1
     }

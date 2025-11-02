@@ -7,26 +7,22 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_scale": 0.89,
-        "alpha_lr": 0.0003,
-        "training_iter": 1,
-        "training_frequency": 1
+        "target_entropy_scale": 0.584,
+        "training_iter": 40,
+        "training_frequency": 12,
+        "training_start_step": 10000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 512,
-        "max_size": 1000000,
-        "use_cer": false
+        "batch_size": 256,
+        "max_size": 1000000
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
+        "hid_layers": [256],
+        "hid_layers_activation": "tanh",
+        "init_fn": "xavier_uniform_",
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -35,8 +31,7 @@
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "update_frequency": 1,
-        "polyak_coef": 0.005,
+        "polyak_coef": 0.017,
         "gpu": "auto"
       }
     },
@@ -49,9 +44,20 @@
     "meta": {
       "distributed": false,
       "log_frequency": 500,
-      "eval_frequency": 5000,
-      "max_session": 4,
-      "max_trial": 1
+      "eval_frequency": 500,
+      "max_session": 1,
+      "max_trial": 25,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.training_iter__choice": [20, 30, 40, 50],
+      "agent.memory.batch_size__choice": [256, 512, 1024],
+      "agent.algorithm.training_frequency__choice": [8, 12, 16],
+      "agent.algorithm.gamma__uniform": [0.97, 0.999],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
     }
   }
 }

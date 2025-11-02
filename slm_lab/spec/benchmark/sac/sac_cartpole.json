@@ -8,13 +8,13 @@
         "action_policy": "default",
         "gamma": 0.99,
         "target_entropy_scale": 0.584,
-        "training_iter": 100,
+        "training_iter": 40,
         "training_frequency": 12,
-        "training_start_step": 10000
+        "training_start_step": 1000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 128,
+        "batch_size": 1536,
         "max_size": 1000000
       },
       "net": {
@@ -39,23 +39,23 @@
       "name": "CartPole-v1",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 200000
+      "max_frame": 100000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 500,
       "eval_frequency": 500,
       "max_session": 1,
-      "max_trial": 25,
+      "max_trial": 20,
       "search_scheduler": {
         "grace_period": 30000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.training_iter__choice": [20, 30, 40, 50, 60],
-      "agent.memory.batch_size__choice": [256, 512, 1024, 2048, 4096],
-      "agent.algorithm.training_frequency__choice": [8, 12, 16, 20]
+      "agent.memory.batch_size__qrandint": [512, 4096, 512],
+      "agent.algorithm.training_iter__qrandint": [20, 40, 10],
+      "agent.algorithm.training_frequency__qrandint": [8, 20, 4]
     }
   }
 }

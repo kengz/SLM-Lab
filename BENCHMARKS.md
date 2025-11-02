@@ -85,14 +85,14 @@
 - **log_frequency**: 500
 - **Target total_reward_ma**: > 400
 
-| Algorithm     | MA    | FPS  | Spec File                                                                           | Spec Name                       | Status | Notes                          |
-| ------------- | ----- | ---- | ----------------------------------------------------------------------------------- | ------------------------------- | ------ | ------------------------------ |
-| **PPO**       | 499.7 | 315  | [ppo_cartpole.json](slm_lab/spec/benchmark/ppo/ppo_cartpole.json)                   | `ppo_cartpole`                  | ✅     | 124.9% of target               |
-| **A2C**       | 488.7 | 3.5k | [a2c_gae_cartpole.json](slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json)           | `a2c_gae_cartpole`              | ✅     | 122.2% of target               |
-| **DQN**       | 437.8 | 1k   | [dqn_cartpole.json](slm_lab/spec/benchmark/dqn/dqn_cartpole.json)                   | `dqn_boltzmann_cartpole`        | ✅     | 109.5% of target, 3-stage ASHA |
-| **REINFORCE** | 427.2 | 14k  | [reinforce_cartpole.json](slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole`            | ✅     | 106.8% of target               |
-| **SARSA**     | 393.2 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.3% of target, 3-stage ASHA  |
-| **SAC**       | 422.0 | ~850 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole_extreme`          | ✅     | 105.5% of target, requires extreme training (iter=100) |
+| Algorithm     | MA    | FPS  | Spec File                                                                           | Spec Name          | Status | Notes                                   |
+| ------------- | ----- | ---- | ----------------------------------------------------------------------------------- | ------------------ | ------ | --------------------------------------- |
+| **PPO**       | 499.7 | 315  | [ppo_cartpole.json](slm_lab/spec/benchmark/ppo/ppo_cartpole.json)                   | `ppo_cartpole`     | ✅     | 124.9% of target                        |
+| **A2C**       | 488.7 | 3.5k | [a2c_gae_cartpole.json](slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json)           | `a2c_gae_cartpole` | ✅     | 122.2% of target                        |
+| **DQN**       | 437.8 | 1k   | [dqn_cartpole.json](slm_lab/spec/benchmark/dqn/dqn_cartpole.json)                   | `dqn_boltzmann_cartpole` | ✅     | 109.5% of target, 3-stage ASHA          |
+| **REINFORCE** | 427.2 | 14k  | [reinforce_cartpole.json](slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole` | ✅     | 106.8% of target                        |
+| **SAC**       | 431.1 | <100 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole`     | 🔄     | 107.8% of target, ASHA speed search running |
+| **SARSA**     | 393.2 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.3% of target, 3-stage ASHA           |
 
 ---
 
