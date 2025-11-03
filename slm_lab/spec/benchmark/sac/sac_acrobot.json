@@ -7,7 +7,6 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_scale": 0.584,
         "training_iter": 40,
         "training_frequency": 12,
         "training_start_step": 10000

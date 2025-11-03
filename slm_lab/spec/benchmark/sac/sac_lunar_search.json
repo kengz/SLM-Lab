@@ -7,7 +7,6 @@
         "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_epsilon": 0.1,
         "alpha_lr": 3e-05,
         "training_frequency": 1
       },
@@ -65,10 +64,6 @@
             0.97,
             0.98,
             0.99
-          ],
-          "target_entropy_epsilon__uniform": [
-            0.05,
-            0.2
           ],
           "alpha_lr__loguniform": [
             1e-05,

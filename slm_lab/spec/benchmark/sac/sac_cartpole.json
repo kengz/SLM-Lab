@@ -7,7 +7,6 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_scale": 0.584,
         "training_iter": 40,
         "training_frequency": 12,
         "training_start_step": 1000
@@ -49,11 +48,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "max_session": 1,
-      "max_trial": 20,
-      "search_scheduler": {
-        "grace_period": 30000,
-        "reduction_factor": 3
-      }
+      "max_trial": 1
     },
     "search": {
       "agent.memory.batch_size__qrandint": [1024, 4096, 1024],

@@ -7,7 +7,6 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_epsilon": 0.1,
         "alpha_lr": 3e-05,
         "training_frequency": 1
       },

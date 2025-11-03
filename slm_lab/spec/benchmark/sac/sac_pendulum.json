@@ -7,7 +7,6 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "target_entropy_epsilon": 0.1,
         "training_iter": 16,
         "training_frequency": 100,
         "training_start_step": 5000
@@ -49,7 +48,7 @@
       "log_frequency": 500,
       "eval_frequency": 2000,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1
     }
   }

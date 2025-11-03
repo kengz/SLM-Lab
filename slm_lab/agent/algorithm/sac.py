@@ -69,15 +69,19 @@ class SoftActorCritic(ActorCritic):
 
         self.net_names = ['net', 'q1_net', 'target_q1_net', 'q2_net', 'target_q2_net']
 
-        # Temperature alpha and target entropy
-        # Discrete: H_target = scale * log(|A|), continuous: H_target = -(1 - ε) * dim(A)
-        if self.agent.is_discrete:
-            target_entropy_scale = self.algorithm_spec.get('target_entropy_scale', 0.6)
-            self.target_entropy = target_entropy_scale * np.log(self.agent.action_dim)
+        # Automatic entropy temperature tuning
+        # Use 'auto' (default) or specify explicit target_entropy value
+        target_entropy_config = self.algorithm_spec.get('target_entropy', 'auto')
+        if target_entropy_config == 'auto':
+            # Discrete: H_target = 0.98 * log(|A|) per Christodoulou 2019
+            # Continuous: H_target = -dim(A) per Haarnoja 2018
+            if self.agent.is_discrete:
+                self.target_entropy = 0.98 * np.log(self.agent.action_dim)
+            else:
+                action_dim = np.prod(self.agent.action_space.shape)
+                self.target_entropy = -action_dim
         else:
-            epsilon = self.algorithm_spec.get('target_entropy_epsilon', 0.1)
-            action_dim = np.prod(self.agent.action_space.shape)
-            self.target_entropy = -(1 - epsilon) * action_dim
+            self.target_entropy = float(target_entropy_config)
 
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
@@ -189,12 +193,12 @@ class SoftActorCritic(ActorCritic):
         return fn(states, action_pd, q1_all, q2_all)
 
     def calc_alpha_loss_discrete(self, action_pd):
-        '''J_α = log_α * (H - H_target)'''
+        '''J_α = log_α * (H_target - H)'''
         action_probs = action_pd.probs
         action_log_probs = torch.log(action_probs + 1e-8)
         with torch.no_grad():
             entropy_current = -(action_probs * action_log_probs).sum(dim=-1).mean()
-        return self.log_alpha * (entropy_current - self.target_entropy)
+        return self.log_alpha * (self.target_entropy - entropy_current)
 
     def calc_alpha_loss_cont(self, action_pd):
         '''J_α = -α * (log π + H_target)'''
