@@ -82,16 +82,14 @@ def inject_config(spec: dict, config: dict) -> dict:
     spec = deepcopy(spec)
     spec.pop("search", None)
 
-    # Get trial index from Ray Tune trial dir, e.g. /tmp/ray/.../run_trial_da41e96b_1_...
+    # Extract trial index from Ray Tune directory (1-based → 0-based)
     trial_dir = ray.tune.get_context().get_trial_dir()
     trial_name = ray.tune.get_context().get_trial_name()
     trial_folder = trial_dir.split("/")[-1]
-    trial_index = int(trial_folder.replace(f"{trial_name}_", "").split("_")[0]) - 1
+    ray_trial_index = int(trial_folder.replace(f"{trial_name}_", "").split("_")[0])
 
-    # Set trial index then call tick to properly set all prepaths
-    spec["meta"]["trial"] = (
-        trial_index - 1
-    )  # Set to -1 so tick increments to correct value
+    # Set to ray_index - 2 so tick() increments to correct 0-based index
+    spec["meta"]["trial"] = ray_trial_index - 2
     spec_util.tick(spec, "trial")
 
     for k, v in config.items():

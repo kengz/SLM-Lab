@@ -2,6 +2,7 @@ from collections import deque
 from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
+from loguru import logger as loguru_logger
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
 from slm_lab.lib.env_var import lab_mode
@@ -442,7 +443,20 @@ def set_cuda_id(spec):
 def set_logger(spec, logger, unit=None):
     '''Set the logger for a lab unit give its spec'''
     os.environ['LOG_PREPATH'] = insert_folder(get_prepath(spec, unit=unit), 'log')
-    reload(logger)  # to set session-specific logger
+    log_filepath = os.path.join(ROOT_DIR, os.environ['LOG_PREPATH'] + '.log')
+    os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
+
+    # Remove existing file handlers (stdout remains)
+    while len(loguru_logger._core.handlers) > 1:
+        loguru_logger.remove(list(loguru_logger._core.handlers.keys())[-1])
+
+    loguru_logger.add(
+        log_filepath,
+        format=logger.LOG_FORMAT,
+        level='INFO',
+        backtrace=True,
+        diagnose=True
+    )
 
 
 def set_random_seed(spec):

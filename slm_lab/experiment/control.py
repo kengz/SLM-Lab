@@ -219,7 +219,7 @@ class Experiment:
     def __init__(self, spec):
         self.spec = spec
         self.index = self.spec["meta"]["experiment"]
-        util.set_logger(self.spec, logger, "trial")
+        util.set_logger(self.spec, logger, "experiment")
         spec_util.save(spec, unit="experiment")
 
     def close(self):

@@ -13,9 +13,12 @@
         "training_start_step": 1000
       },
       "memory": {
-        "name": "Replay",
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
         "batch_size": 1536,
-        "max_size": 1000000
+        "max_size": 1000000,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -27,7 +30,7 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "update_type": "polyak",
@@ -53,9 +56,11 @@
       }
     },
     "search": {
-      "agent.memory.batch_size__qrandint": [512, 4096, 512],
-      "agent.algorithm.training_iter__qrandint": [20, 40, 10],
-      "agent.algorithm.training_frequency__qrandint": [8, 20, 4]
+      "agent.memory.batch_size__qrandint": [1024, 4096, 1024],
+      "agent.algorithm.training_iter__qrandint": [10, 30, 10],
+      "agent.algorithm.training_frequency__qrandint": [10, 40, 10],
+      "agent.net.polyak_coef__loguniform": [0.005, 0.5],
+      "agent.net.hid_layers_activation__choice": ["tanh", "relu"]
     }
   }
 }

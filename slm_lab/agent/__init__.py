@@ -346,12 +346,14 @@ class MetricsTracker:
             else:
                 items.append(f"{k}:{v:g}")
 
-        # Simple grid: 5 per line with equal spacing
+        # Simple grid: 4 per line with equal spacing
         w = max(len(item) for item in items)
         lines = [f"{prefix} [{df_mode}]"]
-        for i in range(0, len(items), 5):
-            chunk = [f"{item:<{w}}" for item in items[i : i + 5]]
-            lines.append("  ".join(chunk))
+        for i in range(0, len(items), 4):
+            # Pad items except the last one in each row to avoid trailing spaces
+            chunk = items[i : i + 4]
+            formatted = [f"{item:<{w}}" if j < len(chunk) - 1 else item for j, item in enumerate(chunk)]
+            lines.append("  ".join(formatted))
 
         logger.info("\n".join(lines))
         if (

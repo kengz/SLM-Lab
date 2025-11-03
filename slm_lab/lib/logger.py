@@ -3,6 +3,7 @@ import sys
 import warnings
 import pandas as pd
 from loguru import logger as loguru_logger
+from slm_lab import ROOT_DIR
 
 # Remove default handler and configure loguru
 loguru_logger.remove()
@@ -36,21 +37,16 @@ loguru_logger.add(
 )
 
 # Setup file logging if LOG_PREPATH is set
-# File logging always at INFO level for detailed records
 if os.environ.get('LOG_PREPATH'):
-    warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
-    log_filepath = os.environ['LOG_PREPATH'] + '.log'
+    log_filepath = os.path.join(ROOT_DIR, os.environ['LOG_PREPATH'] + '.log')
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
     loguru_logger.add(
         log_filepath,
         format=LOG_FORMAT,
-        level='INFO',  # Always INFO for file logs
-        backtrace=True,   # Keep full traceback in files for debugging
-        diagnose=True     # Keep variable inspection in files
+        level='INFO',
+        backtrace=True,
+        diagnose=True
     )
-
-# Disable noisy loggers
-loguru_logger.disable("ray")
 
 # Backward compatibility API
 def set_level(lvl):
