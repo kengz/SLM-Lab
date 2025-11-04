@@ -7,22 +7,22 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 40,
-        "training_frequency": 12,
+        "training_iter": 30,
+        "training_frequency": 50,
         "training_start_step": 1000
       },
       "memory": {
         "name": "PrioritizedReplay",
         "alpha": 0.6,
         "epsilon": 0.0001,
-        "batch_size": 1536,
+        "batch_size": 3072,
         "max_size": 1000000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [256],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
         "clip_grad_val": null,
         "loss_spec": {
@@ -33,7 +33,7 @@
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "polyak_coef": 0.017,
+        "polyak_coef": 0.27,
         "gpu": "auto"
       }
     },
@@ -41,14 +41,14 @@
       "name": "CartPole-v1",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 200000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 500,
       "eval_frequency": 500,
-      "max_session": 1,
-      "max_trial": 1
+      "max_session": 4,
+      "max_trial": 10
     },
     "search": {
       "agent.memory.batch_size__qrandint": [1024, 4096, 1024],

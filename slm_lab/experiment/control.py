@@ -81,21 +81,18 @@ class Session:
             mt.ckpt(self.env, "train")
             mt.log_summary("train")
             mt.calc_log_metrics(self.spec, "train")
-            search.report(mt)  # for Ray Tune scheduler
+            search.report(mt)
 
-            agent.save()  # save the latest ckpt
+            agent.save()
             if mt.total_reward_ma >= mt.best_total_reward_ma:
                 mt.best_total_reward_ma = mt.total_reward_ma
                 agent.save(ckpt="best")
 
-            # For Ray Tune trials, save trial outputs at every checkpoint
-            # This ensures early-terminated trials have outputs
-            from slm_lab.experiment.search import in_ray_tune_context
-            if in_ray_tune_context() and self.spec["meta"]["max_session"] == 1 and len(mt.train_df) > 2:
-                session_metrics = analysis.analyze_session(
-                    self.spec, mt.train_df, "eval", plot=False
-                )
-                analysis.analyze_trial(self.spec, [session_metrics])
+            # Plot: session graphs and trial graphs at checkpoints
+            if len(mt.train_df) > 2:
+                analysis.analyze_session(self.spec, mt.train_df, "train", plot=True)
+                if self.index == 0:
+                    analysis.analyze_trial(self.spec)
 
         if ps.get(self.spec, "meta.rigorous_eval") and self.to_ckpt(env, "eval"):
             logger.info("Running eval ckpt")

@@ -48,8 +48,10 @@ def batch_get(arr, idxs):
 
 
 def calc_srs_mean_std(sr_list):
-    '''Given a list of series, calculate their mean and std'''
-    cat_df = pd.DataFrame(dict(enumerate(sr_list)))
+    '''Given a list of series, calculate their mean and std. Truncates to min length to handle mismatched sizes.'''
+    min_len = min(len(sr) for sr in sr_list)
+    truncated = [sr.iloc[:min_len].reset_index(drop=True) for sr in sr_list]
+    cat_df = pd.DataFrame(dict(enumerate(truncated)))
     mean_sr = cat_df.mean(axis=1)
     std_sr = cat_df.std(axis=1)
     return mean_sr, std_sr

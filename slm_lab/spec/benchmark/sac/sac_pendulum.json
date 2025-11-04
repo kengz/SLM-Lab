@@ -7,7 +7,7 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 16,
+        "training_iter": 20,
         "training_frequency": 100,
         "training_start_step": 5000
       },
@@ -15,7 +15,7 @@
         "name": "PrioritizedReplay",
         "alpha": 0.6,
         "epsilon": 0.0001,
-        "batch_size": 2048,
+        "batch_size": 3072,
         "max_size": 100000,
         "use_cer": false
       },
@@ -33,7 +33,7 @@
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "polyak_coef": 0.005,
+        "polyak_coef": 0.00667,
         "gpu": "auto"
       }
     },
@@ -41,15 +41,22 @@
       "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 200000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 500,
       "eval_frequency": 2000,
       "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 1
+      "max_session": 4,
+      "max_trial": 10
+    },
+    "search": {
+      "agent.memory.batch_size__qrandint": [2048, 4096, 512],
+      "agent.algorithm.training_iter__qrandint": [10, 30, 5],
+      "agent.algorithm.training_frequency__qrandint": [50, 150, 25],
+      "agent.net.hid_layers__choice": [[128, 128], [256, 256], [256, 128]],
+      "agent.net.polyak_coef__uniform": [0.003, 0.01]
     }
   }
 }

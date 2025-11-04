@@ -197,7 +197,12 @@ Use this systematic approach for algorithm validation and hyperparameter tuning.
 
 **Key Insight**: Manual iteration quickly identifies deal-breakers, ASHA explores efficiently, multi-session validates robustly. Never skip Stage 1 - library configs often don't transfer directly between environments.
 
-**Spec Organization**: Keep spec files minimal - one spec per environment with inline `"search"` block. Never create separate `_search` specs or files.
+**Spec Organization**:
+- Keep spec files minimal - one spec per environment with inline `"search"` block
+- Never create separate `_search` specs or files
+- **Search specs persist**: The `"search"` block and `max_trial` stay in spec files even after completing search - they don't interfere with `train` mode
+- Use continuous distributions (`qrandint`, `uniform`, `loguniform`) for numeric hyperparameters, not `choice`
+- Reserve `choice` only for discrete categorical options (e.g., activation functions, architecture variants)
 
 ### ASHA Search Configuration
 

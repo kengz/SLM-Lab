@@ -145,14 +145,22 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     env_spec = spec["env"]
     name = env_spec["name"]
     num_envs = env_spec.get("num_envs", 1)
-
     render_mode = "human" if render() else None
+
+    # Build kwargs for gym.make() - pass through any extra env kwargs
+    # Reserved keys that are handled separately: name, num_envs, max_t, max_frame
+    reserved_keys = {"name", "num_envs", "max_t", "max_frame"}
+    make_kwargs = {k: v for k, v in env_spec.items() if k not in reserved_keys}
 
     if num_envs > 1:  # make vector environment
         vectorization_mode = _get_vectorization_mode(name, num_envs)
+        # For Atari vector envs, render_mode is not supported in kwargs
+        if not name.startswith("ALE/"):
+            make_kwargs["render_mode"] = "rgb_array" if render_mode else None
+        
         # Note: For Atari, gymnasium's make_vec automatically includes FrameStackObservation + AtariPreprocessing
         env = gym.make_vec(
-            name, num_envs=num_envs, vectorization_mode=vectorization_mode, render_mode="rgb_array" if render_mode else None
+            name, num_envs=num_envs, vectorization_mode=vectorization_mode, **make_kwargs
         )
         # Add reward tracking for SLM-Lab compatibility
         env = VectorTrackReward(env)
@@ -160,7 +168,8 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         if render_mode:
             env = VectorRenderAll(env)
     else:
-        env = gym.make(name, render_mode=render_mode)
+        make_kwargs["render_mode"] = render_mode
+        env = gym.make(name, **make_kwargs)
         # gymnasium forgot to do this for single Atari env like in make_vec
         if name.startswith("ALE/"):
             env = FrameStackObservation(

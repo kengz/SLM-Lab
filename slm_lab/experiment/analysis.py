@@ -1,5 +1,6 @@
 import warnings
 from copy import deepcopy
+import glob
 
 import numpy as np
 import pandas as pd
@@ -110,6 +111,11 @@ def calc_consistency(local_strs_list):
     return con, local_cons
 
 
+def to_series(data):
+    '''Convert list to Series if needed (for JSON deserialization compatibility)'''
+    return pd.Series(data) if isinstance(data, list) else data
+
+
 def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     '''
     Calculate the session metrics: strength, efficiency, stability
@@ -189,13 +195,14 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
-    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
-    local_strs_list = [sm['local']['strengths'] for sm in session_metrics_list]
-    local_se_list = [sm['local']['sample_efficiencies'] for sm in session_metrics_list]
-    local_te_list = [sm['local']['training_efficiencies'] for sm in session_metrics_list]
-    local_sta_list = [sm['local']['stabilities'] for sm in session_metrics_list]
-    frames = session_metrics_list[0]['local']['frames']
-    opt_steps = session_metrics_list[0]['local']['opt_steps']
+    # Convert lists to Series (JSON deserialization artifact)
+    mean_returns_list = [to_series(sm['local']['mean_returns']) for sm in session_metrics_list]
+    local_strs_list = [to_series(sm['local']['strengths']) for sm in session_metrics_list]
+    local_se_list = [to_series(sm['local']['sample_efficiencies']) for sm in session_metrics_list]
+    local_te_list = [to_series(sm['local']['training_efficiencies']) for sm in session_metrics_list]
+    local_sta_list = [to_series(sm['local']['stabilities']) for sm in session_metrics_list]
+    frames = to_series(session_metrics_list[0]['local']['frames'])
+    opt_steps = to_series(session_metrics_list[0]['local']['opt_steps'])
     # calculate consistency
     con, local_cons = calc_consistency(local_strs_list)
 
@@ -269,8 +276,8 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
     return session_metrics
 
 
-def analyze_trial(trial_spec, session_metrics_list):
-    '''Analyze trial and save data, then return metrics'''
+def analyze_trial(trial_spec, session_metrics_list=None):
+    '''Analyze trial and save data, then return metrics. If session_metrics_list not provided, load from saved files.'''
     # Guard: detect if session spec passed instead of trial spec (session >= 0)
     # Restore to trial_spec which has its own meta prepaths without session infix
     if trial_spec['meta']['session'] >= 0:
@@ -278,6 +285,14 @@ def analyze_trial(trial_spec, session_metrics_list):
         trial_spec['meta']['trial'] -= 1
         spec_util.tick(trial_spec, 'trial')
     info_prepath = trial_spec['meta']['info_prepath']
+    # Load session metrics if not provided
+    if session_metrics_list is None:
+        # Use smart_path to get absolute path for glob (fixes Ray Tune working directory issues)
+        abs_info_prepath = util.smart_path(info_prepath)
+        session_files = sorted(glob.glob(f'{abs_info_prepath}_s*_session_metrics_train.json'))
+        session_metrics_list = [m for f in session_files if (m := ps.attempt(util.read, f))]
+        if not session_metrics_list:
+            return None
     # calculate metrics
     trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
     # plot graphs

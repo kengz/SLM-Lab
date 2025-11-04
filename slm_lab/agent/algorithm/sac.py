@@ -117,9 +117,9 @@ class SoftActorCritic(ActorCritic):
         if self.agent.is_discrete:
             log_probs = action_pd.log_prob(actions)
         else:
-            log_probs = action_pd.log_prob(actions)
-            # Tanh squash (2D for Q-net), change of variables: log π(a|s) = log μ(u|s) - Σ log(1 - tanh²(u))
-            actions_tanh = torch.tanh(actions.unsqueeze(-1))
+            log_probs = action_pd.log_prob(actions).sum(-1)  # Sum across action dimensions
+            # Tanh squash, change of variables: log π(a|s) = log μ(u|s) - Σ log(1 - tanh²(u))
+            actions_tanh = torch.tanh(actions)
             log_probs = log_probs - torch.log(1 - actions_tanh.pow(2) + 1e-6).sum(-1)
             actions = actions_tanh * self._action_scale + self._action_bias
         return log_probs, actions

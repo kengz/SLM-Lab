@@ -42,6 +42,26 @@ All Atari environments now use gymnasium's ALE integration with optimized prepro
 - **Performance**: Native C++ implementation vs custom Python wrappers
 - **Migration**: Automatic - no spec file changes needed
 
+### **Generic Environment Kwargs Pass-through**
+Environment specs now pass through arbitrary kwargs to `gym.make()` for flexibility.
+
+- **Usage**: Add any gymnasium-supported kwargs directly to env spec
+- **Reserved keys**: `name`, `num_envs`, `max_t`, `max_frame` (handled by SLM-Lab)
+- **Common examples**:
+  - `"continuous": true` - Continuous action spaces (LunarLander, Atari CALE)
+  - `"render_mode": "rgb_array"` - Custom render modes (handled automatically)
+  - Any environment-specific parameters supported by gymnasium
+- **Example**:
+```json
+{
+  "env": {
+    "name": "LunarLander-v3",
+    "continuous": true,
+    "num_envs": 8
+  }
+}
+```
+
 ### **Roboschool → MuJoCo Migration**
 Automatic mapping to gymnasium MuJoCo v5 environments:
 

@@ -98,10 +98,12 @@ def stop_ray_processes():
     """Stop all Ray processes and related Python processes"""
     # First stop Ray cluster with force
     subprocess.run(["uv", "run", "ray", "stop", "--force"])
-    
-    # Kill entire process group 
+
+    # Kill entire process group
     try:
         subprocess.run(["pkill", "-f", "slm-lab"], check=False)
+        # Also kill lingering multiprocessing workers
+        subprocess.run(["pkill", "-9", "-f", "multiprocessing"], check=False)
         logger.info("Stopped Ray cluster and killed SLM-Lab processes")
     except Exception as e:
         logger.warning(f"Failed to kill processes: {e}")

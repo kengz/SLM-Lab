@@ -70,5 +70,78 @@
       "max_session": 4,
       "max_trial": 1
     }
+  },
+  "ppo_lunar_continuous": {
+    "agent": {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.9899,
+        "lam": 0.9539,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.236,
+          "end_val": 0.2,
+          "start_step": 0,
+          "end_step": 300000
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.0081,
+          "end_val": 0.005,
+          "start_step": 0,
+          "end_step": 300000
+        },
+        "val_loss_coef": 1.1395,
+        "clip_val_loss": false,
+        "time_horizon": 512,
+        "minibatch_size": 256,
+        "training_epoch": 15
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.000285
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.003907
+        },
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "continuous": true,
+      "max_t": null,
+      "max_frame": 300000,
+      "num_envs": 8
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1024,
+      "max_session": 4,
+      "max_trial": 1
+    }
   }
 }
