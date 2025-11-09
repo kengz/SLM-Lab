@@ -216,67 +216,53 @@
       }
     },
     "search": {
-      "agent": {
-        "algorithm": {
-          "gamma__uniform": [
-            0.95,
-            0.999
-          ],
-          "lam__uniform": [
-            0.9,
-            0.98
-          ],
-          "clip_eps_spec": {
-            "start_val__uniform": [
-              0.1,
-              0.3
-            ]
-          },
-          "entropy_coef_spec": {
-            "start_val__loguniform": [
-              0.0001,
-              0.01
-            ]
-          },
-          "val_loss_coef__uniform": [
-            0.2,
-            2.0
-          ],
-          "training_epoch__choice": [
-            10,
-            15,
-            20
-          ]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [
-              128,
-              64
-            ],
-            [
-              256,
-              128
-            ],
-            [
-              128,
-              128
-            ]
-          ],
-          "actor_optim_spec": {
-            "lr__loguniform": [
-              0.0001,
-              0.002
-            ]
-          },
-          "critic_optim_spec": {
-            "lr__loguniform": [
-              0.0001,
-              0.002
-            ]
-          }
-        }
-      }
+      "agent.algorithm.gamma__uniform": [
+        0.95,
+        0.999
+      ],
+      "agent.algorithm.lam__uniform": [
+        0.9,
+        0.98
+      ],
+      "agent.algorithm.clip_eps_spec.start_val__uniform": [
+        0.1,
+        0.3
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
+        0.0001,
+        0.01
+      ],
+      "agent.algorithm.val_loss_coef__uniform": [
+        0.2,
+        2.0
+      ],
+      "agent.algorithm.training_epoch__choice": [
+        10,
+        15,
+        20
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          128,
+          64
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          128,
+          128
+        ]
+      ],
+      "agent.net.actor_optim_spec.lr__loguniform": [
+        0.0001,
+        0.002
+      ],
+      "agent.net.critic_optim_spec.lr__loguniform": [
+        0.0001,
+        0.002
+      ]
     }
   },
   "ppo_bipedalwalker_iter1": {

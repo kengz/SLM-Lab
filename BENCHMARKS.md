@@ -17,14 +17,14 @@
 
 ## Phase Tracker
 
-| Phase | Category        | Environments | Status | Progress                   |
-| ----- | --------------- | ------------ | ------ | -------------------------- |
-| **1** | Classic Control | 5 envs       | 🔄     | 1/5 complete (CartPole ✅) |
-| **2** | Box2D           | 3 envs       | ⏸️     | 0/3 complete               |
-| **3** | MuJoCo          | 9 envs       | ⏸️     | 0/9 complete               |
-| **4** | Atari           | 6+ envs      | ⏸️     | 0/6 complete               |
+| Phase | Category        | Environments | Status | Progress                    |
+| ----- | --------------- | ------------ | ------ | --------------------------- |
+| **1** | Classic Control | 5 envs       | 🔄     | 2/5 complete (CartPole ✅, Acrobot ✅) |
+| **2** | Box2D           | 4 envs       | 🔄     | 1/4 complete (LunarLander Cont ✅) |
+| **3** | MuJoCo          | 9 envs       | ⏸️     | 0/9 complete                |
+| **4** | Atari           | 6+ envs      | ⏸️     | 0/6 complete                |
 
-**Current Focus**: Phase 1.2 (Acrobot-v1)
+**Current Focus**: Phase 2 Box2D (LunarLander discrete, BipedalWalker)
 **Started**: 2025-10-10
 
 ---
@@ -156,14 +156,14 @@
 - **Environment**: https://gymnasium.farama.org/environments/classic_control/pendulum/
 - **Action Space**: Box(1) - torque [-2, 2]
 - **State Space**: Box(3) - cos(theta), sin(theta), angular velocity
-- **max_frames**: TBD
-- **log_frequency**: 500
+- **max_frames**: 1M
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > -200
 
-| Algorithm | MA  | FPS | Spec File                                                 | Spec Name      | Status | Notes                        |
-| --------- | --- | --- | --------------------------------------------------------- | -------------- | ------ | ---------------------------- |
-| **SAC**   | -   | -   | [sac_cont.json](slm_lab/spec/benchmark/sac/sac_cont.json) | `sac_pendulum` | ⏸️     | Recommended                  |
-| **PPO**   | -   | -   | [ppo_cont.json](slm_lab/spec/benchmark/ppo/ppo_cont.json) | `ppo_pendulum` | ⏸️     | Test only (expected to fail) |
+| Algorithm | MA      | FPS   | Spec File                                                 | Spec Name      | Status | Notes                        |
+| --------- | ------- | ----- | --------------------------------------------------------- | -------------- | ------ | ---------------------------- |
+| **SAC**   | -       | -     | [sac_cont.json](slm_lab/spec/benchmark/sac/sac_cont.json) | `sac_pendulum` | ⏸️     | Recommended                  |
+| **PPO**   | -1353.1 | 1.4k  | [ppo_cont.json](slm_lab/spec/benchmark/ppo/ppo_cont.json) | `ppo_pendulum` | ❌     | Failed as expected           |
 
 ---
 
@@ -193,20 +193,20 @@
 
 ---
 
-### Phase 2.1b: LunarLanderContinuous-v3
+### Phase 2.1b: LunarLanderContinuous-v3 ✅ COMPLETE
 
 - **Environment**: https://gymnasium.farama.org/environments/box2d/lunar_lander/
 - **Action Space**: Box(2) - main engine [-1, 1], side engines [-1, 1]
 - **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
-- **max_frames**: TBD
+- **max_frames**: 300k
 - **log_frequency**: 1000
 - **Target total_reward_ma**: > 200
 
-| Algorithm     | MA  | FPS | Spec File                                                 | Spec Name                  | Status | Notes      |
-| ------------- | --- | --- | --------------------------------------------------------- | -------------------------- | ------ | ---------- |
-| **PPO**       | -   | -   | [ppo_cont.json](slm_lab/spec/benchmark/ppo/ppo_cont.json) | `ppo_lunar_continuous`     | ⏸️     | Primary    |
-| **SAC**       | -   | -   | [sac_cont.json](slm_lab/spec/benchmark/sac/sac_cont.json) | `sac_lunar_continuous`     | ⏸️     | Off-policy |
-| **A2C (GAE)** | -   | -   | [a2c_cont.json](slm_lab/spec/benchmark/a2c/a2c_cont.json) | `a2c_gae_lunar_continuous` | ⏸️     | Secondary  |
+| Algorithm     | MA    | FPS | Spec File                                                   | Spec Name              | Status | Notes                                   |
+| ------------- | ----- | --- | ----------------------------------------------------------- | ---------------------- | ------ | --------------------------------------- |
+| **PPO**       | 249.2 | 135 | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar_continuous` | ✅     | 124.6% of target, 3-stage ASHA          |
+| **SAC**       | 238.0 | ~35 | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json) | `sac_lunar_continuous` | ✅     | 119.0% of target, 62% faster training   |
+| **A2C (GAE)** | -     | -   | [a2c_cont.json](slm_lab/spec/benchmark/a2c/a2c_cont.json)   | `a2c_gae_lunar_continuous` | ⏸️     | Secondary (optional)                    |
 
 ---
 
@@ -567,38 +567,39 @@ git commit -m "docs: complete Phase [X] - [environment]"
 
 ## Summary Statistics
 
-**Last Updated**: 2025-10-12
+**Last Updated**: 2025-11-09
 
 ### Overall Progress
 
-| Metric                   | Value     |
-| ------------------------ | --------- |
-| Phases Complete          | 0/4       |
-| Environments Complete    | 1/23+     |
-| Classic Control Progress | 20% (1/5) |
-| Box2D Progress           | 0% (0/3)  |
-| MuJoCo Progress          | 0% (0/9)  |
-| Atari Progress           | 0% (0/6+) |
+| Metric                   | Value      |
+| ------------------------ | ---------- |
+| Phases Complete          | 0/4        |
+| Environments Complete    | 3/24+      |
+| Classic Control Progress | 40% (2/5)  |
+| Box2D Progress           | 25% (1/4)  |
+| MuJoCo Progress          | 0% (0/9)   |
+| Atari Progress           | 0% (0/6+)  |
 
 ### Phase Completion
 
 | Phase       | Environments | Complete | Percentage |
 | ----------- | ------------ | -------- | ---------- |
-| **Phase 1** | 5            | 1        | 20%        |
-| **Phase 2** | 3            | 0        | 0%         |
+| **Phase 1** | 5            | 2        | 40%        |
+| **Phase 2** | 4            | 1        | 25%        |
 | **Phase 3** | 9            | 0        | 0%         |
 | **Phase 4** | 6+           | 0        | 0%         |
 
-### Algorithm Performance (Phase 1 Only)
+### Algorithm Performance (Phases 1-2)
 
 | Algorithm | Envs Tested | Envs Solved | Success Rate |
 | --------- | ----------- | ----------- | ------------ |
-| PPO       | 1           | 1           | 100%         |
-| A2C       | 1           | 1           | 100%         |
-| DQN       | 1           | 1           | 100%         |
+| PPO       | 4           | 4           | 100%         |
+| A2C       | 2           | 2           | 100%         |
+| DQN       | 2           | 2           | 100%         |
+| DDQN+PER  | 2           | 2           | 100%         |
+| SAC       | 2           | 2           | 100%         |
 | REINFORCE | 1           | 1           | 100%         |
 | SARSA     | 1           | 1           | 100%         |
-| SAC       | 0           | 0           | -            |
 
 ---
 

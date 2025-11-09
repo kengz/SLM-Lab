@@ -8,7 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": 0.98,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -17,16 +17,16 @@
           "end_step": 500000
         },
         "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
+          "name": "no_decay",
+          "start_val": 0.0,
           "end_val": 0.0,
           "start_step": 0,
           "end_step": 500000
         },
         "val_loss_coef": 0.5,
         "clip_val_loss": false,
-        "time_horizon": 256,
-        "minibatch_size": 64,
+        "time_horizon": 32,
+        "minibatch_size": 256,
         "training_epoch": 10
       },
       "memory": {
@@ -36,10 +36,12 @@
         "type": "MLPNet",
         "shared": false,
         "hid_layers": [
-          64,
-          64
+          256,
+          256
         ],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -47,11 +49,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.0003
+          "lr": 0.0001
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.001
+          "lr": 0.0001
         },
         "gpu": "auto"
       }
@@ -59,12 +61,12 @@
     "env": {
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_frame": 500000,
-      "num_envs": 4
+      "max_frame": 1000000,
+      "num_envs": 16
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
+      "log_frequency": 1000,
       "eval_frequency": 10000,
       "max_session": 4,
       "max_trial": 1

@@ -198,6 +198,7 @@ Use this systematic approach for algorithm validation and hyperparameter tuning.
 **Key Insight**: Manual iteration quickly identifies deal-breakers, ASHA explores efficiently, multi-session validates robustly. Never skip Stage 1 - library configs often don't transfer directly between environments.
 
 **Spec Organization**:
+
 - Keep spec files minimal - one spec per environment with inline `"search"` block
 - Never create separate `_search` specs or files
 - **Search specs persist**: The `"search"` block and `max_trial` stay in spec files even after completing search - they don't interfere with `train` mode
@@ -237,16 +238,6 @@ Use this systematic approach for algorithm validation and hyperparameter tuning.
   }
 }
 ```
-
-## TODO
-
-### SAC
-
-Let's do search of SAC on the Benchmark envs first, balancing between fps and performance to hit optimal speed and high score. the main things to adjust for speed is the training_iter, training_freq, batch_size.
-
-Let's first do CartPole, then Pendulum, then the other
-
----
 
 ### Benchmark
 
