@@ -19,7 +19,7 @@ def set_from_cli(
             "CUDA_OFFSET": str(cuda_offset),
             "PROFILE": str(profile).lower(),
             "LOG_EXTRA": str(log_extra).lower(),
-            "UPLOAD_HF": upload_hf or "false",
+            "UPLOAD_HF": str(upload_hf).lower(),
         }
     )
 
@@ -58,7 +58,7 @@ def log_extra():
 
 def upload_hf():
     """Check if Hugging Face upload is enabled."""
-    return os.getenv("UPLOAD_HF", "false") == "auto"
+    return os.getenv("UPLOAD_HF", "false").lower() == "true"
 
 
 def lab_mode():

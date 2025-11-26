@@ -138,20 +138,20 @@ SLM-Lab follows a modular design pattern with these core components:
 # Basic usage
 uv tool install --editable .          # Install first
 slm-lab --help                        # help menu
-slm-lab                               # CartPole demo
+slm-lab                               # PPO CartPole (default)
 slm-lab --render                      # with rendering
 slm-lab spec.json spec_name dev       # custom experiment
 slm-lab --job job.json                # batch experiments
 
 # ✅ Validated algorithms (confirmed working)
+# PPO CartPole (default - fastest for quick tests)
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole train
 # DQN CartPole
 uv run slm-lab slm_lab/spec/demo.json dqn_cartpole train
 # REINFORCE
 uv run slm-lab slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json reinforce_cartpole train
 # DDQN PER
 uv run slm-lab slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json ddqn_per_concat_lunar train
-# PPO CartPole
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole train
 # PPO Lunar
 uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_lunar.json ppo_lunar train
 # PPO Continuous
@@ -170,7 +170,7 @@ slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_muj
 
 Use this systematic approach for algorithm validation and hyperparameter tuning.
 
-> NOTE use the `search` mode instead of `train`, e.g. `uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_shared_cartpole search`
+> NOTE use the `search` mode instead of `train`, e.g. `uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole search`
 
 **Stage 1: Manual Iteration** (Fast validation)
 

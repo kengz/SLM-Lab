@@ -12,13 +12,18 @@ logger = logger.get_logger(__name__)
 
 
 def get_repo_id():
-    """Get HF dataset repo ID from env var or default."""
-    return os.getenv("HF_DATASET_REPO", "SLM-Lab/benchmark")
+    """Get HF dataset repo ID from HF_REPO env var."""
+    return os.getenv("HF_REPO", "SLM-Lab/benchmark-dev")
+
+
+def get_api():
+    """Get authenticated HfApi instance."""
+    return HfApi(token=os.getenv("HF_TOKEN"))
 
 
 def upload(spec_or_predir: dict | str):
     """Upload experiment to shared SLM-Lab benchmark dataset."""
-    # Check if upload is enabled (only for auto mode during training)
+    # Check if upload is enabled (only for auto/public mode during training)
     if isinstance(spec_or_predir, dict) and not env_var.upload_hf():
         return
 
