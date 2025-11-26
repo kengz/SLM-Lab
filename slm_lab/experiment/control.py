@@ -13,6 +13,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
+from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.perf import log_perf_setup, optimize
 from slm_lab.spec import spec_util
 
@@ -129,7 +130,6 @@ class Session:
 
     def close(self):
         """Close session and clean up. Save agent, close env."""
-
         self.agent.close()
         self.env.close()
         self.eval_env.close()
@@ -213,9 +213,10 @@ class Experiment:
     then gathers trial data and analyze it to produce experiment data.
     """
 
-    def __init__(self, spec):
+    def __init__(self, spec, keep_trials: int = 3):
         self.spec = spec
         self.index = self.spec["meta"]["experiment"]
+        self.keep_trials = keep_trials
         util.set_logger(self.spec, logger, "experiment")
         spec_util.save(spec, unit="experiment")
 
@@ -225,5 +226,8 @@ class Experiment:
     def run(self):
         trial_data_dict = search.run_ray_search(self.spec)
         experiment_df = analysis.analyze_experiment(self.spec, trial_data_dict)
+        # Cleanup trial models after search to reduce disk usage (if keep_trials != -1)
+        if self.keep_trials != -1:
+            search.cleanup_trial_models(self.spec, experiment_df, keep_top_n=self.keep_trials)
         self.close()
         return experiment_df

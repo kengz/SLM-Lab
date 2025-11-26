@@ -223,3 +223,45 @@ def run_ray_search(spec: dict) -> dict:
 
     results = tuner.fit()
     return extract_trial_results(results, spec)
+
+
+def cleanup_trial_models(spec, experiment_df, keep_top_n=3):
+    """
+    Keep only top N trial models after search to reduce disk usage.
+    Deletes model files for trials not in top N by performance.
+    """
+    import glob
+    import os
+    from slm_lab.lib import util
+
+    # Sort trials by total_reward_ma descending
+    sorted_df = experiment_df.sort_values('total_reward_ma', ascending=False)
+    keep_trials = set(sorted_df.head(keep_top_n)['trial'].tolist())
+    all_trials = set(experiment_df['trial'].tolist())
+    remove_trials = all_trials - keep_trials
+
+    if not remove_trials:
+        logger.info('No trials to remove - all trials within keep limit')
+        return
+    
+    # Get model directory from spec
+    prepath = util.get_prepath(spec, unit='experiment')
+    model_dir = f'{prepath}/model'
+
+    if not os.path.exists(model_dir):
+        logger.info('Model directory does not exist, skipping cleanup')
+        return
+    
+    # Remove model files for trials not in top N
+    # Pattern matches both _tX_*.pt and _tX_sY_*.pt formats
+    removed_count = 0
+    for trial_idx in remove_trials:
+        # Match files with _tX_ pattern (covers both _tX_sY_ and _tX_ckpt-)
+        pattern = f'{model_dir}/*_t{trial_idx}_*.pt'
+        files = glob.glob(pattern)
+        for f in files:
+            os.remove(f)
+            removed_count += 1
+    
+    if removed_count > 0:
+        logger.info(f'Cleaned up {removed_count} model files, kept top {keep_top_n} trials: {sorted(keep_trials)}')
