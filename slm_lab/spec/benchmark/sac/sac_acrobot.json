@@ -7,21 +7,20 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 16,
-        "training_frequency": 100,
-        "training_start_step": 5000
+        "alpha_lr": 0.0003,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 1000
       },
       "memory": {
-        "name": "PrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.0001,
-        "batch_size": 2048,
+        "name": "Replay",
+        "batch_size": 256,
         "max_size": 100000,
-        "use_cer": false
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [128, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -41,21 +40,28 @@
       "name": "Acrobot-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
-      "eval_frequency": 2000,
-      "rigorous_eval": 0,
+      "log_frequency": 1000,
+      "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 10
+      "max_trial": 20,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
     },
     "search": {
-      "agent.memory.batch_size__choice": [1024, 2048, 3072],
-      "agent.algorithm.training_iter__choice": [12, 16, 20],
-      "agent.algorithm.training_frequency__choice": [80, 100, 120],
-      "agent.net.polyak_coef__uniform": [0.003, 0.007]
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.alpha_lr__loguniform": [0.00001, 0.001],
+      "agent.algorithm.training_frequency__qrandint": [1, 8, 1],
+      "agent.algorithm.training_iter__qrandint": [1, 8, 1],
+      "agent.memory.batch_size__choice": [128, 256, 512],
+      "agent.net.hid_layers__choice": [[64, 64], [128, 128], [256, 128]],
+      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.polyak_coef__uniform": [0.001, 0.02]
     }
   }
 }

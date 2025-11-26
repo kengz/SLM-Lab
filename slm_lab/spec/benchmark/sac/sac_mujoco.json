@@ -7,7 +7,9 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 1
+        "training_frequency": 4,
+        "training_iter": 4,
+        "alpha_lr": 0.0001
       },
       "memory": {
         "name": "Replay",
@@ -48,8 +50,35 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 7
+      "max_session": 1,
+      "max_trial": 30,
+      "search_scheduler": {
+        "grace_period": 100000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent": {
+        "algorithm": {
+          "gamma__uniform": [0.98, 0.999],
+          "alpha_lr__loguniform": [0.00001, 0.001],
+          "training_frequency__choice": [1, 2, 4, 8],
+          "training_iter__choice": [1, 2, 4, 8]
+        },
+        "memory": {
+          "batch_size__choice": [128, 256, 512]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [256, 256],
+            [256, 128]
+          ],
+          "optim_spec": {
+            "lr__loguniform": [0.0001, 0.001]
+          },
+          "polyak_coef__loguniform": [0.001, 0.02]
+        }
+      }
     }
   },
   "sac_humanoid": {
