@@ -99,5 +99,5 @@ build-backend = "hatchling.build"
 packages = ["slm_lab"]
 
 [project.scripts]
-slm-lab = "run_lab:cli"
+slm-lab = "slm_lab.cli:cli"
 slm-retro = "slm_lab.experiment.retro_analysis:app"
