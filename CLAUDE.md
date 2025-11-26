@@ -108,8 +108,9 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 - **Use dstack** for GPU-intensive training and development
 - Setup: Follow [dstack documentation](https://dstack.ai/docs/)
-- Run: `slm-lab spec.json spec_name train --dstack run-name`
-- **Customize hardware**: Edit `.dstack/run.yml` to change GPU type, CPU count, or backends
+- Run: `slm-lab run-remote spec.json spec_name train -n run-name` (default: GPU)
+- CPU-only ASHA search: `slm-lab run-remote spec.json spec_name search -c cpu -n run-name`
+- **Customize hardware**: Edit `.dstack/run-{gpu,cpu}-{train,search}.yml` files to change resources or backends
 
 ## Framework Design Patterns
 
@@ -199,9 +200,10 @@ Use this systematic approach for algorithm validation and hyperparameter tuning.
 
 **Spec Organization**:
 
+- **Naming convention**: Use canonical `<algo>_<env>` naming (e.g., `ppo_bipedalwalker`, `sac_lunar`). Never create variant specs like `_search`, `_asha`, `_refined`, `_fast`, etc. - one spec per algorithm/environment pair
 - Keep spec files minimal - one spec per environment with inline `"search"` block
-- Never create separate `_search` specs or files
 - **Search specs persist**: The `"search"` block and `max_trial` stay in spec files even after completing search - they don't interfere with `train` mode
+- **Search space**: Keep search space small and tractable - don't search obvious params that won't matter. Focus only on salient hyperparameters
 - Use continuous distributions (`qrandint`, `uniform`, `loguniform`) for numeric hyperparameters, not `choice`
 - Reserve `choice` only for discrete categorical options (e.g., activation functions, architecture variants)
 
@@ -241,11 +243,16 @@ Use this systematic approach for algorithm validation and hyperparameter tuning.
 
 ### Benchmark
 
-Run full SLM Lab benchmarks. See `BENCHMARKS.md` for detailed benchmark progress tracking. This is the single source of truth for:
+Run full SLM Lab benchmarks. See `docs/BENCHMARKS.md` for detailed benchmark progress tracking. This is the single source of truth for:
 
 - Phase-by-phase validation status (CartPole, LunarLander, Continuous Control, MuJoCo, Atari)
 - Algorithm-specific targets and results
 - Known issues and limitations
 - Next steps and prioritization
+
+**Track Remote Runs**: Use `docs/RUNS.md` to track active dstack runs across sessions. Update it when:
+- Starting new remote runs (add to "Current Runs" table)
+- Runs complete (move to "Completed Runs" with results)
+- Runs fail or are interrupted (document in notes)
 
 Update `BENCHMARKS.md` as benchmarks complete, keeping this document focused on methodology rather than tracking.
