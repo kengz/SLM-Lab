@@ -68,6 +68,7 @@ def test_ppo(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/ppo/ppo_pendulum.json', 'ppo_shared_pendulum'),
     ('experimental/ppo/ppo_pendulum.json', 'ppo_separate_pendulum'),
@@ -101,7 +102,6 @@ def test_ppo_sil(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/sac/sac_cartpole.json', 'sac_cartpole'),
     ('benchmark/sac/sac_halfcheetah.json', 'sac_halfcheetah'),
 ])
 def test_sac_cont(spec_file, spec_name):

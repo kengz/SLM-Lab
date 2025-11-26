@@ -92,9 +92,15 @@ class SIL(ActorCritic):
         batch = self.agent.memory.sample()
         if self.agent.memory.is_episodic:
             batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
+        # Map batch keys (plural) to add_experience keys (singular)
+        key_map = {
+            'states': 'state', 'actions': 'action', 'rewards': 'reward',
+            'next_states': 'next_state', 'dones': 'done',
+            'terminateds': 'terminated', 'truncateds': 'truncated',
+        }
         for idx in range(len(batch['dones'])):
-            # Build kwargs dict from batch data
-            kwargs = {k: batch[k][idx] for k in self.replay_memory.data_keys}
+            # Build kwargs dict from batch data, mapping plural to singular keys
+            kwargs = {key_map.get(k, k): batch[k][idx] for k in batch.keys() if k in key_map}
             self.replay_memory.add_experience(**kwargs)
         batch = util.to_torch_batch(batch, self.net.device, self.replay_memory.is_episodic)
         return batch

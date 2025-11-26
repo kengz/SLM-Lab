@@ -11,7 +11,7 @@ def memory_reset_util(memory, experiences):
     memory.reset()
     for i in range(2):
         e = experiences[i]
-        memory.add_experience(*e)
+        memory.add_experience(**e)
     memory.reset()
     assert memory.size == 0
     assert np.sum(memory.states) == 0
@@ -41,25 +41,24 @@ class TestOnPolicyBatchMemory:
         memory.reset()
         experiences = test_on_policy_batch_memory[2]
         exp = experiences[0]
-        memory.add_experience(*exp)
+        memory.add_experience(**exp)
         assert memory.size == 1
         assert len(memory.states) == 1
         # Handle states and actions with multiple dimensions
-        assert np.array_equal(memory.states[-1], exp[0])
-        assert memory.rewards[-1] == exp[1]
-        assert memory.actions[-1] == exp[2]
-        assert np.array_equal(memory.next_states[-1], exp[3])
-        assert memory.dones[-1] == exp[4]
+        assert np.array_equal(memory.states[-1], exp['state'])
+        assert memory.rewards[-1] == exp['reward']
+        assert memory.actions[-1] == exp['action']
+        assert np.array_equal(memory.next_states[-1], exp['next_state'])
+        assert memory.dones[-1] == exp['done']
 
     def test_sample(self, test_on_policy_batch_memory):
         '''Tests that a sample of batch size is returned with the correct dimensions'''
         memory = test_on_policy_batch_memory[0]
         memory.reset()
-        test_on_policy_batch_memory[1]
         experiences = test_on_policy_batch_memory[2]
         size = len(experiences)
         for e in experiences:
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         batch = memory.sample()
         assert len(batch['states']) == size
         assert len(batch['rewards']) == size
@@ -75,12 +74,11 @@ class TestOnPolicyBatchMemory:
         memory.agent.algorithm.to_train = 0
         batch_size = test_on_policy_batch_memory[1]
         experiences = test_on_policy_batch_memory[2]
-        len(experiences)
         for i, e in enumerate(experiences):
             if i == batch_size:
                 break
             else:
-                memory.add_experience(*e)
+                memory.add_experience(**e)
         assert memory.agent.algorithm.to_train == 1
 
     def test_reset(self, test_on_policy_batch_memory):
@@ -110,25 +108,24 @@ class TestOnPolicyMemory:
         memory.reset()
         experiences = test_on_policy_episodic_memory[2]
         exp = experiences[0]
-        memory.add_experience(*exp)
+        memory.add_experience(**exp)
         assert memory.size == 1
         assert len(memory.states) == 0
         # Handle states and actions with multiple dimensions
-        assert np.array_equal(memory.cur_epi_data['states'][-1], exp[0])
-        assert memory.cur_epi_data['rewards'][-1] == exp[1]
-        assert memory.cur_epi_data['actions'][-1] == exp[2]
-        assert np.array_equal(memory.cur_epi_data['next_states'][-1], exp[3])
-        assert memory.cur_epi_data['dones'][-1] == exp[4]
+        assert np.array_equal(memory.cur_epi_data['states'][-1], exp['state'])
+        assert memory.cur_epi_data['rewards'][-1] == exp['reward']
+        assert memory.cur_epi_data['actions'][-1] == exp['action']
+        assert np.array_equal(memory.cur_epi_data['next_states'][-1], exp['next_state'])
+        assert memory.cur_epi_data['dones'][-1] == exp['done']
 
     def test_sample(self, test_on_policy_episodic_memory):
         '''Tests that a sample of batch size is returned with the correct dimensions'''
         memory = test_on_policy_episodic_memory[0]
         memory.reset()
-        test_on_policy_episodic_memory[1]
         experiences = test_on_policy_episodic_memory[2]
         size = len(experiences)
         for e in experiences:
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         batch = memory.sample()
         assert len(batch['states'][0]) == size
         assert len(batch['rewards'][0]) == size
@@ -142,24 +139,21 @@ class TestOnPolicyMemory:
         memory = test_on_policy_episodic_memory[0]
         memory.reset()
         memory.agent.algorithm.to_train = 0
-        test_on_policy_episodic_memory[1]
         experiences = test_on_policy_episodic_memory[2]
-        len(experiences)
         for e in experiences:
             assert memory.agent.algorithm.to_train == 0
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         assert memory.agent.algorithm.to_train == 1
 
     def test_multiple_epis_samples(self, test_on_policy_episodic_memory):
         '''Tests that a sample of batch size is returned with the correct number of episodes'''
         memory = test_on_policy_episodic_memory[0]
         memory.reset()
-        test_on_policy_episodic_memory[1]
         experiences = test_on_policy_episodic_memory[2]
         size = len(experiences)
         for i in range(3):
             for e in experiences:
-                memory.add_experience(*e)
+                memory.add_experience(**e)
         batch = memory.sample()
         assert len(batch['states']) == 3
         assert len(batch['rewards']) == 3

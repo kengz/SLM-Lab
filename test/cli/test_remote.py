@@ -1,0 +1,176 @@
+"""Tests for slm_lab.cli.remote module."""
+
+from unittest.mock import patch
+
+from typer.testing import CliRunner
+
+from slm_lab.cli import app
+
+
+runner = CliRunner()
+
+
+class TestRunRemote:
+    """Tests for run_remote function via CLI runner."""
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_default_gpu_train_config(self, mock_run):
+        """Test GPU train config is used by default for train mode."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train"])
+
+        mock_run.assert_called_once()
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        env = call_args[1]["env"]
+
+        assert "-f" in cmd
+        assert ".dstack/run-gpu-train.yml" in cmd
+        assert env["SPEC_FILE"] == "spec.json"
+        assert env["SPEC_NAME"] == "test_spec"
+        assert env["LAB_MODE"] == "train"
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_gpu_search_config(self, mock_run):
+        """Test GPU search config for search mode."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "search"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert ".dstack/run-gpu-search.yml" in cmd
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_cpu_train_config(self, mock_run):
+        """Test CPU train config when specified."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train", "-c", "cpu"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert ".dstack/run-cpu-train.yml" in cmd
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_cpu_search_config(self, mock_run):
+        """Test CPU search config when specified."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "search", "-c", "cpu"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert ".dstack/run-cpu-search.yml" in cmd
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_dev_mode_uses_train_config(self, mock_run):
+        """Test that dev mode uses train config (lighter resources)."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "dev"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        # dev mode should use train config
+        assert ".dstack/run-gpu-train.yml" in cmd
+        env = call_args[1]["env"]
+        assert env["LAB_MODE"] == "dev"
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_custom_run_name(self, mock_run):
+        """Test custom run name is passed correctly."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train", "-n", "my-custom-run"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert "--name" in cmd
+        name_idx = cmd.index("--name")
+        assert cmd[name_idx + 1] == "my-custom-run"
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_default_run_name_from_spec(self, mock_run):
+        """Test default run name is derived from spec_name with underscores replaced."""
+        runner.invoke(app, ["run-remote", "spec.json", "ppo_cartpole", "train"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        name_idx = cmd.index("--name")
+        assert cmd[name_idx + 1] == "ppo-cartpole"
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_spec_vars_passed_correctly(self, mock_run):
+        """Test that --set variables are passed as SPEC_VARS env."""
+        runner.invoke(app, [
+            "run-remote", "spec.json", "test_spec", "train",
+            "-s", "env=CartPole-v1", "-s", "lr=0.001"
+        ])
+
+        call_args = mock_run.call_args
+        env = call_args[1]["env"]
+        assert "-s env=CartPole-v1" in env["SPEC_VARS"]
+        assert "-s lr=0.001" in env["SPEC_VARS"]
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_empty_spec_vars(self, mock_run):
+        """Test empty SPEC_VARS when no sets provided."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train"])
+
+        call_args = mock_run.call_args
+        env = call_args[1]["env"]
+        assert env["SPEC_VARS"] == ""
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_dstack_apply_command_structure(self, mock_run):
+        """Test the dstack apply command has correct structure."""
+        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert cmd[0] == "uv"
+        assert cmd[1] == "run"
+        assert cmd[2] == "dstack"
+        assert cmd[3] == "apply"
+        assert "-y" in cmd
+
+
+class TestRunRemoteCli:
+    """Tests for run-remote CLI command."""
+
+    def test_run_remote_help(self):
+        """Test run-remote help shows all options."""
+        result = runner.invoke(app, ["run-remote", "--help"])
+        assert result.exit_code == 0
+        assert "Launch experiment on dstack" in result.output
+        assert "SPEC_FILE" in result.output
+        assert "SPEC_NAME" in result.output
+        assert "--name" in result.output
+        assert "--config" in result.output
+        assert "--set" in result.output
+
+    def test_run_remote_missing_args(self):
+        """Test run-remote fails without required args."""
+        result = runner.invoke(app, ["run-remote"])
+        assert result.exit_code != 0
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_run_remote_via_cli(self, mock_run):
+        """Test run-remote command invokes correctly via CLI."""
+        runner.invoke(
+            app,
+            ["run-remote", "spec.json", "test_spec", "train", "-c", "cpu"],
+        )
+        # Should not fail (may exit due to dstack not being available)
+        mock_run.assert_called_once()
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_run_remote_with_sets_via_cli(self, mock_run):
+        """Test run-remote with -s options via CLI."""
+        runner.invoke(
+            app,
+            [
+                "run-remote",
+                "spec.json",
+                "test_spec",
+                "train",
+                "-s",
+                "env=CartPole-v1",
+                "-s",
+                "lr=0.001",
+            ],
+        )
+        mock_run.assert_called_once()
+        env = mock_run.call_args[1]["env"]
+        assert "env=CartPole-v1" in env["SPEC_VARS"]
+        assert "lr=0.001" in env["SPEC_VARS"]
