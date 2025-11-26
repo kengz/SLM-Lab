@@ -123,6 +123,7 @@ class TestRunRemote:
         assert cmd[2] == "dstack"
         assert cmd[3] == "apply"
         assert "-y" in cmd
+        assert "--detach" in cmd
 
 
 class TestRunRemoteCli:

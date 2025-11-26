@@ -124,7 +124,7 @@ def get(spec_file, spec_name, experiment_ts=None):
     @param str:experiment_ts Use this experiment_ts if given; used for resuming training
     @example
 
-    spec = spec_util.get('demo.json', 'dqn_cartpole')
+    spec = spec_util.get('demo.json', 'ppo_cartpole')
     '''
     spec_file = spec_file.replace(SPEC_DIR, '')  # guard
     spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename

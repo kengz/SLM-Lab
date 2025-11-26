@@ -49,7 +49,7 @@ def run_remote(
     config_mode = "train" if mode == "dev" else mode
     config_file = f".dstack/run-{hw}-{config_mode}.yml"
 
-    cmd = ["uv", "run", "dstack", "apply", "-f", config_file, "-y", "--name", run_name]
+    cmd = ["uv", "run", "dstack", "apply", "-f", config_file, "-y", "--detach", "--name", run_name]
     env = os.environ.copy()
     env["SPEC_FILE"] = spec_file
     env["SPEC_NAME"] = spec_name
