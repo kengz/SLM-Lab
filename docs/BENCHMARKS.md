@@ -75,6 +75,7 @@
 - **Environment**: https://gymnasium.farama.org/environments/classic_control/cart_pole/
 - **Action Space**: Discrete(2) - push left/right
 - **State Space**: Box(4) - position, velocity, angle, angular velocity
+- **num_envs**: 4
 - **max_frames**: 200k
 - **log_frequency**: 500
 - **Target total_reward_ma**: > 400
@@ -85,7 +86,7 @@
 | **A2C**       | 488.7 | 3.5k | [a2c_gae_cartpole.json](slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json)           | `a2c_gae_cartpole`              | ✅     | 122.2% of target                            |
 | **DQN**       | 437.8 | 1k   | [dqn_cartpole.json](slm_lab/spec/benchmark/dqn/dqn_cartpole.json)                   | `dqn_boltzmann_cartpole`        | ✅     | 109.5% of target, 3-stage ASHA              |
 | **REINFORCE** | 427.2 | 14k  | [reinforce_cartpole.json](slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole`            | ✅     | 106.8% of target                            |
-| **SAC**       | 431.1 | <100 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole`                  | 🔄     | 107.8% of target, ASHA speed search running |
+| **SAC**       | 431.1 | <100 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole`                  | ✅     | 107.8% of target (slow FPS expected for off-policy) |
 | **SARSA**     | 393.2 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.3% of target, 3-stage ASHA               |
 
 ---
@@ -95,6 +96,7 @@
 - **Environment**: https://gymnasium.farama.org/environments/classic_control/acrobot/
 - **Action Space**: Discrete(3) - apply torque (-1, 0, +1)
 - **State Space**: Box(6) - link positions and angular velocities
+- **num_envs**: 4
 - **max_frames**: 300k
 - **log_frequency**: 500
 - **Target total_reward_ma**: > -100
@@ -106,7 +108,7 @@
 | **DDQN+PER**        | -83.0  | ~700 | [ddqn_per_acrobot.json](slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot`           | ✅     | Solves target                  |
 | **A2C**             | -84.2  | 3.4k | [a2c_gae_acrobot.json](slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json)   | `a2c_gae_acrobot`            | ✅     | Solves target                  |
 | **DQN (ε-greedy)**  | -104.0 | ~720 | [dqn_acrobot.json](slm_lab/spec/benchmark/dqn/dqn_acrobot.json)           | `dqn_epsilon_greedy_acrobot` | ✅     | Misses target (4% below)       |
-| **SAC**             | -      | -    | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | ❌     | TODO search                    |
+| **SAC**             | -      | -    | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | 🔄     | ASHA search running                  |
 
 ---
 
@@ -115,6 +117,7 @@
 - **Environment**: https://gymnasium.farama.org/environments/box2d/lunar_lander/
 - **Action Space**: Discrete(4) - no-op, fire left/main/right engine
 - **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
+- **num_envs**: 8
 - **max_frames**: 300k
 - **log_frequency**: 1000 (episodes ~400-500 steps)
 - **Target total_reward_ma**: > 200
@@ -124,8 +127,8 @@
 | **PPO**       | 229.9 | 2.4k | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json)           | `ppo_lunar`             | ✅     | 115.0% of target |
 | **DDQN+PER**  | 230.0 | 8.7k | [ddqn_per_lunar.json](slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` | ✅     | 115.0% of target |
 | **DQN**       | 203.9 | 9.0k | [dqn_lunar.json](slm_lab/spec/benchmark/dqn/dqn_lunar.json)           | `dqn_concat_lunar`      | ✅     | 102.0% of target |
-| **A2C (GAE)** | ??    | 6.0k | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `??`                    | ⚠️     | todo search      |
-| **SAC**       | -     | -    | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar`             | ⏸️     | TODO search      |
+| **A2C (GAE)** | -     | -    | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar`         | 🔄     | ASHA search running |
+| **SAC**       | -     | -    | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar`             | 🔄     | ASHA search running |
 
 ---
 
@@ -134,6 +137,7 @@
 - **Environment**: https://gymnasium.farama.org/environments/box2d/lunar_lander/
 - **Action Space**: Box(2) - main engine [-1, 1], side engines [-1, 1]
 - **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
+- **num_envs**: 8
 - **max_frames**: 300k
 - **log_frequency**: 1000
 - **Target total_reward_ma**: > 200
@@ -151,15 +155,16 @@
 - **Environment**: https://gymnasium.farama.org/environments/box2d/bipedal_walker/
 - **Action Space**: Box(4) - motor speeds for 4 joints [-1, 1]
 - **State Space**: Box(24) - hull state, joint positions, velocities, lidar
+- **num_envs**: 16
 - **max_frames**: 3M (slow learning, breakthrough at 1.5M-2M frames)
-- **log_frequency**: 1600 (episodes max 1600 steps)
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 300
 
-| Algorithm     | MA    | FPS  | Spec File                                                                                    | Spec Name                      | Status | Notes                                                                                   |
-| ------------- | ----- | ---- | -------------------------------------------------------------------------------------------- | ------------------------------ | ------ | --------------------------------------------------------------------------------------- |
-| **PPO**       | 241.3 | 1.8k | [ppo_bipedalwalker.json](slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json)                 | `ppo_bipedalwalker_asha`       | ⚠️     | 80% of target. ASHA trial 9: gamma=0.995, lam=0.922, [512,256], 8 envs                 |
-| **SAC**       | -161  | 880  | [sac_bipedalwalker.json](slm_lab/spec/benchmark/sac/sac_bipedalwalker.json)                 | `sac_bipedalwalker_validation` | ❌     | Failed validation. Off-policy critic unstable with sparse rewards                       |
-| **A2C (GAE)** | -112  | 8k   | [a2c_gae_bipedalwalker.json](slm_lab/spec/benchmark/a2c/a2c_gae_bipedalwalker.json)         | `a2c_gae_bipedalwalker_validation` | ❌     | Failed validation. Insufficient sample reuse (training_freq=32, training_iter=1) |
+| Algorithm     | MA    | FPS  | Spec File                                                                           | Spec Name            | Status | Notes                                                  |
+| ------------- | ----- | ---- | ----------------------------------------------------------------------------------- | -------------------- | ------ | ------------------------------------------------------ |
+| **PPO**       | 241.3 | 1.8k | [ppo_bipedalwalker.json](slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json)         | `ppo_bipedalwalker`  | ⚠️     | 80% of target. ASHA trial 9: gamma=0.995, lam=0.922   |
+| **SAC**       | -     | -    | [sac_bipedalwalker.json](slm_lab/spec/benchmark/sac/sac_bipedalwalker.json)         | `sac_bipedalwalker`  | 🔄     | ASHA search running                                    |
+| **A2C (GAE)** | -112  | 8k   | [a2c_gae_bipedalwalker.json](slm_lab/spec/benchmark/a2c/a2c_gae_bipedalwalker.json) | `a2c_gae_bipedalwalker` | ❌  | Failed validation                                      |
 
 ---
 
@@ -170,15 +175,15 @@
 - **Environment**: https://gymnasium.farama.org/environments/mujoco/hopper/
 - **Action Space**: Box(3)
 - **State Space**: Box(11)
-- **max_frames**: TBD
-- **log_frequency**: 1000
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 2M (SAC)
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 3000
 
-| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes |
-| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ----- |
-| **PPO**       | -   | -   | [ppo_hopper.json](slm_lab/spec/benchmark/ppo/ppo_hopper.json)         | `ppo_hopper`            | ⏸️     | TODO  |
-| **SAC**       | -   | -   | [sac_hopper.json](slm_lab/spec/benchmark/sac/sac_hopper.json)         | `sac_hopper`            | ⏸️     | TODO  |
-| **A2C (GAE)** | -   | -   | [a2c_gae_hopper.json](slm_lab/spec/benchmark/a2c/a2c_gae_hopper.json) | `a2c_gae_hopper`        | ⏸️     | TODO  |
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=Hopper-v5`       |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Hopper-v5`       |
 
 ---
 
@@ -187,15 +192,15 @@
 - **Environment**: https://gymnasium.farama.org/environments/mujoco/walker2d/
 - **Action Space**: Box(6)
 - **State Space**: Box(17)
-- **max_frames**: TBD
-- **log_frequency**: 1000
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 2M (SAC)
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 4000
 
-| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes |
-| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ----- |
-| **PPO**       | -   | -   | [ppo_walker2d.json](slm_lab/spec/benchmark/ppo/ppo_walker2d.json)     | `ppo_walker2d`          | ⏸️     | TODO  |
-| **SAC**       | -   | -   | [sac_walker2d.json](slm_lab/spec/benchmark/sac/sac_walker2d.json)     | `sac_walker2d`          | ⏸️     | TODO  |
-| **A2C (GAE)** | -   | -   | [a2c_gae_walker2d.json](slm_lab/spec/benchmark/a2c/a2c_gae_walker2d.json) | `a2c_gae_walker2d`      | ⏸️     | TODO  |
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`     |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`     |
 
 ---
 
@@ -204,15 +209,15 @@
 - **Environment**: https://gymnasium.farama.org/environments/mujoco/half_cheetah/
 - **Action Space**: Box(6)
 - **State Space**: Box(17)
-- **max_frames**: TBD
-- **log_frequency**: 1000
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 2M (SAC)
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 5000
 
-| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes |
-| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ----- |
-| **PPO**       | -   | -   | [ppo_halfcheetah.json](slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | `ppo_halfcheetah`       | ⏸️     | TODO  |
-| **SAC**       | -   | -   | [sac_halfcheetah.json](slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | `sac_halfcheetah`       | ⏸️     | TODO  |
-| **A2C (GAE)** | -   | -   | [a2c_gae_halfcheetah.json](slm_lab/spec/benchmark/a2c/a2c_gae_halfcheetah.json) | `a2c_gae_halfcheetah`   | ⏸️     | TODO  |
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=HalfCheetah-v5`  |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=HalfCheetah-v5`  |
 
 ---
 
@@ -221,15 +226,15 @@
 - **Environment**: https://gymnasium.farama.org/environments/mujoco/ant/
 - **Action Space**: Box(8)
 - **State Space**: Box(111)
-- **max_frames**: TBD
-- **log_frequency**: 1000
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 2M (SAC)
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 5000
 
-| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes |
-| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ----- |
-| **PPO**       | -   | -   | [ppo_ant.json](slm_lab/spec/benchmark/ppo/ppo_ant.json)               | `ppo_ant`               | ⏸️     | TODO  |
-| **SAC**       | -   | -   | [sac_ant.json](slm_lab/spec/benchmark/sac/sac_ant.json)               | `sac_ant`               | ⏸️     | TODO  |
-| **A2C (GAE)** | -   | -   | [a2c_gae_ant.json](slm_lab/spec/benchmark/a2c/a2c_gae_ant.json)       | `a2c_gae_ant`           | ⏸️     | TODO  |
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=Ant-v5`          |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Ant-v5`          |
 
 ---
 
@@ -238,15 +243,15 @@
 - **Environment**: https://gymnasium.farama.org/environments/mujoco/humanoid/
 - **Action Space**: Box(17)
 - **State Space**: Box(376)
-- **max_frames**: TBD
-- **log_frequency**: 1000
+- **num_envs**: 32 (PPO), 8 (SAC)
+- **max_frames**: 50M (PPO), 5M (SAC)
+- **log_frequency**: 10000
 - **Target total_reward_ma**: > 6000
 
-| Algorithm     | MA  | FPS | Spec File                                                             | Spec Name               | Status | Notes |
-| ------------- | --- | --- | --------------------------------------------------------------------- | ----------------------- | ------ | ----- |
-| **PPO**       | -   | -   | [ppo_humanoid.json](slm_lab/spec/benchmark/ppo/ppo_humanoid.json)     | `ppo_humanoid`          | ⏸️     | TODO  |
-| **SAC**       | -   | -   | [sac_humanoid.json](slm_lab/spec/benchmark/sac/sac_humanoid.json)     | `sac_humanoid`          | ⏸️     | TODO  |
-| **A2C (GAE)** | -   | -   | [a2c_gae_humanoid.json](slm_lab/spec/benchmark/a2c/a2c_gae_humanoid.json) | `a2c_gae_humanoid`      | ⏸️     | TODO  |
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name      | Status | Notes                        |
+| ------------- | --- | --- | --------------------------------------------------------------- | -------------- | ------ | ---------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_humanoid` | ⏸️     | Dedicated spec (high frames) |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_humanoid` | ⏸️     | Dedicated spec (high frames) |
 
 ---
 

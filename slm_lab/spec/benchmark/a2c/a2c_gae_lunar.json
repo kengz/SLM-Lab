@@ -1,246 +1,5 @@
 {
-  "a2c_gae_lunar_v3": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.992,
-        "lam": 0.85,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.005,
-          "end_val": 0.005,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.2,
-        "training_frequency": 3
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 1.0,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0015
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.002
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "max_t": null,
-      "max_frame": 3000000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 1,
-      "max_trial": 1
-    }
-  },
-  "a2c_gae_lunar_v2": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.9953,
-        "lam": 0.854,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.0012,
-          "end_val": 0.0012,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.16,
-        "training_frequency": 3
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 1.0,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00108
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00124
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "max_t": null,
-      "max_frame": 2000000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 4,
-      "max_trial": 1
-    }
-  },
-  "a2c_gae_lunar_fast": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.998,
-        "lam": 0.91,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.001,
-          "end_val": 0.001,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.58,
-        "training_frequency": 5
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 1.0,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00074
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0017
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "max_t": null,
-      "max_frame": 2000000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 1,
-      "max_trial": 20,
-      "search_scheduler": {
-        "grace_period": 150000,
-        "reduction_factor": 3
-      }
-    },
-    "search": {
-      "agent.algorithm.gamma__uniform": [
-        0.995,
-        0.9995
-      ],
-      "agent.algorithm.lam__uniform": [
-        0.85,
-        0.95
-      ],
-      "agent.algorithm.training_frequency__qrandint": [
-        3,
-        15,
-        2
-      ],
-      "agent.algorithm.val_loss_coef__uniform": [
-        1.0,
-        2.5
-      ],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
-        0.0005,
-        0.005
-      ],
-      "agent.net.hid_layers__choice": [
-        [
-          256,
-          256
-        ],
-        [
-          512,
-          256
-        ],
-        [
-          256,
-          128
-        ]
-      ],
-      "agent.net.actor_optim_spec.lr__loguniform": [
-        0.0005,
-        0.002
-      ],
-      "agent.net.critic_optim_spec.lr__loguniform": [
-        0.001,
-        0.003
-      ]
-    }
-  },
-  "a2c_gae_lunar_refined": {
+  "a2c_gae_lunar": {
     "agent": {
       "name": "A2C",
       "algorithm": {
@@ -255,128 +14,6 @@
           "name": "no_decay",
           "start_val": 0.01,
           "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.0,
-        "training_frequency": 10
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 1.0,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0007
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.001
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "max_t": null,
-      "max_frame": 1500000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 1,
-      "max_trial": 40,
-      "search_scheduler": {
-        "grace_period": 200000,
-        "reduction_factor": 3
-      }
-    },
-    "search": {
-      "agent.algorithm.gamma__uniform": [
-        0.985,
-        0.999
-      ],
-      "agent.algorithm.lam__uniform": [
-        0.9,
-        0.98
-      ],
-      "agent.algorithm.training_frequency__qrandint": [
-        5,
-        30,
-        5
-      ],
-      "agent.algorithm.val_loss_coef__uniform": [
-        0.5,
-        2.0
-      ],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
-        0.001,
-        0.05
-      ],
-      "agent.net.hid_layers__choice": [
-        [
-          256,
-          256
-        ],
-        [
-          512,
-          256
-        ],
-        [
-          256,
-          128
-        ],
-        [
-          512,
-          512
-        ]
-      ],
-      "agent.net.clip_grad_val__choice": [
-        0.5,
-        1.0,
-        2.0
-      ],
-      "agent.net.actor_optim_spec.lr__loguniform": [
-        0.0003,
-        0.003
-      ],
-      "agent.net.critic_optim_spec.lr__loguniform": [
-        0.0005,
-        0.005
-      ]
-    }
-  },
-  "a2c_gae_lunar": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.9895,
-        "lam": 0.972,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.002,
-          "end_val": 0.002,
           "start_step": 0,
           "end_step": 0
         },
@@ -389,10 +26,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "batch_norm": false,
@@ -414,380 +48,30 @@
     },
     "env": {
       "name": "LunarLander-v3",
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 1000000,
-      "num_envs": 8
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 5000,
-      "eval_frequency": 5000,
-      "max_session": 4,
-      "max_trial": 1
-    }
-  },
-  "a2c_gae_lunar_1m": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.98,
-        "lam": 0.97,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.2,
-        "training_frequency": 256
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256,
-          128
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 0.5,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0003
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.003
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "max_t": null,
-      "max_frame": 300000,
-      "num_envs": 8
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 1
-    }
-  },
-  "a2c_gae_lunar_shared": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.5,
-        "training_frequency": 256
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": true,
-        "hid_layers": [
-          256,
-          128
-        ],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "normalize": true,
-        "batch_norm": false,
-        "clip_grad_val": 0.5,
-        "use_same_optim": true,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0003
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "max_t": null,
-      "max_frame": 300000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 1024,
-      "eval_frequency": 1024,
-      "max_session": 4,
-      "max_trial": 1
-    }
-  },
-  "a2c_gae_lunar_continuous_fast": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.999,
-        "lam": 0.94,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.033,
-          "end_val": 0.033,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 0.91,
-        "training_frequency": 10
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          128
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 2.0,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00039
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00098
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "continuous": true,
-      "max_t": null,
-      "max_frame": 1500000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 1,
-      "max_trial": 20,
+      "max_trial": 30,
       "search_scheduler": {
-        "grace_period": 120000,
+        "grace_period": 50000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [
-        0.997,
-        0.9995
-      ],
-      "agent.algorithm.lam__uniform": [
-        0.91,
-        0.98
-      ],
-      "agent.algorithm.training_frequency__qrandint": [
-        5,
-        20,
-        3
-      ],
-      "agent.algorithm.val_loss_coef__uniform": [
-        0.5,
-        1.5
-      ],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
-        0.02,
-        0.05
-      ],
-      "agent.net.hid_layers__choice": [
-        [
-          256,
-          128
-        ],
-        [
-          512,
-          256
-        ],
-        [
-          256,
-          256
-        ]
-      ],
-      "agent.net.actor_optim_spec.lr__loguniform": [
-        0.0002,
-        0.001
-      ],
-      "agent.net.critic_optim_spec.lr__loguniform": [
-        0.0005,
-        0.002
-      ]
-    }
-  },
-  "a2c_gae_lunar_continuous_refined": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.0,
-        "training_frequency": 10
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "tanh",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 1.0,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0007
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.001
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "LunarLander-v3",
-      "continuous": true,
-      "max_t": null,
-      "max_frame": 1000000,
-      "num_envs": 16
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 1,
-      "max_trial": 35,
-      "search_scheduler": {
-        "grace_period": 200000,
-        "reduction_factor": 3
-      }
-    },
-    "search": {
-      "agent.algorithm.gamma__uniform": [
-        0.985,
-        0.999
-      ],
-      "agent.algorithm.lam__uniform": [
-        0.9,
-        0.98
-      ],
-      "agent.algorithm.training_frequency__qrandint": [
-        5,
-        30,
-        5
-      ],
-      "agent.algorithm.val_loss_coef__uniform": [
-        0.5,
-        2.0
-      ],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
-        0.005,
-        0.05
-      ],
-      "agent.net.hid_layers__choice": [
-        [
-          256,
-          256
-        ],
-        [
-          512,
-          256
-        ],
-        [
-          256,
-          128
-        ],
-        [
-          512,
-          512
-        ]
-      ],
-      "agent.net.clip_grad_val__choice": [
-        0.5,
-        1.0,
-        2.0
-      ],
-      "agent.net.actor_optim_spec.lr__loguniform": [
-        0.0003,
-        0.003
-      ],
-      "agent.net.critic_optim_spec.lr__loguniform": [
-        0.0005,
-        0.005
-      ]
+      "agent.algorithm.gamma__uniform": [0.985, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.algorithm.training_frequency__qrandint": [16, 64, 16],
+      "agent.algorithm.val_loss_coef__uniform": [0.3, 1.5],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.02],
+      "agent.net.hid_layers__choice": [[256, 256], [512, 256], [256, 128]],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.003],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.005]
     }
   },
   "a2c_gae_lunar_continuous": {
@@ -817,10 +101,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          128,
-          128
-        ],
+        "hid_layers": [128, 128],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "batch_norm": false,
@@ -843,9 +124,9 @@
     "env": {
       "name": "LunarLander-v3",
       "continuous": true,
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 600000,
-      "num_envs": 16
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
@@ -854,58 +135,19 @@
       "max_session": 1,
       "max_trial": 30,
       "search_scheduler": {
-        "grace_period": 80000,
+        "grace_period": 50000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [
-        0.98,
-        0.999
-      ],
-      "agent.algorithm.lam__uniform": [
-        0.92,
-        0.98
-      ],
-      "agent.algorithm.training_frequency__qrandint": [
-        32,
-        128,
-        16
-      ],
-      "agent.algorithm.val_loss_coef__uniform": [
-        0.3,
-        1.5
-      ],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [
-        0.001,
-        0.02
-      ],
-      "agent.net.hid_layers__choice": [
-        [
-          64,
-          64
-        ],
-        [
-          128,
-          128
-        ],
-        [
-          256,
-          128
-        ],
-        [
-          256,
-          256
-        ]
-      ],
-      "agent.net.actor_optim_spec.lr__loguniform": [
-        0.0003,
-        0.003
-      ],
-      "agent.net.critic_optim_spec.lr__loguniform": [
-        0.0005,
-        0.005
-      ]
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.92, 0.98],
+      "agent.algorithm.training_frequency__qrandint": [32, 128, 16],
+      "agent.algorithm.val_loss_coef__uniform": [0.3, 1.5],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.02],
+      "agent.net.hid_layers__choice": [[64, 64], [128, 128], [256, 128], [256, 256]],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.003],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.005]
     }
   }
 }

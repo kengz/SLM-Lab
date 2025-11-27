@@ -24,7 +24,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "time_horizon": 512,
+        "time_horizon": 2048,
         "minibatch_size": 64,
         "training_epoch": 10
       },
@@ -34,12 +34,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": true,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -60,86 +58,30 @@
       "name": "${env}",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 3e6
+      "max_frame": 3000000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 50,
+      "max_trial": 30,
       "search_scheduler": {
-        "grace_period": 150000,
+        "grace_period": 300000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent": {
-        "algorithm": {
-          "gamma__uniform": [
-            0.95,
-            0.999
-          ],
-          "lam__uniform": [
-            0.9,
-            0.99
-          ],
-          "clip_eps_spec": {
-            "start_val__uniform": [
-              0.1,
-              0.3
-            ]
-          },
-          "entropy_coef_spec": {
-            "start_val__loguniform": [
-              0.0001,
-              0.01
-            ]
-          },
-          "val_loss_coef__uniform": [
-            0.5,
-            2.0
-          ],
-          "training_epoch__choice": [
-            5,
-            10,
-            15
-          ]
-        },
-        "net": {
-          "shared__choice": [
-            true,
-            false
-          ],
-          "hid_layers__choice": [
-            [
-              256,
-              256
-            ],
-            [
-              512,
-              256
-            ],
-            [
-              256,
-              128
-            ]
-          ],
-          "actor_optim_spec": {
-            "lr__loguniform": [
-              0.00005,
-              0.001
-            ]
-          },
-          "critic_optim_spec": {
-            "lr__loguniform": [
-              0.00005,
-              0.001
-            ]
-          }
-        }
-      }
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.99],
+      "agent.algorithm.clip_eps_spec.start_val__uniform": [0.1, 0.3],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.0001, 0.01],
+      "agent.algorithm.val_loss_coef__uniform": [0.5, 2.0],
+      "agent.algorithm.training_epoch__qrandint": [5, 15, 5],
+      "agent.net.hid_layers__choice": [[256, 256], [512, 256], [256, 128]],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.00005, 0.001],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.00005, 0.001]
     }
   },
   "ppo_humanoid": {
@@ -167,7 +109,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "time_horizon": 512,
+        "time_horizon": 2048,
         "minibatch_size": 4096,
         "training_epoch": 15
       },
@@ -177,12 +119,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": true,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -203,7 +143,7 @@
       "name": "Humanoid-v5",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 5e7
+      "max_frame": 50000000
     },
     "meta": {
       "distributed": false,

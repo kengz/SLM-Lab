@@ -80,8 +80,7 @@
       "agent.algorithm.training_epoch__qrandint": [8, 15, 1],
       "agent.net.hid_layers__choice": [[256, 256], [512, 256], [256, 128]],
       "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.001],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0001, 0.001],
-      "env.num_envs__choice": [8, 16, 32]
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0001, 0.001]
     }
   }
 }
