@@ -9,7 +9,7 @@
         "gamma": 0.99,
         "training_frequency": 1,
         "training_iter": 1,
-        "training_start_step": 10000
+        "training_start_step": 1000
       },
       "memory": {
         "name": "Replay",
@@ -38,7 +38,7 @@
     },
     "env": {
       "name": "BipedalWalker-v3",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
       "max_frame": 3000000
     },

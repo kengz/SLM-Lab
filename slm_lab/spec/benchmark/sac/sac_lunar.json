@@ -7,23 +7,24 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "alpha_lr": 0.0003,
-        "training_frequency": 1,
-        "training_iter": 1,
+        "training_frequency": 20,
+        "training_iter": 15,
         "training_start_step": 1000
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 256,
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
+        "batch_size": 1024,
         "max_size": 100000,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 128],
+        "hid_layers": [256],
         "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
+        "init_fn": "xavier_uniform_",
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -32,37 +33,33 @@
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "update_frequency": 1,
-        "polyak_coef": 0.005,
+        "polyak_coef": 0.15,
         "gpu": "auto"
       }
     },
     "env": {
       "name": "LunarLander-v3",
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 500000,
-      "num_envs": 8
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 30,
+      "max_trial": 20,
       "search_scheduler": {
-        "grace_period": 80000,
+        "grace_period": 50000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.alpha_lr__loguniform": [0.00001, 0.001],
-      "agent.algorithm.training_frequency__qrandint": [1, 8, 1],
-      "agent.algorithm.training_iter__qrandint": [1, 10, 1],
-      "agent.memory.batch_size__choice": [128, 256, 512],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 128], [256, 128], [256, 256]],
-      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
-      "agent.net.polyak_coef__uniform": [0.001, 0.02]
+      "agent.algorithm.training_frequency__qrandint": [10, 40, 10],
+      "agent.algorithm.training_iter__qrandint": [10, 30, 5],
+      "agent.memory.batch_size__qrandint": [512, 2048, 512],
+      "agent.net.hid_layers__choice": [[128], [256], [256, 128]],
+      "agent.net.polyak_coef__loguniform": [0.05, 0.4]
     }
   },
   "sac_lunar_continuous": {
@@ -85,10 +82,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -108,9 +102,9 @@
     "env": {
       "name": "LunarLander-v3",
       "continuous": true,
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 300000,
-      "num_envs": 8
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,

@@ -7,9 +7,9 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 4,
-        "training_iter": 4,
-        "alpha_lr": 0.0001
+        "training_frequency": 1,
+        "training_iter": 1,
+        "training_start_step": 1000
       },
       "memory": {
         "name": "Replay",
@@ -19,10 +19,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -43,42 +40,28 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 2000000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 30,
       "search_scheduler": {
-        "grace_period": 100000,
+        "grace_period": 200000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent": {
-        "algorithm": {
-          "gamma__uniform": [0.98, 0.999],
-          "alpha_lr__loguniform": [0.00001, 0.001],
-          "training_frequency__choice": [1, 2, 4, 8],
-          "training_iter__choice": [1, 2, 4, 8]
-        },
-        "memory": {
-          "batch_size__choice": [128, 256, 512]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [256, 256],
-            [256, 128]
-          ],
-          "optim_spec": {
-            "lr__loguniform": [0.0001, 0.001]
-          },
-          "polyak_coef__loguniform": [0.001, 0.02]
-        }
-      }
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
+      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
+      "agent.memory.batch_size__choice": [128, 256, 512],
+      "agent.net.hid_layers__choice": [[256, 256], [256, 128]],
+      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.polyak_coef__loguniform": [0.001, 0.02]
     }
   },
   "sac_humanoid": {
@@ -89,7 +72,9 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 1
+        "training_frequency": 1,
+        "training_iter": 1,
+        "training_start_step": 25000
       },
       "memory": {
         "name": "Replay",
@@ -99,10 +84,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -123,12 +105,12 @@
       "name": "Humanoid-v5",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e6
+      "max_frame": 5000000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
