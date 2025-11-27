@@ -53,7 +53,7 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
@@ -116,7 +116,7 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
@@ -183,7 +183,7 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
@@ -250,7 +250,7 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,

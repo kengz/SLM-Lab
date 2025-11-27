@@ -58,7 +58,7 @@
       "name": "${env}",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 3000000
+      "max_frame": 5e5
     },
     "meta": {
       "distributed": false,
@@ -66,9 +66,9 @@
       "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 30,
+      "max_trial": 8,
       "search_scheduler": {
-        "grace_period": 300000,
+        "grace_period": 50000,
         "reduction_factor": 3
       }
     },

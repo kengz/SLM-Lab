@@ -57,10 +57,10 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 30,
+      "max_trial": 15,
       "search_scheduler": {
         "grace_period": 50000,
-        "reduction_factor": 3
+        "reduction_factor": 4
       }
     },
     "search": {
@@ -133,10 +133,10 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 30,
+      "max_trial": 15,
       "search_scheduler": {
         "grace_period": 50000,
-        "reduction_factor": 3
+        "reduction_factor": 4
       }
     },
     "search": {
