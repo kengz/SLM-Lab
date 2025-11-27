@@ -41,9 +41,14 @@
 - **DDQN+PER**: Double DQN with Prioritized Experience Replay (strongest DQN variant)
 - **SAC**: Soft Actor-Critic (discrete and continuous - rivals PPO for continuous control)
 
+**Optional** (validated but not primary):
+
+- **PPOSIL**: PPO + Self-Imitation Learning (validated on CartPole/Acrobot)
+  - Best for: Sparse rewards, hard exploration (Atari)
+  - Minimal benefit on dense-reward tasks (CartPole, MuJoCo)
+
 **Excluded**:
 
-- **SIL**: Not mainstream, incompatible with dense rewards
 - **A3C/Async SAC/DPPO**: Distributed variants (specialized use)
 
 **Algorithm Selection by Environment**:
@@ -88,6 +93,7 @@
 | **REINFORCE** | 427.2 | 14k  | [reinforce_cartpole.json](slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole`            | ✅     | 106.8% of target                            |
 | **SAC**       | 431.1 | <100 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole`                  | ✅     | 107.8% of target (slow FPS expected for off-policy) |
 | **SARSA**     | 393.2 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.3% of target, 3-stage ASHA               |
+| **PPOSIL**    | 496.3 | 1.6k | [ppo_sil_cartpole.json](slm_lab/spec/benchmark/sil/ppo_sil_cartpole.json)           | `ppo_sil_cartpole`              | ✅     | 124.1% of target, PPO + Self-Imitation Learning |
 
 ---
 
@@ -108,7 +114,8 @@
 | **DDQN+PER**        | -83.0  | ~700 | [ddqn_per_acrobot.json](slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot`           | ✅     | Solves target                  |
 | **A2C**             | -84.2  | 3.4k | [a2c_gae_acrobot.json](slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json)   | `a2c_gae_acrobot`            | ✅     | Solves target                  |
 | **DQN (ε-greedy)**  | -104.0 | ~720 | [dqn_acrobot.json](slm_lab/spec/benchmark/dqn/dqn_acrobot.json)           | `dqn_epsilon_greedy_acrobot` | ✅     | Misses target (4% below)       |
-| **SAC**             | -      | -    | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | 🔄     | ASHA search running                  |
+| **SAC**             | -      | -    | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | 🔄     | ASHA search running            |
+| **PPOSIL**          | -110.2 | -    | [ppo_sil_acrobot.json](slm_lab/spec/benchmark/sil/ppo_sil_acrobot.json)   | `ppo_sil_acrobot`            | ⚠️     | Near target, compare vs PPO    |
 
 ---
 
@@ -266,12 +273,13 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 18
 
-| Algorithm    | MA  | FPS | Spec File                                                           | Spec Name       | Status | Notes                   |
-| ------------ | --- | --- | ------------------------------------------------------------------- | --------------- | ------ | ----------------------- |
-| **PPO**      | -   | -   | [ppo_pong.json](slm_lab/spec/benchmark/ppo/ppo_pong.json)           | `ppo_pong`      | ⏸️     | Primary                 |
-| **DQN**      | -   | -   | [dqn_pong.json](slm_lab/spec/benchmark/dqn/dqn_pong.json)           | `dqn_pong`      | ⏸️     | Value-based             |
-| **DDQN+PER** | -   | -   | [ddqn_per_pong.json](slm_lab/spec/benchmark/dqn/ddqn_per_pong.json) | `ddqn_per_pong` | ⏸️     | Enhanced                |
-| **SAC**      | -   | -   | [sac_pong.json](slm_lab/spec/benchmark/sac/sac_pong.json)           | `sac_pong`      | ⏸️     | Discrete action variant |
+| Algorithm    | MA  | FPS | Spec File                                                           | Spec Name       | Status | Notes                           |
+| ------------ | --- | --- | ------------------------------------------------------------------- | --------------- | ------ | ------------------------------- |
+| **PPO**      | -   | -   | [ppo_pong.json](slm_lab/spec/benchmark/ppo/ppo_pong.json)           | `ppo_pong`      | ⏸️     | Primary                         |
+| **PPOSIL**   | -   | -   | [ppo_sil_pong.json](slm_lab/spec/benchmark/sil/ppo_sil_pong.json)   | `ppo_sil_pong`  | ⏸️     | Compare vs PPO (sparse rewards) |
+| **DQN**      | -   | -   | [dqn_pong.json](slm_lab/spec/benchmark/dqn/dqn_pong.json)           | `dqn_pong`      | ⏸️     | Value-based                     |
+| **DDQN+PER** | -   | -   | [ddqn_per_pong.json](slm_lab/spec/benchmark/dqn/ddqn_per_pong.json) | `ddqn_per_pong` | ⏸️     | Enhanced                        |
+| **SAC**      | -   | -   | [sac_pong.json](slm_lab/spec/benchmark/sac/sac_pong.json)           | `sac_pong`      | ⏸️     | Discrete action variant         |
 
 ---
 
@@ -284,12 +292,13 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 15000
 
-| Algorithm    | MA  | FPS | Spec File                                                             | Spec Name        | Status | Notes                   |
-| ------------ | --- | --- | --------------------------------------------------------------------- | ---------------- | ------ | ----------------------- |
-| **PPO**      | -   | -   | [ppo_qbert.json](slm_lab/spec/benchmark/ppo/ppo_qbert.json)           | `ppo_qbert`      | ⏸️     | Primary                 |
-| **DQN**      | -   | -   | [dqn_qbert.json](slm_lab/spec/benchmark/dqn/dqn_qbert.json)           | `dqn_qbert`      | ⏸️     | Value-based             |
-| **DDQN+PER** | -   | -   | [ddqn_per_qbert.json](slm_lab/spec/benchmark/dqn/ddqn_per_qbert.json) | `ddqn_per_qbert` | ⏸️     | Enhanced                |
-| **SAC**      | -   | -   | [sac_qbert.json](slm_lab/spec/benchmark/sac/sac_qbert.json)           | `sac_qbert`      | ⏸️     | Discrete action variant |
+| Algorithm    | MA  | FPS | Spec File                                                             | Spec Name        | Status | Notes                           |
+| ------------ | --- | --- | --------------------------------------------------------------------- | ---------------- | ------ | ------------------------------- |
+| **PPO**      | -   | -   | [ppo_qbert.json](slm_lab/spec/benchmark/ppo/ppo_qbert.json)           | `ppo_qbert`      | ⏸️     | Primary                         |
+| **PPOSIL**   | -   | -   | [ppo_sil_qbert.json](slm_lab/spec/benchmark/sil/ppo_sil_qbert.json)   | `ppo_sil_qbert`  | ⏸️     | Compare vs PPO (hard exploration) |
+| **DQN**      | -   | -   | [dqn_qbert.json](slm_lab/spec/benchmark/dqn/dqn_qbert.json)           | `dqn_qbert`      | ⏸️     | Value-based                     |
+| **DDQN+PER** | -   | -   | [ddqn_per_qbert.json](slm_lab/spec/benchmark/dqn/ddqn_per_qbert.json) | `ddqn_per_qbert` | ⏸️     | Enhanced                        |
+| **SAC**      | -   | -   | [sac_qbert.json](slm_lab/spec/benchmark/sac/sac_qbert.json)           | `sac_qbert`      | ⏸️     | Discrete action variant         |
 
 ---
 
@@ -428,8 +437,10 @@
 
 ### SIL (Self-Imitation Learning)
 
-- **Status**: ❌ Removed from benchmarking
-- **Reason**: Incompatible with dense reward environments (requires sparse rewards for self-imitation)
+- **Status**: ✅ Fixed and validated (PPOSIL)
+- **Fix**: Corrected venv-packed data handling in replay memory (commit 6b9b0b9c)
+- **Result**: PPOSIL achieves MA 496.3 on CartPole (124.1% of target)
+- **Note**: Originally thought incompatible with dense rewards, but works well when properly implemented
 
 ---
 

@@ -92,15 +92,25 @@ class SIL(ActorCritic):
         batch = self.agent.memory.sample()
         if self.agent.memory.is_episodic:
             batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
+        # Convert lists to numpy arrays if needed (OnPolicyBatchReplay returns numpy arrays)
+        batch = {k: np.array(v) if isinstance(v, list) else v for k, v in batch.items()}
+        # Flatten venv dimension: reshape from (time_horizon, num_envs, ...) to (time_horizon * num_envs, ...)
+        flat_batch = {}
+        for k, v in batch.items():
+            if self.agent.env.is_venv and v.ndim > 1:
+                # Flatten first two dims (time_horizon, num_envs) into one
+                flat_batch[k] = v.reshape(-1, *v.shape[2:]) if v.ndim > 2 else v.reshape(-1)
+            else:
+                flat_batch[k] = v
         # Map batch keys (plural) to add_experience keys (singular)
         key_map = {
             'states': 'state', 'actions': 'action', 'rewards': 'reward',
             'next_states': 'next_state', 'dones': 'done',
             'terminateds': 'terminated', 'truncateds': 'truncated',
         }
-        for idx in range(len(batch['dones'])):
+        for idx in range(len(flat_batch['dones'])):
             # Build kwargs dict from batch data, mapping plural to singular keys
-            kwargs = {key_map.get(k, k): batch[k][idx] for k in batch.keys() if k in key_map}
+            kwargs = {key_map.get(k, k): flat_batch[k][idx] for k in flat_batch.keys() if k in key_map}
             self.replay_memory.add_experience(**kwargs)
         batch = util.to_torch_batch(batch, self.net.device, self.replay_memory.is_episodic)
         return batch
@@ -110,6 +120,14 @@ class SIL(ActorCritic):
         batch = self.replay_memory.sample()
         batch = util.to_torch_batch(batch, self.net.device, self.replay_memory.is_episodic)
         return batch
+
+    def calc_pdparam_v_flat(self, batch):
+        '''Like calc_pdparam_v but for flat replay data (no venv_unpack needed)'''
+        states = batch['states']
+        # Note: replay data is already flat (batch_size, state_dim), no venv_unpack needed
+        pdparam = self.calc_pdparam(states)
+        v_pred = self.calc_v(states, use_cache=False)
+        return pdparam, v_pred
 
     def calc_sil_policy_val_loss(self, batch, pdparams):
         '''
@@ -123,12 +141,11 @@ class SIL(ActorCritic):
         clipped_advs = torch.clamp(rets - v_preds, min=0.0)
 
         action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)
+        # Note: replay memory stores flat experiences (not venv-packed), so no venv_unpack needed
         actions = batch['actions']
-        if self.agent.env.is_venv:
-            actions = math_util.venv_unpack(actions)
         log_probs = action_pd.log_prob(actions)
 
-        sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs).mean()
+        sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs.detach()).mean()
         sil_val_loss = self.sil_val_loss_coef * clipped_advs.pow(2).mean() / 2
         logger.debug(f'SIL actor policy loss: {sil_policy_loss:g}')
         logger.debug(f'SIL critic value loss: {sil_val_loss:g}')
@@ -143,7 +160,7 @@ class SIL(ActorCritic):
             for _ in range(self.training_iter):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_iter):
-                    pdparams, _v_preds = self.calc_pdparam_v(batch)
+                    pdparams, _v_preds = self.calc_pdparam_v_flat(batch)
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
                     self.net.train_step(sil_loss, self.optim, self.lr_scheduler, global_net=self.global_net)
