@@ -20,8 +20,8 @@
 | Phase | Category        | Environments    | Status | Progress                                                             |
 | ----- | --------------- | --------------- | ------ | -------------------------------------------------------------------- |
 | **1** | Classic Control | 2 envs (skip 3) | ✅     | 2/2 complete (CartPole ✅, Acrobot ✅, MountainCar/Pendulum skipped) |
-| **2** | Box2D           | 4 envs          | 🔄     | 3/4 complete (LunarLander ✅, LunarLander Cont ✅, BipedalWalker ⚠️)                   |
-| **3** | MuJoCo          | 9 envs          | 🔄     | 2/9 in progress (Hopper ✅, HalfCheetah ✅, Walker2d 🔄, Ant 🔄)     |
+| **2** | Box2D           | 4 envs          | 🔄     | 3/4 complete (LunarLander ✅, LunarLander Cont ✅, BipedalWalker ⚠️) |
+| **3** | MuJoCo          | 9 envs          | 🔄     | 2/9 (Hopper ✅, HalfCheetah ⚠️, Walker2d 🔄, Ant 🔄, Swimmer 🔄, Reacher 🔄) |
 | **4** | Atari           | 6+ envs         | ⏸️     | 0/6 complete                                                         |
 
 **Current Focus**: Phase 3 MuJoCo - PPO validation and tuning
@@ -245,7 +245,75 @@
 
 ---
 
-### Phase 3.5: Humanoid-v5
+### Phase 3.5: Swimmer-v5
+
+- **Environment**: https://gymnasium.farama.org/environments/mujoco/swimmer/
+- **Action Space**: Box(2)
+- **State Space**: Box(8)
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 500k (SAC)
+- **log_frequency**: 10000
+- **Target total_reward_ma**: > 100
+
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                    |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ------------------------ |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | ASHA search running      |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Swimmer-v5`  |
+
+---
+
+### Phase 3.6: Reacher-v5
+
+- **Environment**: https://gymnasium.farama.org/environments/mujoco/reacher/
+- **Action Space**: Box(2)
+- **State Space**: Box(11)
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 500k (SAC)
+- **log_frequency**: 10000
+- **Target total_reward_ma**: > -5
+
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                   |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ----------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | ASHA search running     |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Reacher-v5` |
+
+---
+
+### Phase 3.7: InvertedPendulum-v5
+
+- **Environment**: https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/
+- **Action Space**: Box(1)
+- **State Space**: Box(4)
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 1M (PPO), 500k (SAC)
+- **log_frequency**: 10000
+- **Target total_reward_ma**: > 1000
+
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                             |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | --------------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=InvertedPendulum-v5`  |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=InvertedPendulum-v5`  |
+
+---
+
+### Phase 3.8: InvertedDoublePendulum-v5
+
+- **Environment**: https://gymnasium.farama.org/environments/mujoco/inverted_double_pendulum/
+- **Action Space**: Box(1)
+- **State Space**: Box(11)
+- **num_envs**: 16 (PPO), 8 (SAC)
+- **max_frames**: 3M (PPO), 1M (SAC)
+- **log_frequency**: 10000
+- **Target total_reward_ma**: > 9000
+
+| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                                   |
+| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | --------------------------------------- |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=InvertedDoublePendulum-v5`  |
+| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=InvertedDoublePendulum-v5`  |
+
+---
+
+### Phase 3.9: Humanoid-v5
 
 - **Environment**: https://gymnasium.farama.org/environments/mujoco/humanoid/
 - **Action Space**: Box(17)
@@ -257,7 +325,7 @@
 
 | Algorithm     | MA  | FPS | Spec File                                                       | Spec Name      | Status | Notes                        |
 | ------------- | --- | --- | --------------------------------------------------------------- | -------------- | ------ | ---------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_humanoid` | ⏸️     | Dedicated spec (high frames) |
+| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco`   | ⏸️     | Use `-s env=Humanoid-v5`     |
 | **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_humanoid` | ⏸️     | Dedicated spec (high frames) |
 
 ---
