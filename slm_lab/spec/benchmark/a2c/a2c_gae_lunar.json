@@ -57,21 +57,20 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 15,
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
         "grace_period": 50000,
-        "reduction_factor": 4
+        "reduction_factor": 3
       }
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.985, 0.999],
       "agent.algorithm.lam__uniform": [0.9, 0.98],
       "agent.algorithm.training_frequency__qrandint": [16, 64, 16],
-      "agent.algorithm.val_loss_coef__uniform": [0.3, 1.5],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.02],
-      "agent.net.hid_layers__choice": [[256, 256], [512, 256], [256, 128]],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.003],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.005]
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.005, 0.02],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0005, 0.003],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.003]
     }
   },
   "a2c_gae_lunar_continuous": {
@@ -133,21 +132,20 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 15,
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
         "grace_period": 50000,
-        "reduction_factor": 4
+        "reduction_factor": 3
       }
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.98, 0.999],
       "agent.algorithm.lam__uniform": [0.92, 0.98],
       "agent.algorithm.training_frequency__qrandint": [32, 128, 16],
-      "agent.algorithm.val_loss_coef__uniform": [0.3, 1.5],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.02],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 128], [256, 128], [256, 256]],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.005, 0.02],
       "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.003],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.005]
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.003]
     }
   }
 }
