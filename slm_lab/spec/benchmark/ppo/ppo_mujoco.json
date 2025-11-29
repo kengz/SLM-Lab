@@ -7,8 +7,8 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
+        "gamma": 0.995,
+        "lam": 0.92,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -18,12 +18,12 @@
         },
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.0,
-          "end_val": 0.0,
+          "start_val": 0.002,
+          "end_val": 0.002,
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.8,
         "time_horizon": 2048,
         "minibatch_size": 64,
         "training_epoch": 10
@@ -34,7 +34,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -49,7 +49,7 @@
         },
         "critic_optim_spec": {
           "name": "AdamW",
-          "lr": 0.0003
+          "lr": 0.0006
         },
         "gpu": "auto"
       }
@@ -58,7 +58,7 @@
       "name": "${env}",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 5e5
+      "max_frame": 3e6
     },
     "meta": {
       "distributed": false,
@@ -67,91 +67,19 @@
       "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 50000,
+        "grace_period": 100000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.lam__uniform": [0.9, 0.99],
-      "agent.algorithm.clip_eps_spec.start_val__uniform": [0.1, 0.3],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.0001, 0.01],
-      "agent.algorithm.val_loss_coef__uniform": [0.5, 2.0],
-      "agent.algorithm.training_epoch__qrandint": [5, 15, 5],
-      "agent.net.hid_layers__choice": [[256, 256], [512, 256], [256, 128]],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.00005, 0.001],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.00005, 0.001]
-    }
-  },
-  "ppo_humanoid": {
-    "agent": {
-      "name": "PPO",
-      "algorithm": {
-        "name": "PPO",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "clip_eps_spec": {
-          "name": "no_decay",
-          "start_val": 0.2,
-          "end_val": 0.2,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.0,
-        "time_horizon": 2048,
-        "minibatch_size": 4096,
-        "training_epoch": 15
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [256, 256],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "normalize": true,
-        "clip_grad_val": 0.5,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0003
-        },
-        "critic_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0003
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "Humanoid-v5",
-      "num_envs": 32,
-      "max_t": null,
-      "max_frame": 50000000
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 1
+      "agent.algorithm.gamma__uniform": [0.993, 0.999],
+      "agent.algorithm.lam__uniform": [0.90, 0.95],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.005],
+      "agent.algorithm.val_loss_coef__uniform": [0.6, 1.0],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0002, 0.0006],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0004, 0.001]
     }
   }
 }

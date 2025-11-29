@@ -124,9 +124,20 @@ def build_run_trial(base_spec: dict) -> callable:
 
 
 def get_trial_resources(spec: dict) -> dict:
-    """Build resource configuration for Ray Tune trials."""
-    max_session = spec["meta"]["max_session"]
-    return {"cpu": max_session, "gpu": max_session if torch.cuda.is_available() else 0}
+    """Build resource configuration for Ray Tune trials.
+
+    Configurable via meta.search_resources: {"cpu": N, "gpu": N}
+    Defaults: cpu=1, gpu=0 (MLP envs don't need GPU).
+    """
+    search_resources = spec.get("meta", {}).get("search_resources", {})
+    cpu_per_trial = search_resources.get("cpu", 1)
+    gpu_per_trial = search_resources.get("gpu", 0)
+
+    # Only use GPU if available
+    if gpu_per_trial > 0 and not torch.cuda.is_available():
+        gpu_per_trial = 0
+
+    return {"cpu": cpu_per_trial, "gpu": gpu_per_trial}
 
 
 def extract_trial_results(results: tune.ResultGrid, spec: dict) -> dict:

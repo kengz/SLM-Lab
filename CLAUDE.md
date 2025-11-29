@@ -108,9 +108,14 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 - **Use dstack** for GPU-intensive training and development
 - Setup: Follow [dstack documentation](https://dstack.ai/docs/)
-- Run: `slm-lab run-remote spec.json spec_name train -n run-name` (default: GPU)
-- CPU-only ASHA search: `slm-lab run-remote spec.json spec_name search -c cpu -n run-name`
+- **IMPORTANT**: Always `source .env` before running remote experiments for HF upload credentials
+- **Always use `--gpu`**: Cheaper ($0.39/hr L4 vs $0.54/hr 16-CPU) and faster with fractional GPU sharing
+- Run: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name train -n run-name`
+- ASHA search: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name search -n run-name`
+- Check status: `dstack ps`, `dstack logs <run-name>`
+- Stop runs: `dstack stop <run-name> -y`
 - **Customize hardware**: Edit `.dstack/run-{gpu,cpu}-{train,search}.yml` files to change resources or backends
+- **Max duration**: All runs have 4h safeguard (`max_duration: 4h`) to prevent runaway costs
 
 ## Framework Design Patterns
 

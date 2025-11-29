@@ -22,5 +22,6 @@ resources:
   cpu: 4..8
   memory: 16GB..32GB
 
-spot_policy: auto
-backends: [aws, gcp, azure, runpod, vastai]
+spot_policy: on-demand
+max_duration: 4h
+backends: [runpod, aws, gcp, azure, vastai]

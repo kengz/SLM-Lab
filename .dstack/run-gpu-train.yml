@@ -19,8 +19,9 @@ commands:
 # GPU train: L4 for image-based envs
 resources:
   gpu: L4
-  cpu: 4..8
-  memory: 16GB..32GB
+  cpu: 4..12
+  memory: 32GB..64GB
 
-spot_policy: auto
-backends: [aws, gcp, azure, runpod, vastai]
+spot_policy: on-demand
+max_duration: 4h
+backends: [runpod, aws, gcp, azure, vastai]

@@ -56,9 +56,9 @@ cp .env.example .env  # Add HF_TOKEN and configure HF_REPO
 uv run dstack init    # Initialize dstack
 
 # Run on cloud
-slm-lab run-remote spec.json spec_name train           # GPU training
-slm-lab run-remote spec.json spec_name search          # GPU ASHA search
-slm-lab run-remote spec.json spec_name train -c cpu    # CPU training (cheaper)
+slm-lab run-remote spec.json spec_name train           # CPU training (default)
+slm-lab run-remote spec.json spec_name search          # CPU ASHA search (default)
+slm-lab run-remote --gpu spec.json spec_name train     # GPU training (for image envs)
 
 # Sync results
 slm-lab pull spec_name    # Download from HuggingFace

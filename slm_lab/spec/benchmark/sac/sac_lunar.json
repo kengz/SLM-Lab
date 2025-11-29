@@ -48,18 +48,18 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 20,
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
         "grace_period": 50000,
         "reduction_factor": 3
       }
     },
     "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
       "agent.algorithm.training_frequency__qrandint": [10, 40, 10],
-      "agent.algorithm.training_iter__qrandint": [10, 30, 5],
-      "agent.memory.batch_size__qrandint": [512, 2048, 512],
-      "agent.net.hid_layers__choice": [[128], [256], [256, 128]],
-      "agent.net.polyak_coef__loguniform": [0.05, 0.4]
+      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.polyak_coef__loguniform": [0.05, 0.3]
     }
   },
   "sac_lunar_continuous": {

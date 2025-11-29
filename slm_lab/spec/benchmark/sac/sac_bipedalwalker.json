@@ -40,7 +40,7 @@
       "name": "BipedalWalker-v3",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 5e5
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,
@@ -48,19 +48,17 @@
       "eval_frequency": 10000,
       "max_session": 1,
       "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 50000,
+        "grace_period": 100000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.985, 0.999],
-      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
-      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
-      "agent.memory.batch_size__choice": [256, 512, 1024],
-      "agent.net.hid_layers__choice": [[256, 256], [512, 256], [512, 512]],
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.memory.batch_size__choice": [256, 512],
       "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
-      "agent.net.polyak_coef__uniform": [0.003, 0.01]
+      "agent.net.polyak_coef__loguniform": [0.003, 0.01]
     }
   }
 }

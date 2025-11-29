@@ -14,8 +14,8 @@ class TestRunRemote:
     """Tests for run_remote function via CLI runner."""
 
     @patch("slm_lab.cli.remote.subprocess.run")
-    def test_default_gpu_train_config(self, mock_run):
-        """Test GPU train config is used by default for train mode."""
+    def test_default_cpu_train_config(self, mock_run):
+        """Test CPU train config is used by default for train mode."""
         runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train"])
 
         mock_run.assert_called_once()
@@ -24,37 +24,37 @@ class TestRunRemote:
         env = call_args[1]["env"]
 
         assert "-f" in cmd
-        assert ".dstack/run-gpu-train.yml" in cmd
+        assert ".dstack/run-cpu-train.yml" in cmd
         assert env["SPEC_FILE"] == "spec.json"
         assert env["SPEC_NAME"] == "test_spec"
         assert env["LAB_MODE"] == "train"
 
     @patch("slm_lab.cli.remote.subprocess.run")
-    def test_gpu_search_config(self, mock_run):
-        """Test GPU search config for search mode."""
+    def test_cpu_search_config(self, mock_run):
+        """Test CPU search config for search mode (default)."""
         runner.invoke(app, ["run-remote", "spec.json", "test_spec", "search"])
 
         call_args = mock_run.call_args
         cmd = call_args[0][0]
-        assert ".dstack/run-gpu-search.yml" in cmd
-
-    @patch("slm_lab.cli.remote.subprocess.run")
-    def test_cpu_train_config(self, mock_run):
-        """Test CPU train config when specified."""
-        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "train", "-c", "cpu"])
-
-        call_args = mock_run.call_args
-        cmd = call_args[0][0]
-        assert ".dstack/run-cpu-train.yml" in cmd
-
-    @patch("slm_lab.cli.remote.subprocess.run")
-    def test_cpu_search_config(self, mock_run):
-        """Test CPU search config when specified."""
-        runner.invoke(app, ["run-remote", "spec.json", "test_spec", "search", "-c", "cpu"])
-
-        call_args = mock_run.call_args
-        cmd = call_args[0][0]
         assert ".dstack/run-cpu-search.yml" in cmd
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_gpu_train_config(self, mock_run):
+        """Test GPU train config when --gpu specified."""
+        runner.invoke(app, ["run-remote", "--gpu", "spec.json", "test_spec", "train"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert ".dstack/run-gpu-train.yml" in cmd
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_gpu_search_config(self, mock_run):
+        """Test GPU search config when --gpu specified."""
+        runner.invoke(app, ["run-remote", "--gpu", "spec.json", "test_spec", "search"])
+
+        call_args = mock_run.call_args
+        cmd = call_args[0][0]
+        assert ".dstack/run-gpu-search.yml" in cmd
 
     @patch("slm_lab.cli.remote.subprocess.run")
     def test_dev_mode_uses_train_config(self, mock_run):
@@ -63,8 +63,8 @@ class TestRunRemote:
 
         call_args = mock_run.call_args
         cmd = call_args[0][0]
-        # dev mode should use train config
-        assert ".dstack/run-gpu-train.yml" in cmd
+        # dev mode should use train config (CPU by default)
+        assert ".dstack/run-cpu-train.yml" in cmd
         env = call_args[1]["env"]
         assert env["LAB_MODE"] == "dev"
 
@@ -137,7 +137,7 @@ class TestRunRemoteCli:
         assert "SPEC_FILE" in result.output
         assert "SPEC_NAME" in result.output
         assert "--name" in result.output
-        assert "--config" in result.output
+        assert "--gpu" in result.output
         assert "--set" in result.output
 
     def test_run_remote_missing_args(self):
@@ -150,10 +150,20 @@ class TestRunRemoteCli:
         """Test run-remote command invokes correctly via CLI."""
         runner.invoke(
             app,
-            ["run-remote", "spec.json", "test_spec", "train", "-c", "cpu"],
+            ["run-remote", "spec.json", "test_spec", "train"],
         )
-        # Should not fail (may exit due to dstack not being available)
         mock_run.assert_called_once()
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_run_remote_with_gpu_via_cli(self, mock_run):
+        """Test run-remote with --gpu flag via CLI."""
+        runner.invoke(
+            app,
+            ["run-remote", "--gpu", "spec.json", "test_spec", "train"],
+        )
+        mock_run.assert_called_once()
+        cmd = mock_run.call_args[0][0]
+        assert ".dstack/run-gpu-train.yml" in cmd
 
     @patch("slm_lab.cli.remote.subprocess.run")
     def test_run_remote_with_sets_via_cli(self, mock_run):
@@ -175,3 +185,14 @@ class TestRunRemoteCli:
         env = mock_run.call_args[1]["env"]
         assert "env=CartPole-v1" in env["SPEC_VARS"]
         assert "lr=0.001" in env["SPEC_VARS"]
+
+    @patch("slm_lab.cli.remote.subprocess.run")
+    def test_run_remote_propagates_error_code(self, mock_run):
+        """Test that non-zero exit codes from dstack are propagated."""
+        from unittest.mock import MagicMock
+        mock_run.return_value = MagicMock(returncode=1)
+        result = runner.invoke(
+            app,
+            ["run-remote", "spec.json", "test_spec", "train"],
+        )
+        assert result.exit_code == 1
