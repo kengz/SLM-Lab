@@ -23,7 +23,7 @@ def test_trial(test_spec):
 
 
 def test_trial_demo():
-    spec = spec_util.get('demo.json', 'dqn_cartpole')
+    spec = spec_util.get('demo.json', 'ppo_cartpole')
     spec_util.save(spec, unit='experiment')
     spec = spec_util.override_spec(spec, 'test')
     spec_util.tick(spec, 'trial')

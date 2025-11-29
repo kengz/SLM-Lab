@@ -21,10 +21,10 @@
 | ----- | --------------- | --------------- | ------ | -------------------------------------------------------------------- |
 | **1** | Classic Control | 2 envs (skip 3) | ✅     | 2/2 complete (CartPole ✅, Acrobot ✅, MountainCar/Pendulum skipped) |
 | **2** | Box2D           | 4 envs          | 🔄     | 3/4 complete (LunarLander ✅, LunarLander Cont ✅, BipedalWalker ⚠️)                   |
-| **3** | MuJoCo          | 9 envs          | ⏸️     | 0/9 complete                                                         |
+| **3** | MuJoCo          | 9 envs          | 🔄     | 2/9 in progress (Hopper ✅, HalfCheetah ✅, Walker2d 🔄, Ant 🔄)     |
 | **4** | Atari           | 6+ envs         | ⏸️     | 0/6 complete                                                         |
 
-**Current Focus**: Phase 2 Box2D (CarRacing optional), Phase 3 MuJoCo starting
+**Current Focus**: Phase 3 MuJoCo - PPO validation and tuning
 **Started**: 2025-10-10
 
 ---
@@ -187,10 +187,10 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 3000
 
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=Hopper-v5`       |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Hopper-v5`       |
+| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                              |
+| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | -------------------------------------------------- |
+| **PPO**       | 2566 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ✅     | 85% of target @ 3M frames. ASHA-tuned hyperparams. |
+| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Hopper-v5`                             |
 
 ---
 
@@ -204,10 +204,10 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 4000
 
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`     |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`     |
+| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                     |
+| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ----------------------------------------- |
+| **PPO**       | 1424 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | 36% of target. ASHA search running.       |
+| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`                  |
 
 ---
 
@@ -221,10 +221,10 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 5000
 
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=HalfCheetah-v5`  |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=HalfCheetah-v5`  |
+| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                       |
+| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ------------------------------------------- |
+| **PPO**       | 3178 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⚠️     | 64% of target @ 3M. Hopper params transfer. |
+| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=HalfCheetah-v5`                 |
 
 ---
 
@@ -238,10 +238,10 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 5000
 
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                        |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ---------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=Ant-v5`          |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Ant-v5`          |
+| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                           |
+| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ----------------------------------------------- |
+| **PPO**       | 34   | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | 0.7% of target. ASHA search running (4-leg dynamics differ). |
+| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Ant-v5`                             |
 
 ---
 

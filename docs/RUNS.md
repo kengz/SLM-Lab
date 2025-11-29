@@ -2,32 +2,23 @@
 
 Track dstack runs for continuity. Use `dstack ps` to check status.
 
-## Current Runs (2025-11-27)
+## Current Runs (2025-11-29)
 
-### Active ASHA Searches (CPU-only, gpu:0, faster configs)
+### Active ASHA GPU Searches
 
-| Run Name | Spec | Env | Mode | Hardware | Price/hr | Status | Notes |
-|----------|------|-----|------|----------|----------|--------|-------|
-| `ppo-bipedal2` | ppo_bipedalwalker | BipedalWalker-v3 | search | GCP e2-standard-16 | $0.0634 | running | 1.5M frames, 15 trials |
-| `sac-bipedal2` | sac_bipedalwalker | BipedalWalker-v3 | search | GCP e2-standard-16 | $0.0634 | running | 1.5M frames, 15 trials |
-| `ppo-hopper2` | ppo_mujoco | Hopper-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `sac-hopper2` | sac_mujoco | Hopper-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `ppo-walker2` | ppo_mujoco | Walker2d-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `sac-walker2` | sac_mujoco | Walker2d-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `ppo-cheetah2` | ppo_mujoco | HalfCheetah-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `sac-cheetah2` | sac_mujoco | HalfCheetah-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `ppo-ant2` | ppo_mujoco | Ant-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
-| `sac-ant2` | sac_mujoco | Ant-v5 | search | GCP e2-standard-16 | $0.0634 | running | 1M frames, 15 trials |
+| Run Name | Command | Hardware | Price/hr | Status |
+|----------|---------|----------|----------|--------|
+| `ppo-hopper-gpu` | `slm-lab run-remote --gpu -s env=Hopper-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-hopper-gpu` | runpod L4 | $0.39 | running |
+| `ppo-walker-gpu` | `slm-lab run-remote --gpu -s env=Walker2d-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-walker-gpu` | runpod L4 | $0.39 | running |
+| `ppo-cheetah-gpu` | `slm-lab run-remote --gpu -s env=HalfCheetah-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-cheetah-gpu` | runpod L4 | $0.39 | running |
+| `ppo-ant-gpu` | `slm-lab run-remote --gpu -s env=Ant-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-ant-gpu` | runpod L4 | $0.39 | running |
+| `ppo-swimmer-gpu` | `slm-lab run-remote --gpu -s env=Swimmer-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-swimmer-gpu` | runpod L4 | $0.39 | running |
 
-**Total**: 10 runs @ $0.0634/hr = ~$0.63/hr
+**Total**: 5 runs @ $1.95/hr
 
-**Estimated Duration**: 3-4 hours (reduced from 12+ hours with faster configs)
+**Estimated Duration**: 2-4 hours (ASHA early termination)
 
-**Config Changes Made**:
-- `max_frame`: 1M (MuJoCo), 1.5M (BipedalWalker) - using `1e6` notation
-- `max_trial`: 15 (from 20-30)
-- `grace_period`: 100k (MuJoCo), 150k (BipedalWalker)
-- `reduction_factor`: 4 (more aggressive early termination)
+**Config**: `search_resources: {"cpu": 1, "gpu": 0.125}` enables 8 parallel trials sharing 1 GPU
 
 ## Commands
 
@@ -37,27 +28,29 @@ dstack ps
 dstack logs <run-name>
 
 # Pull results when complete
-uv run slm-lab pull ppo_bipedalwalker
-uv run slm-lab pull sac_bipedalwalker
-uv run slm-lab pull ppo_mujoco
-uv run slm-lab pull sac_mujoco
+slm-lab pull ppo_mujoco
+
+# Run examples
+slm-lab run-remote SPEC_FILE SPEC_NAME MODE -n RUN_NAME  # CPU (default)
+slm-lab run-remote --gpu SPEC_FILE SPEC_NAME MODE -n RUN_NAME  # GPU
 ```
 
-## Interrupted Runs (2025-11-26)
+## Completed Runs (2025-11-29)
 
-Previous runs were interrupted after 12+ hours (spot instance preemption):
-- All MuJoCo runs (ppo-hopper, sac-hopper, ppo-walker, sac-walker, ppo-cheetah, sac-cheetah, ppo-ant, sac-ant)
-- Relaunched with faster configs on 2025-11-27
+| Date | Run | Command | Result | Notes |
+|------|-----|---------|--------|-------|
+| 2025-11-29 | ppo-hopper-v4 | `slm-lab run-remote -s env=Hopper-v5 ... ppo_mujoco train` | MA=2566 @ 3M | 85% of target (3000) |
+| 2025-11-29 | ppo-walker-v3 | `slm-lab run-remote -s env=Walker2d-v5 ... ppo_mujoco train` | MA=1424 @ 3M | 36% of target (4000) |
+| 2025-11-29 | ppo-cheetah-v3 | `slm-lab run-remote -s env=HalfCheetah-v5 ... ppo_mujoco train` | MA=3178 @ 3M | 64% of target (5000) |
+| 2025-11-29 | ppo-ant-v3 | `slm-lab run-remote -s env=Ant-v5 ... ppo_mujoco train` | MA=34 @ 3M | 0.7% of target (5000) |
 
-## Completed Runs
+## MuJoCo PPO Status Summary
 
-| Date | Run | Spec | Result | Notes |
-|------|-----|------|--------|-------|
-| 2025-11-25 | a2c-lunar-asha | a2c_gae_lunar | Best MA=93 @ 300k | ASHA search complete |
-| 2025-11-25 | a2c-lunar-val-cpu | a2c_gae_lunar | MA=-72 @ 1M | High variance - ASHA result doesn't reproduce |
+| Environment | MA @ 3M | Target | % Target | Status | Next Step |
+|-------------|---------|--------|----------|--------|-----------|
+| Hopper-v5 | 2566 | 3000 | 85% | ✅ | Done (close enough) |
+| HalfCheetah-v5 | 3178 | 5000 | 64% | ⚠️ | May need longer training |
+| Walker2d-v5 | 1424 | 4000 | 36% | 🔄 | ASHA search running |
+| Ant-v5 | 34 | 5000 | 0.7% | 🔄 | ASHA search running |
 
-## Cost Estimate
-
-Current runs: 10 instances @ $0.0634/hr = ~$0.63/hr total
-Expected duration: 3-4 hours
-Estimated total cost: ~$2-3
+**Key Finding**: Hopper-tuned hyperparameters (gamma=0.995, lam=0.92, entropy=0.002) transfer reasonably to HalfCheetah but fail badly on Walker2d and Ant. These envs have different dynamics and need env-specific tuning.

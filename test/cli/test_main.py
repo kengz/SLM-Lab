@@ -144,7 +144,7 @@ class TestCliCommands:
         assert result.exit_code == 0
         assert "Launch experiment on dstack" in result.output
         assert "--name" in result.output
-        assert "--config" in result.output
+        assert "--gpu" in result.output
         assert "--set" in result.output
 
     def test_pull_help(self):

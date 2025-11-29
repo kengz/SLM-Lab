@@ -20,8 +20,8 @@ def run_remote(
     sets: list[str] = typer.Option(
         [], "--set", "-s", help="Set spec variables: KEY=VALUE"
     ),
-    config: str = typer.Option(
-        None, "--config", "-c", help="dstack config: gpu|cpu, auto-selects train/search variant"
+    gpu: bool = typer.Option(
+        False, "--gpu", help="Use GPU hardware (default: CPU)"
     ),
 ):
     """
@@ -36,17 +36,17 @@ def run_remote(
       - gpu-search: L4 GPU + 8-16 CPUs  (~$0.50/hr) - Image envs ASHA search
 
     Examples:
-        slm-lab run-remote spec.json ppo_cartpole train           # GPU train
-        slm-lab run-remote spec.json ppo_cartpole search          # GPU search
-        slm-lab run-remote spec.json ppo_lunar train -c cpu       # CPU train (cheaper)
-        slm-lab run-remote spec.json ppo_lunar search -c cpu      # CPU search (more parallelism)
+        slm-lab run-remote spec.json ppo_cartpole train           # CPU train (default)
+        slm-lab run-remote spec.json ppo_cartpole search          # CPU search (default)
+        slm-lab run-remote spec.json ppo_pong train --gpu         # GPU train (for image envs)
+        slm-lab run-remote spec.json ppo_pong search --gpu        # GPU search (for image envs)
     """
     run_name = name or spec_name.replace("_", "-")
 
     # Auto-select config file based on hardware type and mode
-    # dev mode uses train config (single trial, lighter resources)
-    hw = config or "gpu"
-    config_mode = "train" if mode == "dev" else mode
+    # Only "search" mode uses search config; everything else uses train config
+    hw = "gpu" if gpu else "cpu"
+    config_mode = "search" if mode == "search" else "train"
     config_file = f".dstack/run-{hw}-{config_mode}.yml"
 
     cmd = ["uv", "run", "dstack", "apply", "-f", config_file, "-y", "--detach", "--name", run_name]
@@ -60,4 +60,6 @@ def run_remote(
     logger.info(f"  {spec_file} / {spec_name} / {mode}")
     logger.info(f"  Pull: slm-lab pull {spec_name}")
 
-    subprocess.run(cmd, env=env)
+    result = subprocess.run(cmd, env=env)
+    if result.returncode != 0:
+        raise typer.Exit(code=result.returncode)
