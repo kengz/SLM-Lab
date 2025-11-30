@@ -107,7 +107,7 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 ### Cloud Compute
 
 - **Use dstack** for GPU-intensive training and development
-- Setup: Follow [dstack documentation](https://dstack.ai/docs/)
+- **One-time setup**: `uv tool install dstack && dstack project add --name <project> --url https://sky.dstack.ai --token $DSTACK_TOKEN -y` (get token from dstack Sky web UI; saved to `~/.dstack/config.yml`)
 - **IMPORTANT**: Always `source .env` before running remote experiments for HF upload credentials
 - **Always use `--gpu`**: Cheaper ($0.39/hr L4 vs $0.54/hr 16-CPU) and faster with fractional GPU sharing
 - Run: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name train -n run-name`
@@ -116,6 +116,36 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 - Stop runs: `dstack stop <run-name> -y`
 - **Customize hardware**: Edit `.dstack/run-{gpu,cpu}-{train,search}.yml` files to change resources or backends
 - **Max duration**: All runs have 4h safeguard (`max_duration: 4h`) to prevent runaway costs
+- See [dstack docs](https://dstack.ai/llms-full.txt) for full reference
+
+### Remote Agent Workflow
+
+For running Claude Code on a lightweight orchestration box (no local training).
+See [dstack docs](https://dstack.ai/llms-full.txt) for reference.
+
+```bash
+# System deps (one-time)
+# macOS: brew install swig
+# Linux: apt-get install -y swig openssh-client
+
+# Setup (one-time)
+git clone https://github.com/kengz/SLM-Lab.git && cd SLM-Lab
+git checkout dustoff
+uv sync --only-group minimal
+uv tool install dstack
+dstack project add --name <project> --url https://sky.dstack.ai --token $DSTACK_TOKEN -y  # get token from dstack Sky web UI
+
+# Test setup - run quick CartPole train on CPU, verify it starts successfully
+source .env && uv run slm-lab run-remote slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole train -n test-cartpole
+dstack ps  # should show test-cartpole running
+dstack stop test-cartpole -y  # stop after verifying
+
+# Dispatch runs (source .env for HF_TOKEN, HF_REPO; dstack token already in ~/.dstack/config.yml)
+# Pattern: source .env && uv run slm-lab run-remote [--gpu] [-s key=val] spec.json spec_name <train|search> -n <run-name>
+source .env && uv run slm-lab run-remote --gpu slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json ppo_bipedalwalker search -n ppo-bipedal
+
+# Monitor: dstack ps | dstack logs <name> | dstack stop <name> -y
+```
 
 ## Framework Design Patterns
 

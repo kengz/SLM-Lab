@@ -189,7 +189,10 @@ def get_fn_list(a_cls):
 
 
 def get_git_sha():
-    return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
+    try:
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return 'unknown'  # git not available (e.g., in minimal/remote env)
 
 
 def get_port():

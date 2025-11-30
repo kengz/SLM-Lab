@@ -6,10 +6,16 @@ import pytest
 from typer.testing import CliRunner
 
 from slm_lab.cli import app
-from slm_lab.cli.main import set_variables, get_spec, stop_ray_processes
+from slm_lab.cli.main import set_variables, get_spec, stop_ray_processes, _lazy_imports
 
 
 runner = CliRunner()
+
+
+@pytest.fixture(scope="module", autouse=False)
+def lazy_imports():
+    """Load lazy imports needed by get_spec and other functions."""
+    _lazy_imports()
 
 
 class TestSetVariables:
@@ -53,6 +59,7 @@ class TestSetVariables:
         assert result["a"]["b"]["c"]["d"] == "value"
 
 
+@pytest.mark.usefixtures("lazy_imports")
 class TestGetSpec:
     """Tests for get_spec function."""
 
@@ -108,6 +115,7 @@ class TestGetSpec:
         assert result["env"]["name"] == "CartPole-v1"
 
 
+@pytest.mark.usefixtures("lazy_imports")
 class TestStopRayProcesses:
     """Tests for stop_ray_processes function."""
 
