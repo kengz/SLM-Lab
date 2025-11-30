@@ -1,0 +1,66 @@
+{
+  "ppo_quick": {
+    "agent": {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "no_decay",
+          "start_val": 0.2,
+          "end_val": 0.2,
+          "start_step": 0,
+          "end_step": 2000
+        },
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 2000
+        },
+        "val_loss_coef": 0.5,
+        "clip_val_loss": false,
+        "time_horizon": 128,
+        "minibatch_size": 64,
+        "training_epoch": 4
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [32, 32],
+        "hid_layers_activation": "tanh",
+        "clip_grad_val": 0.5,
+        "use_same_optim": true,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.001
+        },
+        "gpu": false
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": null,
+      "max_frame": 2000,
+      "num_envs": 1
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 500,
+      "eval_frequency": 128,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  }
+}
