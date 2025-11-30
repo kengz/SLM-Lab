@@ -53,7 +53,8 @@ Run experiments on cloud GPUs with automatic result sync to HuggingFace.
 ```bash
 # Setup
 cp .env.example .env  # Add HF_TOKEN and configure HF_REPO
-uv run dstack init    # Initialize dstack
+uv tool install dstack  # Install dstack CLI
+dstack config  # Configure dstack
 
 # Run on cloud
 slm-lab run-remote spec.json spec_name train           # CPU training (default)

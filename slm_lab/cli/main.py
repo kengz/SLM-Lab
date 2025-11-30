@@ -5,17 +5,24 @@ import os
 import subprocess
 from glob import glob
 
-import torch.multiprocessing as mp
 import typer
 
-from slm_lab import EVAL_MODES, TRAIN_MODES
-from slm_lab.experiment.control import Experiment, Session, Trial
-from slm_lab.lib import env_var, logger, util
-from slm_lab.lib import hf
-from slm_lab.spec import spec_util
-
 app = typer.Typer(help="Modular deep reinforcement learning framework")
-logger = logger.get_logger(__name__)
+
+
+def _lazy_imports():
+    """Lazy import heavy dependencies only when needed for training."""
+    global EVAL_MODES, TRAIN_MODES, Experiment, Session, Trial, env_var, logger, util, hf, spec_util
+    from slm_lab import EVAL_MODES, TRAIN_MODES
+    from slm_lab.experiment.control import Experiment, Session, Trial
+    from slm_lab.lib import env_var, logger as _logger, util
+    from slm_lab.lib import hf
+    from slm_lab.spec import spec_util
+    logger = _logger.get_logger(__name__)
+
+
+# Placeholder for lazy-loaded logger
+logger = None
 
 
 def set_variables(spec, sets: list[str] | None):
@@ -123,6 +130,13 @@ def run_experiment(
     keep_trials: int = 3,
 ):
     """Core experiment runner"""
+    _lazy_imports()  # Load heavy deps only when running experiments
+    # Set multiprocessing start method for training
+    import torch.multiprocessing as mp
+    try:
+        mp.set_start_method("spawn")
+    except RuntimeError:
+        pass
     if "@" in lab_mode:  # process lab_mode@{predir/prename}
         lab_mode, pre_ = lab_mode.split("@")
     else:
@@ -239,10 +253,8 @@ def run(
 
 def cli():
     """CLI entry point for uv tool installation"""
-    try:
-        mp.set_start_method("spawn")
-    except RuntimeError:
-        pass
+    # Only set multiprocessing start method when needed for training
+    # This allows lightweight commands (run-remote, pull, etc.) to work without torch
     app()
 
 

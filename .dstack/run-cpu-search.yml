@@ -3,6 +3,10 @@ name: slm-lab
 
 python: 3.12
 
+# Mount local files to /workflow
+files:
+  - ..:/workflow
+
 env:
   - HF_TOKEN
   - HF_REPO
