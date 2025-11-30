@@ -6,7 +6,12 @@ Track dstack runs for continuity. Use `dstack ps` to check status.
 
 ## Current Runs
 
-No active runs.
+| Name | Backend | GPU | Price | Status | Started |
+|------|---------|-----|-------|--------|---------|
+| ppo-walker | runpod (EUR-IS-1) | L4:24GB:1 | $0.39 | running | 2025-11-30 |
+| ppo-ant | runpod (EUR-IS-1) | L4:24GB:1 | $0.39 | running | 2025-11-30 |
+| ppo-swimmer | runpod (EUR-IS-1) | L4:24GB:1 | $0.39 | running | 2025-11-30 |
+| ppo-reacher | runpod (EUR-IS-1) | L4:24GB:1 | $0.39 | running | 2025-11-30 |
 
 ---
 
