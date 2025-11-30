@@ -1,622 +1,477 @@
-# SLM-Lab Official Benchmarking
+# SLM-Lab Benchmarks
 
-**Purpose**: Systematic algorithm validation across Gymnasium environments
-**Status**: 🔄 Phase 3 In Progress
-**Last Updated**: 2025-11-29
+Systematic algorithm validation across Gymnasium environments.
 
----
+**Status**: Phase 3 MuJoCo in progress | **Started**: 2025-10-10 | **Updated**: 2025-11-29
 
-## Quick Start
+## Progress
 
-1. **Current Phase**: Check [Phase Tracker](#phase-tracker)
-2. **Run Experiment**: Use commands in phase sections below
-3. **Record Results**: Fill in tables for each environment
-4. **Next Steps**: Update phase tracker and continue
+| Phase | Category | Envs | Status | Notes |
+|-------|----------|------|--------|-------|
+| 1 | Classic Control | 2 | ✅ 100% | CartPole, Acrobot done |
+| 2 | Box2D | 4 | 🔄 75% | BipedalWalker needs tuning |
+| 3 | MuJoCo | 9 | 🔄 33% | Hopper, HalfCheetah, Reacher done |
+| 4 | Atari | 6+ | ⏸️ 0% | Pending |
 
----
+## Benchmark Algorithms
 
-## Phase Tracker
+**Discrete** (Classic Control, Box2D discrete, Atari):
+- DQN, DDQN+PER
+- A2C (GAE), A2C (n-step)
+- PPO
+- SAC
 
-| Phase | Category        | Environments    | Status | Progress                                                             |
-| ----- | --------------- | --------------- | ------ | -------------------------------------------------------------------- |
-| **1** | Classic Control | 2 envs (skip 3) | ✅     | 2/2 complete (CartPole ✅, Acrobot ✅, MountainCar/Pendulum skipped) |
-| **2** | Box2D           | 4 envs          | 🔄     | 3/4 complete (LunarLander ✅, LunarLander Cont ✅, BipedalWalker ⚠️) |
-| **3** | MuJoCo          | 9 envs          | 🔄     | 3/9 (Hopper ✅, HalfCheetah ✅, Walker2d ⚠️, Ant ❌, Swimmer ⚠️, Reacher 🔄) |
-| **4** | Atari           | 6+ envs         | ⏸️     | 0/6 complete                                                         |
+**Continuous** (Box2D continuous, MuJoCo):
+- A2C (GAE), A2C (n-step)
+- PPO
+- SAC
 
-**Current Focus**: Phase 3 MuJoCo - PPO validation; Phase 2 A2C/SAC tuning
-**Started**: 2025-10-10
-
----
-
-## Core Algorithms
-
-**Mainstream Algorithms** (primary benchmarking):
-
-- **REINFORCE**: Vanilla policy gradient (CartPole only - educational baseline)
-- **A2C**: Advantage Actor-Critic with GAE (CartPole only - educational baseline)
-- **PPO**: Proximal Policy Optimization (all environments - strongest general-purpose algorithm)
-- **SARSA**: On-policy TD learning (CartPole only - educational baseline)
-- **DQN**: Deep Q-Network (discrete only, use DDQN+PER for best results)
-- **DDQN+PER**: Double DQN with Prioritized Experience Replay (strongest DQN variant)
-- **SAC**: Soft Actor-Critic (discrete and continuous - rivals PPO for continuous control)
-
-**Optional** (validated but not primary):
-
-- **PPOSIL**: PPO + Self-Imitation Learning (validated on CartPole/Acrobot)
-  - Best for: Sparse rewards, hard exploration (Atari)
-  - Minimal benefit on dense-reward tasks (CartPole, MuJoCo)
-
-**Excluded**:
-
-- **A3C/Async SAC/DPPO**: Distributed variants (specialized use)
-
-**Algorithm Selection by Environment**:
-
-**CartPole only** (educational baselines):
-
-- REINFORCE, A2C (GAE), SARSA, DQN, PPO
-
-**Discrete environments** (Acrobot, MountainCar, Lunar, Atari):
-
-- **DQN**: Baseline value-based
-- **DDQN+PER**: Enhanced DQN (Double DQN + Prioritized Experience Replay)
-- **A2C (GAE)**: GAE advantage estimation
-- **A2C (n-step)**: n-step returns (alternative)
-- **PPO**: Primary policy gradient
-- **SAC**: Discrete action variant (experimental - underperforms on simple tasks like CartPole)
-
-**Continuous environments** (Pendulum, BipedalWalker, MuJoCo):
-
-- **A2C (GAE)**: GAE advantage estimation
-- **A2C (n-step)**: n-step returns (alternative)
-- **PPO**: Primary on-policy algorithm
-- **SAC**: Primary off-policy algorithm (rivals PPO)
+*Other algorithms (REINFORCE, SARSA, etc.) are included for completeness in Phase 1 but not benchmarked beyond Classic Control.*
 
 ---
 
-## Phase 1.1: CartPole-v1
+## Running Experiments
 
-- **Environment**: https://gymnasium.farama.org/environments/classic_control/cart_pole/
-- **Action Space**: Discrete(2) - push left/right
-- **State Space**: Box(4) - position, velocity, angle, angular velocity
-- **num_envs**: 4
-- **max_frames**: 200k
-- **log_frequency**: 500
-- **Target total_reward_ma**: > 400
+### Local
 
-| Algorithm     | MA    | FPS  | Spec File                                                                           | Spec Name                       | Status | Notes                                       |
-| ------------- | ----- | ---- | ----------------------------------------------------------------------------------- | ------------------------------- | ------ | ------------------------------------------- |
-| **PPO**       | 499.7 | 315  | [ppo_cartpole.json](slm_lab/spec/benchmark/ppo/ppo_cartpole.json)                   | `ppo_cartpole`                  | ✅     | 124.9% of target                            |
-| **A2C**       | 488.7 | 3.5k | [a2c_gae_cartpole.json](slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json)           | `a2c_gae_cartpole`              | ✅     | 122.2% of target                            |
-| **DQN**       | 437.8 | 1k   | [dqn_cartpole.json](slm_lab/spec/benchmark/dqn/dqn_cartpole.json)                   | `dqn_boltzmann_cartpole`        | ✅     | 109.5% of target, 3-stage ASHA              |
-| **REINFORCE** | 427.2 | 14k  | [reinforce_cartpole.json](slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole`            | ✅     | 106.8% of target                            |
-| **SAC**       | 431.1 | <100 | [sac_cartpole.json](slm_lab/spec/benchmark/sac/sac_cartpole.json)                   | `sac_cartpole`                  | ✅     | 107.8% of target (slow FPS expected for off-policy) |
-| **SARSA**     | 393.2 | ~7k  | [sarsa_cartpole.json](slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json)             | `sarsa_epsilon_greedy_cartpole` | ✅     | 98.3% of target, 3-stage ASHA               |
-| **PPOSIL**    | 496.3 | 1.6k | [ppo_sil_cartpole.json](slm_lab/spec/benchmark/sil/ppo_sil_cartpole.json)           | `ppo_sil_cartpole`              | ✅     | 124.1% of target, PPO + Self-Imitation Learning |
+```bash
+uv run slm-lab SPEC_FILE SPEC_NAME train
+uv run slm-lab SPEC_FILE SPEC_NAME search
+```
 
----
+### Remote (dstack)
 
-## Phase 1.2: Acrobot-v1
+```bash
+# Always source .env for HF upload credentials
+source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME train -n NAME
+source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME
 
-- **Environment**: https://gymnasium.farama.org/environments/classic_control/acrobot/
-- **Action Space**: Discrete(3) - apply torque (-1, 0, +1)
-- **State Space**: Box(6) - link positions and angular velocities
-- **num_envs**: 4
-- **max_frames**: 300k
-- **log_frequency**: 500
-- **Target total_reward_ma**: > -100
+# With variable substitution for templated specs
+source .env && uv run slm-lab run-remote --gpu -s env=Hopper-v5 SPEC_FILE SPEC_NAME search -n NAME
+```
 
-| Algorithm           | MA     | FPS  | Spec File                                                                 | Spec Name                    | Status | Notes                          |
-| ------------------- | ------ | ---- | ------------------------------------------------------------------------- | ---------------------------- | ------ | ------------------------------ |
-| **DQN (Boltzmann)** | -96.2  | ~600 | [dqn_acrobot.json](slm_lab/spec/benchmark/dqn/dqn_acrobot.json)           | `dqn_boltzmann_acrobot`      | ✅     | Best - 3.8% better than target |
-| **PPO**             | -80.8  | 777  | [ppo_acrobot.json](slm_lab/spec/benchmark/ppo/ppo_acrobot.json)           | `ppo_acrobot`                | ✅     | Solves target                  |
-| **DDQN+PER**        | -83.0  | ~700 | [ddqn_per_acrobot.json](slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot`           | ✅     | Solves target                  |
-| **A2C**             | -84.2  | 3.4k | [a2c_gae_acrobot.json](slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json)   | `a2c_gae_acrobot`            | ✅     | Solves target                  |
-| **DQN (ε-greedy)**  | -104.0 | ~720 | [dqn_acrobot.json](slm_lab/spec/benchmark/dqn/dqn_acrobot.json)           | `dqn_epsilon_greedy_acrobot` | ✅     | Misses target (4% below)       |
-| **SAC**             | -92    | ~60  | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | ✅     | 8% better than target          |
-| **PPOSIL**          | -110.2 | -    | [ppo_sil_acrobot.json](slm_lab/spec/benchmark/sil/ppo_sil_acrobot.json)   | `ppo_sil_acrobot`            | ⚠️     | Near target, compare vs PPO    |
+### Result Tables
+
+Tables below use columns that map to command arguments:
+- **Spec File**: `SPEC_FILE` argument
+- **Spec Name**: `SPEC_NAME` argument
+- Use `train` mode for validation runs, `search` mode for hyperparameter tuning
 
 ---
 
-## Phase 2.1: LunarLander-v3 (Discrete)
+## Hyperparameter Search
 
-- **Environment**: https://gymnasium.farama.org/environments/box2d/lunar_lander/
-- **Action Space**: Discrete(4) - no-op, fire left/main/right engine
-- **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
-- **num_envs**: 8
-- **max_frames**: 300k
-- **log_frequency**: 1000 (episodes ~400-500 steps)
-- **Target total_reward_ma**: > 200
+**When to use**: Algorithm fails to reach target on first run.
 
-| Algorithm     | MA    | FPS  | Spec File                                                             | Spec Name               | Status | Notes            |
-| ------------- | ----- | ---- | --------------------------------------------------------------------- | ----------------------- | ------ | ---------------- |
-| **PPO**       | 229.9 | 2.4k | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json)           | `ppo_lunar`             | ✅     | 115.0% of target |
-| **DDQN+PER**  | 230.0 | 8.7k | [ddqn_per_lunar.json](slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` | ✅     | 115.0% of target |
-| **DQN**       | 203.9 | 9.0k | [dqn_lunar.json](slm_lab/spec/benchmark/dqn/dqn_lunar.json)           | `dqn_concat_lunar`      | ✅     | 102.0% of target |
-| **A2C (GAE)** | 5.5   | ~3k  | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar`         | ❌     | 2.8% of target - needs tuning |
-| **SAC**       | -     | -    | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar`             | ⏸️     | Ready to run |
+### Stage 1: ASHA Search
 
----
+ASHA (Asynchronous Successive Halving) with early termination for wide exploration.
 
-## Phase 2.2: LunarLanderContinuous-v3
-
-- **Environment**: https://gymnasium.farama.org/environments/box2d/lunar_lander/
-- **Action Space**: Box(2) - main engine [-1, 1], side engines [-1, 1]
-- **State Space**: Box(8) - position, velocity, angle, angular velocity, leg contact
-- **num_envs**: 8
-- **max_frames**: 300k
-- **log_frequency**: 1000
-- **Target total_reward_ma**: > 200
-
-| Algorithm     | MA    | FPS | Spec File                                                             | Spec Name                  | Status | Notes                                 |
-| ------------- | ----- | --- | --------------------------------------------------------------------- | -------------------------- | ------ | ------------------------------------- |
-| **PPO**       | 249.2 | 135 | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json)           | `ppo_lunar_continuous`     | ✅     | 124.6% of target, 3-stage ASHA        |
-| **SAC**       | 238.0 | ~35 | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar_continuous`     | ✅     | 119.0% of target, 62% faster training |
-| **A2C (GAE)** | -     | -   | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar_continuous` | ⏸️     | TODO search                           |
-
----
-
-## Phase 2.3: BipedalWalker-v3
-
-- **Environment**: https://gymnasium.farama.org/environments/box2d/bipedal_walker/
-- **Action Space**: Box(4) - motor speeds for 4 joints [-1, 1]
-- **State Space**: Box(24) - hull state, joint positions, velocities, lidar
-- **num_envs**: 16
-- **max_frames**: 3M (slow learning, breakthrough at 1.5M-2M frames)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 300
-
-| Algorithm     | MA    | FPS  | Spec File                                                                           | Spec Name            | Status | Notes                                                  |
-| ------------- | ----- | ---- | ----------------------------------------------------------------------------------- | -------------------- | ------ | ------------------------------------------------------ |
-| **PPO**       | 241.3 | 1.8k | [ppo_bipedalwalker.json](slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json)         | `ppo_bipedalwalker`  | ⚠️     | 80% of target. ASHA trial 9: gamma=0.995, lam=0.922   |
-| **SAC**       | -     | -    | [sac_bipedalwalker.json](slm_lab/spec/benchmark/sac/sac_bipedalwalker.json)         | `sac_bipedalwalker`  | 🔄     | ASHA search running                                    |
-| **A2C (GAE)** | -112  | 8k   | [a2c_gae_bipedalwalker.json](slm_lab/spec/benchmark/a2c/a2c_gae_bipedalwalker.json) | `a2c_gae_bipedalwalker` | ❌  | Failed validation                                      |
-
----
-
-## Phase 3: MuJoCo Environments
-
-### Phase 3.1: Hopper-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/hopper/
-- **Action Space**: Box(3)
-- **State Space**: Box(11)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 2M (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 3000
-
-| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                              |
-| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | -------------------------------------------------- |
-| **PPO**       | 2816 | ~1.5k| [ppo_hopper.json](slm_lab/spec/benchmark/ppo/ppo_hopper.json)   | `ppo_hopper` | ✅     | 94% of target @ 3M. Dedicated spec with tuned params. |
-| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Hopper-v5`                             |
-
----
-
-### Phase 3.2: Walker2d-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/walker2d/
-- **Action Space**: Box(6)
-- **State Space**: Box(17)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 2M (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 4000
-
-| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                     |
-| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ----------------------------------------- |
-| **PPO**       | 2573 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⚠️     | 64% of target @ 3M. Needs env-specific tuning. |
-| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`                  |
-
----
-
-### Phase 3.3: HalfCheetah-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/half_cheetah/
-- **Action Space**: Box(6)
-- **State Space**: Box(17)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 2M (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 5000
-
-| Algorithm     | MA   | FPS  | Spec File                                                               | Spec Name        | Status | Notes                                       |
-| ------------- | ---- | ---- | ----------------------------------------------------------------------- | ---------------- | ------ | ------------------------------------------- |
-| **PPO**       | 4042 | ~1.5k| [ppo_halfcheetah.json](slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | `ppo_halfcheetah`| ✅     | 81% of target @ 3M. Dedicated spec with tuned params. |
-| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)           | `sac_mujoco`     | ⏸️     | Use `-s env=HalfCheetah-v5`                 |
-
----
-
-### Phase 3.4: Ant-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/ant/
-- **Action Space**: Box(8)
-- **State Space**: Box(111)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 2M (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 5000
-
-| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                           |
-| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ----------------------------------------------- |
-| **PPO**       | 36   | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ❌     | 0.7% of target. 4-leg dynamics need dedicated tuning. |
-| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Ant-v5`. May perform better than PPO. |
-
----
-
-### Phase 3.5: Swimmer-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/swimmer/
-- **Action Space**: Box(2)
-- **State Space**: Box(8)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 500k (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 100
-
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                    |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ------------------------ |
-| **PPO**       | 44  | ~1.5k | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⚠️     | 44% of target @ 3M. Needs tuning. |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Swimmer-v5`  |
-
----
-
-### Phase 3.6: Reacher-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/reacher/
-- **Action Space**: Box(2)
-- **State Space**: Box(11)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 500k (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > -5
-
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                   |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ----------------------- |
-| **PPO**       | -6.2 | ~1.5k | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | Near target (-5). Search finishing. |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Reacher-v5` |
-
----
-
-### Phase 3.7: InvertedPendulum-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/
-- **Action Space**: Box(1)
-- **State Space**: Box(4)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 1M (PPO), 500k (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 1000
-
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                             |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | --------------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=InvertedPendulum-v5`  |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=InvertedPendulum-v5`  |
-
----
-
-### Phase 3.8: InvertedDoublePendulum-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/inverted_double_pendulum/
-- **Action Space**: Box(1)
-- **State Space**: Box(11)
-- **num_envs**: 16 (PPO), 8 (SAC)
-- **max_frames**: 3M (PPO), 1M (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 9000
-
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                                   |
-| ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | --------------------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⏸️     | Use `-s env=InvertedDoublePendulum-v5`  |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=InvertedDoublePendulum-v5`  |
-
----
-
-### Phase 3.9: Humanoid-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/mujoco/humanoid/
-- **Action Space**: Box(17)
-- **State Space**: Box(376)
-- **num_envs**: 32 (PPO), 8 (SAC)
-- **max_frames**: 50M (PPO), 5M (SAC)
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 6000
-
-| Algorithm     | MA  | FPS | Spec File                                                       | Spec Name      | Status | Notes                        |
-| ------------- | --- | --- | --------------------------------------------------------------- | -------------- | ------ | ---------------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco`   | ⏸️     | Use `-s env=Humanoid-v5`     |
-| **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_humanoid` | ⏸️     | Dedicated spec (high frames) |
-
----
-
-## Phase 4: Atari Environments
-
-### Phase 4.1: Pong-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/atari/pong/
-- **Action Space**: Discrete(6)
-- **State Space**: Box(210, 160, 3) - RGB image
-- **max_frames**: TBD
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 18
-
-| Algorithm    | MA  | FPS | Spec File                                                           | Spec Name       | Status | Notes                           |
-| ------------ | --- | --- | ------------------------------------------------------------------- | --------------- | ------ | ------------------------------- |
-| **PPO**      | -   | -   | [ppo_pong.json](slm_lab/spec/benchmark/ppo/ppo_pong.json)           | `ppo_pong`      | ⏸️     | Primary                         |
-| **PPOSIL**   | -   | -   | [ppo_sil_pong.json](slm_lab/spec/benchmark/sil/ppo_sil_pong.json)   | `ppo_sil_pong`  | ⏸️     | Compare vs PPO (sparse rewards) |
-| **DQN**      | -   | -   | [dqn_pong.json](slm_lab/spec/benchmark/dqn/dqn_pong.json)           | `dqn_pong`      | ⏸️     | Value-based                     |
-| **DDQN+PER** | -   | -   | [ddqn_per_pong.json](slm_lab/spec/benchmark/dqn/ddqn_per_pong.json) | `ddqn_per_pong` | ⏸️     | Enhanced                        |
-| **SAC**      | -   | -   | [sac_pong.json](slm_lab/spec/benchmark/sac/sac_pong.json)           | `sac_pong`      | ⏸️     | Discrete action variant         |
-
----
-
-### Phase 4.2: Qbert-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/atari/qbert/
-- **Action Space**: Discrete(6)
-- **State Space**: Box(210, 160, 3) - RGB image
-- **max_frames**: TBD
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 15000
-
-| Algorithm    | MA  | FPS | Spec File                                                             | Spec Name        | Status | Notes                           |
-| ------------ | --- | --- | --------------------------------------------------------------------- | ---------------- | ------ | ------------------------------- |
-| **PPO**      | -   | -   | [ppo_qbert.json](slm_lab/spec/benchmark/ppo/ppo_qbert.json)           | `ppo_qbert`      | ⏸️     | Primary                         |
-| **PPOSIL**   | -   | -   | [ppo_sil_qbert.json](slm_lab/spec/benchmark/sil/ppo_sil_qbert.json)   | `ppo_sil_qbert`  | ⏸️     | Compare vs PPO (hard exploration) |
-| **DQN**      | -   | -   | [dqn_qbert.json](slm_lab/spec/benchmark/dqn/dqn_qbert.json)           | `dqn_qbert`      | ⏸️     | Value-based                     |
-| **DDQN+PER** | -   | -   | [ddqn_per_qbert.json](slm_lab/spec/benchmark/dqn/ddqn_per_qbert.json) | `ddqn_per_qbert` | ⏸️     | Enhanced                        |
-| **SAC**      | -   | -   | [sac_qbert.json](slm_lab/spec/benchmark/sac/sac_qbert.json)           | `sac_qbert`      | ⏸️     | Discrete action variant         |
-
----
-
-### Phase 4.3: Breakout-v5
-
-- **Environment**: https://gymnasium.farama.org/environments/atari/breakout/
-- **Action Space**: Discrete(4)
-- **State Space**: Box(210, 160, 3) - RGB image
-- **max_frames**: TBD
-- **log_frequency**: 10000
-- **Target total_reward_ma**: > 400
-
-| Algorithm | MA  | FPS | Spec File                                                   | Spec Name   | Status | Notes                   |
-| --------- | --- | --- | ----------------------------------------------------------- | ----------- | ------ | ----------------------- |
-| **PPO**   | -   | -   | [ppo_atari.json](slm_lab/spec/benchmark/ppo/ppo_atari.json) | `ppo_atari` | ⏸️     | Primary                 |
-| **DQN**   | -   | -   | [dqn_atari.json](slm_lab/spec/benchmark/dqn/dqn_atari.json) | `dqn_atari` | ⏸️     | Value-based             |
-| **SAC**   | -   | -   | [sac_atari.json](slm_lab/spec/benchmark/sac/sac_atari.json) | `sac_atari` | ⏸️     | Discrete action variant |
-
----
-
-## Three-Stage ASHA Methodology
-
-**When to use**: Algorithm fails to reach target on first baseline run
-
-### Stage 1: Manual Iteration (Fast Validation)
-
-**Goal**: Quick validation with sensible defaults
-**Time**: 1-2 iterations, <30 min total
-
-**Process**:
-
-1. Start with paper defaults or proven library configs (SB3, CleanRL)
-2. Run quick validation trial (`max_session=1-4`)
-3. Identify critical failures (e.g., divergence, no learning)
-4. Adjust obvious issues (learning rate, training frequency)
-
----
-
-### Stage 2: ASHA Wide Exploration
-
-**Goal**: Find promising hyperparameter ranges
-**Config**:
-
-- `max_session=1` (REQUIRED for ASHA)
-- `max_trial=20-30`
-- `search_scheduler` enabled with early termination
-- Wide search spaces (uniform, loguniform distributions)
-
-**Example**:
+**Config**: `max_session=1`, `max_trial=8-16`, `search_scheduler` enabled
 
 ```json
 {
   "meta": {
     "max_session": 1,
-    "max_trial": 30,
-    "search_scheduler": {
-      "grace_period": 30000,
-      "reduction_factor": 3
-    }
+    "max_trial": 8,
+    "search_resources": {"cpu": 1, "gpu": 0.125},
+    "search_scheduler": {"grace_period": 100000, "reduction_factor": 3}
   },
   "search": {
-    "agent.algorithm.gamma__uniform": [0.95, 0.999],
-    "agent.net.optim_spec.lr__loguniform": [1e-5, 5e-3],
-    "agent.net.hid_layers__choice": [[64], [128], [256], [64, 64], [128, 128]]
+    "agent.algorithm.gamma__uniform": [0.993, 0.999],
+    "agent.algorithm.lam__uniform": [0.90, 0.95],
+    "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
   }
 }
 ```
 
-**Analysis**:
+### Stage 2: Multi-Session Refinement (Optional)
 
-1. Review `data/experiment_df.csv`
-2. Sort by `total_reward_ma` descending
-3. Identify top 3-5 trials
-4. Note patterns in successful hyperparameters
+Narrow search with robust statistics. Skip if Stage 1 results are good.
 
----
+**Config**: `max_session=4`, `max_trial=8`, **NO** `search_scheduler`
 
-### Stage 3: Multi-Session Refinement
+### Stage 3: Finalize
 
-**Goal**: Validate best ranges with robust statistics
-**Config**:
+1. Update spec defaults with winning hyperparams (keep `search` block for existing specs)
+2. For templated specs (`${env}`): create dedicated spec file without search block
+3. Commit spec
+4. Validation run with `train` mode
+5. Pull & verify: `uv run slm-lab pull SPEC_NAME`
+6. Update this doc, push to public HF if good
 
-- `max_session=4` (multi-session averaging)
-- `max_trial=8-12`
-- **NO** `search_scheduler` (incompatible with multi-session)
-- Narrowed search spaces around Stage 2 winners
-
-**Example**:
-
-```json
-{
-  "meta": {
-    "max_session": 4,
-    "max_trial": 8
-  },
-  "search": {
-    "agent.algorithm.gamma__choice": [0.97, 0.98, 0.99],
-    "agent.net.optim_spec.lr__choice": [0.0001, 0.00015, 0.0003],
-    "agent.net.hid_layers__choice": [[128, 128], [256]]
-  }
-}
-```
-
-**Final Step**:
-
-1. Select best trial from Stage 3 (highest MA with low variance)
-2. **Create dedicated spec file** with winning hyperparameters (e.g., `ppo_hopper.json` from `ppo_mujoco.json`)
-   - Copy winning params from `experiment_df.csv` or trial spec files
-   - Set `max_session=4, max_trial=1` for validation runs
-   - Remove `search` block and `search_scheduler` - defaults are now tuned
-3. Update BENCHMARKS.md table with new spec file reference
-4. Run validation: `uv run slm-lab spec_file.json spec_name train`
-5. Commit spec file and docs to repository
-
-**Key Insight**: ASHA and multi-session are **mutually exclusive** - ASHA requires single session for early termination, multi-session requires full runs for robust averaging.
+**Note**: ASHA requires `max_session=1`. Multi-session requires no scheduler. They are mutually exclusive.
 
 ---
 
-## Known Issues & Limitations
+## Phase 1: Classic Control
 
-**IMPORTANT**: All algorithms (REINFORCE, A2C, PPO, DQN, DDQN+PER, SAC, SARSA) are general-purpose and proven to solve all benchmark environments in original SLM-Lab (CartPole through Atari). If an algorithm underperforms or fails to reach target, the issue is hyperparameter tuning, not algorithm capability. Original master branch solved all environments - refine search spaces and hyperparameters until solved.
+### 1.1 CartPole-v1
 
-### DQN Compute Inefficiency ⚠️ RESOLVED ✅
+[Environment docs](https://gymnasium.farama.org/environments/classic_control/cart_pole/)
 
-- **Issue**: DQN/DDQN were 84x slower than A2C and 9x slower than PPO in wall-clock time
-- **Cause**: Excessive gradient updates per environment step
-  - Original: `training_batch_iter: 8`, `training_iter: 4` → 32 updates per 4 steps = **10 updates/step**
-  - Standard DQN: ~1 update per step
-- **Evidence** (Acrobot-v1, 300k frames):
-  - A2C: 34 seconds, 4.7k optimizer steps
-  - PPO: 318 seconds, 93k optimizer steps
-  - DQN: 2,850 seconds, 2.4M optimizer steps (50-500x more than necessary)
-- **Fix Validated**:
-  - CartPole-v1 (200k frames): MA 429.5 @ 198s (1,010 FPS) vs original MA 450 @ 3,000s (66 FPS)
-  - Acrobot-v1 (300k frames):
-    - DQN: MA -104.0 @ ~780s (720 FPS) vs original -105.8 @ 2,850s (95 FPS)
-    - DDQN+PER: MA -83.0 @ ~780s (700 FPS) vs original -95.0 @ 2,850s (95 FPS)
-  - **Result**: 3.7-15x speedup with equivalent or better learning
-- **Status**: ✅ Applied to all DQN/DDQN specs
+| Property | Value |
+|----------|-------|
+| Action | Discrete(2) - push left/right |
+| State | Box(4) - position, velocity, angle, angular velocity |
+| Target | **MA > 400** |
+| num_envs | 4 |
+| max_frames | 200k |
+| log_frequency | 500 |
 
-### SIL (Self-Imitation Learning)
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ✅ | 499.7 | 315 | [slm_lab/spec/benchmark/ppo/ppo_cartpole.json](../slm_lab/spec/benchmark/ppo/ppo_cartpole.json) | `ppo_cartpole` |
+| A2C | ✅ | 488.7 | 3.5k | [slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json](../slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json) | `a2c_gae_cartpole` |
+| PPOSIL | ✅ | 496.3 | 1.6k | [slm_lab/spec/benchmark/sil/ppo_sil_cartpole.json](../slm_lab/spec/benchmark/sil/ppo_sil_cartpole.json) | `ppo_sil_cartpole` |
+| DQN | ✅ | 437.8 | 1k | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | `dqn_boltzmann_cartpole` |
+| SAC | ✅ | 431.1 | <100 | [slm_lab/spec/benchmark/sac/sac_cartpole.json](../slm_lab/spec/benchmark/sac/sac_cartpole.json) | `sac_cartpole` |
+| REINFORCE | ✅ | 427.2 | 14k | [slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json](../slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | `reinforce_cartpole` |
+| SARSA | ✅ | 393.2 | 7k | [slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json](../slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json) | `sarsa_epsilon_greedy_cartpole` |
 
-- **Status**: ✅ Fixed and validated (PPOSIL)
-- **Fix**: Corrected venv-packed data handling in replay memory (commit 6b9b0b9c)
-- **Result**: PPOSIL achieves MA 496.3 on CartPole (124.1% of target)
-- **Note**: Originally thought incompatible with dense rewards, but works well when properly implemented
+### 1.2 Acrobot-v1
 
----
+[Environment docs](https://gymnasium.farama.org/environments/classic_control/acrobot/)
 
-## Utility Commands
+| Property | Value |
+|----------|-------|
+| Action | Discrete(3) - torque (-1, 0, +1) |
+| State | Box(6) - link positions and angular velocities |
+| Target | **MA > -100** |
+| num_envs | 4 |
+| max_frames | 300k |
+| log_frequency | 500 |
 
-### Check Results
-
-```bash
-# View experiment summary
-cat data/[experiment_name]/experiment_df.csv | column -t -s,
-
-# List trials by performance
-cat data/[experiment_name]/experiment_df.csv | sort -t, -k3 -nr | head -10
-
-# View specific trial metrics
-cat data/[experiment_name]/[trial_name]/session_metrics.csv
-```
-
-### Clean Up
-
-```bash
-# Stop Ray search
-slm-lab --stop-ray
-
-# Remove old experiment data
-rm -rf data/[old_experiment_name]/
-
-# Clean all old data (careful!)
-find data/ -type d -mtime +7 -exec rm -rf {} +
-```
-
-### Git Workflow
-
-```bash
-# After successful benchmark
-git add slm_lab/spec/benchmark/[algo]/
-git commit -m "feat: [algo] [env] achieves MA [value]"
-
-# Update this document
-git add BENCHMARKS.md
-git commit -m "docs: complete Phase [X] - [environment]"
-```
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ✅ | -80.8 | 777 | [slm_lab/spec/benchmark/ppo/ppo_acrobot.json](../slm_lab/spec/benchmark/ppo/ppo_acrobot.json) | `ppo_acrobot` |
+| DQN (Boltzmann) | ✅ | -96.2 | 600 | [slm_lab/spec/benchmark/dqn/dqn_acrobot.json](../slm_lab/spec/benchmark/dqn/dqn_acrobot.json) | `dqn_boltzmann_acrobot` |
+| DDQN+PER | ✅ | -83.0 | 700 | [slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json](../slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot` |
+| A2C | ✅ | -84.2 | 3.4k | [slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json](../slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json) | `a2c_gae_acrobot` |
+| SAC | ✅ | -92 | 60 | [slm_lab/spec/benchmark/sac/sac_acrobot.json](../slm_lab/spec/benchmark/sac/sac_acrobot.json) | `sac_acrobot` |
+| DQN (ε-greedy) | ⚠️ | -104.0 | 720 | [slm_lab/spec/benchmark/dqn/dqn_acrobot.json](../slm_lab/spec/benchmark/dqn/dqn_acrobot.json) | `dqn_epsilon_greedy_acrobot` |
+| PPOSIL | ⚠️ | -110.2 | - | [slm_lab/spec/benchmark/sil/ppo_sil_acrobot.json](../slm_lab/spec/benchmark/sil/ppo_sil_acrobot.json) | `ppo_sil_acrobot` |
 
 ---
 
-## Summary Statistics
+## Phase 2: Box2D
 
-**Last Updated**: 2025-11-29
+### 2.1 LunarLander-v3 (Discrete)
 
-### Overall Progress
+[Environment docs](https://gymnasium.farama.org/environments/box2d/lunar_lander/)
 
-| Metric                   | Value                 |
-| ------------------------ | --------------------- |
-| Phases Complete          | 1/4                   |
-| Environments Complete    | 6/18+                 |
-| Classic Control Progress | 100% (2/2, 3 skipped) |
-| Box2D Progress           | 75% (3/4)             |
-| MuJoCo Progress          | 33% (3/9)             |
-| Atari Progress           | 0% (6+)               |
+| Property | Value |
+|----------|-------|
+| Action | Discrete(4) - no-op, fire left/main/right engine |
+| State | Box(8) - position, velocity, angle, angular velocity, leg contact |
+| Target | **MA > 200** |
+| num_envs | 8 |
+| max_frames | 300k |
+| log_frequency | 1000 |
 
-### Phase Completion
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| DDQN+PER | ✅ | 230.0 | 8.7k | [slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json](../slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` |
+| PPO | ✅ | 229.9 | 2.4k | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar` |
+| DQN | ✅ | 203.9 | 9.0k | [slm_lab/spec/benchmark/dqn/dqn_lunar.json](../slm_lab/spec/benchmark/dqn/dqn_lunar.json) | `dqn_concat_lunar` |
+| A2C | ❌ | 5.5 | 3k | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | `a2c_gae_lunar` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | `sac_lunar` |
 
-| Phase       | Environments  | Complete | Percentage |
-| ----------- | ------------- | -------- | ---------- |
-| **Phase 1** | 2 (3 skipped) | 2        | 100%       |
-| **Phase 2** | 4             | 3        | 75%        |
-| **Phase 3** | 9             | 3        | 33%        |
-| **Phase 4** | 6+            | 0        | 0%         |
+### 2.2 LunarLander-v3 (Continuous)
 
-### Algorithm Performance (Phases 1-2)
+[Environment docs](https://gymnasium.farama.org/environments/box2d/lunar_lander/)
 
-| Algorithm | Envs Tested | Envs Solved | Success Rate |
-| --------- | ----------- | ----------- | ------------ |
-| PPO       | 5           | 5           | 100%         |
-| A2C       | 2           | 2           | 100%         |
-| DQN       | 2           | 2           | 100%         |
-| DDQN+PER  | 2           | 2           | 100%         |
-| SAC       | 2           | 2           | 100%         |
-| REINFORCE | 1           | 1           | 100%         |
-| SARSA     | 1           | 1           | 100%         |
+| Property | Value |
+|----------|-------|
+| Action | Box(2) - main engine [-1,1], side engines [-1,1] |
+| State | Box(8) - position, velocity, angle, angular velocity, leg contact |
+| Target | **MA > 200** |
+| num_envs | 8 |
+| max_frames | 300k |
+| log_frequency | 1000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ✅ | 249.2 | 135 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar_continuous` |
+| SAC | ✅ | 238.0 | 35 | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | `sac_lunar_continuous` |
+| A2C | ⏸️ | - | - | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | `a2c_gae_lunar_continuous` |
+
+### 2.3 BipedalWalker-v3
+
+[Environment docs](https://gymnasium.farama.org/environments/box2d/bipedal_walker/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(4) - motor speeds for 4 joints [-1,1] |
+| State | Box(24) - hull state, joint positions, velocities, lidar |
+| Target | **MA > 300** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⚠️ 80% | 241.3 | 1.8k | [slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json](../slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json) | `ppo_bipedalwalker` |
+| SAC | 🔄 | - | - | [slm_lab/spec/benchmark/sac/sac_bipedalwalker.json](../slm_lab/spec/benchmark/sac/sac_bipedalwalker.json) | `sac_bipedalwalker` |
+| A2C | ❌ | -112 | 8k | [slm_lab/spec/benchmark/a2c/a2c_gae_bipedalwalker.json](../slm_lab/spec/benchmark/a2c/a2c_gae_bipedalwalker.json) | `a2c_gae_bipedalwalker` |
 
 ---
 
-## Next Actions
+## Phase 3: MuJoCo
 
-**Immediate** (failing envs need tuning):
+All MuJoCo environments use **continuous** action spaces.
 
-- [ ] A2C LunarLander: 2.8% of target - investigate search space
-- [ ] PPO Ant: 0.7% of target - needs dedicated tuning (4-leg dynamics)
-- [ ] PPO Walker2d: 64% of target - env-specific search
-- [ ] PPO Swimmer: 44% of target - needs tuning
+**Template specs**: Use `-s env=EnvName-v5` for variable substitution. Successful envs get dedicated specs.
 
-**This Week** (Phase 2-3):
+### 3.1 Hopper-v5
 
-- [ ] Complete PPO Reacher search (nearly at target)
-- [ ] Run SAC on failing PPO envs (Ant, Swimmer may benefit)
-- [ ] BipedalWalker refinement (80% of target)
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/hopper/)
 
-**Upcoming**:
+| Property | Value |
+|----------|-------|
+| Action | Box(3) |
+| State | Box(11) |
+| Target | **MA > 3000** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
 
-- [ ] Remaining MuJoCo envs (InvertedPendulum, InvertedDoublePendulum, Humanoid)
-- [ ] SAC MuJoCo suite
-- [ ] Atari Phase 4
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ✅ 94% | 2816 | 1.5k | [slm_lab/spec/benchmark/ppo/ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | `ppo_hopper` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=Hopper-v5` |
+
+### 3.2 HalfCheetah-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/half_cheetah/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(6) |
+| State | Box(17) |
+| Target | **MA > 5000** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ✅ 81% | 4042 | 1.5k | [slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json](../slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | `ppo_halfcheetah` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=HalfCheetah-v5` |
+
+### 3.3 Walker2d-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/walker2d/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(6) |
+| State | Box(17) |
+| Target | **MA > 4000** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⚠️ 64% | 2573 | 1.5k | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=Walker2d-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=Walker2d-v5` |
+
+### 3.4 Ant-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/ant/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(8) |
+| State | Box(111) |
+| Target | **MA > 5000** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ❌ 0.7% | 36 | 1.5k | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=Ant-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=Ant-v5` |
+
+### 3.5 Swimmer-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/swimmer/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(2) |
+| State | Box(8) |
+| Target | **MA > 100** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⚠️ 44% | 44 | 1.5k | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=Swimmer-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=Swimmer-v5` |
+
+### 3.6 Reacher-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/reacher/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(2) |
+| State | Box(11) |
+| Target | **MA > -5** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | 🔄 near | -6.2 | 1.5k | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=Reacher-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=Reacher-v5` |
+
+### 3.7 InvertedPendulum-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(1) |
+| State | Box(4) |
+| Target | **MA > 1000** |
+| num_envs | 16 |
+| max_frames | 1M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⏸️ | - | - | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=InvertedPendulum-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=InvertedPendulum-v5` |
+
+### 3.8 InvertedDoublePendulum-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/inverted_double_pendulum/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(1) |
+| State | Box(11) |
+| Target | **MA > 9000** |
+| num_envs | 16 |
+| max_frames | 3M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⏸️ | - | - | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=InvertedDoublePendulum-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_mujoco` `-s env=InvertedDoublePendulum-v5` |
+
+### 3.9 Humanoid-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/mujoco/humanoid/)
+
+| Property | Value |
+|----------|-------|
+| Action | Box(17) |
+| State | Box(376) |
+| Target | **MA > 6000** |
+| num_envs | 32 |
+| max_frames | 50M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⏸️ | - | - | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | `ppo_mujoco` `-s env=Humanoid-v5` |
+| SAC | ⏸️ | - | - | [slm_lab/spec/benchmark/sac/sac_humanoid.json](../slm_lab/spec/benchmark/sac/sac_humanoid.json) | `sac_humanoid` |
+
+**Key finding**: ASHA found gamma~0.998, lam~0.905 works well for Hopper/HalfCheetah. Ant/Swimmer need different tuning.
 
 ---
 
-_This is the single source of truth for SLM-Lab benchmarking. Update as experiments complete._
+## Phase 4: Atari
+
+All Atari environments use **Discrete** action spaces and **Box(210,160,3)** RGB image observations.
+
+### 4.1 Pong-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/atari/pong/)
+
+| Property | Value |
+|----------|-------|
+| Action | Discrete(6) |
+| State | Box(210,160,3) RGB |
+| Target | **MA > 18** |
+| num_envs | 16 |
+| max_frames | 10M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⏸️ | - | - | [slm_lab/spec/benchmark/ppo/ppo_pong.json](../slm_lab/spec/benchmark/ppo/ppo_pong.json) | `ppo_pong` |
+| DQN | ⏸️ | - | - | [slm_lab/spec/benchmark/dqn/dqn_pong.json](../slm_lab/spec/benchmark/dqn/dqn_pong.json) | `dqn_pong` |
+| PPOSIL | ⏸️ | - | - | [slm_lab/spec/benchmark/sil/ppo_sil_pong.json](../slm_lab/spec/benchmark/sil/ppo_sil_pong.json) | `ppo_sil_pong` |
+
+### 4.2 Qbert-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/atari/qbert/)
+
+| Property | Value |
+|----------|-------|
+| Action | Discrete(6) |
+| State | Box(210,160,3) RGB |
+| Target | **MA > 15000** |
+| num_envs | 16 |
+| max_frames | 10M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⏸️ | - | - | [slm_lab/spec/benchmark/ppo/ppo_qbert.json](../slm_lab/spec/benchmark/ppo/ppo_qbert.json) | `ppo_qbert` |
+| DQN | ⏸️ | - | - | [slm_lab/spec/benchmark/dqn/dqn_qbert.json](../slm_lab/spec/benchmark/dqn/dqn_qbert.json) | `dqn_qbert` |
+| PPOSIL | ⏸️ | - | - | [slm_lab/spec/benchmark/sil/ppo_sil_qbert.json](../slm_lab/spec/benchmark/sil/ppo_sil_qbert.json) | `ppo_sil_qbert` |
+
+### 4.3 Breakout-v5
+
+[Environment docs](https://gymnasium.farama.org/environments/atari/breakout/)
+
+| Property | Value |
+|----------|-------|
+| Action | Discrete(4) |
+| State | Box(210,160,3) RGB |
+| Target | **MA > 400** |
+| num_envs | 16 |
+| max_frames | 10M |
+| log_frequency | 10000 |
+
+| Algorithm | Status | MA | FPS | Spec File | Spec Name |
+|-----------|--------|-----|-----|-----------|-----------|
+| PPO | ⏸️ | - | - | [slm_lab/spec/benchmark/ppo/ppo_atari.json](../slm_lab/spec/benchmark/ppo/ppo_atari.json) | `ppo_atari` `-s env=ALE/Breakout-v5` |
+| DQN | ⏸️ | - | - | [slm_lab/spec/benchmark/dqn/dqn_atari.json](../slm_lab/spec/benchmark/dqn/dqn_atari.json) | `dqn_atari` `-s env=ALE/Breakout-v5` |
+
+---
+
+## Known Issues
+
+**DQN Compute Inefficiency** ✅ RESOLVED
+- Was 84x slower than A2C due to excessive gradient updates (10 updates/step vs standard 1)
+- Fixed by adjusting `training_batch_iter` and `training_iter`
+- Result: 3.7-15x speedup with equivalent learning
+
+**SIL (Self-Imitation Learning)** ✅ RESOLVED
+- Fixed venv-packed data handling in replay memory
+- PPOSIL now achieves 124% of target on CartPole
+
+---
+
+## Next Steps
+
+**Immediate** (failing envs):
+- [ ] A2C LunarLander: investigate (2.8% of target)
+- [ ] PPO Ant: dedicated tuning (0.7% of target)
+- [ ] PPO Walker2d/Swimmer: env-specific search
+
+**Queue**:
+- [ ] SAC on failing PPO envs (Ant, Swimmer may benefit)
+- [ ] Remaining MuJoCo (InvertedPendulum, Humanoid)
+- [ ] Phase 4 Atari

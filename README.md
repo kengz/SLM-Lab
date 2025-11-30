@@ -68,5 +68,9 @@ slm-lab list              # List available experiments
 
 Config options in `.dstack/`: `run-gpu-train.yml`, `run-gpu-search.yml`, `run-cpu-train.yml`, `run-cpu-search.yml`
 
-See [CLAUDE.md](CLAUDE.md) for development guide and benchmarking workflow.
+## Documentation
+
+- [CLAUDE.md](CLAUDE.md) - Development guide and methodology
+- [docs/BENCHMARKS.md](docs/BENCHMARKS.md) - Benchmark results and targets
+- [docs/RUNS.md](docs/RUNS.md) - Active work queue and run tracking
 
