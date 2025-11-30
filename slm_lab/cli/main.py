@@ -7,15 +7,17 @@ from glob import glob
 
 import typer
 
+from slm_lab.lib import env_var  # Lightweight, only imports os
+
 app = typer.Typer(help="Modular deep reinforcement learning framework")
 
 
 def _lazy_imports():
     """Lazy import heavy dependencies only when needed for training."""
-    global EVAL_MODES, TRAIN_MODES, Experiment, Session, Trial, env_var, logger, util, hf, spec_util
+    global EVAL_MODES, TRAIN_MODES, Experiment, Session, Trial, logger, util, hf, spec_util
     from slm_lab import EVAL_MODES, TRAIN_MODES
     from slm_lab.experiment.control import Experiment, Session, Trial
-    from slm_lab.lib import env_var, logger as _logger, util
+    from slm_lab.lib import logger as _logger, util
     from slm_lab.lib import hf
     from slm_lab.spec import spec_util
     logger = _logger.get_logger(__name__)
