@@ -1,5 +1,5 @@
 {
-  "ppo_mujoco": {
+  "ppo_halfcheetah": {
     "agent": {
       "name": "PPO",
       "algorithm": {
@@ -7,8 +7,8 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.998,
-        "lam": 0.905,
+        "gamma": 0.9987,
+        "lam": 0.910,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -18,12 +18,12 @@
         },
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.003,
-          "end_val": 0.003,
+          "start_val": 0.002,
+          "end_val": 0.002,
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 0.9,
+        "val_loss_coef": 0.95,
         "time_horizon": 2048,
         "minibatch_size": 64,
         "training_epoch": 10
@@ -45,17 +45,17 @@
         },
         "actor_optim_spec": {
           "name": "AdamW",
-          "lr": 0.0003
+          "lr": 0.00033
         },
         "critic_optim_spec": {
           "name": "AdamW",
-          "lr": 0.0005
+          "lr": 0.00043
         },
         "gpu": "auto"
       }
     },
     "env": {
-      "name": "${env}",
+      "name": "HalfCheetah-v5",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 3e6
@@ -65,21 +65,8 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 8,
-      "search_resources": {"cpu": 1, "gpu": 0.125},
-      "search_scheduler": {
-        "grace_period": 100000,
-        "reduction_factor": 3
-      }
-    },
-    "search": {
-      "agent.algorithm.gamma__uniform": [0.993, 0.999],
-      "agent.algorithm.lam__uniform": [0.90, 0.95],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.005],
-      "agent.algorithm.val_loss_coef__uniform": [0.6, 1.0],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.0002, 0.0006],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0004, 0.001]
+      "max_session": 4,
+      "max_trial": 1
     }
   }
 }

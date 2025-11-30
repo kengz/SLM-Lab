@@ -1,8 +1,8 @@
 # SLM-Lab Official Benchmarking
 
 **Purpose**: Systematic algorithm validation across Gymnasium environments
-**Status**: 🔄 Phase 1 In Progress
-**Last Updated**: 2025-10-12
+**Status**: 🔄 Phase 3 In Progress
+**Last Updated**: 2025-11-29
 
 ---
 
@@ -21,10 +21,10 @@
 | ----- | --------------- | --------------- | ------ | -------------------------------------------------------------------- |
 | **1** | Classic Control | 2 envs (skip 3) | ✅     | 2/2 complete (CartPole ✅, Acrobot ✅, MountainCar/Pendulum skipped) |
 | **2** | Box2D           | 4 envs          | 🔄     | 3/4 complete (LunarLander ✅, LunarLander Cont ✅, BipedalWalker ⚠️) |
-| **3** | MuJoCo          | 9 envs          | 🔄     | 2/9 (Hopper ✅, HalfCheetah ⚠️, Walker2d 🔄, Ant 🔄, Swimmer 🔄, Reacher 🔄) |
+| **3** | MuJoCo          | 9 envs          | 🔄     | 3/9 (Hopper ✅, HalfCheetah ✅, Walker2d ⚠️, Ant ❌, Swimmer ⚠️, Reacher 🔄) |
 | **4** | Atari           | 6+ envs         | ⏸️     | 0/6 complete                                                         |
 
-**Current Focus**: Phase 3 MuJoCo - PPO validation and tuning
+**Current Focus**: Phase 3 MuJoCo - PPO validation; Phase 2 A2C/SAC tuning
 **Started**: 2025-10-10
 
 ---
@@ -114,7 +114,7 @@
 | **DDQN+PER**        | -83.0  | ~700 | [ddqn_per_acrobot.json](slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot`           | ✅     | Solves target                  |
 | **A2C**             | -84.2  | 3.4k | [a2c_gae_acrobot.json](slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json)   | `a2c_gae_acrobot`            | ✅     | Solves target                  |
 | **DQN (ε-greedy)**  | -104.0 | ~720 | [dqn_acrobot.json](slm_lab/spec/benchmark/dqn/dqn_acrobot.json)           | `dqn_epsilon_greedy_acrobot` | ✅     | Misses target (4% below)       |
-| **SAC**             | -      | -    | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | 🔄     | ASHA search running            |
+| **SAC**             | -92    | ~60  | [sac_acrobot.json](slm_lab/spec/benchmark/sac/sac_acrobot.json)           | `sac_acrobot`                | ✅     | 8% better than target          |
 | **PPOSIL**          | -110.2 | -    | [ppo_sil_acrobot.json](slm_lab/spec/benchmark/sil/ppo_sil_acrobot.json)   | `ppo_sil_acrobot`            | ⚠️     | Near target, compare vs PPO    |
 
 ---
@@ -134,8 +134,8 @@
 | **PPO**       | 229.9 | 2.4k | [ppo_lunar.json](slm_lab/spec/benchmark/ppo/ppo_lunar.json)           | `ppo_lunar`             | ✅     | 115.0% of target |
 | **DDQN+PER**  | 230.0 | 8.7k | [ddqn_per_lunar.json](slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` | ✅     | 115.0% of target |
 | **DQN**       | 203.9 | 9.0k | [dqn_lunar.json](slm_lab/spec/benchmark/dqn/dqn_lunar.json)           | `dqn_concat_lunar`      | ✅     | 102.0% of target |
-| **A2C (GAE)** | -     | -    | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar`         | 🔄     | ASHA search running |
-| **SAC**       | -     | -    | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar`             | 🔄     | ASHA search running |
+| **A2C (GAE)** | 5.5   | ~3k  | [a2c_gae_lunar.json](slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json)   | `a2c_gae_lunar`         | ❌     | 2.8% of target - needs tuning |
+| **SAC**       | -     | -    | [sac_lunar.json](slm_lab/spec/benchmark/sac/sac_lunar.json)           | `sac_lunar`             | ⏸️     | Ready to run |
 
 ---
 
@@ -189,7 +189,7 @@
 
 | Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                              |
 | ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | -------------------------------------------------- |
-| **PPO**       | 2566 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ✅     | 85% of target @ 3M frames. ASHA-tuned hyperparams. |
+| **PPO**       | 2816 | ~1.5k| [ppo_hopper.json](slm_lab/spec/benchmark/ppo/ppo_hopper.json)   | `ppo_hopper` | ✅     | 94% of target @ 3M. Dedicated spec with tuned params. |
 | **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Hopper-v5`                             |
 
 ---
@@ -206,7 +206,7 @@
 
 | Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                     |
 | ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ----------------------------------------- |
-| **PPO**       | 1424 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | 36% of target. ASHA search running.       |
+| **PPO**       | 2573 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⚠️     | 64% of target @ 3M. Needs env-specific tuning. |
 | **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Walker2d-v5`                  |
 
 ---
@@ -221,10 +221,10 @@
 - **log_frequency**: 10000
 - **Target total_reward_ma**: > 5000
 
-| Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                       |
-| ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ------------------------------------------- |
-| **PPO**       | 3178 | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⚠️     | 64% of target @ 3M. Hopper params transfer. |
-| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=HalfCheetah-v5`                 |
+| Algorithm     | MA   | FPS  | Spec File                                                               | Spec Name        | Status | Notes                                       |
+| ------------- | ---- | ---- | ----------------------------------------------------------------------- | ---------------- | ------ | ------------------------------------------- |
+| **PPO**       | 4042 | ~1.5k| [ppo_halfcheetah.json](slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | `ppo_halfcheetah`| ✅     | 81% of target @ 3M. Dedicated spec with tuned params. |
+| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)           | `sac_mujoco`     | ⏸️     | Use `-s env=HalfCheetah-v5`                 |
 
 ---
 
@@ -240,8 +240,8 @@
 
 | Algorithm     | MA   | FPS  | Spec File                                                       | Spec Name    | Status | Notes                                           |
 | ------------- | ---- | ---- | --------------------------------------------------------------- | ------------ | ------ | ----------------------------------------------- |
-| **PPO**       | 34   | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | 0.7% of target. ASHA search running (4-leg dynamics differ). |
-| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Ant-v5`                             |
+| **PPO**       | 36   | ~1.5k| [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ❌     | 0.7% of target. 4-leg dynamics need dedicated tuning. |
+| **SAC**       | -    | -    | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Ant-v5`. May perform better than PPO. |
 
 ---
 
@@ -257,7 +257,7 @@
 
 | Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                    |
 | ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ------------------------ |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | ASHA search running      |
+| **PPO**       | 44  | ~1.5k | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | ⚠️     | 44% of target @ 3M. Needs tuning. |
 | **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Swimmer-v5`  |
 
 ---
@@ -274,7 +274,7 @@
 
 | Algorithm     | MA  | FPS | Spec File                                                       | Spec Name    | Status | Notes                   |
 | ------------- | --- | --- | --------------------------------------------------------------- | ------------ | ------ | ----------------------- |
-| **PPO**       | -   | -   | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | ASHA search running     |
+| **PPO**       | -6.2 | ~1.5k | [ppo_mujoco.json](slm_lab/spec/benchmark/ppo/ppo_mujoco.json)   | `ppo_mujoco` | 🔄     | Near target (-5). Search finishing. |
 | **SAC**       | -   | -   | [sac_mujoco.json](slm_lab/spec/benchmark/sac/sac_mujoco.json)   | `sac_mujoco` | ⏸️     | Use `-s env=Reacher-v5` |
 
 ---
@@ -473,9 +473,13 @@
 **Final Step**:
 
 1. Select best trial from Stage 3 (highest MA with low variance)
-2. Update base spec with winning hyperparameters
-3. Validate with single training run
-4. Commit to repository
+2. **Create dedicated spec file** with winning hyperparameters (e.g., `ppo_hopper.json` from `ppo_mujoco.json`)
+   - Copy winning params from `experiment_df.csv` or trial spec files
+   - Set `max_session=4, max_trial=1` for validation runs
+   - Remove `search` block and `search_scheduler` - defaults are now tuned
+3. Update BENCHMARKS.md table with new spec file reference
+4. Run validation: `uv run slm-lab spec_file.json spec_name train`
+5. Commit spec file and docs to repository
 
 **Key Insight**: ASHA and multi-session are **mutually exclusive** - ASHA requires single session for early termination, multi-session requires full runs for robust averaging.
 
@@ -556,17 +560,17 @@ git commit -m "docs: complete Phase [X] - [environment]"
 
 ## Summary Statistics
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-29
 
 ### Overall Progress
 
 | Metric                   | Value                 |
 | ------------------------ | --------------------- |
 | Phases Complete          | 1/4                   |
-| Environments Complete    | 4/18+                 |
+| Environments Complete    | 6/18+                 |
 | Classic Control Progress | 100% (2/2, 3 skipped) |
-| Box2D Progress           | 50% (2/4)             |
-| MuJoCo Progress          | 0% (9)                |
+| Box2D Progress           | 75% (3/4)             |
+| MuJoCo Progress          | 33% (3/9)             |
 | Atari Progress           | 0% (6+)               |
 
 ### Phase Completion
@@ -574,8 +578,8 @@ git commit -m "docs: complete Phase [X] - [environment]"
 | Phase       | Environments  | Complete | Percentage |
 | ----------- | ------------- | -------- | ---------- |
 | **Phase 1** | 2 (3 skipped) | 2        | 100%       |
-| **Phase 2** | 4             | 2        | 50%        |
-| **Phase 3** | 9             | 0        | 0%         |
+| **Phase 2** | 4             | 3        | 75%        |
+| **Phase 3** | 9             | 3        | 33%        |
 | **Phase 4** | 6+            | 0        | 0%         |
 
 ### Algorithm Performance (Phases 1-2)
@@ -594,29 +598,24 @@ git commit -m "docs: complete Phase [X] - [environment]"
 
 ## Next Actions
 
-**Immediate** (Phase 1.2):
+**Immediate** (failing envs need tuning):
 
-- [ ] Create Acrobot spec files (PPO, DQN, A2C, SARSA)
-- [ ] Run baseline Acrobot experiments
-- [ ] Record results and update tables
+- [ ] A2C LunarLander: 2.8% of target - investigate search space
+- [ ] PPO Ant: 0.7% of target - needs dedicated tuning (4-leg dynamics)
+- [ ] PPO Walker2d: 64% of target - env-specific search
+- [ ] PPO Swimmer: 44% of target - needs tuning
 
-**This Week** (Phase 1):
+**This Week** (Phase 2-3):
 
-- [ ] Complete all Classic Control environments
-- [ ] Identify algorithms requiring ASHA refinement
-- [ ] Update specs with validated hyperparameters
+- [ ] Complete PPO Reacher search (nearly at target)
+- [ ] Run SAC on failing PPO envs (Ant, Swimmer may benefit)
+- [ ] BipedalWalker refinement (80% of target)
 
-**Upcoming** (Phase 2):
+**Upcoming**:
 
-- [ ] Begin LunarLander validation
-- [ ] BipedalWalker baseline
-- [ ] Phase 1 summary analysis
-
-**Future** (Phases 3-4):
-
-- [ ] MuJoCo suite on dstack
-- [ ] Atari suite on dstack
-- [ ] Complete benchmarking documentation
+- [ ] Remaining MuJoCo envs (InvertedPendulum, InvertedDoublePendulum, Humanoid)
+- [ ] SAC MuJoCo suite
+- [ ] Atari Phase 4
 
 ---
 

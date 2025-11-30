@@ -6,7 +6,7 @@
         "name": "SoftActorCritic",
         "action_pdtype": "Categorical",
         "action_policy": "default",
-        "gamma": 0.99,
+        "gamma": 0.991,
         "training_iter": 20,
         "training_frequency": 30,
         "training_start_step": 1000
@@ -30,10 +30,10 @@
         },
         "optim_spec": {
           "name": "AdamW",
-          "lr": 0.0003
+          "lr": 0.00065
         },
         "update_type": "polyak",
-        "polyak_coef": 0.15,
+        "polyak_coef": 0.28,
         "gpu": "auto"
       }
     },

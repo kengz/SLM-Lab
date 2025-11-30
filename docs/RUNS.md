@@ -4,27 +4,14 @@ Track dstack runs for continuity. Use `dstack ps` to check status.
 
 ## Current Runs (2025-11-29)
 
-### Active PPO MuJoCo GPU Searches
+### Active Searches
 
 | Run Name | Command | Hardware | Price/hr | Status |
 |----------|---------|----------|----------|--------|
-| `ppo-hopper-gpu` | `slm-lab run-remote --gpu -s env=Hopper-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-hopper-gpu` | runpod L4 | $0.39 | running |
-| `ppo-walker-gpu` | `slm-lab run-remote --gpu -s env=Walker2d-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-walker-gpu` | runpod L4 | $0.39 | running |
-| `ppo-cheetah-gpu` | `slm-lab run-remote --gpu -s env=HalfCheetah-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-cheetah-gpu` | runpod L4 | $0.39 | running |
-| `ppo-ant-gpu` | `slm-lab run-remote --gpu -s env=Ant-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-ant-gpu` | runpod L4 | $0.39 | running |
-| `ppo-swimmer-gpu` | `slm-lab run-remote --gpu -s env=Swimmer-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-swimmer-gpu` | runpod L4 | $0.39 | running |
-| `ppo-reacher-gpu` | `slm-lab run-remote --gpu -s env=Reacher-v5 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco search -n ppo-reacher-gpu` | runpod L4 | $0.39 | running (test) |
+| `sac-acrobot` | Phase 1.2 SAC Acrobot | runpod L4 | $0.39 | finishing (1 trial left) |
+| `ppo-reacher-gpu` | PPO Reacher-v5 search | runpod L4 | $0.39 | finishing (2 trials left) |
 
-### Active Phase 1-2 Searches
-
-| Run Name | Command | Hardware | Price/hr | Status |
-|----------|---------|----------|----------|--------|
-| `sac-acrobot` | Phase 1.2 SAC Acrobot | runpod L4 | $0.39 | running |
-| `a2c-lunar` | Phase 2.1 A2C LunarLander | GCP L4 | $0.85 | running |
-
-**Total**: 8 runs @ ~$4.05/hr
-
-**Estimated Duration**: 2-4 hours (ASHA early termination)
+**Total**: 2 runs @ ~$0.78/hr
 
 **Config**: `search_resources: {"cpu": 1, "gpu": 0.125}` enables 8 parallel trials sharing 1 GPU
 
@@ -164,36 +151,38 @@ uv run slm-lab pull SPEC_NAME
 
 ## Completed Runs (2025-11-29)
 
-| Date | Run | Command | Result | Notes |
-|------|-----|---------|--------|-------|
-| 2025-11-29 | ppo-hopper-v4 | `slm-lab run-remote -s env=Hopper-v5 ... ppo_mujoco train` | MA=2566 @ 3M | 85% of target (3000) |
-| 2025-11-29 | ppo-walker-v3 | `slm-lab run-remote -s env=Walker2d-v5 ... ppo_mujoco train` | MA=1424 @ 3M | 36% of target (4000) |
-| 2025-11-29 | ppo-cheetah-v3 | `slm-lab run-remote -s env=HalfCheetah-v5 ... ppo_mujoco train` | MA=3178 @ 3M | 64% of target (5000) |
-| 2025-11-29 | ppo-ant-v3 | `slm-lab run-remote -s env=Ant-v5 ... ppo_mujoco train` | MA=34 @ 3M | 0.7% of target (5000) |
+| Date | Run | Result | Notes |
+|------|-----|--------|-------|
+| 2025-11-29 | ppo-hopper-gpu | MA=2816 @ 3M | ✅ 94% of target (3000) - ASHA search |
+| 2025-11-29 | ppo-walker-gpu | MA=2573 @ 3M | ⚠️ 64% of target (4000) - needs tuning |
+| 2025-11-29 | ppo-cheetah-gpu | MA=4042 @ 3M | ✅ 81% of target (5000) - ASHA search |
+| 2025-11-29 | ppo-ant-gpu | MA=36 @ 3M | ❌ 0.7% of target (5000) - needs dedicated tuning |
+| 2025-11-29 | ppo-swimmer-gpu | MA=44 @ 3M | ⚠️ 44% of target (100) - needs tuning |
+| 2025-11-29 | a2c-lunar | MA=5.5 @ 300k | ❌ 2.8% of target (200) - needs tuning |
 
 ## MuJoCo PPO Status Summary
 
 | Environment | MA @ 3M | Target | % Target | Status | Next Step |
 |-------------|---------|--------|----------|--------|-----------|
-| Hopper-v5 | 2566 | 3000 | 85% | ✅ | Done (close enough) |
-| HalfCheetah-v5 | 3178 | 5000 | 64% | ⚠️ | May need longer training |
-| Walker2d-v5 | 1424 | 4000 | 36% | 🔄 | ASHA search running |
-| Ant-v5 | 34 | 5000 | 0.7% | 🔄 | ASHA search running |
-| Swimmer-v5 | - | 100 | - | 🔄 | ASHA search running |
-| Reacher-v5 | - | -5 | - | 🔄 | ASHA search running |
+| Hopper-v5 | 2816 | 3000 | 94% | ✅ | Done - spec updated |
+| HalfCheetah-v5 | 4042 | 5000 | 81% | ✅ | Done - spec updated |
+| Walker2d-v5 | 2573 | 4000 | 64% | ⚠️ | Needs env-specific search |
+| Ant-v5 | 36 | 5000 | 0.7% | ❌ | 4-leg dynamics need dedicated tuning |
+| Swimmer-v5 | 44 | 100 | 44% | ⚠️ | Needs tuning |
+| Reacher-v5 | -6.2 | -5 | ~close | 🔄 | Search finishing |
 | InvertedPendulum-v5 | - | 1000 | - | ⏸️ | Queue |
 | InvertedDoublePendulum-v5 | - | 9000 | - | ⏸️ | Queue |
 | Humanoid-v5 | - | 6000 | - | ⏸️ | Queue |
 
-**Key Finding**: Hopper-tuned hyperparameters (gamma=0.995, lam=0.92, entropy=0.002) transfer reasonably to HalfCheetah but fail badly on Walker2d and Ant. These envs have different dynamics and need env-specific tuning.
+**Key Finding**: ASHA search found gamma~0.998, lam~0.905 works well for Hopper and HalfCheetah. Ant and Walker2d need different dynamics-specific tuning. Swimmer is hard for PPO.
 
 ## Phase 1-2 Algorithm Status
 
 | Phase | Env | Algo | Status | Notes |
 |-------|-----|------|--------|-------|
-| 1.2 | Acrobot | SAC | 🔄 running | Spec fixed with search_resources |
+| 1.2 | Acrobot | SAC | ✅ done | MA=-92, spec updated with winning params |
 | 1.2 | Acrobot | PPOSIL | ⏸️ ready | Spec fixed with search_resources |
-| 2.1 | LunarLander | A2C | 🔄 running | Spec fixed with search_resources |
+| 2.1 | LunarLander | A2C | ❌ failed | MA=5.5 (2.8% of target) - needs investigation |
 | 2.1 | LunarLander | SAC | ⏸️ ready | Spec fixed with search_resources |
 | 2.2 | LunarLander-Cont | A2C | ⏸️ ready | Spec fixed with search_resources |
 | 2.3 | BipedalWalker | SAC | ⏸️ ready | Spec fixed with search_resources |
