@@ -11,6 +11,53 @@ import torch
 logger = logger.get_logger(__name__)
 
 
+class ReturnNormalizer:
+    """Running statistics normalizer for value targets (like SB3's RunningMeanStd).
+
+    Tracks running mean/var of returns using Welford's algorithm and provides
+    normalize/denormalize methods for consistent scaling across training.
+
+    This is the key fix for environments with high returns (InvertedPendulum, Humanoid, etc.)
+    where value targets can be 1000x larger than initial predictions.
+    """
+
+    def __init__(self, epsilon: float = 1e-8, clip: float = 10.0):
+        self.epsilon = epsilon
+        self.clip = clip
+        # Running statistics using Welford's algorithm
+        self.mean = 0.0
+        self.var = 1.0  # Start at 1 to avoid division issues early
+        self.count = 0
+        self.m2 = 0.0  # Sum of squared differences
+        self._warmup = 1000  # Number of samples before trusting variance
+
+    def update(self, values: torch.Tensor) -> None:
+        """Update running statistics with new values (batched Welford's)"""
+        values_np = values.detach().cpu().numpy().flatten()
+        for v in values_np:
+            self.count += 1
+            delta = v - self.mean
+            self.mean += delta / self.count
+            delta2 = v - self.mean
+            self.m2 += delta * delta2
+        # Update variance after enough samples
+        if self.count > 1:
+            self.var = self.m2 / self.count
+
+    def normalize(self, values: torch.Tensor) -> torch.Tensor:
+        """Normalize values by running std (not mean-centered for value function)"""
+        # Use running statistics from the start, with minimum std to avoid explosion
+        std = float(np.sqrt(self.var + self.epsilon))
+        std = max(std, 1.0)  # Ensure minimum std of 1.0 to prevent explosion
+        normalized = values / std
+        return torch.clamp(normalized, -self.clip, self.clip)
+
+    def denormalize(self, values: torch.Tensor) -> torch.Tensor:
+        """Denormalize values back to original scale"""
+        std = float(np.sqrt(self.var + self.epsilon))
+        return values * std
+
+
 class ActorCritic(Reinforce):
     '''
     Implementation of single threaded Advantage Actor Critic
@@ -81,6 +128,7 @@ class ActorCritic(Reinforce):
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
+            normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -94,6 +142,7 @@ class ActorCritic(Reinforce):
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
+            'normalize_v_targets',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -103,6 +152,11 @@ class ActorCritic(Reinforce):
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
             self.agent.mt.register_algo_var('entropy_coef', self.agent)
+        # Initialize return normalizer for value target scaling (VecNormalize-style)
+        if self.normalize_v_targets:
+            self.return_normalizer = ReturnNormalizer()
+        else:
+            self.return_normalizer = None
         # Select appropriate methods to calculate advs and v_targets for training
         if self.lam is not None:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
@@ -271,9 +325,34 @@ class ActorCritic(Reinforce):
         return super().calc_policy_loss(batch, pdparams, advs)
 
     def calc_val_loss(self, v_preds, v_targets):
-        '''Calculate the critic's value loss'''
+        '''Calculate the critic's value loss.
+
+        If normalize_v_targets is enabled with return_normalizer, uses running statistics
+        to normalize targets consistently across training (like SB3's VecNormalize).
+        This enables the critic to learn values in a stable range regardless of
+        the environment's actual return scale.
+        '''
         assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
-        val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
+
+        if self.return_normalizer is not None:
+            # Update running statistics with new targets
+            self.return_normalizer.update(v_targets)
+            # Normalize targets to ~N(0,1) for stable critic learning
+            v_targets_norm = self.return_normalizer.normalize(v_targets)
+            # Normalize predictions using same statistics
+            v_preds_norm = self.return_normalizer.normalize(v_preds)
+            val_loss = self.val_loss_coef * self.net.loss_fn(v_preds_norm, v_targets_norm)
+        elif self.normalize_v_targets:
+            # Fallback: batch normalization (less stable but prevents explosion)
+            v_max = v_targets.abs().max() * 2 + 1e-8
+            v_preds_clipped = torch.clamp(v_preds, -v_max, v_max)
+            v_std = v_targets.std() + 1e-8
+            v_preds_norm = v_preds_clipped / v_std
+            v_targets_norm = v_targets / v_std
+            val_loss = self.val_loss_coef * self.net.loss_fn(v_preds_norm, v_targets_norm)
+        else:
+            val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
+        
         logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 

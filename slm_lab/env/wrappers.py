@@ -1,5 +1,8 @@
 """
 Gymnasium environment wrappers for SLM-Lab compatibility.
+
+Note: Normalization wrappers (NormalizeObservation, NormalizeReward) are provided by
+gymnasium.wrappers and gymnasium.wrappers.vector - see slm_lab/env/__init__.py
 """
 
 import time
@@ -15,7 +18,7 @@ from slm_lab.lib import util
 
 class TrackReward(gym.Wrapper):
     """Track cumulative reward for SLM-Lab compatibility
-    
+
     Reports the last completed episode reward.
     Metrics layer will compute moving averages.
     """

@@ -254,10 +254,10 @@ def cleanup_trial_models(spec, experiment_df, keep_top_n=3):
     if not remove_trials:
         logger.info('No trials to remove - all trials within keep limit')
         return
-    
-    # Get model directory from spec
-    prepath = util.get_prepath(spec, unit='experiment')
-    model_dir = f'{prepath}/model'
+
+    # Get model directory from spec's predir (data/{spec_name}_{ts}/model/)
+    predir = util.get_predir(spec)
+    model_dir = f'{predir}/model'
 
     if not os.path.exists(model_dir):
         logger.info('Model directory does not exist, skipping cleanup')

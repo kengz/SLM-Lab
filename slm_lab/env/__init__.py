@@ -5,7 +5,16 @@ from typing import Any
 import gymnasium as gym
 from gymnasium import spaces
 from gymnasium.vector import VectorEnv
-from gymnasium.wrappers import AtariPreprocessing, FrameStackObservation
+from gymnasium.wrappers import (
+    AtariPreprocessing,
+    FrameStackObservation,
+    NormalizeObservation,
+    NormalizeReward,
+)
+from gymnasium.wrappers.vector import (
+    NormalizeObservation as VectorNormalizeObservation,
+    NormalizeReward as VectorNormalizeReward,
+)
 
 from slm_lab.env.wrappers import (
     ClockWrapper,
@@ -148,20 +157,34 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     render_mode = "human" if render() else None
 
     # Build kwargs for gym.make() - pass through any extra env kwargs
-    # Reserved keys that are handled separately: name, num_envs, max_t, max_frame
-    reserved_keys = {"name", "num_envs", "max_t", "max_frame"}
+    # Reserved keys that are handled separately by SLM-Lab, not passed to gym.make()
+    reserved_keys = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward"}
     make_kwargs = {k: v for k, v in env_spec.items() if k not in reserved_keys}
+
+    # Optional normalization (useful for MuJoCo and other continuous control envs)
+    normalize_obs = env_spec.get("normalize_obs", False)
+    normalize_reward = env_spec.get("normalize_reward", False)
+    # Get gamma from agent spec for reward normalization (default 0.99)
+    gamma = spec.get("agent", {}).get("algorithm", {}).get("gamma", 0.99)
 
     if num_envs > 1:  # make vector environment
         vectorization_mode = _get_vectorization_mode(name, num_envs)
         # For Atari vector envs, render_mode is not supported in kwargs
         if not name.startswith("ALE/"):
             make_kwargs["render_mode"] = "rgb_array" if render_mode else None
-        
+
         # Note: For Atari, gymnasium's make_vec automatically includes FrameStackObservation + AtariPreprocessing
         env = gym.make_vec(
             name, num_envs=num_envs, vectorization_mode=vectorization_mode, **make_kwargs
         )
+        # Add observation normalization first (normalizes inputs to policy network)
+        if normalize_obs:
+            env = VectorNormalizeObservation(env)
+            logger.info("Observation normalization enabled")
+        # Add reward normalization before tracking (so tracking sees normalized rewards)
+        if normalize_reward:
+            env = VectorNormalizeReward(env, gamma=gamma)
+            logger.info(f"Reward normalization enabled (gamma={gamma})")
         # Add reward tracking for SLM-Lab compatibility
         env = VectorTrackReward(env)
         # Add grid rendering for all envs
@@ -175,6 +198,14 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
             env = FrameStackObservation(
                 AtariPreprocessing(env, frame_skip=1), stack_size=4
             )
+        # Add observation normalization first (normalizes inputs to policy network)
+        if normalize_obs:
+            env = NormalizeObservation(env)
+            logger.info("Observation normalization enabled")
+        # Add reward normalization before tracking
+        if normalize_reward:
+            env = NormalizeReward(env, gamma=gamma)
+            logger.info(f"Reward normalization enabled (gamma={gamma})")
         # Add reward tracking for SLM-Lab compatibility
         env = TrackReward(env)
 

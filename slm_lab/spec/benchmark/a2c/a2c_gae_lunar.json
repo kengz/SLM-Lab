@@ -7,18 +7,18 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.99,
+        "gamma": 0.995,
         "lam": 0.95,
         "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
+          "start_val": 0.00001,
+          "end_val": 0.00001,
           "start_step": 0,
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32
+        "training_frequency": 5
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -26,9 +26,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [128, 128],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
+        "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -37,11 +38,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.001
+          "lr": 0.00083
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.0007
+          "lr": 0.00083
         },
         "gpu": "auto"
       }
@@ -65,12 +66,12 @@
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.985, 0.999],
-      "agent.algorithm.lam__uniform": [0.9, 0.98],
-      "agent.algorithm.training_frequency__qrandint": [16, 64, 16],
-      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.005, 0.02],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.0005, 0.003],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.003]
+      "agent.algorithm.gamma__uniform": [0.99, 0.999],
+      "agent.algorithm.lam__uniform": [0.92, 0.98],
+      "agent.algorithm.training_frequency__qrandint": [5, 16, 1],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.000001, 0.0001],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.002],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0003, 0.002]
     }
   },
   "a2c_gae_lunar_continuous": {

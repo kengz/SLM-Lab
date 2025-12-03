@@ -1,14 +1,14 @@
 {
-  "ppo_sil_acrobot": {
+  "ppo_humanoid": {
     "agent": {
-      "name": "PPOSIL",
+      "name": "PPO",
       "algorithm": {
-        "name": "PPOSIL",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.995,
-        "lam": 0.947,
+        "gamma": 0.99,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -18,32 +18,24 @@
         },
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
+          "start_val": 0.0,
+          "end_val": 0.0,
           "start_step": 0,
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "sil_policy_loss_coef": 0.58,
-        "sil_val_loss_coef": 0.029,
-        "time_horizon": 256,
+        "time_horizon": 2048,
         "minibatch_size": 64,
-        "training_batch_iter": 4,
-        "training_iter": 4,
         "training_epoch": 10,
         "normalize_v_targets": true
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
-        "sil_replay_name": "Replay",
-        "batch_size": 128,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [512, 256, 128],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -53,42 +45,43 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.00012
+          "name": "Adam",
+          "lr": 0.0003
         },
         "critic_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.00174
+          "name": "Adam",
+          "lr": 0.0003
         },
         "gpu": "auto"
       }
     },
     "env": {
-      "name": "Acrobot-v1",
-      "num_envs": 4,
+      "name": "Humanoid-v5",
+      "num_envs": 32,
       "max_t": null,
-      "max_frame": 500000
+      "max_frame": 50e6,
+      "normalize_obs": true,
+      "normalize_reward": true
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 50000,
+      "eval_frequency": 50000,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 20,
+      "max_trial": 8,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 50000,
+        "grace_period": 500000,
         "reduction_factor": 3
       }
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.98, 0.999],
       "agent.algorithm.lam__uniform": [0.9, 0.98],
-      "agent.algorithm.sil_policy_loss_coef__loguniform": [0.5, 2.0],
-      "agent.algorithm.sil_val_loss_coef__loguniform": [0.005, 0.05],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.001],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.003]
+      "agent.algorithm.time_horizon__choice": [1024, 2048, 4096],
+      "agent.net.actor_optim_spec.lr__loguniform": [1e-4, 1e-3],
+      "agent.net.critic_optim_spec.lr__loguniform": [1e-4, 1e-3]
     }
   }
 }

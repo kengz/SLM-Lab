@@ -29,3 +29,6 @@ resources:
 spot_policy: on-demand
 max_duration: 4h
 backends: [runpod, aws, gcp, azure, vastai]
+retry:
+  on_events: [no-capacity]
+  duration: 1h

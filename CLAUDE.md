@@ -107,7 +107,7 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 ### Cloud Compute
 
 - **Use dstack** for GPU-intensive training and development
-- **One-time setup**: `uv tool install dstack && dstack project add --name <project> --url https://sky.dstack.ai --token $DSTACK_TOKEN -y` (get token from dstack Sky web UI; saved to `~/.dstack/config.yml`)
+- **One-time setup**: `uv tool install dstack && dstack project add --name kengz --url https://sky.dstack.ai --token $DSTACK_TOKEN -y` (get token from dstack Sky web UI; saved to `~/.dstack/config.yml`)
 - **IMPORTANT**: Always `source .env` before running remote experiments for HF upload credentials
 - **Always use `--gpu`**: Cheaper ($0.39/hr L4 vs $0.54/hr 16-CPU) and faster with fractional GPU sharing
 - Run: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name train -n run-name`
@@ -133,19 +133,30 @@ git clone https://github.com/kengz/SLM-Lab.git && cd SLM-Lab
 git checkout dustoff
 uv sync --only-group minimal
 uv tool install dstack
-dstack project add --name <project> --url https://sky.dstack.ai --token $DSTACK_TOKEN -y  # get token from dstack Sky web UI
+dstack project add --name kengz --url https://sky.dstack.ai --token $DSTACK_TOKEN -y  # get token from dstack Sky web UI
 
 # Test setup - run quick CartPole train on CPU, verify it starts successfully
 source .env && uv run slm-lab run-remote slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole train -n test-cartpole
 dstack ps  # should show test-cartpole running
 dstack stop test-cartpole -y  # stop after verifying
 
-# Dispatch runs (source .env for HF_TOKEN, HF_REPO; dstack token already in ~/.dstack/config.yml)
-# Pattern: source .env && uv run slm-lab run-remote [--gpu] [-s key=val] spec.json spec_name <train|search> -n <run-name>
-source .env && uv run slm-lab run-remote --gpu slm_lab/spec/benchmark/ppo/ppo_bipedalwalker.json ppo_bipedalwalker search -n ppo-bipedal
+# Dispatch runs - copy commands directly from docs/RUNS.md
+# Pattern: source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME <train|search> -n NAME
 
-# Monitor: dstack ps | dstack logs <name> | dstack stop <name> -y
+# Monitor
+dstack ps
+dstack logs <run-name>
+dstack stop <run-name> -y
+
+# Pull results
+uv run slm-lab pull SPEC_NAME
 ```
+
+**Workflow**:
+1. Check `docs/RUNS.md` for work queue and copy-paste commands
+2. Run command, update "Current Runs" section
+3. When complete, update status in RUNS.md and results in BENCHMARKS.md
+4. Move to "Completed Runs" with results
 
 ## Framework Design Patterns
 
@@ -200,94 +211,109 @@ slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_
 slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco dev
 ```
 
-## Benchmarking Methodology
+## Benchmarking
 
-### Proven Three-Stage Process
+### Documentation Structure
 
-Use this systematic approach for algorithm validation and hyperparameter tuning.
+- **`docs/BENCHMARKS.md`**: Single source of truth for benchmark results, targets, and environment details
+- **`docs/RUNS.md`**: Active work queue with copy-paste commands and run tracking
 
-> NOTE use the `search` mode instead of `train`, e.g. `uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole search`
+### Three-Stage Search Process
 
-**Stage 1: Manual Iteration** (Fast validation)
+| Stage | Mode | Config | Purpose |
+|-------|------|--------|---------|
+| ASHA | `search` | `max_session=1`, `search_scheduler` enabled | Wide exploration with early termination |
+| Multi | `search` | `max_session=4`, NO `search_scheduler` | Robust validation with averaging |
+| Validate | `train` | Final spec | Confirmation run |
 
-- Start with sensible hyperparameter guesses based on theory and paper defaults
-- Compare with proven configs from established libraries (Stable Baselines3, CleanRL, etc.)
-- Run quick validation trials (`max_session=1-4`) to verify baseline performance
-- Identify critical hyperparameters causing failures (e.g., training frequency, learning rates)
-
-**Stage 2: ASHA Hyperparameter Search** (Wide exploration)
-
-- Use ASHA scheduler for efficient search with early termination
-- Configure: `max_session=1`, `search_scheduler` enabled, 20-30 trials
-- Wide search space with uniform/loguniform distributions
-- Analyze `experiment_df.csv` to identify promising hyperparameter ranges
-- **Note**: ASHA and multi-session are mutually exclusive - use `max_session=1` only
-
-**Stage 3: Multi-Session Refinement** (Robust validation)
-
-- Narrow search space around promising ranges from Stage 2
-- Configure: `max_session=4`, NO `search_scheduler`, 8-12 trials
-- Multi-session averaging provides low-variance, reliable results
-- Select best config from averaged performance across sessions
-- Update spec with winning hyperparameters as defaults
-
-**Key Insight**: Manual iteration quickly identifies deal-breakers, ASHA explores efficiently, multi-session validates robustly. Never skip Stage 1 - library configs often don't transfer directly between environments.
-
-**Spec Organization**:
-
-- **Naming convention**: Use canonical `<algo>_<env>` naming (e.g., `ppo_bipedalwalker`, `sac_lunar`). Never create variant specs like `_search`, `_asha`, `_refined`, `_fast`, etc. - one spec per algorithm/environment pair
-- Keep spec files minimal - one spec per environment with inline `"search"` block
-- **Search specs persist**: The `"search"` block and `max_trial` stay in spec files even after completing search - they don't interfere with `train` mode
-- **Search space**: Keep search space small and tractable - don't search obvious params that won't matter. Focus only on salient hyperparameters
-- Use continuous distributions (`qrandint`, `uniform`, `loguniform`) for numeric hyperparameters, not `choice`
-- Reserve `choice` only for discrete categorical options (e.g., activation functions, architecture variants)
-
-### ASHA Search Configuration
-
+**ASHA Config**:
 ```json
 {
   "meta": {
     "max_session": 1,
-    "max_trial": 30,
-    "search_scheduler": {
-      "grace_period": 30000,
-      "reduction_factor": 3
-    }
+    "max_trial": 8,
+    "search_resources": {"cpu": 1, "gpu": 0.125},
+    "search_scheduler": {"grace_period": 100000, "reduction_factor": 3}
   },
   "search": {
-    "agent.algorithm.gamma__uniform": [0.95, 0.999],
-    "agent.algorithm.lr__loguniform": [1e-5, 5e-3]
+    "agent.algorithm.gamma__uniform": [0.993, 0.999],
+    "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
   }
 }
 ```
 
-### Multi-Session Refinement Configuration
+### Spec Organization
 
-```json
-{
-  "meta": {
-    "max_session": 4,
-    "max_trial": 8
-  },
-  "search": {
-    "agent.algorithm.gamma__choice": [0.97, 0.98, 0.99],
-    "agent.algorithm.lr__choice": [0.0001, 0.0003]
-  }
-}
+- **Naming**: `<algo>_<env>` (e.g., `ppo_hopper`, `sac_lunar`). No variant suffixes.
+- **Template specs**: Use `${env}` placeholder with `-s env=EnvName-v5` for variable substitution
+- **Search block**: Stays in spec after search - doesn't affect `train` mode
+- **Finalization**: Successful envs get dedicated specs with tuned defaults
+
+### Search Space Sizing
+
+**Rule: ~3-4 trials per search dimension minimum.**
+
+| Trials | Max Dims | Notes |
+|--------|----------|-------|
+| 8 | 2-3 | Very focused search |
+| 12-16 | 3-4 | Typical refinement |
+| 20 | 5 | Wide exploration |
+| 30 | 6-7 | Broad ASHA search |
+
+**Common mistake**: Too many dimensions wastes trials exploring combinations that won't be sampled adequately. Focus on high-impact hyperparameters:
+- **Most impactful**: learning rates, gamma, lam
+- **Less impactful**: minibatch_size, training_epoch, network architecture (fix these based on successful runs)
+
+After a search run, analyze results and **narrow** the search space around best-performing values before re-running.
+
+### Workflow
+
+1. Check `docs/RUNS.md` for next task and copy command
+2. Run, update "Current Runs" in RUNS.md
+3. When complete: update RUNS.md status, update BENCHMARKS.md results
+4. If successful: update spec defaults, commit, validation run
+
+---
+
+## TODO: Benchmark Work
+
+When user says "let's get to work" or "benchmark work", execute this workflow:
+
+### 1. Check Active Runs
+```bash
+dstack ps
 ```
+- Review running jobs, check for completions
+- Pull logs for completed/failed runs: `dstack logs <name>`
 
-### Benchmark
+### 2. Process Completed Runs
+For each completed run, update **all 3 places**:
+1. Check final results in logs (look for `total_reward_ma`)
+2. **RUNS.md**: move from "Current Runs" to "Completed Runs" with results
+3. **BENCHMARKS.md**: update algorithm row with MA score and status
+4. **Spec file**: if successful (✅), pull results (`uv run slm-lab pull SPEC_NAME`), extract best hyperparameters from experiment_df.csv or trial spec, update spec defaults
+5. Commit all changes together
+6. Add to "Key Findings" if notable patterns discovered
 
-Run full SLM Lab benchmarks. See `docs/BENCHMARKS.md` for detailed benchmark progress tracking. This is the single source of truth for:
+**Note**: On session resume, always check Completed Runs for any ✅ results that may need spec updates.
 
-- Phase-by-phase validation status (CartPole, LunarLander, Continuous Control, MuJoCo, Atari)
-- Algorithm-specific targets and results
-- Known issues and limitations
-- Next steps and prioritization
+### 3. Launch Next Runs
+1. Check `docs/RUNS.md` work queue for next items to run
+2. Prioritize by:
+   - Running jobs that fill GPU capacity (8 parallel trials per GPU)
+   - Work Line 1 (Phase 1-2 completion) before Work Line 2 (MuJoCo)
+   - Items close to target (⚠️) before failures (❌)
+3. Copy command from RUNS.md, execute with `source .env && ...`
+4. Update "Current Runs" section with new job
 
-**Track Remote Runs**: Use `docs/RUNS.md` to track active dstack runs across sessions. Update it when:
-- Starting new remote runs (add to "Current Runs" table)
-- Runs complete (move to "Completed Runs" with results)
-- Runs fail or are interrupted (document in notes)
+### 4. Analyze & Improve Failing Specs
+For runs with poor results:
+1. Compare with successful specs (e.g., PPO Hopper/HalfCheetah params)
+2. Check: learning rates, entropy decay, normalization, gamma/lam
+3. Update spec search ranges based on findings
+4. Queue for re-run
 
-Update `BENCHMARKS.md` as benchmarks complete, keeping this document focused on methodology rather than tracking.
+### 5. Track Progress
+- Keep RUNS.md and BENCHMARKS.md synchronized
+- Commit documentation updates regularly
+- Note patterns in "Key Findings" section

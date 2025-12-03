@@ -1,6 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent.algorithm import policy_util
-from slm_lab.agent.algorithm.actor_critic import ActorCritic
+from slm_lab.agent.algorithm.actor_critic import ActorCritic, ReturnNormalizer
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
@@ -73,6 +73,7 @@ class PPO(ActorCritic):
             entropy_coef_spec=None,
             minibatch_size=4,
             val_loss_coef=1.0,
+            normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -87,6 +88,7 @@ class PPO(ActorCritic):
             'minibatch_size',
             'time_horizon',  # training_frequency = actor * horizon
             'training_epoch',
+            'normalize_v_targets',
         ])
         self.to_train = 0
         # guard
@@ -111,9 +113,13 @@ class PPO(ActorCritic):
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
+        # Initialize return normalizer for value target scaling (VecNormalize-style)
+        if self.normalize_v_targets:
+            self.return_normalizer = ReturnNormalizer()
+        else:
+            self.return_normalizer = None
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
-        
         # Register PPO-specific variables for logging
         self.agent.mt.register_algo_var('clip_eps', self)
         if self.entropy_coef_spec is not None:
@@ -162,7 +168,9 @@ class PPO(ActorCritic):
             old_action_pd = policy_util.init_action_pd(self.agent.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
-        ratios = torch.exp(log_probs - old_log_probs)
+        # Clip log ratio to prevent numerical instability (exp overflow)
+        log_ratio = torch.clamp(log_probs - old_log_probs, -20.0, 20.0)
+        ratios = torch.exp(log_ratio)
         logger.debug(f'calc_policy_loss shapes: advs={advs.shape}, log_probs={log_probs.shape}, ratios={ratios.shape}')
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs

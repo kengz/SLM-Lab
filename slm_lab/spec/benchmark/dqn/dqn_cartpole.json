@@ -144,12 +144,12 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "start_val": 5.0,
-          "end_val": 0.5,
+          "start_val": 1.0,
+          "end_val": 0.08,
           "start_step": 0,
-          "end_step": 4000
+          "end_step": 6000
         },
-        "gamma": 0.99,
+        "gamma": 0.995,
         "training_batch_iter": 2,
         "training_iter": 2,
         "training_frequency": 4,
@@ -159,61 +159,37 @@
         "name": "PrioritizedReplay",
         "alpha": 0.6,
         "epsilon": 0.0001,
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": false
+        "batch_size": 64,
+        "max_size": 50000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          64
-        ],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "selu",
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 0.55,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "AdamW",
-          "lr": 0.005
+          "name": "Adam",
+          "lr": 0.0003
         },
         "update_type": "replace",
-        "update_frequency": 10,
+        "update_frequency": 75,
         "gpu": "auto"
       }
     },
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 40000
+      "max_frame": 100000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 100,
+      "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 1
-    },
-    "search": {
-      "agent": {
-        "net": {
-          "hid_layers__choice": [
-            [
-              32
-            ],
-            [
-              64
-            ],
-            [
-              32,
-              16
-            ],
-            [
-              64,
-              32
-            ]
-          ]
-        }
-      }
     }
   },
   "dqn_epsilon_greedy_cartpole": {

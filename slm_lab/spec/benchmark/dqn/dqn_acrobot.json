@@ -9,11 +9,11 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.1,
+          "end_val": 0.027,
           "start_step": 0,
-          "end_step": 10000
+          "end_step": 20000
         },
-        "gamma": 0.99,
+        "gamma": 0.987,
         "training_batch_iter": 2,
         "training_iter": 2,
         "training_frequency": 4,
@@ -21,7 +21,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 32,
+        "batch_size": 64,
         "max_size": 50000,
         "use_cer": true
       },
@@ -38,7 +38,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.0005
+          "lr": 0.00108
         },
         "update_type": "replace",
         "update_frequency": 100,
@@ -53,9 +53,19 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 500,
-      "max_session": 4,
-      "max_trial": 1,
-      "log_frequency": 500
+      "max_session": 1,
+      "max_trial": 12,
+      "log_frequency": 500,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.99, 0.999],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [0.05, 0.15],
+      "agent.algorithm.explore_var_spec.end_step__qrandint": [10000, 20000, 5000],
+      "agent.net.optim_spec.lr__loguniform": [0.0003, 0.001]
     }
   },
   "dqn_boltzmann_acrobot": {

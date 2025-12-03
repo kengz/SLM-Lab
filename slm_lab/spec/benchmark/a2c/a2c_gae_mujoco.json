@@ -11,14 +11,14 @@
         "lam": 0.95,
         "num_step_returns": null,
         "entropy_coef_spec": {
-          "name": "no_decay",
+          "name": "linear_decay",
           "start_val": 0.01,
-          "end_val": 0.01,
+          "end_val": 0.001,
           "start_step": 0,
-          "end_step": 0
+          "end_step": 3000000
         },
-        "val_loss_coef": 1.0,
-        "training_frequency": 48
+        "val_loss_coef": 0.5,
+        "training_frequency": 128
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -26,105 +26,51 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": true,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "AdamW",
+          "name": "Adam",
           "lr": 0.0003
         },
         "critic_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0003
+          "name": "Adam",
+          "lr": 0.001
         },
         "gpu": "auto"
       }
     },
     "env": {
       "name": "${env}",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 2e6
-    },
-    "meta": {
-      "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
-      "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 7
-    }
-  },
-  "a2c_gae_humanoid": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 1.0,
-        "training_frequency": 512
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "MLPNet",
-        "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0003
-        },
-        "critic_optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0003
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "Humanoid-v5",
-      "num_envs": 32,
-      "max_t": null,
-      "max_frame": 5e7
+      "max_frame": 3e6
     },
     "meta": {
       "distributed": false,
       "log_frequency": 10000,
       "eval_frequency": 10000,
-      "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 1
+      "max_session": 1,
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
+      "search_scheduler": {
+        "grace_period": 300000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.99, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.001, 0.01],
+      "agent.algorithm.training_frequency__qrandint": [64, 256, 64],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0003, 0.003]
     }
   }
 }

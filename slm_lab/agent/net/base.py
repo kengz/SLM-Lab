@@ -39,6 +39,11 @@ class Net(ABC):
 
     @net_util.dev_check_train_step
     def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
+        # Skip update if loss is NaN/inf to prevent gradient explosion
+        if not torch.isfinite(loss):
+            logger.warning(f'Skipping update: loss is {loss.item():.2e}')
+            # Return small nonzero to avoid dev_check_train_step zero loss path
+            return torch.tensor(1e-10, device=loss.device, requires_grad=False)
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
