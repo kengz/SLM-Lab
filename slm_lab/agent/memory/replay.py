@@ -75,6 +75,7 @@ class Replay(Memory):
             'max_size',
             'use_cer',
         ])
+        self.max_size = int(self.max_size)  # convert scientific notation (e.g. 1e6) to int
         self.is_episodic = False
         self.batch_idxs = None
         self.size = 0  # total experiences stored

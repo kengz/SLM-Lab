@@ -1,5 +1,5 @@
 {
-  "sac_halfcheetah": {
+  "sac_swimmer": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
@@ -37,10 +37,10 @@
       }
     },
     "env": {
-      "name": "HalfCheetah-v5",
+      "name": "Swimmer-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 3e6
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,
@@ -51,7 +51,7 @@
       "max_trial": 12,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 2e5,
+        "grace_period": 1e5,
         "reduction_factor": 3
       }
     },

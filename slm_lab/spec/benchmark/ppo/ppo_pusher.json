@@ -1,5 +1,5 @@
 {
-  "ppo_inverted_double_pendulum": {
+  "ppo_pusher": {
     "agent": {
       "name": "PPO",
       "algorithm": {
@@ -52,7 +52,7 @@
       }
     },
     "env": {
-      "name": "InvertedDoublePendulum-v5",
+      "name": "Pusher-v5",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 1e6,

@@ -8,7 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.998,
-        "lam": 0.862,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -18,13 +18,13 @@
         },
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.004,
-          "end_val": 0.004,
+          "start_val": 0.001,
+          "end_val": 0.001,
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 0.2,
-        "time_horizon": 128,
+        "val_loss_coef": 0.5,
+        "time_horizon": 2048,
         "minibatch_size": 64,
         "training_epoch": 10,
         "normalize_v_targets": true
@@ -35,31 +35,27 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
-        "clip_grad_val": 0.3,
-        "use_same_optim": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": true,
         "loss_spec": {
           "name": "MSELoss"
         },
-        "actor_optim_spec": {
+        "optim_spec": {
           "name": "Adam",
-          "lr": 0.00067
-        },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00055
+          "lr": 3e-4
         },
         "gpu": "auto"
       }
     },
     "env": {
       "name": "Reacher-v5",
-      "num_envs": 1,
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 3e6,
+      "max_frame": 1e6,
       "normalize_obs": true,
       "normalize_reward": true
     },
@@ -69,19 +65,17 @@
       "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 8,
+      "max_trial": 16,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 100000,
+        "grace_period": 1e5,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.99, 0.9999],
-      "agent.algorithm.lam__uniform": [0.85, 0.95],
-      "agent.algorithm.time_horizon__choice": [32, 64, 128],
-      "agent.net.actor_optim_spec.lr__loguniform": [1e-4, 1e-3],
-      "agent.net.critic_optim_spec.lr__loguniform": [1e-4, 3e-3]
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
     }
   }
 }

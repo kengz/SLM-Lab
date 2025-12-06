@@ -167,14 +167,17 @@ class ClockMixin:
 
     @property
     def total_reward(self):
-        """Delegate to TrackReward wrapper's total_reward"""
-        # TrackReward is the immediate child wrapper
-        if hasattr(self.env, "total_reward"):
-            return self.env.total_reward  # Single env: TrackReward
-        elif hasattr(self.env, "total_rewards"):
-            return self.env.total_rewards  # Vector env: VectorTrackReward
-        else:
-            return np.nan
+        """Delegate to TrackReward wrapper's total_reward.
+
+        Traverses wrapper chain to find TrackReward/VectorTrackReward,
+        since normalization wrappers may be between ClockWrapper and TrackReward.
+        """
+        env = self.env
+        while env is not None:
+            if isinstance(env, (TrackReward, VectorTrackReward)):
+                return env.total_reward
+            env = getattr(env, "env", None)
+        return np.nan
 
 
 class ClockWrapper(ClockMixin, gym.Wrapper):

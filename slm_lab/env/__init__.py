@@ -177,16 +177,16 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         env = gym.make_vec(
             name, num_envs=num_envs, vectorization_mode=vectorization_mode, **make_kwargs
         )
-        # Add observation normalization first (normalizes inputs to policy network)
+        # Add reward tracking FIRST to capture raw rewards (before any normalization)
+        env = VectorTrackReward(env)
+        # Add observation normalization (normalizes inputs to policy network)
         if normalize_obs:
             env = VectorNormalizeObservation(env)
             logger.info("Observation normalization enabled")
-        # Add reward normalization before tracking (so tracking sees normalized rewards)
+        # Add reward normalization AFTER tracking (agent sees normalized, we report raw)
         if normalize_reward:
             env = VectorNormalizeReward(env, gamma=gamma)
             logger.info(f"Reward normalization enabled (gamma={gamma})")
-        # Add reward tracking for SLM-Lab compatibility
-        env = VectorTrackReward(env)
         # Add grid rendering for all envs
         if render_mode:
             env = VectorRenderAll(env)
@@ -198,16 +198,16 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
             env = FrameStackObservation(
                 AtariPreprocessing(env, frame_skip=1), stack_size=4
             )
-        # Add observation normalization first (normalizes inputs to policy network)
+        # Add reward tracking FIRST to capture raw rewards (before any normalization)
+        env = TrackReward(env)
+        # Add observation normalization (normalizes inputs to policy network)
         if normalize_obs:
             env = NormalizeObservation(env)
             logger.info("Observation normalization enabled")
-        # Add reward normalization before tracking
+        # Add reward normalization AFTER tracking (agent sees normalized, we report raw)
         if normalize_reward:
             env = NormalizeReward(env, gamma=gamma)
             logger.info(f"Reward normalization enabled (gamma={gamma})")
-        # Add reward tracking for SLM-Lab compatibility
-        env = TrackReward(env)
 
     # Set SLM-Lab attributes
     _set_env_attributes(env, spec)

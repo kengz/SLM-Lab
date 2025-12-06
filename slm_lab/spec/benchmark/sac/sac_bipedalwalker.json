@@ -6,58 +6,60 @@
         "name": "SoftActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "gamma": 0.98,
-        "training_frequency": 64,
-        "training_iter": 64,
-        "training_start_step": 10000
+        "gamma": 0.99,
+        "training_frequency": 4,
+        "training_iter": 4,
+        "training_start_step": 1000
       },
       "memory": {
         "name": "Replay",
         "batch_size": 256,
-        "max_size": 300000,
+        "max_size": 1000000,
         "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [400, 300],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 0.00073
+          "name": "AdamW",
+          "lr": 3e-4
         },
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.02,
+        "polyak_coef": 0.005,
         "gpu": "auto"
       }
     },
     "env": {
       "name": "BipedalWalker-v3",
-      "num_envs": 1,
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 500000
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,
       "log_frequency": 10000,
       "eval_frequency": 10000,
+      "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 12,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 100000,
+        "grace_period": 1e5,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.97, 0.99],
-      "agent.net.optim_spec.lr__loguniform": [0.0005, 0.001],
-      "agent.net.polyak_coef__uniform": [0.01, 0.03]
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.training_start_step__qrandint": [500, 2000, 500],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3],
+      "agent.net.polyak_coef__loguniform": [0.001, 0.02]
     }
   }
 }

@@ -16,10 +16,9 @@ You are a seasoned software engineer with the following traits:
 1. Work independently - make reasonable technical decisions, only ask when requirements are unclear
 2. Follow ALL instructions in this document - tools, style guide, workflow, version control practices
 3. Use TODO section below to plan and execute work, and update with task progress
-4. Use [Serena MCP](https://github.com/oraios/serena) extensively for code navigation and editing
-5. Stage changes frequently - commit related work as logical units
-6. Never hard reset or delete work - preserve changes even during corruption/errors
-7. Keep responses SHORT - no explanations unless asked, no restating what was done, just confirm completion
+4. Stage changes frequently - commit related work as logical units
+5. Never hard reset or delete work - preserve changes even during corruption/errors
+6. Keep responses SHORT - no explanations unless asked, no restating what was done, just confirm completion
 
 ## Project Setup
 
@@ -140,7 +139,7 @@ source .env && uv run slm-lab run-remote slm_lab/spec/benchmark/ppo/ppo_cartpole
 dstack ps  # should show test-cartpole running
 dstack stop test-cartpole -y  # stop after verifying
 
-# Dispatch runs - copy commands directly from docs/RUNS.md
+# Dispatch runs - see docs/BENCHMARKS.md "Active Runs" section for commands
 # Pattern: source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME <train|search> -n NAME
 
 # Monitor
@@ -153,9 +152,9 @@ uv run slm-lab pull SPEC_NAME
 ```
 
 **Workflow**:
-1. Check `docs/RUNS.md` for work queue and copy-paste commands
+1. Check `docs/BENCHMARKS.md` "Active Runs" section for work queue
 2. Run command, update "Current Runs" section
-3. When complete, update status in RUNS.md and results in BENCHMARKS.md
+3. When complete, update status and env table results
 4. Move to "Completed Runs" with results
 
 ## Framework Design Patterns
@@ -215,8 +214,7 @@ slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_muj
 
 ### Documentation Structure
 
-- **`docs/BENCHMARKS.md`**: Single source of truth for benchmark results, targets, and environment details
-- **`docs/RUNS.md`**: Active work queue with copy-paste commands and run tracking
+- **`docs/BENCHMARKS.md`**: Single source of truth for benchmark results, targets, environment details, and active runs tracking
 
 ### Three-Stage Search Process
 
@@ -268,9 +266,9 @@ After a search run, analyze results and **narrow** the search space around best-
 
 ### Workflow
 
-1. Check `docs/RUNS.md` for next task and copy command
-2. Run, update "Current Runs" in RUNS.md
-3. When complete: update RUNS.md status, update BENCHMARKS.md results
+1. Check `docs/BENCHMARKS.md` "Active Runs" section for next task
+2. Run, update "Current Runs" in BENCHMARKS.md
+3. When complete: update env table results, move to "Completed Runs"
 4. If successful: update spec defaults, commit, validation run
 
 ---
@@ -287,10 +285,10 @@ dstack ps
 - Pull logs for completed/failed runs: `dstack logs <name>`
 
 ### 2. Process Completed Runs
-For each completed run, update **all 3 places**:
+For each completed run, update **all places in BENCHMARKS.md**:
 1. Check final results in logs (look for `total_reward_ma`)
-2. **RUNS.md**: move from "Current Runs" to "Completed Runs" with results
-3. **BENCHMARKS.md**: update algorithm row with MA score and status
+2. Move from "Current Runs" to "Completed Runs" with results
+3. Update env table row with MA score and status
 4. **Spec file**: if successful (✅), pull results (`uv run slm-lab pull SPEC_NAME`), extract best hyperparameters from experiment_df.csv or trial spec, update spec defaults
 5. Commit all changes together
 6. Add to "Key Findings" if notable patterns discovered
@@ -298,12 +296,12 @@ For each completed run, update **all 3 places**:
 **Note**: On session resume, always check Completed Runs for any ✅ results that may need spec updates.
 
 ### 3. Launch Next Runs
-1. Check `docs/RUNS.md` work queue for next items to run
+1. Check `docs/BENCHMARKS.md` "Active Runs" section for next items to run
 2. Prioritize by:
    - Running jobs that fill GPU capacity (8 parallel trials per GPU)
    - Work Line 1 (Phase 1-2 completion) before Work Line 2 (MuJoCo)
    - Items close to target (⚠️) before failures (❌)
-3. Copy command from RUNS.md, execute with `source .env && ...`
+3. Copy command, execute with `source .env && ...`
 4. Update "Current Runs" section with new job
 
 ### 4. Analyze & Improve Failing Specs
@@ -314,6 +312,6 @@ For runs with poor results:
 4. Queue for re-run
 
 ### 5. Track Progress
-- Keep RUNS.md and BENCHMARKS.md synchronized
+- Keep BENCHMARKS.md up to date (Active Runs section + env tables)
 - Commit documentation updates regularly
 - Note patterns in "Key Findings" section

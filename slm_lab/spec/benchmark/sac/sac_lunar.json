@@ -7,21 +7,19 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 20,
-        "training_iter": 15,
-        "training_start_step": 1000
+        "training_frequency": 1,
+        "training_iter": 1,
+        "training_start_step": 5000
       },
       "memory": {
-        "name": "PrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.0001,
-        "batch_size": 1024,
+        "name": "Replay",
+        "batch_size": 256,
         "max_size": 100000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
         "clip_grad_val": null,
@@ -29,11 +27,11 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "AdamW",
+          "name": "Adam",
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "polyak_coef": 0.15,
+        "polyak_coef": 0.005,
         "gpu": "auto"
       }
     },
@@ -48,7 +46,7 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 8,
+      "max_trial": 20,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
         "grace_period": 50000,
@@ -57,9 +55,10 @@
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.training_frequency__qrandint": [10, 40, 10],
-      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
-      "agent.net.polyak_coef__loguniform": [0.05, 0.3]
+      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
+      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3],
+      "agent.net.polyak_coef__loguniform": [0.001, 0.01]
     }
   },
   "sac_lunar_continuous": {
@@ -69,16 +68,16 @@
         "name": "SoftActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "gamma": 0.9807,
-        "training_iter": 25,
-        "training_frequency": 15,
-        "training_start_step": 1200
+        "gamma": 0.99,
+        "training_iter": 1,
+        "training_frequency": 1,
+        "training_start_step": 5000
       },
       "memory": {
         "name": "Replay",
         "batch_size": 256,
         "max_size": 100000,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -90,12 +89,12 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "AdamW",
-          "lr": 0.0005646
+          "name": "Adam",
+          "lr": 0.0003
         },
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.005949,
+        "polyak_coef": 0.005,
         "gpu": "auto"
       }
     },
@@ -108,11 +107,23 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 500,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
       "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 1
+      "max_session": 1,
+      "max_trial": 20,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
+      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3],
+      "agent.net.polyak_coef__loguniform": [0.001, 0.01]
     }
   }
 }

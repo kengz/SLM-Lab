@@ -55,7 +55,9 @@
       "name": "BipedalWalker-v3",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 5000000
+      "max_frame": 1e6,
+      "normalize_obs": true,
+      "normalize_reward": true
     },
     "meta": {
       "distributed": false,

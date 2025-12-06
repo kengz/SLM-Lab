@@ -111,6 +111,7 @@ class PrioritizedReplay(Replay):
             'max_size',
             'use_cer',
         ])
+        self.max_size = int(self.max_size)  # convert scientific notation (e.g. 1e6) to int
         super().__init__(memory_spec, agent)
 
         self.epsilon = np.full((1,), self.epsilon)

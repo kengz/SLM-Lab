@@ -71,6 +71,5 @@ Config options in `.dstack/`: `run-gpu-train.yml`, `run-gpu-search.yml`, `run-cp
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Development guide and methodology
-- [docs/BENCHMARKS.md](docs/BENCHMARKS.md) - Benchmark results and targets
-- [docs/RUNS.md](docs/RUNS.md) - Active work queue and run tracking
+- [docs/BENCHMARKS.md](docs/BENCHMARKS.md) - Benchmark results, targets, and active runs tracking
 
