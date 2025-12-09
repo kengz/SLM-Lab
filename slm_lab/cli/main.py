@@ -157,7 +157,7 @@ def run(
     spec_name: str = typer.Argument("ppo_cartpole", help="Spec name within the file"),
     mode: str = typer.Argument(
         "dev",
-        help="Execution mode: dev|train|search|enjoy. Note: search_scheduler and max_session>1 are mutually exclusive",
+        help="Execution mode: dev|train|search|enjoy. Note: search_scheduler auto-overrides max_session to 1",
     ),
     # Flags ordered by relevance
     sets: list[str] = typer.Option(

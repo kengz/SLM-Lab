@@ -4,31 +4,31 @@
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "default",
+        "action_pdtype": "Normal",
         "action_policy": "default",
         "gamma": 0.99,
         "training_iter": 1,
         "training_frequency": 1,
-        "training_start_step": 1000
+        "training_start_step": 256
       },
       "memory": {
         "name": "Replay",
         "batch_size": 256,
-        "max_size": 1000000,
+        "max_size": 100000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
+        "init_fn": "xavier_uniform_",
         "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.001
+          "lr": 0.0003
         },
         "update_type": "polyak",
         "polyak_coef": 0.005,
@@ -37,32 +37,16 @@
     },
     "env": {
       "name": "Pendulum-v1",
-      "num_envs": 16,
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "rigorous_eval": 0,
-      "max_session": 1,
-      "max_trial": 30,
-      "search_scheduler": {
-        "grace_period": 50000,
-        "reduction_factor": 3
-      }
-    },
-    "search": {
-      "agent.algorithm.gamma__uniform": [0.95, 0.999],
-      "agent.algorithm.training_iter__choice": [10, 20, 30],
-      "agent.algorithm.training_frequency__choice": [50, 100, 150],
-      "agent.algorithm.training_start_step__choice": [2000, 5000, 10000],
-      "agent.memory.batch_size__choice": [2048, 3072, 4096],
-      "agent.memory.alpha__uniform": [0.4, 0.8],
-      "agent.net.hid_layers__choice": [[128, 128], [256, 128], [256, 256]],
-      "agent.net.polyak_coef__uniform": [0.003, 0.01],
-      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001]
+      "log_frequency": 500,
+      "eval_frequency": 5000,
+      "max_session": 4,
+      "max_trial": 1
     }
   }
 }

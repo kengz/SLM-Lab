@@ -53,7 +53,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 500,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 12,
       "log_frequency": 500,
       "search_scheduler": {

@@ -143,7 +143,7 @@ class SIL(ActorCritic):
         action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)
         # Note: replay memory stores flat experiences (not venv-packed), so no venv_unpack needed
         actions = batch['actions']
-        log_probs = action_pd.log_prob(actions)
+        log_probs = policy_util.reduce_multi_action(action_pd.log_prob(actions))
 
         sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs.detach()).mean()
         sil_val_loss = self.sil_val_loss_coef * clipped_advs.pow(2).mean() / 2

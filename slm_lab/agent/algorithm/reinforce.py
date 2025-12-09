@@ -135,10 +135,14 @@ class Reinforce(Algorithm):
         actions = batch['actions']
         if self.agent.env.is_venv:
             actions = math_util.venv_unpack(actions)
-        log_probs = action_pd.log_prob(actions)
+        log_probs = policy_util.reduce_multi_action(action_pd.log_prob(actions))
+        advs = advs.view(-1)  # Ensure advs is 1D to match log_probs shape
+        # Normalize advantages (like PPO) for more stable gradient updates
+        if len(advs) > 1:
+            advs = math_util.standardize(advs)
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
-            entropy = action_pd.entropy().mean()
+            entropy = policy_util.reduce_multi_action(action_pd.entropy()).mean()
             self.agent.entropy = entropy.detach()  # Update value for logging
             policy_loss += (-self.agent.entropy_coef * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')

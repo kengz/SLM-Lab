@@ -20,15 +20,16 @@ commands:
   - cd /workflow && uv sync
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
-# CPU search: 16 CPUs for ASHA parallelism (more cores = more parallel trials)
+# CPU search: 16+ CPUs for ASHA parallelism (more cores = more parallel trials)
 resources:
   gpu: 0
-  cpu: 16
-  memory: 32GB..64GB
+  cpu: 16..
+  memory: 32GB..
 
 spot_policy: on-demand
 max_duration: 4h
-backends: [runpod, aws, gcp, azure, vastai]
+max_price: 0.30
+# backends: [runpod, aws, gcp, azure, vastai]  # commented out for wider availability
 retry:
   on_events: [no-capacity]
   duration: 1h

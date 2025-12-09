@@ -63,7 +63,7 @@
       "distributed": false,
       "log_frequency": 10000,
       "eval_frequency": 10000,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 12,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {

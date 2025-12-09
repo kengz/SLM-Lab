@@ -164,33 +164,29 @@ class PPO(ActorCritic):
             advs = math_util.standardize(advs)
 
         # L^CLIP
-        log_probs = action_pd.log_prob(actions)
+        log_probs = policy_util.reduce_multi_action(action_pd.log_prob(actions))
         with torch.no_grad():
             old_pdparams = self.calc_pdparam(states, net=self.old_net)
             old_action_pd = policy_util.init_action_pd(self.agent.ActionPD, old_pdparams)
-            old_log_probs = old_action_pd.log_prob(actions)
-        assert log_probs.shape == old_log_probs.shape
+            old_log_probs = policy_util.reduce_multi_action(old_action_pd.log_prob(actions))
+        assert log_probs.shape == old_log_probs.shape, f'log_probs shape {log_probs.shape} != old_log_probs shape {old_log_probs.shape}'
         # Clip log ratio to prevent numerical instability (exp overflow)
         log_ratio = torch.clamp(log_probs - old_log_probs, -20.0, 20.0)
         ratios = torch.exp(log_ratio)
-        logger.debug(f'calc_policy_loss shapes: advs={advs.shape}, log_probs={log_probs.shape}, ratios={ratios.shape}')
-        logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
         clip_loss = -torch.min(sur_1, sur_2).mean()
-        logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
 
         # H entropy regularization
-        entropy = action_pd.entropy().mean()
+        entropy = policy_util.reduce_multi_action(action_pd.entropy()).mean()
         self.agent.entropy = entropy.detach()  # Update value for logging
         ent_penalty = -self.agent.entropy_coef * entropy
-        logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
-        logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
+        logger.debug(f'PPO policy loss: {policy_loss:g}')
         return policy_loss
 
     def train(self):

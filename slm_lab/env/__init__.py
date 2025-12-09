@@ -5,22 +5,27 @@ from typing import Any
 import gymnasium as gym
 from gymnasium import spaces
 from gymnasium.vector import VectorEnv
+import numpy as np
 from gymnasium.wrappers import (
     AtariPreprocessing,
+    ClipReward,
     FrameStackObservation,
     NormalizeObservation,
     NormalizeReward,
     RescaleAction,
 )
 from gymnasium.wrappers.vector import (
+    ClipReward as VectorClipReward,
     NormalizeObservation as VectorNormalizeObservation,
     NormalizeReward as VectorNormalizeReward,
     RescaleAction as VectorRescaleAction,
 )
 
 from slm_lab.env.wrappers import (
+    ClipObservation,
     ClockWrapper,
     TrackReward,
+    VectorClipObservation,
     VectorClockWrapper,
     VectorRenderAll,
     VectorTrackReward,
@@ -179,12 +184,18 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
 
     # Build kwargs for gym.make() - pass through any extra env kwargs
     # Reserved keys that are handled separately by SLM-Lab, not passed to gym.make()
-    reserved_keys = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward"}
+    reserved_keys = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward", "clip_obs", "clip_reward"}
     make_kwargs = {k: v for k, v in env_spec.items() if k not in reserved_keys}
 
     # Optional normalization (useful for MuJoCo and other continuous control envs)
     normalize_obs = env_spec.get("normalize_obs", False)
     normalize_reward = env_spec.get("normalize_reward", False)
+    # Observation clipping bounds after normalization (CleanRL uses [-10, 10])
+    # Enabled by default when normalize_obs=True (like CleanRL)
+    clip_obs = env_spec.get("clip_obs", 10.0 if normalize_obs else None)
+    # Reward clipping bounds (CleanRL uses [-10, 10] after normalization)
+    # Can be float for symmetric bounds or tuple for (min, max)
+    clip_reward = env_spec.get("clip_reward", 10.0 if normalize_reward else None)
     # Get gamma from agent spec for reward normalization (default 0.99)
     gamma = spec.get("agent", {}).get("algorithm", {}).get("gamma", 0.99)
 
@@ -208,10 +219,21 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         if normalize_obs:
             env = VectorNormalizeObservation(env)
             logger.info("Observation normalization enabled")
+        # Add observation clipping after normalization (CleanRL uses [-10, 10])
+        if clip_obs is not None:
+            env = VectorClipObservation(env, bound=float(clip_obs))
+            logger.info(f"Observation clipping enabled: [-{clip_obs}, {clip_obs}]")
         # Add reward normalization AFTER tracking (agent sees normalized, we report raw)
         if normalize_reward:
             env = VectorNormalizeReward(env, gamma=gamma)
             logger.info(f"Reward normalization enabled (gamma={gamma})")
+        # Add reward clipping after normalization (CleanRL uses [-10, 10])
+        if clip_reward is not None:
+            if isinstance(clip_reward, (int, float)):
+                env = VectorClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
+            else:
+                env = VectorClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
+            logger.info(f"Reward clipping enabled: {clip_reward}")
         # Add grid rendering for all envs
         if render_mode:
             env = VectorRenderAll(env)
@@ -233,10 +255,21 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         if normalize_obs:
             env = NormalizeObservation(env)
             logger.info("Observation normalization enabled")
+        # Add observation clipping after normalization (CleanRL uses [-10, 10])
+        if clip_obs is not None:
+            env = ClipObservation(env, bound=float(clip_obs))
+            logger.info(f"Observation clipping enabled: [-{clip_obs}, {clip_obs}]")
         # Add reward normalization AFTER tracking (agent sees normalized, we report raw)
         if normalize_reward:
             env = NormalizeReward(env, gamma=gamma)
             logger.info(f"Reward normalization enabled (gamma={gamma})")
+        # Add reward clipping after normalization (CleanRL uses [-10, 10])
+        if clip_reward is not None:
+            if isinstance(clip_reward, (int, float)):
+                env = ClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
+            else:
+                env = ClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
+            logger.info(f"Reward clipping enabled: {clip_reward}")
 
     # Set SLM-Lab attributes
     _set_env_attributes(env, spec)

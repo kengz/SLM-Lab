@@ -10,22 +10,24 @@
         "gamma": 0.99,
         "lam": 0.95,
         "clip_eps_spec": {
-          "name": "linear_decay",
-          "start_val": 0.1,
-          "end_val": 0.01,
-          "start_step": 1000,
-          "end_step": 5000
+          "name": "no_decay",
+          "start_val": 0.2,
+          "end_val": 0.2,
+          "start_step": 0,
+          "end_step": 0
         },
         "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000
+          "name": "no_decay",
+          "start_val": 0.0,
+          "end_val": 0.0,
+          "start_step": 0,
+          "end_step": 0
         },
-        "val_loss_coef": 0.85,
-        "time_horizon": 8,
-        "training_epoch": 8
+        "val_loss_coef": 0.5,
+        "time_horizon": 2048,
+        "minibatch_size": 64,
+        "training_epoch": 10,
+        "normalize_v_targets": true
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -33,53 +35,46 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": false,
         "clip_grad_val": 0.5,
         "use_same_optim": true,
         "loss_spec": {
           "name": "MSELoss"
         },
-        "actor_optim_spec": {
+        "optim_spec": {
           "name": "Adam",
-          "lr": 0.0003
+          "lr": 3e-4
         },
-        "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0003
-        },
-        "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
     },
     "env": {
       "name": "Pendulum-v1",
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 200000
+      "max_frame": 300000,
+      "normalize_obs": false,
+      "normalize_reward": false
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "max_session": 1,
-      "max_trial": 30,
+      "log_frequency": 500,
+      "eval_frequency": 500,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 16,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 50000,
+        "grace_period": 10000,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.9, 0.99],
-      "agent.algorithm.lam__uniform": [0.9, 0.98],
-      "agent.algorithm.clip_eps_spec.start_val__uniform": [0.1, 0.3],
-      "agent.algorithm.val_loss_coef__uniform": [0.3, 1.0],
-      "agent.algorithm.time_horizon__choice": [32, 64, 128],
-      "agent.algorithm.training_epoch__choice": [4, 8, 12],
-      "agent.algorithm.minibatch_size__choice": [32, 64],
-      "agent.net.hid_layers__choice": [[64, 64], [128, 64], [128, 128]],
-      "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.001],
-      "agent.net.critic_optim_spec.lr__loguniform": [0.0001, 0.001]
+      "agent.algorithm.gamma__uniform": [0.95, 0.995],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
     }
   }
 }

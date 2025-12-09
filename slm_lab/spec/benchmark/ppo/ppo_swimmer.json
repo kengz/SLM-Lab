@@ -7,8 +7,8 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.998,
-        "lam": 0.95,
+        "gamma": 0.997,
+        "lam": 0.968,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -41,12 +41,17 @@
         "normalize": true,
         "clip_grad_val": 0.5,
         "use_same_optim": true,
+        "log_std_init": 0.0,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 3e-4
+          "lr": 2.2e-4
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 8e6
         },
         "gpu": "auto"
       }
@@ -55,16 +60,16 @@
       "name": "Swimmer-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e6,
+      "max_frame": 8e6,
       "normalize_obs": true,
       "normalize_reward": true
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 16,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {

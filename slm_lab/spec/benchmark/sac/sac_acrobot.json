@@ -45,9 +45,9 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
+      "log_frequency": 500,
       "eval_frequency": 5000,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 8,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {

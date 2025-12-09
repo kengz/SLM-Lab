@@ -88,6 +88,7 @@ class RecurrentNet(Net, nn.Module):
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
+            log_std_init=None,
         ))
         util.set_attr(self, self.net_spec, [
             'cell_type',
@@ -107,6 +108,7 @@ class RecurrentNet(Net, nn.Module):
             'update_frequency',
             'polyak_coef',
             'gpu',
+            'log_std_init',
         ])
         # Extract state_dim from in_dim (int or tuple)
         self.in_dim = in_dim if isinstance(in_dim, (int, np.integer)) else in_dim[1]
@@ -125,18 +127,7 @@ class RecurrentNet(Net, nn.Module):
             num_layers=self.rnn_num_layers,
             batch_first=True, bidirectional=self.bidirectional)
 
-        # tails. avoid list for single-tail for compute speed
-        if isinstance(self.out_dim, (int, np.integer)):
-            self.model_tail = net_util.build_fc_model([self.rnn_hidden_size, self.out_dim], self.out_layer_activation)
-        else:
-            if not ps.is_list(self.out_layer_activation):
-                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
-            assert len(self.out_layer_activation) == len(self.out_dim)
-            tails = []
-            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
-                tail = net_util.build_fc_model([self.rnn_hidden_size, out_d], out_activ)
-                tails.append(tail)
-            self.model_tails = nn.ModuleList(tails)
+        self.tails, self.log_std = net_util.build_tails(self.rnn_hidden_size, self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -164,8 +155,4 @@ class RecurrentNet(Net, nn.Module):
             _output, h_n = self.rnn_model(x)
         hid_x = h_n[-1]  # get final hidden state
         
-        # Output through tail networks
-        if hasattr(self, 'model_tails'):
-            return [model_tail(hid_x) for model_tail in self.model_tails]
-        else:
-            return self.model_tail(hid_x)
+        return net_util.forward_tails(hid_x, self.tails, self.log_std)

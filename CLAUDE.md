@@ -92,6 +92,8 @@ You are a seasoned software engineer with the following traits:
 5. **Document**: Update README, API docs, architecture notes as needed
 6. **Commit**: Use Conventional Commit message
 
+> Work autonomously: use document to track work, use time efficiently and run things in parallel if needed; keep reminding yourself to continue without waiting; check on tasks regularly, update, plan and pick up the next tasks immediately until all tasks are completed.
+
 ---
 
 ## Project-Specific Notes
@@ -307,15 +309,19 @@ For each completed run, update **all places in BENCHMARKS.md**:
 
 ### 4. Analyze & Improve Failing Specs
 For runs with poor results:
-1. Compare with successful specs (e.g., PPO Hopper/HalfCheetah params)
-2. Check: learning rates, entropy decay, normalization, gamma/lam
-3. Update spec search ranges based on findings
-4. Queue for re-run
+1. **First**: Launch hyperparameter search immediately - don't wait
+2. Compare with successful specs (e.g., PPO Hopper/HalfCheetah params)
+3. Check: learning rates, entropy decay, normalization, gamma/lam
+4. Update spec search ranges based on findings
+5. **If search still fails**: Check CleanRL/rlzoo implementations for reference configs
+6. Queue for re-run with improved settings
 
 ### 5. Track Progress
 - Keep BENCHMARKS.md up to date (Active Runs section + env tables)
 - Commit documentation updates regularly
 - Note patterns in "Key Findings" section
+
+**CRITICAL REMINDER**: Continue autonomously, check in regularly, kill unpromising runs and iterate immediately. Run things in parallel without waiting for unrelated tasks. Continue work until full solution.
 
 ---
 

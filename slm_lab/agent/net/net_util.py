@@ -390,3 +390,30 @@ def push_global_grads(net, global_net):
         if global_param.grad is not None:
             return  # quick skip
         global_param._grad = param.grad
+
+
+def build_tails(tail_in_dim, out_dim, out_layer_activation, log_std_init=None):
+    '''Build output tails with optional state-independent log_std (CleanRL-style for continuous control).'''
+    import numpy as np
+    import pydash as ps
+
+    if isinstance(out_dim, (int, np.integer)):
+        return build_fc_model([tail_in_dim, out_dim], out_layer_activation), None
+
+    # State-independent log_std: out_dim = [action_dim, action_dim] for continuous actions
+    if log_std_init is not None and len(out_dim) == 2 and out_dim[0] == out_dim[1]:
+        action_dim = out_dim[0]
+        out_activ = out_layer_activation[0] if ps.is_list(out_layer_activation) else out_layer_activation
+        return build_fc_model([tail_in_dim, action_dim], out_activ), nn.Parameter(torch.ones(action_dim) * log_std_init)
+
+    # Multi-tail output
+    if not ps.is_list(out_layer_activation):
+        out_layer_activation = [out_layer_activation] * len(out_dim)
+    return nn.ModuleList([build_fc_model([tail_in_dim, d], a) for d, a in zip(out_dim, out_layer_activation)]), None
+
+
+def forward_tails(x, tails, log_std=None):
+    '''Forward pass through tails, handling log_std expansion if present.'''
+    if log_std is not None:
+        return [tails(x), log_std.expand_as(tails(x))]
+    return [t(x) for t in tails] if isinstance(tails, nn.ModuleList) else tails(x)

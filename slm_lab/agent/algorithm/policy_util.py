@@ -16,7 +16,7 @@ setattr(distributions, 'MultiCategorical', distribution.MultiCategorical)
 # probability distributions constraints for different action types; the first in the list is the default
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
-    'multi_continuous': ['MultivariateNormal'],
+    'multi_continuous': ['Normal', 'MultivariateNormal'],  # Normal treats dimensions independently (standard for SAC/PPO)
     'discrete': ['Categorical', 'Argmax', 'GumbelSoftmax'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
@@ -34,6 +34,15 @@ def get_action_type(env) -> str:
 
 
 # action_policy base methods
+
+
+def reduce_multi_action(tensor):
+    '''Reduce tensor across action dimensions for multi-dimensional continuous actions.
+    Sum along last dim if >1D (continuous multi-action), otherwise return as-is.
+    Used for log_prob and entropy which return per-action-dim values for Normal dist.
+    '''
+    return tensor.sum(dim=-1) if tensor.dim() > 1 else tensor
+
 
 def get_action_pd_cls(action_pdtype, action_type):
     '''
@@ -91,12 +100,12 @@ def init_action_pd(ActionPD, pdparam):
         pd_kwargs = {'temperature': torch.tensor(1.0)} if hasattr(ActionPD, 'temperature') else {}
         action_pd = ActionPD(logits=pdparam, **pd_kwargs)
     else:  # continuous, args = loc and scale
-        if isinstance(pdparam, list):  # split output
+        if isinstance(pdparam, list):  # multi-dim actions from multi-head network
             loc, scale = pdparam
-        else:
-            loc, scale = pdparam.transpose(0, 1)
-        # scale (stdev) must be > 0, log-clamp-exp
-        scale = torch.clamp(scale, min=-20, max=2).exp()
+        else:  # 1D actions - single tensor of shape [batch, 2] for [loc, log_scale]
+            loc, scale = pdparam.split(1, dim=-1)  # keeps [batch, 1] shape for sum(-1)
+        # scale (stdev) must be > 0, log-clamp-exp (CleanRL standard: -5 to 2)
+        scale = torch.clamp(scale, min=-5, max=2).exp()
         if 'covariance_matrix' in args:  # split output
             # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)

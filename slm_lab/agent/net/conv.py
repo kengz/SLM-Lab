@@ -92,6 +92,7 @@ class ConvNet(Net, nn.Module):
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
+            log_std_init=None,
         ))
         util.set_attr(self, self.net_spec, [
             'conv_hid_layers',
@@ -109,6 +110,7 @@ class ConvNet(Net, nn.Module):
             'update_frequency',
             'polyak_coef',
             'gpu',
+            'log_std_init',
         ])
 
         # conv body
@@ -123,18 +125,7 @@ class ConvNet(Net, nn.Module):
             self.fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
             tail_in_dim = self.fc_hid_layers[-1]
 
-        # tails. avoid list for single-tail for compute speed
-        if isinstance(self.out_dim, (int, np.integer)):
-            self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
-        else:
-            if not ps.is_list(self.out_layer_activation):
-                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
-            assert len(self.out_layer_activation) == len(self.out_dim)
-            tails = []
-            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
-                tail = net_util.build_fc_model([tail_in_dim, out_d], out_activ)
-                tails.append(tail)
-            self.model_tails = nn.ModuleList(tails)
+        self.tails, self.log_std = net_util.build_tails(tail_in_dim, self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -168,24 +159,14 @@ class ConvNet(Net, nn.Module):
         return conv_model
 
     def forward(self, x):
-        '''
-        The feedforward step
-        Note that PyTorch takes (c,h,w) but gym provides (h,w,c), so preprocessing must be done before passing to network
-        '''
+        '''The feedforward step. Note: PyTorch takes (c,h,w) but gym provides (h,w,c).'''
         if self.normalize:
             x = x / 255.0
         x = self.conv_model(x)
-        x = x.view(x.size(0), -1)  # to (batch_size, -1)
+        x = x.view(x.size(0), -1)
         if hasattr(self, 'fc_model'):
             x = self.fc_model(x)
-        # return tensor if single tail, else list of tail tensors
-        if hasattr(self, 'model_tails'):
-            outs = []
-            for model_tail in self.model_tails:
-                outs.append(model_tail(x))
-            return outs
-        else:
-            return self.model_tail(x)
+        return net_util.forward_tails(x, self.tails, self.log_std)
 
 
 class DuelingConvNet(ConvNet):

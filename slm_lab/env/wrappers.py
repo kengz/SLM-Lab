@@ -241,6 +241,38 @@ class VectorClockWrapper(ClockMixin, gym.vector.VectorWrapper):
         return getattr(self.env, name)
 
 
+class ClipObservation(gym.ObservationWrapper):
+    """Clip observations to specified bounds.
+
+    This wrapper clips observation values to a symmetric range [-bound, bound].
+    Useful after NormalizeObservation to prevent extreme values from destabilizing training.
+    CleanRL uses this pattern with bound=10.0 for MuJoCo environments.
+    """
+
+    def __init__(self, env: gym.Env, bound: float = 10.0):
+        super().__init__(env)
+        self.bound = bound
+
+    def observation(self, observation: np.ndarray) -> np.ndarray:
+        return np.clip(observation, -self.bound, self.bound)
+
+
+class VectorClipObservation(gym.vector.VectorObservationWrapper):
+    """Clip observations to specified bounds for vector environments.
+
+    This wrapper clips observation values to a symmetric range [-bound, bound].
+    Useful after NormalizeObservation to prevent extreme values from destabilizing training.
+    CleanRL uses this pattern with bound=10.0 for MuJoCo environments.
+    """
+
+    def __init__(self, env: gym.vector.VectorEnv, bound: float = 10.0):
+        super().__init__(env)
+        self.bound = bound
+
+    def observations(self, observations: np.ndarray) -> np.ndarray:
+        return np.clip(observations, -self.bound, self.bound)
+
+
 class VectorRenderAll(gym.vector.VectorWrapper):
     """Render all environments in a vector env as a grid
     

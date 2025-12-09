@@ -48,8 +48,8 @@ def test_init():
     assert isinstance(net, nn.Module)
     assert hasattr(net, 'fc_model')
     assert hasattr(net, 'rnn_model')
-    assert hasattr(net, 'model_tail')
-    assert not hasattr(net, 'model_tails')
+    assert hasattr(net, 'tails')
+    assert not isinstance(net.tails, nn.ModuleList)
     assert net.rnn_model.bidirectional is False
 
 
@@ -75,8 +75,8 @@ def test_variant(bidirectional, cell_type):
     assert isinstance(net, nn.Module)
     assert hasattr(net, 'fc_model')
     assert hasattr(net, 'rnn_model')
-    assert hasattr(net, 'model_tail')
-    assert not hasattr(net, 'model_tails')
+    assert hasattr(net, 'tails')
+    assert not isinstance(net.tails, nn.ModuleList)
     assert net.rnn_model.bidirectional == bidirectional
 
     y = net.forward(x)
@@ -90,8 +90,8 @@ def test_no_fc():
     assert isinstance(net, nn.Module)
     assert not hasattr(net, 'fc_model')
     assert hasattr(net, 'rnn_model')
-    assert hasattr(net, 'model_tail')
-    assert not hasattr(net, 'model_tails')
+    assert hasattr(net, 'tails')
+    assert not isinstance(net.tails, nn.ModuleList)
 
     y = net.forward(x)
     assert y.shape == (batch_size, out_dim)
@@ -102,9 +102,9 @@ def test_multitails():
     assert isinstance(net, nn.Module)
     assert hasattr(net, 'fc_model')
     assert hasattr(net, 'rnn_model')
-    assert not hasattr(net, 'model_tail')
-    assert hasattr(net, 'model_tails')
-    assert len(net.model_tails) == 2
+    assert hasattr(net, 'tails')
+    assert isinstance(net.tails, nn.ModuleList)
+    assert len(net.tails) == 2
 
     y = net.forward(x)
     assert len(y) == 2

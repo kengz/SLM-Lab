@@ -142,7 +142,7 @@
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1024,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 16,
       "search_scheduler": {
         "grace_period": 50000,

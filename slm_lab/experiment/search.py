@@ -185,19 +185,19 @@ def report(mt: MetricsTracker):
 def run_ray_search(spec: dict) -> dict:
     """Ray Tune search using Tuner API with Optuna integration and optional ASHA scheduling."""
     name, num_trials = spec["name"], spec["meta"]["max_trial"]
-    max_session = spec["meta"]["max_session"]
     use_scheduler = spec["meta"].get("search_scheduler") is not None
 
-    # Validate mutually exclusive options
-    if max_session > 1 and use_scheduler:
-        raise ValueError(
-            f"search_scheduler and max_session>1 are mutually exclusive.\n"
-            f"Reason: ASHA scheduler requires periodic metric reporting to make early termination decisions, "
-            f"but multi-session trials aggregate metrics only at the end (no periodic reporting).\n"
-            f"Solution: Either use max_session=1 with search_scheduler for fast exploration with early termination, "
-            f"or use max_session>1 without search_scheduler for robust evaluation without early termination."
+    # ASHA scheduler requires single-session trials for periodic metric reporting
+    # Automatically override max_session to 1 when search_scheduler is specified
+    if use_scheduler and spec["meta"]["max_session"] > 1:
+        original_max_session = spec["meta"]["max_session"]
+        spec["meta"]["max_session"] = 1
+        logger.info(
+            f"ASHA scheduler enabled: overriding max_session from {original_max_session} to 1 "
+            f"(ASHA requires single-session trials for early termination)"
         )
 
+    max_session = spec["meta"]["max_session"]
     metric, mode = ps.at(BASE_SCHEDULER_SPEC, "metric", "mode")
 
     # Configure scheduler only for single-session with search_scheduler specified

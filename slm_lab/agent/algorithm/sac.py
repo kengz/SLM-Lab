@@ -108,10 +108,11 @@ class SoftActorCritic(ActorCritic):
         if self.agent.is_discrete:
             log_probs = action_pd.log_prob(actions)
         else:
-            log_probs = action_pd.log_prob(actions).sum(-1)  # Sum across action dimensions
+            raw_log_probs = action_pd.log_prob(actions).sum(-1)  # Sum across action dimensions
             # Tanh squash, change of variables: log π(a|s) = log μ(u|s) - Σ log(1 - tanh²(u))
             actions = torch.tanh(actions)
-            log_probs = log_probs - torch.log(1 - actions.pow(2) + 1e-6).sum(-1)
+            squash_correction = torch.log(1 - actions.pow(2) + 1e-6).sum(-1)
+            log_probs = raw_log_probs - squash_correction
             # Actions are in [-1, 1]; RescaleAction wrapper handles scaling to env bounds
         return log_probs, actions
 
@@ -195,7 +196,8 @@ class SoftActorCritic(ActorCritic):
         '''J_α = -α * (log π + H_target)'''
         # Reuse cached log_probs from policy loss to avoid resampling
         log_probs = self._cached_log_probs
-        return -(self.log_alpha * (log_probs.detach() + self.target_entropy)).mean()
+        # Use log_alpha.exp() (= alpha) as the coefficient, matching CleanRL
+        return -(self.log_alpha.exp() * (log_probs.detach() + self.target_entropy)).mean()
 
     def calc_alpha_loss(self, action_pd):
         '''Dispatcher for alpha loss calculation'''
@@ -214,6 +216,7 @@ class SoftActorCritic(ActorCritic):
         alpha_loss.backward()
         self.alpha_optim.step()
         self.alpha_lr_scheduler.step()
+        # No clamping - let automatic entropy tuning work naturally (CleanRL approach)
         self.alpha = self.log_alpha.detach().exp()
 
     def train(self):
