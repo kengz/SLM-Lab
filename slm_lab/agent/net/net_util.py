@@ -30,14 +30,22 @@ class NoOpLRScheduler:
             return self.optim.param_groups[0]['lr']
 
 
-def build_fc_model(dims, activation=None):
-    '''Build a full-connected model by interleaving nn.Linear and activation_fn'''
+def build_fc_model(dims, activation=None, layer_norm=False):
+    '''Build a full-connected model by interleaving nn.Linear, optional LayerNorm, and activation_fn
+
+    Args:
+        dims: list of layer dimensions [in_dim, hid1, hid2, ..., out_dim]
+        activation: activation function name (e.g. 'relu', 'tanh')
+        layer_norm: if True, add LayerNorm after each Linear layer (before activation)
+    '''
     assert len(dims) >= 2, 'dims need to at least contain input, output'
     # shift dims and make pairs of (in, out) dims per layer
     dim_pairs = list(zip(dims[:-1], dims[1:]))
     layers = []
     for in_d, out_d in dim_pairs:
         layers.append(nn.Linear(in_d, out_d))
+        if layer_norm:
+            layers.append(nn.LayerNorm(out_d))
         if activation is not None:
             layers.append(get_activation_fn(activation))
     model = nn.Sequential(*layers)

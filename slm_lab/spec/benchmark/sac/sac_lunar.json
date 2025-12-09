@@ -7,13 +7,13 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 1,
-        "training_iter": 1,
+        "training_frequency": 20,
+        "training_iter": 20,
         "training_start_step": 5000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 100000,
         "use_cer": false
       },
@@ -27,7 +27,7 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "update_type": "polyak",
@@ -46,7 +46,7 @@
       "log_frequency": 5000,
       "eval_frequency": 5000,
       "max_session": 1,
-      "max_trial": 20,
+      "max_trial": 16,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
         "grace_period": 50000,
@@ -55,8 +55,8 @@
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
-      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
+      "agent.algorithm.training_frequency__qrandint": [10, 30, 10],
+      "agent.algorithm.training_iter__qrandint": [10, 30, 10],
       "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3],
       "agent.net.polyak_coef__loguniform": [0.001, 0.01]
     }
@@ -69,13 +69,13 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 1,
-        "training_frequency": 1,
+        "training_iter": 20,
+        "training_frequency": 20,
         "training_start_step": 5000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 100000,
         "use_cer": false
       },
@@ -89,7 +89,7 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "update_type": "polyak",
@@ -111,7 +111,7 @@
       "eval_frequency": 5000,
       "rigorous_eval": 0,
       "max_session": 1,
-      "max_trial": 20,
+      "max_trial": 16,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
         "grace_period": 50000,
@@ -120,8 +120,8 @@
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
-      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
+      "agent.algorithm.training_frequency__qrandint": [10, 30, 10],
+      "agent.algorithm.training_iter__qrandint": [10, 30, 10],
       "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3],
       "agent.net.polyak_coef__loguniform": [0.001, 0.01]
     }

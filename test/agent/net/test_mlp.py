@@ -83,3 +83,27 @@ def test_multitails():
     assert len(y) == 2
     assert y[0].shape == (batch_size, 3)
     assert y[1].shape == (batch_size, 4)
+
+
+def test_layer_norm():
+    '''Test MLPNet with layer normalization enabled'''
+    ln_net_spec = deepcopy(net_spec)
+    ln_net_spec['layer_norm'] = True
+    ln_net_spec['hid_layers'] = [32, 32]
+    net = MLPNet(ln_net_spec, in_dim, out_dim)
+
+    assert isinstance(net, nn.Module)
+    # Check that LayerNorm layers are present in the model
+    layer_norm_count = sum(1 for m in net.model.modules() if isinstance(m, nn.LayerNorm))
+    assert layer_norm_count == 2, f'Expected 2 LayerNorm layers, got {layer_norm_count}'
+
+    # Test forward pass works
+    y = net.forward(x)
+    assert y.shape == (batch_size, out_dim)
+
+    # Test training step works
+    target = torch.rand((batch_size, out_dim))
+    loss = net.loss_fn(net.forward(x), target)
+    optim = net_util.get_optim(net, net.optim_spec)
+    net.train_step(loss, optim, None)
+    assert loss != 0.0

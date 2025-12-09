@@ -7,13 +7,13 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 1,
-        "training_iter": 1,
-        "training_start_step": 1000
+        "training_frequency": 20,
+        "training_iter": 20,
+        "training_start_step": 10000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 1000000,
         "use_cer": true
       },
@@ -40,7 +40,7 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e5
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,
@@ -51,16 +51,14 @@
       "max_trial": 8,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {
-        "grace_period": 50000,
+        "grace_period": 1e5,
         "reduction_factor": 3
       }
     },
     "search": {
       "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.training_frequency__qrandint": [1, 4, 1],
-      "agent.algorithm.training_iter__qrandint": [1, 4, 1],
-      "agent.memory.batch_size__choice": [128, 256, 512],
-      "agent.net.hid_layers__choice": [[256, 256], [256, 128]],
+      "agent.algorithm.training_frequency__qrandint": [10, 30, 10],
+      "agent.algorithm.training_iter__qrandint": [10, 30, 10],
       "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
       "agent.net.polyak_coef__loguniform": [0.001, 0.02]
     }
@@ -73,13 +71,13 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 1,
-        "training_iter": 1,
+        "training_frequency": 20,
+        "training_iter": 20,
         "training_start_step": 25000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 1000000,
         "use_cer": true
       },

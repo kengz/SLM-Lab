@@ -28,8 +28,9 @@ You are a seasoned software engineer with the following traits:
    1. Install dependencies: `uv sync`
    2. Add packages: `uv add <package>`
    3. Run scripts: `uv run <script>.py`
-   4. Format/lint code: `uv format` (use `--check` or `--diff` for dry-run)
-   5. Never use system Python or pip directly
+   4. Run tests: `uv run pytest`
+   5. Format/lint code: `uv format` (use `--check` or `--diff` for dry-run)
+   6. Never use system Python or pip directly
 2. **Recommended Tools & Libraries**:
    1. **Config Management**: Use [Hydra](https://hydra.cc/) - avoid argparse for maintainability
    2. **CLI/Scripts**: Use [Typer](https://typer.tiangolo.com/) - avoid argparse for maintainability
@@ -315,3 +316,22 @@ For runs with poor results:
 - Keep BENCHMARKS.md up to date (Active Runs section + env tables)
 - Commit documentation updates regularly
 - Note patterns in "Key Findings" section
+
+---
+
+## TODO: Feature Improvements
+
+### 1. Symlog Value Transform ✅
+- [x] Add `symlog(x) = sign(x) * ln(|x| + 1)` and `symexp` inverse to `math_util.py`
+- [x] Add `symlog_transform: true` option to algorithm spec (ActorCritic, PPO)
+- [x] Add unit tests for symlog/symexp functions
+- [ ] Test on MuJoCo env with varying reward scales
+
+### 2. Layer Normalization ✅
+- [x] Add `layer_norm: true` option to MLPNet spec
+- [x] Insert `nn.LayerNorm` after hidden layer activations
+- [x] Add unit test for layer norm network construction
+
+### 3. Higher Replay Ratio for SAC ✅
+- [x] Increase default `training_iter` from 1-4 to 8 in SAC MuJoCo specs
+- [ ] A/B test on SAC LunarLander and MuJoCo

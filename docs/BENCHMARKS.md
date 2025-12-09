@@ -2,7 +2,7 @@
 
 Systematic algorithm validation across Gymnasium environments.
 
-**Status**: Phase 3 MuJoCo in progress | **Started**: 2025-10-10 | **Updated**: 2025-12-08
+**Status**: Phase 3 MuJoCo in progress | **Started**: 2025-10-10 | **Updated**: 2025-12-09
 
 ---
 
@@ -12,31 +12,25 @@ Track dstack runs for continuity. Use `dstack ps` to check status.
 
 **Budget**: 12 parallel runs
 
-### Current Runs (1 active)
+### Current Runs
 
 | Run Name | Command | Status | Notes |
 |----------|---------|--------|-------|
-| ppo-cheetah-val | `run-remote --gpu ppo_halfcheetah.json train` | running | Validation with best search params (gamma=0.995, lam=0.969) |
+| ppo-pendulum | `ppo_pendulum search` | 🔄 | Phase 1.3 |
+| sac-pendulum | `sac_pendulum search` | 🔄 | Phase 1.3 |
+| sac-lunar-discrete | `sac_lunar search` | 🔄 | Phase 2.1 |
+| sac-lunar-cont | `sac_lunar_continuous search` | 🔄 | Phase 2.2 |
+| ppo-hopper | `ppo_hopper search` | 🔄 | Phase 3 |
+| ppo-halfcheetah | `ppo_halfcheetah search` | 🔄 | Phase 3 |
+| ppo-walker2d | `ppo_walker2d search` | 🔄 | Phase 3 |
+| ppo-ant | `ppo_ant search` | 🔄 | Phase 3 |
+| ppo-swimmer | `ppo_swimmer search` | 🔄 | Phase 3 |
 
-**Latest status (2025-12-09 00:16):**
-- **ppo-cheetah-val**: Just launched - validation run with best hyperparams from search
-- **Parked envs**: InvertedPendulum, InvertedDoublePendulum, Humanoid, HumanoidStandup (need investigation)
+### Completed Runs
 
-### Notes
-
-- **Bug fixed (commit 16d4404e)**: TrackReward now wraps base env BEFORE NormalizeReward
-  - Reported metrics show raw interpretable rewards
-  - Agent still sees normalized rewards for training
-
-### Key Findings: Normalization A/B Test (2025-12-06)
-
-| Env | Raw MA | Norm MA | Improvement | Target | Status |
-|-----|--------|---------|-------------|--------|--------|
-| LunarLander | 254 | 235 | -7% | 200 | ✅ Both pass |
-| Hopper | 284 | 1014 | **+257%** | 3000 | ❌ Both fail (norm 3.5x better) |
-| HalfCheetah | 539 | 1300 | **+141%** | 5000 | ❌ Both fail (norm 2.4x better) |
-
-**Conclusion**: Normalization significantly helps MuJoCo locomotion but requires longer training or better hyperparams to reach targets.
+| Run Name | Result | Notes |
+|----------|--------|-------|
+| ppo-lunar-cont | ✅ MA 245.7 | Phase 2.2, target 200 |
 
 ### Quick Reference
 
@@ -53,163 +47,11 @@ source .env && uv run slm-lab pull SPEC_NAME
 source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME
 ```
 
-### Completed Runs (Recent)
+### Key Findings
 
-| Date | Run | Result | Notes |
-|------|-----|--------|-------|
-| 2025-12-09 | ppo-cheetah-search2 | ⚠️ **MA=2615** | Best: gamma=0.995, lam=0.969, actor_lr=3.56e-4, critic_lr=4.24e-4 (52% target) |
-| 2025-12-08 | ppo-hopper-val | ⚠️ **MA=2517** | Validation run 78% of target (3232), entropy=5.19 |
-| 2025-12-08 | ppo-walker-search2 | ⚠️ **MA=1997** | Best: gamma=0.994, lam=0.955, actor_lr=3.9e-4, critic_lr=3.5e-4 (45% target) |
-| 2025-12-08 | ppo-ant-search2 | ❌ **MA=-105** | Best trial still negative, needs more investigation |
-| 2025-12-08 | ppo-cheetah-val2 | ✅ **MA=1468** | HalfCheetah validation passed after clip_vloss=False fix |
-| 2025-12-08 | ppo-hopper-search | ⏹️ Interrupted | Best MA=2025 at 1.37M (gamma=0.994, lam=0.967) |
-| 2025-12-08 | ppo-walker-search | ⏹️ Interrupted | Best MA=79 at 380k - needs more training |
-| 2025-12-08 | ppo-ant-search | ⏹️ Interrupted | Best MA=-161 at 2M - still negative |
-| 2025-12-08 | ppo-cheetah-logstd | ❌ MA=-581 | **log_std A/B FAIL**: baseline 5259, log_std catastrophically worse |
-| 2025-12-08 | ppo-hopper-logstd | ❌ MA=299 | **log_std A/B FAIL**: search best 356 without log_std |
-| 2025-12-08 | ppo-invpend-fix | ❌ MA=7.12 | log_std clamp fix but **network still wrong** (out_features=2) - architecture bug |
-| 2025-12-08 | ppo-invdoublepend-fix | ❌ MA=36.35 | log_std clamp fix but network still wrong - architecture bug |
-| 2025-12-08 | ppo-hopper-fix | ⚠️ MA=913 | 30% of target (3000). Needs more training or hyperparameter tuning |
-| 2025-12-07 | ppo-invpend-ent003 | ❌ MA=2.3 | ent_coef=0.003 + num_envs=16, entropy stable (0.92) but no learning |
-| 2025-12-07 | ppo-invdoublepend-ent003 | ❌ MA=25.7 | ent_coef=0.003 + num_envs=16, entropy 0.28 (low), no learning |
-| 2025-12-07 | ppo-invpend-norm | ❌ MA=2.18 | ent_coef=0.001 too small, entropy collapsed to -0.15 |
-| 2025-12-07 | ppo-invdoublepend-norm | ❌ Network | Network timeout during uv install (infra failure) |
-| 2025-12-07 | ppo-invpend-logstd | ❌ MA=2.95 | log_std_init=0.0 + ent=0.0, entropy collapsed to 0.52 |
-| 2025-12-07 | ppo-invdoublepend-logstd | ❌ MA=36.4 | log_std_init=0.0 + ent=0.0, entropy stayed high (3.42) |
-| 2025-12-07 | ppo-invpend | ❌ MA=5.84 | Original spec entropy collapsed (-0.4), loss=5.92e+05 |
-| 2025-12-07 | ppo-invdoublepend | ❌ MA=21.28 | Original spec entropy collapsed (-10.9), loss=5.38e+07 |
-| 2025-12-07 | ppo-invpend-clipnorm | ❌ MA=6.83 | clip_vloss=True + normalize_obs/reward (incorrect hyperparams, missing normalize_v_targets) |
-| 2025-12-07 | ppo-invdoublepend-clipnorm | ❌ MA=28.18 | clip_vloss=True + normalize_obs/reward (incorrect hyperparams, missing normalize_v_targets) |
-| 2025-12-07 | ppo-invpend-raw | ❌ MA=2.69 | Raw config (no env norm): loss=2.8e+05, entropy=0.91 |
-| 2025-12-07 | ppo-invdoublepend-raw | ❌ MA=29.76 | Raw config (no env norm): loss=2.59e+04, entropy=1.53 |
-| 2025-12-07 | ppo-invpend-netout | ❌ MA=6.5 | Network-output std with num_envs=8: loss exploding (1.19e+03), entropy stable (1.46) |
-| 2025-12-07 | ppo-invdoublepend-netout | ❌ MA=35 | Network-output std with num_envs=8: loss exploding (4.53e+04), entropy stable (1.25) |
-| 2025-12-07 | ppo-invpend-cleanrl | ❌ MA=4 | CleanRL-style (log_std=0, ent_coef=0): entropy stable (0.27) but MA declining |
-| 2025-12-07 | ppo-invdoublepend-cleanrl | ❌ MA=24 | CleanRL-style: entropy collapsed (-0.49) at 180k frames despite no tight clamp |
-| 2025-12-07 | ppo-invpend-final | ❌ MA=5 | clamp [-1.5,2] + ent_coef=0.05: entropy stuck at -0.08, no learning |
-| 2025-12-07 | ppo-invdoublepend-final | ❌ MA=38 | clamp [-1.5,2] + ent_coef=0.05: entropy stuck at -0.08, no progress |
-| 2025-12-07 | ppo-invdoublepend-tight | ❌ MA=26 | clamp [-2,2] entropy stable (-0.58) but no learning - std too tight |
-| 2025-12-07 | ppo-invpend-tight | ❌ MA=13 | clamp [-2,2] entropy stable (-0.58) but no learning - std too tight |
-| 2025-12-07 | ppo-invdoublepend-clamp | ❌ MA=42 | clamp [-5,2] too loose - entropy collapsed (-2.7), loss exploded (6.7e+07) |
-| 2025-12-07 | ppo-invpend-clamp | ❌ MA=20 | clamp [-5,2] too loose - entropy collapsed (-2.7), loss exploded (10^7) |
-| 2025-12-07 | ppo-invdoublepend-sb3 | ❌ MA=29 | log_std=-2.0 + ent_coef=0.02, entropy still collapsed (-1.1), loss exploded (9k) |
-| 2025-12-07 | ppo-invpend-sb3 | ❌ MA=33 | log_std=-2.0 + ent_coef=0.02, entropy stable (-0.95) but no learning (MA stuck) |
-| 2025-12-07 | ppo-invdoublepend-combo | ❌ MA=28 | log_std=-0.5 + ent_coef=0.01, entropy collapsed (-2.05), loss exploded (10^7) |
-| 2025-12-07 | ppo-invpend-highent | ❌ MA=3 | log_std=-0.5 + ent_coef=0.05, entropy EXPLODED (5.83), ent_coef too strong |
-| 2025-12-07 | ppo-invpend-combo | ❌ MA=8 | log_std=-0.5 + ent_coef=0.01, entropy collapsed (-0.9), needs higher ent_coef |
-| 2025-12-07 | ppo-invpend-lowstd | ❌ MA=6 | log_std=-0.5 only, entropy drifted up (1.08), no learning |
-| 2025-12-07 | ppo-invdoublepend-lowstd | ❌ MA=25.8 | log_std=-0.5 only, entropy still collapsed (-0.37) |
-| 2025-12-07 | ppo-invpend-cleanrl | ❌ MA=2.26 | CleanRL params, entropy too high (2.9), no learning |
-| 2025-12-07 | ppo-invdoublepend-cleanrl | ❌ MA=27.3 | CleanRL params, entropy collapse (-1.6), loss explosion (10^7) |
-| 2025-12-07 | ppo-pendulum-fix1 | ❌ MA=-1214 | target -200, needs more training or better params |
-| 2025-12-07 | ppo-invdoublepend-fix3 | ❌ MA=30.5 | entropy collapsed, only 0.3% of target |
-| 2025-12-07 | ppo-invpend-fix3 | ❌ MA=13.5 | entropy collapsed to -2, stopped early |
-| 2025-12-07 | ppo-ant-fix2 | ⚠️ **MA=2301** | 46% target at 5M frames - huge improvement from -12! |
-| 2025-12-07 | ppo-hopper-search4 | ⚠️ MA=1414 | 47% target, best: gamma=0.993, lam=0.949, lr=4.1e-4 |
-| 2025-12-07 | ppo-invpend-logstd | ❌ MA=13.4 | log_std_init search failed, best trial only 1.3% of target |
-| 2025-12-07 | ppo-invdoublepend-logstd | ❌ MA=49.7 | log_std_init search failed, best trial only 0.5% of target |
-| 2025-12-07 | ppo-cheetah-val4 | ✅ **MA=5259** | **SOLVED** (105% of target)! 5M frames validation run |
-| 2025-12-07 | ppo-walker-val3 | ⚠️ MA=1765 | 35% of target at 5M frames, needs more tuning |
-| 2025-12-07 | ppo-invpend-logstd1 | ❌ MA=4.51 | log_std_init=0 train, entropy still collapsed (-2.94) |
-| 2025-12-07 | ppo-invpend-fix2 | ❌ MA=4.38 | entropy collapsed (-4.3) |
-| 2025-12-07 | ppo-invdoublepend-fix2 | ❌ MA=29.28 | entropy stable (1.15) but not solving |
-| 2025-12-07 | ppo-cheetah-search3 | ⚠️ **MA=4751** | **95%** of target! Best: gamma=0.981, lam=0.945, lr=1.5e-4 |
-| 2025-12-07 | ppo-walker-search3 | ⚠️ MA=3428 | 69% of target. Best: gamma=0.986, lam=0.924, lr=3.7e-4 |
-| 2025-12-07 | ppo-bipedal-search1 | ⚠️ MA=203 | 68% of target. Best: gamma=0.993, lam=0.951, lr=1.0e-4 |
-| 2025-12-07 | ppo-hopper-search3 | ⚠️ MA=925 | 31%, regressed from 90%. Different params needed |
-| 2025-12-07 | sac-lunar-val2 | ❌ MA=-867 | SAC Continuous failing badly |
-| 2025-12-07 | ppo-invpend-search1 | ❌ MA=14.7 | Architecture issue (target 1000) |
-| 2025-12-07 | ppo-invdoublepend-search1 | ❌ MA=65.6 | Architecture issue (target 9100) |
-| 2025-12-07 | ppo-humanoid-search1 | ⏹️ terminated | 4h limit reached |
-| 2025-12-07 | ppo-ant-search1 | ⏹️ terminated | 4h limit reached |
-| 2025-12-06 | sac-lunar3 | ⚠️ **MA=247** | **ABOVE TARGET** (200), interrupted. Best: freq=40, iter=20, lr=8.8e-4 |
-| 2025-12-06 | ppo-walker-norm2 | ⚠️ MA=2807 | 56% at 4.6M (interrupted). Best: gamma=0.984, lam=0.928, lr=8.5e-4 |
-| 2025-12-06 | ppo-hopper-norm2 | ⚠️ MA=2710 | 90% at 3M (4h limit), best: gamma=0.999, lam=0.905, lr=5.8e-4 |
-| 2025-12-06 | ppo-cheetah-norm2 | ⚠️ MA=2712 | max=3825 at 3M (4h limit), best: gamma=0.987, lam=0.957, lr=1.7e-4 |
-| 2025-12-06 | ppo-swimmer2 | ✅ MA=266 | **SOLVED** with RL Zoo params (gamma=0.9998, lam=0.965) |
-| 2025-12-06 | ppo-bipedal-ext | ⚠️ MA=225 | Target 300, 75% |
-| 2025-12-06 | ppo-bipedal-norm | ⚠️ MA=184 | Target 300, 61% |
-| 2025-12-06 | ppo-invpend2 | ❌ MA=7.6 | RL Zoo params worse (target 1000) |
-| 2025-12-06 | ppo-invdoublepend2 | ❌ MA=50.1 | RL Zoo params similar (target 9100) |
-| 2025-12-06 | ppo-swimmer-norm | ❌ MA=40.3 | Old params, superseded by ppo-swimmer2 |
-| 2025-12-06 | sac-lunar2 | ❌ MA=-69.5 | Fixed config still failing |
-| 2025-12-06 | ppo-invpend-norm | ❌ MA=23.6 | Target 1000, far off |
-| 2025-12-06 | ppo-invdoublepend-norm | ❌ MA=57.2 | Target 9100, far off |
-| 2025-12-06 | ppo-walker-norm | ⚠️ MA=577 | Target 5000, extended to 5e6 |
-| 2025-12-06 | ppo-ant-norm | ❌ MA=-12.5 | Target 5000, needs investigation |
-| 2025-12-06 | ppo-lunar-raw | ✅ MA=254 | Validation passed (target 200) |
-| 2025-12-06 | ppo-lunar-norm | ✅ MA=235 | Norm A/B test passed (target 200) |
-| 2025-12-06 | ppo-hopper-raw | ❌ MA=284 | Raw baseline (target 3000) |
-| 2025-12-06 | ppo-hopper-norm | ⚠️ MA=1014 | Norm 3.5x better, extended to 5e6 |
-| 2025-12-06 | ppo-cheetah-raw | ❌ MA=539 | Raw baseline (target 5000) |
-| 2025-12-06 | ppo-cheetah-norm | ⚠️ MA=1300 | Norm 2.4x better, extended to 5e6 |
-| 2025-12-05 | ppo-hopper11 | ❌ KeyError | Spec had no search block |
-| 2025-12-05 | sac-lunar1 | ❌ MA=22.7 | Failed (target 200) |
-| 2025-12-04 | ppo-pusher1 | ✅ MA=-0.75 | Pusher-v5 solved |
-| 2025-12-04 | ppo-reacher2 | ✅ MA=-0.003 | Reacher-v5 solved |
-
-### 11 PPO MuJoCo Environments Summary
-
-| Env | max_frame | grace_period | Difficulty | Best (norm) | Target | Notes |
-|-----|-----------|--------------|------------|-------------|--------|-------|
-| InvertedPendulum-v5 | 1e6 | 1e5 | Easy | ⏸️ 14.7 | 1000 | **PARKED** - needs investigation |
-| InvertedDoublePendulum-v5 | 1e6 | 1e5 | Easy | ⏸️ 65.6 | 9100 | **PARKED** - needs investigation |
-| Swimmer-v5 | 1e6 | 1e5 | Easy | ✅ 266 | 130 | **SOLVED** (RL Zoo params) |
-| Reacher-v5 | 1e6 | 1e5 | Easy | ✅ -0.003 | -5 | Solved |
-| Pusher-v5 | 1e6 | 1e5 | Easy | ✅ -0.75 | -20 | Solved |
-| Hopper-v5 | 3e6 | 2e5 | Medium | ⚠️ 2517 | 3232 | 78%, validation run |
-| HalfCheetah-v5 | 3e6 | 2e5 | Medium | 🔄 2615 | 5086 | 51%, validation running |
-| Walker2d-v5 | 3e6 | 2e5 | Medium | ⚠️ 1997 | 4405 | 45%, needs more tuning |
-| Ant-v5 | 3e6 | 2e5 | Medium | ❌ -105 | 5086 | Still negative, needs investigation |
-| Humanoid-v5 | 50e6 | 1e6 | Hard | ⏸️ - | 6000 | **PARKED** - needs 50M frames |
-| HumanoidStandup-v5 | 50e6 | 1e6 | Hard | ⏸️ - | 100000 | **PARKED** - needs 50M frames |
-
-### Key Notes
-
-- **Normalization helps**: A/B test shows norm is 2-4x better for locomotion envs
-- **Search space**: 3 params only (gamma, lam, lr) for efficient 16-trial coverage
-- **4h dstack limit**: Runs terminate at ~3-4M frames; need train mode for full runs
-- **Bug fixed (2025-12-06)**: TrackReward now before NormalizeReward - reports raw rewards
-
-### Known Issues & Investigation Queue
-
-| Issue | Envs Affected | Root Cause | Fix Status |
-|-------|---------------|------------|------------|
-| Value loss explosion | InvPend, InvDoublePend | _norm specs had wrong hyperparams (missing normalize_v_targets, wrong gamma/lam/clip_eps) | 🔄 Testing: original tuned specs with RL Zoo-like hyperparams (normalize_v_targets=true, gamma=0.999, lam=0.9, clip_eps=0.4) |
-| Action scaling | Pendulum, InvPend | Bounds not [-1,1] but no auto-scaling | ✅ Fixed: automatic RescaleAction wrapper |
-| Wrong hyperparams | Ant | Mismatched RL Zoo params | ✅ Fixed: RL Zoo tuned params (gamma=0.98, lam=0.8, etc) |
-| SAC alpha collapse | LunarLander-v3 | Alpha goes to ~0 | ❌ Deprioritized (focus on MuJoCo) |
-| Hopper regression | Hopper | Hyperparams inconsistent | 🔄 Searching |
-
-### Architecture Investigation (2025-12-06 → 2025-12-08)
-
-**Why InvertedPendulum/DoublePendulum fail despite being "easy":**
-
-CleanRL (gets 963 on InvertedPendulum) vs SLM-Lab (gets 7-24):
-1. **log_std parameterization**: CleanRL uses separate learnable parameter (init=0), SLM-Lab learns through network head
-2. **Actor output init**: CleanRL uses std=0.01 for actor output layer, SLM-Lab uses same orthogonal gain as hidden layers (~1.67)
-3. **Network size**: CleanRL uses [64, 64], SLM-Lab uses [256, 256]
-
-These differences may cause initial exploration instability for simple envs that are highly sensitive to action scale.
-
-**Fixes implemented:**
-1. ✅ Added `actor_out_init_std` option to MLPNet - initializes actor output layer with small std (0.01) (commit 2d08d3a1)
-2. ✅ Updated InvPend/InvDoublePend specs with smaller network [64, 64] (like CleanRL)
-3. ✅ Separate `log_std_init` parameter implemented (commit 1017dd98) - learnable log_std like CleanRL
-   - Works for PPO, SAC, ActorCritic, Reinforce
-   - Also fixed SAC 1D action tensor bug that prevented SAC from working on Pendulum envs
-4. ✅ **Automatic action rescaling** (commit 63e6f501) - RescaleAction wrapper for envs with bounds != [-1, 1]
-   - Pendulum ([-2, 2]) and InvertedPendulum ([-3, 3]) now automatically rescaled to [-1, 1]
-   - Policy can output in standard range, wrapper scales to actual env bounds
-5. ✅ **Entropy coefficient** added to pendulum specs (entropy_coef=0.01) to prevent entropy collapse
-   - Without entropy bonus, log_std keeps decreasing → deterministic policy
-   - Local test shows entropy stays positive (0.77 vs -1.54 before)
-6. ✅ **Network output dimension bug** (commit fdc1916b) - CRITICAL FIX
-   - **Bug**: When using `log_std_init`, network still output 2 values (loc+scale) for 1D continuous actions
-   - **Impact**: Scale output was ignored (since we use separate log_std), wasting 50% of network capacity
-   - **Symptom**: Network showed `out_features=2` when it should be `out_features=1`; loss:nan, entropy:nan
-   - **Fix**: Added `use_log_std` parameter to `get_policy_out_dim()` to output just `action_dim` (loc only)
-   - **Files changed**: `net_util.py`, `actor_critic.py`, `policy_util.py`, `sac.py`
+- **Normalization helps MuJoCo**: A/B test shows obs+reward normalization is 2-4x better for locomotion
+- **Action scaling fixed**: Automatic RescaleAction wrapper for envs with bounds != [-1, 1] (commit 8741370f)
+- **Bug fixed**: TrackReward now wraps base env BEFORE NormalizeReward - reports raw rewards
 
 ---
 
@@ -445,10 +287,10 @@ All Atari specs use uniform config:
 
 | Algorithm | Status | MA | FPS | Spec File | Spec Name |
 |-----------|--------|-----|-----|-----------|-----------|
-| PPO | 🔄 | -1214 | - | [slm_lab/spec/benchmark/ppo/ppo_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_pendulum.json) | `ppo_pendulum` |
+| PPO | 🔄 | - | - | [slm_lab/spec/benchmark/ppo/ppo_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_pendulum.json) | `ppo_pendulum` |
 | SAC | 🔄 | - | - | [slm_lab/spec/benchmark/sac/sac_pendulum.json](../slm_lab/spec/benchmark/sac/sac_pendulum.json) | `sac_pendulum` |
 
-**Note**: Classic continuous control benchmark. Action bounds [-2, 2] require automatic RescaleAction wrapper (implemented in commit 56a6e69c). This is a simpler continuous environment for validating continuous action implementations before MuJoCo.
+**Note**: Classic Control continuous benchmark (not MuJoCo). Action bounds [-2, 2] use automatic RescaleAction wrapper. Target **MA > -200** (best possible ~0).
 
 ---
 
@@ -490,7 +332,7 @@ All Atari specs use uniform config:
 
 | Algorithm | Status | MA | FPS | Spec File | Spec Name |
 |-----------|--------|-----|-----|-----------|-----------|
-| PPO | ✅ | 249.2 | 135 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar_continuous` |
+| PPO | ✅ | 245.7 | 135 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar_continuous` |
 | SAC | ✅ | 238.0 | 35 | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | `sac_lunar_continuous` |
 
 ---

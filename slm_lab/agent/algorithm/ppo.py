@@ -74,6 +74,7 @@ class PPO(ActorCritic):
             minibatch_size=4,
             val_loss_coef=1.0,
             normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
+            symlog_transform=False,  # Apply symlog transform to value targets (from DreamerV3)
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -89,6 +90,7 @@ class PPO(ActorCritic):
             'time_horizon',  # training_frequency = actor * horizon
             'training_epoch',
             'normalize_v_targets',
+            'symlog_transform',
         ])
         self.to_train = 0
         # guard

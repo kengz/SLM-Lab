@@ -70,6 +70,7 @@ class MLPNet(Net, nn.Module):
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
+            layer_norm=False,  # Add LayerNorm after hidden layers for stability
         ))
         util.set_attr(self, self.net_spec, [
             'shared',
@@ -85,10 +86,11 @@ class MLPNet(Net, nn.Module):
             'update_frequency',
             'polyak_coef',
             'gpu',
+            'layer_norm',
         ])
 
         dims = [self.in_dim] + self.hid_layers
-        self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
+        self.model = net_util.build_fc_model(dims, self.hid_layers_activation, layer_norm=self.layer_norm)
         # add last layer with no activation
         # tails. avoid list for single-tail for compute speed
         if isinstance(self.out_dim, (int, np.integer)):

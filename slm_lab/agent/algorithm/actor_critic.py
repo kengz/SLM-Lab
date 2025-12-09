@@ -129,6 +129,7 @@ class ActorCritic(Reinforce):
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
             normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
+            symlog_transform=False,  # Apply symlog transform to value targets (from DreamerV3)
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -143,6 +144,7 @@ class ActorCritic(Reinforce):
             'val_loss_coef',
             'training_frequency',
             'normalize_v_targets',
+            'symlog_transform',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -327,14 +329,20 @@ class ActorCritic(Reinforce):
     def calc_val_loss(self, v_preds, v_targets):
         '''Calculate the critic's value loss.
 
-        If normalize_v_targets is enabled with return_normalizer, uses running statistics
-        to normalize targets consistently across training (like SB3's VecNormalize).
-        This enables the critic to learn values in a stable range regardless of
-        the environment's actual return scale.
+        Supports multiple value normalization strategies:
+        - symlog_transform: Apply symlog transform (from DreamerV3) - fixed mathematical transform
+        - normalize_v_targets + return_normalizer: Running statistics normalization (like SB3's VecNormalize)
+        - normalize_v_targets alone: Batch normalization fallback
         '''
         assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
 
-        if self.return_normalizer is not None:
+        if self.symlog_transform:
+            # Symlog transform: maps large values to smaller range while preserving sign
+            # Critic learns in transformed space, more stable for varying reward scales
+            v_targets_t = math_util.symlog(v_targets)
+            v_preds_t = math_util.symlog(v_preds)
+            val_loss = self.val_loss_coef * self.net.loss_fn(v_preds_t, v_targets_t)
+        elif self.return_normalizer is not None:
             # Update running statistics with new targets
             self.return_normalizer.update(v_targets)
             # Normalize targets to ~N(0,1) for stable critic learning
@@ -352,7 +360,7 @@ class ActorCritic(Reinforce):
             val_loss = self.val_loss_coef * self.net.loss_fn(v_preds_norm, v_targets_norm)
         else:
             val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        
+
         logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 

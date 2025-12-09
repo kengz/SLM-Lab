@@ -7,13 +7,13 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 4,
-        "training_iter": 4,
-        "training_start_step": 1000
+        "training_frequency": 20,
+        "training_iter": 20,
+        "training_start_step": 10000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 512,
         "max_size": 1e6,
         "use_cer": true
       },

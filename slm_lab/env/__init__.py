@@ -10,10 +10,12 @@ from gymnasium.wrappers import (
     FrameStackObservation,
     NormalizeObservation,
     NormalizeReward,
+    RescaleAction,
 )
 from gymnasium.wrappers.vector import (
     NormalizeObservation as VectorNormalizeObservation,
     NormalizeReward as VectorNormalizeReward,
+    RescaleAction as VectorRescaleAction,
 )
 
 from slm_lab.env.wrappers import (
@@ -39,6 +41,25 @@ except ImportError:
     pass  # Silent fail - will error later if Atari envs are actually needed
 
 logger = logger.get_logger(__name__)
+
+
+def _needs_action_rescaling(env: gym.Env) -> bool:
+    """Check if environment needs action rescaling.
+
+    Returns True if the action space is Box with bounds not equal to [-1, 1].
+    This allows the policy to output actions in [-1, 1] which are then
+    rescaled to the actual action bounds.
+    """
+    import numpy as np
+    action_space = getattr(env, 'single_action_space', env.action_space)
+    if not isinstance(action_space, spaces.Box):
+        return False
+    # Check if bounds are already [-1, 1] (within tolerance)
+    is_normalized = (
+        np.allclose(action_space.low, -1.0, atol=1e-6) and
+        np.allclose(action_space.high, 1.0, atol=1e-6)
+    )
+    return not is_normalized
 
 
 def _get_vectorization_mode(name: str, num_envs: int) -> str | None:
@@ -177,6 +198,10 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         env = gym.make_vec(
             name, num_envs=num_envs, vectorization_mode=vectorization_mode, **make_kwargs
         )
+        if _needs_action_rescaling(env):
+            action_space = env.single_action_space
+            logger.info(f"Action rescaling enabled: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
+            env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
         # Add reward tracking FIRST to capture raw rewards (before any normalization)
         env = VectorTrackReward(env)
         # Add observation normalization (normalizes inputs to policy network)
@@ -198,6 +223,10 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
             env = FrameStackObservation(
                 AtariPreprocessing(env, frame_skip=1), stack_size=4
             )
+        if _needs_action_rescaling(env):
+            action_space = env.action_space
+            logger.info(f"Action rescaling enabled: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
+            env = RescaleAction(env, min_action=-1.0, max_action=1.0)
         # Add reward tracking FIRST to capture raw rewards (before any normalization)
         env = TrackReward(env)
         # Add observation normalization (normalizes inputs to policy network)

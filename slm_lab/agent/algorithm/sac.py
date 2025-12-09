@@ -89,15 +89,6 @@ class SoftActorCritic(ActorCritic):
         self.alpha_lr_scheduler = net_util.get_lr_scheduler(self.alpha_optim, self.net.lr_scheduler_spec)
         self.agent.mt.register_algo_var('alpha', self)
 
-        # Cache action scaling tensors for continuous envs on network device
-        if not self.agent.is_discrete:
-            space = self.agent.action_space
-            device = self.net.device
-            self._action_low = torch.from_numpy(space.low).float().to(device)
-            self._action_high = torch.from_numpy(space.high).float().to(device)
-            self._action_scale = ((self._action_high - self._action_low) / 2).to(device)
-            self._action_bias = ((self._action_low + self._action_high) / 2).to(device)
-
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
@@ -108,8 +99,8 @@ class SoftActorCritic(ActorCritic):
         else:
             action = self.action_policy(state, self)
             if not self.agent.is_discrete:
-                # Scale continuous actions from tanh range [-1, 1] to action space bounds
-                action = torch.tanh(action) * self._action_scale + self._action_bias
+                # Squash to [-1, 1] with tanh; RescaleAction wrapper scales to env bounds
+                action = torch.tanh(action)
         return self.to_action(action)
 
     def calc_log_prob_action(self, action_pd, reparam=False):
@@ -119,9 +110,9 @@ class SoftActorCritic(ActorCritic):
         else:
             log_probs = action_pd.log_prob(actions).sum(-1)  # Sum across action dimensions
             # Tanh squash, change of variables: log π(a|s) = log μ(u|s) - Σ log(1 - tanh²(u))
-            actions_tanh = torch.tanh(actions)
-            log_probs = log_probs - torch.log(1 - actions_tanh.pow(2) + 1e-6).sum(-1)
-            actions = actions_tanh * self._action_scale + self._action_bias
+            actions = torch.tanh(actions)
+            log_probs = log_probs - torch.log(1 - actions.pow(2) + 1e-6).sum(-1)
+            # Actions are in [-1, 1]; RescaleAction wrapper handles scaling to env bounds
         return log_probs, actions
 
     def calc_q_discrete(self, states, actions, q_net):

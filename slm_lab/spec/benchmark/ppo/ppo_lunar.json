@@ -80,8 +80,8 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.9867,
-        "lam": 0.9633,
+        "gamma": 0.9842,
+        "lam": 0.9618,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.128,
@@ -122,11 +122,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.000175
+          "lr": 0.000221
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.000758
+          "lr": 0.00119
         },
         "gpu": "auto"
       }
