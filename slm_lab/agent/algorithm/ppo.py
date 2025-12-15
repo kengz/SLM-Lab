@@ -75,6 +75,7 @@ class PPO(ActorCritic):
             val_loss_coef=1.0,
             normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
             symlog_transform=False,  # Apply symlog transform to value targets (from DreamerV3)
+            clip_vloss=False,  # CleanRL-style value loss clipping (uses clip_eps)
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -91,6 +92,7 @@ class PPO(ActorCritic):
             'training_epoch',
             'normalize_v_targets',
             'symlog_transform',
+            'clip_vloss',
         ])
         self.to_train = 0
         # guard
@@ -189,6 +191,34 @@ class PPO(ActorCritic):
         logger.debug(f'PPO policy loss: {policy_loss:g}')
         return policy_loss
 
+    def calc_val_loss(self, v_preds, v_targets, old_v_preds=None):
+        '''Calculate PPO value loss with optional CleanRL-style value clipping.
+
+        When clip_vloss=True, clips value predictions relative to old predictions
+        similar to policy clipping. This can improve stability for some environments.
+
+        Args:
+            v_preds: Current value predictions
+            v_targets: GAE-computed value targets
+            old_v_preds: Value predictions from before network update (for clipping)
+        '''
+        if self.clip_vloss and old_v_preds is not None:
+            # CleanRL-style value clipping
+            v_loss_unclipped = (v_preds - v_targets) ** 2
+            v_clipped = old_v_preds + torch.clamp(
+                v_preds - old_v_preds,
+                -self.clip_eps,
+                self.clip_eps,
+            )
+            v_loss_clipped = (v_clipped - v_targets) ** 2
+            v_loss_max = torch.max(v_loss_unclipped, v_loss_clipped)
+            val_loss = 0.5 * self.val_loss_coef * v_loss_max.mean()
+            logger.debug(f'PPO clipped value loss: {val_loss:g}')
+            return val_loss
+        else:
+            # Standard value loss (inherited from ActorCritic)
+            return super().calc_val_loss(v_preds, v_targets)
+
     def train(self):
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
@@ -204,10 +234,11 @@ class PPO(ActorCritic):
                 v_preds = torch.cat(v_preds_chunks)
                 advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
-            batch['advs'], batch['v_targets'] = advs, v_targets
+            # Store old v_preds for value clipping (CleanRL-style)
+            batch['advs'], batch['v_targets'], batch['old_v_preds'] = advs, v_targets, v_preds
             if self.agent.env.is_venv:  # unpack if venv for minibatch sampling
                 for k, v in batch.items():
-                    if k not in ('advs', 'v_targets'):
+                    if k not in ('advs', 'v_targets', 'old_v_preds'):
                         batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
@@ -215,12 +246,12 @@ class PPO(ActorCritic):
                 for minibatch in minibatches:
                     if self.agent.env.is_venv:  # re-pack to restore proper shape
                         for k, v in minibatch.items():
-                            if k not in ('advs', 'v_targets'):
+                            if k not in ('advs', 'v_targets', 'old_v_preds'):
                                 minibatch[k] = math_util.venv_pack(v, self.agent.env.num_envs)
-                    advs, v_targets = minibatch['advs'], minibatch['v_targets']
+                    advs, v_targets, old_v_preds = minibatch['advs'], minibatch['v_targets'], minibatch['old_v_preds']
                     pdparams, v_preds = self.calc_pdparam_v(minibatch)
                     policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                    val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+                    val_loss = self.calc_val_loss(v_preds, v_targets, old_v_preds)  # from critic
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
                         self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)

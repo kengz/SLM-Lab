@@ -184,7 +184,9 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
 
     # Build kwargs for gym.make() - pass through any extra env kwargs
     # Reserved keys that are handled separately by SLM-Lab, not passed to gym.make()
-    reserved_keys = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward", "clip_obs", "clip_reward"}
+    # Note: episodic_life was removed - gymnasium's default (terminal_on_life_loss=False) is correct
+    # CleanRL's EpisodicLifeEnv does the OPPOSITE of terminal_on_life_loss=True
+    reserved_keys = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward", "clip_obs", "clip_reward", "episodic_life"}
     make_kwargs = {k: v for k, v in env_spec.items() if k not in reserved_keys}
 
     # Optional normalization (useful for MuJoCo and other continuous control envs)
@@ -243,7 +245,8 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         # gymnasium forgot to do this for single Atari env like in make_vec
         if name.startswith("ALE/"):
             env = FrameStackObservation(
-                AtariPreprocessing(env, frame_skip=1), stack_size=4
+                AtariPreprocessing(env, frame_skip=1),
+                stack_size=4
             )
         if _needs_action_rescaling(env):
             action_space = env.action_space

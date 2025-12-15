@@ -178,6 +178,49 @@ def init_params(module, init_fn):
         pass
 
 
+def init_tails(net, actor_init_std=None, critic_init_std=None):
+    '''Reinitialize output head layers with specific stds (CleanRL-style).
+
+    For PPO/ActorCritic with shared network, proper head initialization is critical:
+    - Actor head: small std (0.01) for near-uniform initial policy
+    - Critic head: std=1 for unbiased initial value estimates
+
+    This follows CleanRL's layer_init pattern where output heads get different
+    initialization than hidden layers.
+
+    Args:
+        net: Network with self.tails attribute (ModuleList of [actor_tail, critic_tail])
+        actor_init_std: std for actor output head orthogonal init (default: None = no reinit)
+        critic_init_std: std for critic output head orthogonal init (default: None = no reinit)
+    '''
+    if not hasattr(net, 'tails') or not isinstance(net.tails, nn.ModuleList):
+        return  # Only applies to multi-tail networks (shared actor-critic)
+
+    tails = list(net.tails)
+    if len(tails) < 2:
+        return  # Need at least actor and critic tails
+
+    # Actor tail is first, critic tail is last
+    actor_tail = tails[0]
+    critic_tail = tails[-1]
+
+    # Reinitialize actor head with small std for near-uniform initial policy
+    if actor_init_std is not None:
+        for module in actor_tail.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.orthogonal_(module.weight, actor_init_std)
+                nn.init.constant_(module.bias, 0.0)
+        logger.debug(f'Reinitialized actor tail with std={actor_init_std}')
+
+    # Reinitialize critic head
+    if critic_init_std is not None:
+        for module in critic_tail.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.orthogonal_(module.weight, critic_init_std)
+                nn.init.constant_(module.bias, 0.0)
+        logger.debug(f'Reinitialized critic tail with std={critic_init_std}')
+
+
 # params methods
 
 

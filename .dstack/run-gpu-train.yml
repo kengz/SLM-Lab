@@ -20,15 +20,16 @@ commands:
   - cd /workflow && uv sync
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
-# GPU train: any GPU up to 16GB for MLP-based RL ($0.13-0.20/hr range)
+# GPU train: any GPU for MLP-based RL
 resources:
-  gpu: ..16GB
-  cpu: 4..
-  memory: 14GB..
+  gpu: 1
+  cpu: 2..
+  memory: 8GB..
 
-spot_policy: on-demand
-max_duration: 6h
-max_price: 0.20
+spot_policy: auto
+max_duration: 4h
+max_price: 0.25
+fleets: [gpu-fleet]
 # backends: [runpod, datacrunch]  # commented out for wider availability
 retry:
   on_events: [no-capacity]

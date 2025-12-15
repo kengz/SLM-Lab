@@ -110,6 +110,7 @@ Modular deep reinforcement learning framework in PyTorch. Originally designed fo
 
 - **Use dstack** for GPU-intensive training and development
 - **One-time setup**: `uv tool install dstack && dstack project add --name kengz --url https://sky.dstack.ai --token $DSTACK_TOKEN -y` (get token from dstack Sky web UI; saved to `~/.dstack/config.yml`)
+- **Fleet setup (dstack 0.20+)**: Create fleet first with `dstack apply -f .dstack/fleet-gpu.yml` before running tasks
 - **IMPORTANT**: Always `source .env` before running remote experiments for HF upload credentials
 - **Always use `--gpu`**: Cheaper ($0.39/hr L4 vs $0.54/hr 16-CPU) and faster with fractional GPU sharing
 - Run: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name train -n run-name`

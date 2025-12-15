@@ -58,6 +58,28 @@ class TestSetVariables:
         result = set_variables(spec, ["deep=value"])
         assert result["a"]["b"]["c"]["d"] == "value"
 
+    def test_env_appends_shortname_with_ale_prefix(self):
+        spec = {"name": "ppo_atari", "env": {"name": "${env}"}}
+        result = set_variables(spec, ["env=ALE/Pong-v5"])
+        assert result["name"] == "ppo_atari_pong"
+        assert result["env"]["name"] == "ALE/Pong-v5"
+
+    def test_env_appends_shortname_without_prefix(self):
+        spec = {"name": "ppo_mujoco", "env": {"name": "${env}"}}
+        result = set_variables(spec, ["env=HalfCheetah-v5"])
+        assert result["name"] == "ppo_mujoco_halfcheetah"
+
+    def test_non_env_var_does_not_append_shortname(self):
+        spec = {"name": "test", "lr": "${lr}"}
+        result = set_variables(spec, ["lr=0.001"])
+        assert result["name"] == "test"
+
+    def test_env_with_multiple_vars_appends_shortname(self):
+        spec = {"name": "ppo_atari", "env": {"name": "${env}"}, "lr": "${lr}"}
+        result = set_variables(spec, ["env=ALE/Qbert-v5", "lr=0.0003"])
+        assert result["name"] == "ppo_atari_qbert"
+        assert result["lr"] == "0.0003"
+
 
 @pytest.mark.usefixtures("lazy_imports")
 class TestGetSpec:

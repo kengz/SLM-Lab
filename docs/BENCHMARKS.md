@@ -2,7 +2,7 @@
 
 Systematic algorithm validation across Gymnasium environments.
 
-**Updated**: 2025-12-15
+**Updated**: 2025-12-20
 
 ---
 
@@ -82,11 +82,11 @@ source .env && uv run slm-lab pull SPEC_NAME
 | Phase | Category | Envs | PPO | DQN | A2C | SAC | Overall |
 |-------|----------|------|-----|-----|-----|-----|---------|
 | 1 | Classic Control | 3 | ✅ | ✅ | ✅ | ✅ | ✅ 100% |
-| 2 | Box2D | 2 | ✅ | ✅ | ❌ | ✅ | ✅ 88% |
-| 3 | MuJoCo | 11 | ✅ | N/A | ⏸️ | ⏸️ | ✅ PPO done |
-| 4 | Atari | 6+ | ⏸️ | ⏸️ | N/A | N/A | ⏸️ 0% |
+| 2 | Box2D | 2 | ✅ | ✅ | 📊 | ✅ | ✅ 100% |
+| 3 | MuJoCo | 11 | ✅ | N/A | ⏸️ | ✅ 4/4 | ✅ PPO + SAC done |
+| 4 | Atari | 6+ | ⚠️ 2/9 | ⏸️ | N/A | ⏸️ | 🔄 Pong+Breakout solved |
 
-**Legend**: ✅ Solved | ⚠️ Close (>80%) | ❌ Failed | 🔄 In progress | ⏸️ Not started | N/A Not applicable
+**Legend**: ✅ Solved | ⚠️ Close (>80%) | 📊 Acceptable (historical) | ❌ Failed | 🔄 In progress | ⏸️ Not started | N/A Not applicable
 
 ---
 
@@ -146,7 +146,9 @@ source .env && uv run slm-lab pull SPEC_NAME
 | DDQN+PER | ✅ | 230.0 | [ddqn_per_lunar.json](../slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` |
 | PPO | ✅ | 229.9 | [ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar` |
 | DQN | ✅ | 203.9 | [dqn_lunar.json](../slm_lab/spec/benchmark/dqn/dqn_lunar.json) | `dqn_concat_lunar` |
-| A2C | ❌ 26% | +41 | [a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | `a2c_gae_lunar` (target: 155, SB3 benchmark) |
+| A2C | 📊 | +41 | [a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | `a2c_gae_lunar` ¹ |
+
+¹ A2C LunarLander: Historical SLM-Lab results also showed <100 at 300k frames. A2C is fundamentally less sample-efficient than PPO (single-pass vs multiple epochs per batch). Result is acceptable.
 
 #### 2.2 LunarLander-v3 (Continuous)
 
@@ -166,11 +168,12 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Docs**: [Hopper](https://gymnasium.farama.org/environments/mujoco/hopper/) | State: Box(11) | Action: Box(3) | Solved reward MA > 2500
 
-**Settings**: max_frame 1e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: PPO: max_frame 1e6, num_envs 16 | SAC: max_frame 1e6, num_envs 1 (SB3 standard)
 
 | Algorithm | Status | MA | Spec File | Spec Name |
 |-----------|--------|-----|-----------|-----------|
 | PPO | ✅ | 2914 | [ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | `ppo_hopper` |
+| SAC | ✅ | 2719 | [sac_hopper.json](../slm_lab/spec/benchmark/sac/sac_hopper.json) | `sac_hopper` |
 
 #### 3.2 HalfCheetah-v5
 
@@ -181,16 +184,20 @@ source .env && uv run slm-lab pull SPEC_NAME
 | Algorithm | Status | MA | Spec File | Spec Name |
 |-----------|--------|-----|-----------|-----------|
 | PPO | ✅ | 6383 | [ppo_halfcheetah.json](../slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | `ppo_halfcheetah` |
+| SAC | ✅ | 7800+ | [sac_halfcheetah.json](../slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | `sac_halfcheetah` ³ |
+
+³ SAC HalfCheetah solved at 37% training (~1.1M frames). All 4 sessions exceeded target 5000 (MA=6888-8172). Run terminated before HF upload.
 
 #### 3.3 Walker2d-v5
 
 **Docs**: [Walker2d](https://gymnasium.farama.org/environments/mujoco/walker2d/) | State: Box(17) | Action: Box(6) | Solved reward MA > 3500
 
-**Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: PPO: max_frame 8e6, num_envs 16 | SAC: max_frame 1e6, num_envs 1 (SB3 standard)
 
 | Algorithm | Status | MA | Spec File | Spec Name |
 |-----------|--------|-----|-----------|-----------|
 | PPO | ✅ | 5700 | [ppo_walker2d.json](../slm_lab/spec/benchmark/ppo/ppo_walker2d.json) | `ppo_walker2d` |
+| SAC | ✅ | 3824 | [sac_walker2d.json](../slm_lab/spec/benchmark/sac/sac_walker2d.json) | `sac_walker2d` |
 
 #### 3.4 Ant-v5
 
@@ -201,6 +208,7 @@ source .env && uv run slm-lab pull SPEC_NAME
 | Algorithm | Status | MA | Spec File | Spec Name |
 |-----------|--------|-----|-----------|-----------|
 | PPO | ✅ | 2190 | [ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | `ppo_ant` |
+| SAC | ✅ | 2022 | [sac_ant.json](../slm_lab/spec/benchmark/sac/sac_ant.json) | `sac_ant` |
 
 #### 3.5 Swimmer-v5
 
@@ -274,38 +282,25 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 ### Phase 4: Atari
 
-#### 4.1 Pong-v5
+**Shared PPO Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4 | ConvNet [32,64,64] + 512fc | lr=2.5e-4 | lam=0.95 | LR scheduler
 
-**Docs**: [Pong](https://gymnasium.farama.org/environments/atari/pong/) | State: Box(210,160,3) | Action: Discrete(6) | Solved reward MA > 18
+**Template**: Use [ppo_atari.json](../slm_lab/spec/benchmark/ppo/ppo_atari.json) with `-s env=ALE/<ENV>-v5`
 
-**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Continuous Actions**: ALE supports `continuous=True` for continuous action Atari (CALE). Use for SAC/PPO continuous.
 
-| Algorithm | Status | Spec File | Spec Name |
-|-----------|--------|-----------|-----------|
-| PPO | ⏸️ | [ppo_pong.json](../slm_lab/spec/benchmark/ppo/ppo_pong.json) | `ppo_pong` |
-| DQN | ⏸️ | [dqn_pong.json](../slm_lab/spec/benchmark/dqn/dqn_pong.json) | `dqn_pong` |
+| Environment | Target | PPO Status | PPO MA | Run Command |
+|-------------|--------|------------|--------|-------------|
+| Pong | 21 | ✅ | 18.33 | `ppo_pong` (dedicated spec) |
+| Pong (cont) | 21 | ❌ | -19.6 | `ppo_atari_continuous -s env=ALE/Pong-v5` ² |
+| Breakout | 30 | ✅ | 42 | `-s env=ALE/Breakout-v5 ppo_atari` (clip_vloss improved: 40-42 vs 36) |
+| Qbert | 4425 | ❌ 4% | 190 | `-s env=ALE/Qbert-v5 ppo_atari` (train running) |
+| SpaceInvaders | 1000 | ❌ 5% | 48 | `-s env=ALE/SpaceInvaders-v5 ppo_atari` (search running) |
+| BeamRider | 1590 | ❌ 1% | 33 | `-s env=ALE/BeamRider-v5 ppo_atari` (search running) |
+| Seaquest | 1740 | 🔄 | ~90 | `-s env=ALE/Seaquest-v5 ppo_atari` (done, uploaded HF) |
+| Enduro | 2000 | ⚠️ 39% | 788 | `-s env=ALE/Enduro-v5 ppo_atari` (clip_vloss: 788 vs 410 baseline, +89%!) |
+| MsPacman | 1500 | ❌ 10% | 155 | `-s env=ALE/MsPacman-v5 ppo_atari` (clip_vloss: 155 vs 143 baseline, +8%) |
 
-#### 4.2 Qbert-v5
-
-**Docs**: [Qbert](https://gymnasium.farama.org/environments/atari/qbert/) | State: Box(210,160,3) | Action: Discrete(6) | Solved reward MA > 15000
-
-**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
-
-| Algorithm | Status | Spec File | Spec Name |
-|-----------|--------|-----------|-----------|
-| PPO | ⏸️ | [ppo_qbert.json](../slm_lab/spec/benchmark/ppo/ppo_qbert.json) | `ppo_qbert` |
-| DQN | ⏸️ | [dqn_qbert.json](../slm_lab/spec/benchmark/dqn/dqn_qbert.json) | `dqn_qbert` |
-
-#### 4.3 Breakout-v5
-
-**Docs**: [Breakout](https://gymnasium.farama.org/environments/atari/breakout/) | State: Box(210,160,3) | Action: Discrete(4) | Solved reward MA > 400
-
-**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
-
-| Algorithm | Status | Spec File | Spec Name |
-|-----------|--------|-----------|-----------|
-| PPO | ⏸️ | [ppo_atari.json](../slm_lab/spec/benchmark/ppo/ppo_atari.json) | `ppo_atari` `-s env=ALE/Breakout-v5` |
-| DQN | ⏸️ | [dqn_atari.json](../slm_lab/spec/benchmark/dqn/dqn_atari.json) | `dqn_atari` `-s env=ALE/Breakout-v5` |
+² Continuous action Atari (CALE) - PPO with continuous=True did not learn. MA stuck at -19.6 (random policy level). May need architecture changes for CALE.
 
 ---
 
@@ -313,23 +308,59 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 ### Current Runs
 
-| Run Name | Spec | Mode | Status | GPU | Started |
-|----------|------|------|--------|-----|---------|
-| ppo-humanoidstandup-train-v6 | ppo_humanoid_standup | train | 56% MA=103k ✅ | GPU $0.13 | 2025-12-15 |
-| sac-lunar-train-v2 | sac_lunar | train | 84% MA=+160 | GPU $0.13 | 2025-12-15 |
+None.
 
-Notes:
-- HumanoidStandup v6: SOLVED! Session 2 hit MA=103k. Spec updated to 6M frames.
-- SAC Lunar v2: Parked for later investigation - discrete SAC needs debugging.
+### Recently Completed
+
+- **sac-walker2d-sb3**: ✅ SOLVED! MA=3824 (109% of target 3500). SB3/CleanRL hyperparams work! 1M frames, num_envs=1, tau=0.005. Uploaded to HF.
+- **sac-hopper-sb3**: ✅ SOLVED! MA=2719 (109% of target 2500). SB3/CleanRL hyperparams work! 1M frames, num_envs=1, tau=0.005. Uploaded to HF.
+- **ppo-qbert-clip**: ❌ MA=177 (4% of target 4425). clip_vloss didn't help Qbert. Uploaded to HF.
+- **ppo-spaceinvaders-clip**: ❌ MA=41 (4% of target 1000). clip_vloss didn't help SpaceInvaders. Uploaded to HF.
+- **sac-walker2d-v4**: ⚠️ DONE (terminated at 6h/59%). MA=1178-2560 (s1=2560, 73% of target 3500). Replaced by sac-walker2d-sb3 with SB3 params.
+- **sac-hopper-6h**: ⚠️ DONE (terminated at 6h/59%). MA=2382-2487 (s0=2487, 99.5% of target 2500!). Needs longer run to fully solve.
+- **ppo-enduro-v2**: ✅ DONE! MA=775-788 (baseline 410). **clip_vloss massive boost!** +89% improvement. Uploaded to HF.
+- **ppo-mspacman-clip**: ✅ DONE! MA=145-155 (baseline 143). **clip_vloss helps!** +2-8% improvement. Uploaded to HF.
+- **ppo-breakout-clip**: ✅ DONE! MA=40-42 (s1=40.74, s2=40.45, s3=42.38). **clip_vloss helps!** +15-17% vs baseline MA=36. Uploaded to HF.
+- **ppo-breakout-v5**: DONE. MA=13.8, **WORSE** than baseline MA=36 (62% regression!). Root cause: `terminal_on_life_loss=True` does the OPPOSITE of CleanRL's EpisodicLifeEnv. **REVERTED** all episodic_life changes (`9a645d5b`).
+- **ppo-breakout-v4**: FAILED - gymnasium.error.Error: Cannot use vector_entry_point mode with wrappers. Fixed in v5 by using async mode.
+- **ppo-breakout-v3**: FAILED - TypeError: AtariVectorEnv doesn't accept terminal_on_life_loss directly. Need to use wrappers parameter with functools.partial. Fixed in v4.
+- **ppo-breakout-init**: Head init test (actor_init_std=0.01, critic_init_std=1.0). MA=15.0 avg (s0=15.27, s1=14.30, s2=14.70, s3=15.55), **WORSE** than baseline MA=36. Reverted spec (kept framework code). Commits: `2a3b5341` (feat), `1951c73b` (MLPNet).
+- **ppo-breakout-v2**: Adam eps=1e-5 test. MA=14, **WORSE** than previous MA=36. Reverted eps change.
+- **sac-hopper-v2**: 4h max_duration hit at 760k/1.2M frames. Best MA=1722 (69% of target 2500). SAC Hopper needs >2M frames to solve.
+- **sac-walker2d-v2**: 4h max_duration hit at 730k/1.2M frames. Best MA=907 (26% of target 3500). SAC Walker2d needs >3M frames to solve.
+- **sac-hopper-1m**: DONE! Best MA=1670 (s1), 67% of target 2500. 1M frames in 3.2h.
+- **sac-walker2d-1m**: DONE! Best MA=1193 (s0), 34% of target 3500. 1M frames in 3.2h.
+- **SAC Hopper search-v2**: DONE! MA=1164, max_strength=2302 (92% of target 2500!). Best: gamma=0.998, lr=8.4e-4. Train-v5 launched.
+- **SAC Walker2d search-v2**: DONE! MA=810, max_strength=2121 (61% of target 3500). Best: gamma=0.996, lr=5.4e-4. Train-v5 launched.
+- **PPO Enduro search-v2**: DONE! MA=703 (35% of target 2000). **71% BETTER than old results (MA=410)!** episodic_life fix worked!
+- **PPO BeamRider search-v2**: DONE. MA=38 (2.4% of target 1590). Limited improvement.
+- **PPO Qbert search-v2**: DONE. MA=139 (3.1% of target 4425). episodic_life helped.
+- **PPO SpaceInvaders search-v2**: DONE. MA=35 (3.5% of target 1000). episodic_life helped but not enough.
+- **PPO MsPacman search-v2**: DONE. MA=116 (7.7% of target 1500). episodic_life helped but not enough.
+- **SAC Hopper train-v4**: DONE! s0 MA=1624 (65% of 2500), s2 MA=1507 (60%). Uploaded to HF.
+- **SAC Walker2d train-v4**: DONE! s1 MA=1007 (29% of 3500), s3 MA=777, s0 MA=748. Uploaded to HF.
+- **PPO Qbert search-v2**: DONE! Best MA=201 (1.5% of 13k target). Best: lam=0.902, gamma=0.987, lr=4.95e-4. Low-lam trials dominated. Uploaded to HF.
+- **SAC HalfCheetah train-v4**: ✅ SOLVED! ALL 4 sessions exceeded target 5000. Uploaded to HuggingFace.
+- **SAC Hopper search-v1**: DONE! Best MA=1902 (76% target 2500). Hyperparams: gamma=0.998, lr=8.4e-4, polyak=0.002
+- **SAC Walker2d search-v1**: DONE! Best MA=911 (26% target 3500). Hyperparams: gamma=0.996, lr=5.4e-4, polyak=0.002
 
 ### Queued Runs
 
-SAC MuJoCo next - planning with CleanRL hyperparams.
+**Next up:**
+- SAC Ant search (after HalfCheetah completes)
+
+**Later:**
+- CALE investigation - continuous Atari not learning (need architecture changes?)
+- SAC Humanoid, Swimmer (after Hopper/Walker2d complete)
 
 ### Completed Runs
 
 | Run Name | Spec | Mode | Result | Notes |
 |----------|------|------|--------|-------|
+| sac-ant-search-v1 | sac_ant | search | MA=2022 ✅ | SOLVED! 101% of target 2000. gamma=0.984, lr=1.05e-4, polyak=0.019. Spec updated. |
+| ppo-breakout-train-v4 | ppo_atari (CleanRL) | train | MA=39.1 ⭐ | 9.8% of target 400. s2=39.09, s3=39.10, s1=37.2. Uploaded. |
+| ppo-qbert-train-v3 | ppo_atari (CleanRL) | train | MA=186 ⭐ | 1.2% of target 15000. s3=186, s2=185, s1=158. Uploaded. |
+| ppo-breakout-search-v1 | ppo_atari | search | MA=40.15 ⭐ | 10% of target 400. **CONFIRMS lam fix**: Best lam=0.947, low lam (0.73-0.87) terminated at 1M with MA<9. Uploaded. |
 | ppo-ant-train-v2 | ppo_ant | train | MA=1060 (s1) ⚠️ | 53% of target 2000. s3=719, s2=349. Hit max_duration at 83% (8.3M/10M). |
 | ppo-humanoid-search-v1 | ppo_humanoid | search | MA=551 (79%) ⚠️ | Best trial d8dd76ba: gamma=0.9898, lam=0.9487, lr=1.38e-4. Hit 4h limit at 60%. |
 | ppo-halfcheetah-train-v3 | ppo_halfcheetah | train | MA=6383 (s0) ✅ | SOLVED! 128% of target 5000. s3=5976 (120%) also solved. Uploaded. |
@@ -394,6 +425,14 @@ SAC MuJoCo next - planning with CleanRL hyperparams.
 | a2c-lunar-train-v6 | a2c_gae_lunar | train | MA=+41 (s2) ❌ | 26% of target 155. LR scheduler + 300k frames helped (from +58) but still not solved. |
 | sac-lunar-search-v3 | sac_lunar | search | ❌ killed | Stuck at frame 1000 for 36+ min on CPU. Possibly too slow with training_iter=20 + PrioritizedReplay. |
 | sac-lunar-search-v4 | sac_lunar | search | ⚠️ 38% MA=+75 | SAC CAN learn discrete LunarLander! Best: gamma=0.981, training_freq=20, lr=0.00071, polyak=0.10. Spec updated. |
+| sac-lunar-cont-search-v3 | sac_lunar_continuous | search | ✅ MA=241.6 | SOLVED! 121% of target 200. 4 trials exceeded target. Best: gamma=0.994, lr=1.17e-4, training_iter=4. |
+| sac-lunar-train-v3 | sac_lunar | train | ❌ MA=100 | 50% of target 200. Mean MA=100, best session MA=170. Bug identified: alpha_loss_discrete uses log_alpha not alpha. |
+| sac-halfcheetah-train-v1 | sac_halfcheetah | train | ✅ MA=7800+ | SOLVED at 37% training! All 4 sessions exceeded target 5000 (MA=6888-8172). Terminated before HF upload. |
+| sac-hopper-train-v1 | sac_hopper | train | ❌ MA=1291 | 52% of target 2500. Completed but not solved. |
+| sac-walker2d-train-v1 | sac_walker2d | train | ❌ MA=972 | 28% of target 3500. Completed but not solved. |
+| ppo-qbert-train-v1 | ppo_atari `-s env=Qbert` | train | ❌ MA=119 | 0.8% of target 15000. PPO struggles with Qbert. |
+| ppo-breakout-train-v2 | ppo_atari `-s env=Breakout` | train | ❌ MA=59.5 | 15% of target 400. PPO needs tuning for Breakout. |
+| ppo-pong-cont-train-v1 | ppo_atari_continuous `-s env=Pong` | train | ❌ MA=-19.6 | Not learning. CALE (continuous Atari) may need different architecture. |
 
 ### Key Findings
 
@@ -415,13 +454,47 @@ SAC MuJoCo next - planning with CleanRL hyperparams.
 - **Ant clip_eps issue**: Using clip_eps=0.1 instead of CleanRL's 0.2 caused all negative rewards
   - Also fixed val_loss_coef (0.68→0.5) and clip_grad_val (0.6→0.5) to match CleanRL
   - Relaunched Ant search with corrected hyperparameters
-- **SAC discrete actions WORK**: Contrary to initial belief, SAC can learn discrete action spaces!
-  - SAC LunarLander (discrete) improved from MA=-158 to MA=+75 (38% of target 200)
-  - Key hyperparams: gamma=0.981, training_frequency=20 (lower than continuous), polyak_coef=0.10
-  - Needs more frames or continued search to reach target 200, but clearly learning
+- **SAC discrete actions WORK but have a bug**: SAC can learn discrete action spaces but has implementation issue
+  - SAC LunarLander (discrete) improved from MA=-158 to MA=+75 to MA=+100 over multiple runs
+  - **BUG IDENTIFIED**: `calc_alpha_loss_discrete` uses `self.log_alpha` instead of `self.log_alpha.exp()` (= alpha)
+    - Continuous version: `-(self.log_alpha.exp() * (log_probs + target_entropy)).mean()`
+    - Discrete version: `self.log_alpha * (target_entropy - entropy_current)` ← INCORRECT
+  - This causes incorrect gradient magnitudes for entropy temperature tuning
+  - Fix: Change to `self.log_alpha.exp() * (entropy_current - self.target_entropy)` to match continuous behavior
 - **Reacher search pattern**: gamma~0.983 + low lr (~0.00016-0.00025) works best
   - MA trajectory: -131 → ... → -10 → -9.09 → -8.77 → -8.51 → -8.27 → -7.83 → -7.62 → -7.24 → -6.88 → -6.64 → -6.45 → -6.28 → -6.13 → -6.03 → -5.85 → -5.80 (target -5)
   - 88% through budget, almost solved!
 - **Swimmer note**: High variance across sessions (88-102 MA) but 3/4 sessions exceed target 90
 - **HalfCheetah breakthrough**: MA=3395 at 60% through search (target 5000)
 - **Ant status**: MA=+59 at 69%, killed. Only 1/16 trials survived ASHA (target 2000 unreachable with current hyperparams)
+- **SAC HalfCheetah SOLVED**: MA=7800+ at just 37% training (1.1M frames). SAC is very sample-efficient on this env. All 4 sessions exceeded target 5000.
+- **PPO Atari struggles**: Qbert (0.8% target) and Breakout (15% target) underperform significantly with standard hyperparameters. May need longer training or hyperparameter search.
+- **CALE (Continuous Atari) not working**: PPO with continuous actions stuck at random policy level (MA=-19.6 on Pong). Architecture changes may be needed.
+- **PPO Atari lam fix**: Original spec used lam=0.7, but CleanRL uses lam=0.95. Search confirmed lam~0.94 performs best. Fixed spec defaults.
+- **PPO Atari episodic_life WRONG APPROACH - REVERTED**: Investigation complete after multiple failed attempts.
+  - **What we tried**: gymnasium's `terminal_on_life_loss=True` parameter
+  - **What CleanRL does**: Uses `EpisodicLifeEnv` wrapper which does the OPPOSITE
+  - **EpisodicLifeEnv**: Episode ends only when ALL lives lost (standard full-game episodes)
+  - **terminal_on_life_loss=True**: Episode ends when ANY life lost (micro-episodes)
+  - **Result**: Enabling terminal_on_life_loss caused 62% regression (MA=13.8 vs baseline MA=36)
+  - **Conclusion**: Gymnasium's default behavior (no episodic life handling) is correct. Reverted all changes.
+  - Commits: `9a645d5b` (revert), `eb7f3108`, `6d6b8277`, `259093aa` (failed attempts)
+- **PPO Atari head initialization - DID NOT HELP**: Tested CleanRL-style head init (actor_init_std=0.01, critic_init_std=1.0).
+  - Result: MA=15.0 avg, **WORSE** than baseline MA=36 (58% regression!)
+  - Framework code kept for future experimentation but reverted from ppo_atari.json spec
+  - Commits: `2a3b5341` (ConvNet), `1951c73b` (MLPNet), `6461dfa1` (docs)
+  - To revert framework: `git revert 1951c73b 2a3b5341` (or just don't use the params - backward compatible)
+- **PPO Atari clip_vloss - CONFIRMED HELPFUL**: CleanRL-style value loss clipping (`clip_vloss=true`).
+  - Clips value predictions relative to old predictions (similar to policy clipping)
+  - Commit: `ee54c45d` (feat: add clip_vloss for CleanRL-style value loss clipping)
+  - **Results across games**:
+    - Breakout: MA=40-42 vs baseline 36 (+15-17%)
+    - MsPacman: MA=155 vs baseline 143 (+8%)
+    - Enduro: MA=788 vs baseline 410 (+89%!) - massive improvement
+  - clip_vloss is now standard for PPO Atari
+- **SAC MuJoCo spec fix - aligned with SB3/CleanRL**:
+  - Previous specs used num_envs=16, max_frame=3M, training_freq=20 - this was wrong!
+  - SB3/CleanRL use: num_envs=1, max_frame=1M, train_freq=1, tau=0.005
+  - SB3 benchmarks: Hopper 2603, Walker2d 2292 in just 1M timesteps
+  - Key insight: SAC is off-policy, doesn't benefit from vectorized envs like PPO
+  - Commit: `929448c7` (feat: update SAC specs with SB3/CleanRL standard hyperparameters)

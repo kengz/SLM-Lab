@@ -77,6 +77,8 @@ class MLPNet(Net, nn.Module):
             gpu=False,
             layer_norm=False,  # Add LayerNorm after hidden layers for stability
             log_std_init=None,  # State-independent log_std (CleanRL-style) if set
+            actor_init_std=None,  # CleanRL uses 0.01 for Atari
+            critic_init_std=None,  # CleanRL uses 1.0 for Atari
         ))
         util.set_attr(self, self.net_spec, [
             'shared',
@@ -94,6 +96,8 @@ class MLPNet(Net, nn.Module):
             'gpu',
             'layer_norm',
             'log_std_init',
+            'actor_init_std',
+            'critic_init_std',
         ])
 
         dims = [self.in_dim] + self.hid_layers
@@ -101,6 +105,7 @@ class MLPNet(Net, nn.Module):
         self.tails, self.log_std = net_util.build_tails(dims[-1], self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)
+        net_util.init_tails(self, self.actor_init_std, self.critic_init_std)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)
         self.train()

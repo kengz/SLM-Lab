@@ -93,6 +93,8 @@ class ConvNet(Net, nn.Module):
             polyak_coef=0.0,
             gpu=False,
             log_std_init=None,
+            actor_init_std=None,  # CleanRL uses 0.01 for Atari
+            critic_init_std=None,  # CleanRL uses 1.0 for Atari
         ))
         util.set_attr(self, self.net_spec, [
             'conv_hid_layers',
@@ -111,6 +113,8 @@ class ConvNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
             'log_std_init',
+            'actor_init_std',
+            'critic_init_std',
         ])
 
         # conv body
@@ -128,6 +132,7 @@ class ConvNet(Net, nn.Module):
         self.tails, self.log_std = net_util.build_tails(tail_in_dim, self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)
+        net_util.init_tails(self, self.actor_init_std, self.critic_init_std)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)
         self.train()

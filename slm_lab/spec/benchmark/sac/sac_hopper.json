@@ -7,27 +7,27 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 20,
-        "training_iter": 20,
+        "training_frequency": 1,
+        "training_iter": 1,
         "training_start_step": 10000
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 512,
+        "batch_size": 256,
         "max_size": 1e6,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "AdamW",
+          "name": "Adam",
           "lr": 3e-4
         },
         "update_type": "polyak",
@@ -38,9 +38,9 @@
     },
     "env": {
       "name": "Hopper-v5",
-      "num_envs": 16,
+      "num_envs": 1,
       "max_t": null,
-      "max_frame": 3e6
+      "max_frame": 1e6
     },
     "meta": {
       "distributed": false,
@@ -48,18 +48,7 @@
       "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 12,
-      "search_resources": {"cpu": 1, "gpu": 0.125},
-      "search_scheduler": {
-        "grace_period": 2e5,
-        "reduction_factor": 3
-      }
-    },
-    "search": {
-      "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.training_start_step__qrandint": [500, 2000, 500],
-      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3],
-      "agent.net.polyak_coef__loguniform": [0.001, 0.02]
+      "max_trial": 1
     }
   }
 }

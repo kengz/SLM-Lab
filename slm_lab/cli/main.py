@@ -28,14 +28,19 @@ logger = None
 
 
 def set_variables(spec, sets: list[str] | None):
-    """Replace ${var} in spec with set values"""
+    """Replace ${var} in spec. If env= set, appends shortname to spec['name'] (e.g. ppo_atari_pong)."""
     if not sets:
         return spec
-    spec_str = json.dumps(spec)
+    spec_str, env_short = json.dumps(spec), None
     for item in sets:
-        key, value = item.split("=", 1)
-        spec_str = spec_str.replace(f"${{{key}}}", value)
-    return json.loads(spec_str)
+        k, v = item.split("=", 1)
+        spec_str = spec_str.replace(f"${{{k}}}", v)
+        if k == "env":
+            env_short = v.split("/")[-1].split("-")[0].lower()
+    spec = json.loads(spec_str)
+    if env_short and "name" in spec:
+        spec["name"] = f"{spec['name']}_{env_short}"
+    return spec
 
 
 def get_spec(
