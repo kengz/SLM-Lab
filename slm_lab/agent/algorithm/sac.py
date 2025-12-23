@@ -43,10 +43,13 @@ class SoftActorCritic(ActorCritic):
     def init_nets(self, global_nets=None):
         self.shared = False  # SAC does not share networks
         NetClass = getattr(net, self.net_spec['type'])
+        # steps_per_schedule: frames processed per scheduler.step() call
+        steps_per_schedule = self.training_frequency * self.agent.env.num_envs
+
         # Actor network
         self.net = NetClass(self.net_spec, self.agent.state_dim, net_util.get_out_dim(self.agent))
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
 
         # Q-networks: use standard MLPNet with [state, action] concatenated input
         if self.agent.is_discrete:
@@ -59,13 +62,13 @@ class SoftActorCritic(ActorCritic):
         self.target_q1_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
         net_util.copy(self.q1_net, self.target_q1_net)
         self.q1_optim = net_util.get_optim(self.q1_net, self.q1_net.optim_spec)
-        self.q1_lr_scheduler = net_util.get_lr_scheduler(self.q1_optim, self.q1_net.lr_scheduler_spec)
+        self.q1_lr_scheduler = net_util.get_lr_scheduler(self.q1_optim, self.q1_net.lr_scheduler_spec, steps_per_schedule)
 
         self.q2_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
         self.target_q2_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
         net_util.copy(self.q2_net, self.target_q2_net)
         self.q2_optim = net_util.get_optim(self.q2_net, self.q2_net.optim_spec)
-        self.q2_lr_scheduler = net_util.get_lr_scheduler(self.q2_optim, self.q2_net.lr_scheduler_spec)
+        self.q2_lr_scheduler = net_util.get_lr_scheduler(self.q2_optim, self.q2_net.lr_scheduler_spec, steps_per_schedule)
 
         self.net_names = ['net', 'q1_net', 'target_q1_net', 'q2_net', 'target_q2_net']
 
@@ -86,7 +89,7 @@ class SoftActorCritic(ActorCritic):
         self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
         self.alpha = self.log_alpha.detach().exp()
         self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
-        self.alpha_lr_scheduler = net_util.get_lr_scheduler(self.alpha_optim, self.net.lr_scheduler_spec)
+        self.alpha_lr_scheduler = net_util.get_lr_scheduler(self.alpha_optim, self.net.lr_scheduler_spec, steps_per_schedule)
         self.agent.mt.register_algo_var('alpha', self)
 
         net_util.set_global_nets(self, global_nets)
@@ -215,7 +218,8 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
-        self.alpha_lr_scheduler.step()
+        # NOTE: alpha_lr_scheduler.step() is called once per training iteration in train(),
+        # not here per gradient step
         # No clamping - let automatic entropy tuning work naturally (CleanRL approach)
         self.alpha = self.log_alpha.detach().exp()
 
@@ -255,6 +259,15 @@ class SoftActorCritic(ActorCritic):
                 # update PER priorities if available
                 self.try_update_per(torch.min(q1_preds, q2_preds), q_targets)
 
+            # Step LR schedulers once per training iteration (after all gradient updates)
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
+            if self.q1_lr_scheduler is not None:
+                self.q1_lr_scheduler.step()
+            if self.q2_lr_scheduler is not None:
+                self.q2_lr_scheduler.step()
+            if self.alpha_lr_scheduler is not None:
+                self.alpha_lr_scheduler.step()
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss.item():g}')

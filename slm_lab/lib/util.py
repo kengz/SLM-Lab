@@ -27,6 +27,35 @@ FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 
 
+def format_metrics(metrics: dict) -> list[str]:
+    """Format metrics dict into clean key:value strings for logging.
+
+    Handles numpy types, NaN values, and applies appropriate precision:
+    - frame: scientific notation (1.00e+07)
+    - total_reward, total_reward_ma: 2 decimal places
+    - other floats: 4 significant figures
+    """
+    items = []
+    for k, v in metrics.items():
+        # Convert numpy types to Python types
+        if hasattr(v, 'item'):
+            v = v.item()
+
+        if str(v).lower() == 'nan':
+            items.append(f'{k}:nan')
+        elif k == 'frame':
+            items.append(f'{k}:{v:.2e}')
+        elif k in ('total_reward', 'total_reward_ma'):
+            items.append(f'{k}:{v:.2f}')
+        elif isinstance(v, float) and not v.is_integer():
+            items.append(f'{k}:{v:.4g}')
+        elif isinstance(v, (int, float)):
+            items.append(f'{k}:{v:g}')
+        else:
+            items.append(f'{k}:{v}')
+    return items
+
+
 class LabJsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):

@@ -213,11 +213,13 @@ class ActorCritic(Reinforce):
             self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
             self.net_names.append('critic_net')
         # init net optimizer and its lr scheduler
+        # steps_per_schedule: frames processed per scheduler.step() call
+        steps_per_schedule = self.training_frequency * self.agent.env.num_envs
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
         if not self.shared:
             self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
-            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
+            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec, steps_per_schedule)
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
@@ -383,6 +385,11 @@ class ActorCritic(Reinforce):
                 self.agent.env.tick_opt_step()
                 self.agent.env.tick_opt_step()
                 loss = policy_loss + val_loss
+            # Step LR scheduler once per training iteration
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
+            if not self.shared and hasattr(self, 'critic_lr_scheduler') and self.critic_lr_scheduler is not None:
+                self.critic_lr_scheduler.step()
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')

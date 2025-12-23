@@ -83,8 +83,10 @@ class VanillaDQN(SARSA):
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
+        # steps_per_schedule: frames processed per scheduler.step() call
+        steps_per_schedule = self.training_frequency * self.agent.env.num_envs
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
@@ -140,6 +142,9 @@ class VanillaDQN(SARSA):
                     self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
                     self.agent.env.tick_opt_step()
                     total_loss += loss
+            # Step LR scheduler once per training iteration (after all gradient updates)
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
             loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
             self.to_train = 0
@@ -182,8 +187,10 @@ class DQNBase(VanillaDQN):
         self.target_net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net', 'target_net']
         # init net optimizer and its lr scheduler
+        # steps_per_schedule: frames processed per scheduler.step() call
+        steps_per_schedule = self.training_frequency * self.agent.env.num_envs
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
         # For Double DQN: use online net (being trained) for action selection, target net for evaluation

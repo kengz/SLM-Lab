@@ -36,25 +36,11 @@
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [
-            32,
-            8,
-            4,
-            0,
-            1
-          ],
-          [
-            64,
-            4,
-            2,
-            0,
-            1
-          ],
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
           [64, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [
-          512
-        ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -65,8 +51,9 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 0.00025
+          "name": "AdamW",
+          "lr": 2.5e-4,
+          "eps": 1e-5
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
@@ -78,29 +65,25 @@
     "env": {
       "name": "${env}",
       "num_envs": 16,
-      "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e7,
+      "life_loss_info": true
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
       "log_frequency": 10000,
-      "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 12,
-      "search_resources": {"cpu": 1, "gpu": 0.125},
-      "search_scheduler": {
-        "grace_period": 1e6,
-        "reduction_factor": 3
-      }
+      "max_trial": 16,
+      "search_resources": {"cpu": 2, "gpu": 0.25},
+      "search_scheduler": {"grace_period": 500000, "reduction_factor": 3}
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.algorithm.lam__uniform": [0.7, 0.98],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.005, 0.03],
       "agent.net.optim_spec.lr__loguniform": [1e-4, 5e-4]
     }
   },
-  "ppo_atari_full": {
+  "ppo_atari_lam85": {
     "agent": {
       "name": "PPO",
       "algorithm": {
@@ -109,7 +92,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": 0.85,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.1,
@@ -137,25 +120,11 @@
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [
-            32,
-            8,
-            4,
-            0,
-            1
-          ],
-          [
-            64,
-            4,
-            2,
-            0,
-            1
-          ],
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
           [64, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [
-          512
-        ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -166,8 +135,9 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 0.00025
+          "name": "AdamW",
+          "lr": 2.5e-4,
+          "eps": 1e-5
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
@@ -179,19 +149,95 @@
     "env": {
       "name": "${env}",
       "num_envs": 16,
-      "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e7,
+      "life_loss_info": true
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
       "log_frequency": 10000,
-      "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 61
+      "max_trial": 1
     }
   },
-  "ppo_atari_continuous": {
+  "ppo_atari_lam70": {
+    "agent": {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.70,
+        "clip_eps_spec": {
+          "name": "no_decay",
+          "start_val": 0.1,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "time_horizon": 128,
+        "minibatch_size": 256,
+        "training_epoch": 4,
+        "clip_vloss": true
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": true,
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [64, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": true,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "AdamW",
+          "lr": 2.5e-4,
+          "eps": 1e-5
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 10e6
+        },
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "${env}",
+      "num_envs": 16,
+      "max_frame": 1e7,
+      "life_loss_info": true
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 10000,
+      "log_frequency": 10000,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "ppo_atari_nosticky": {
     "agent": {
       "name": "PPO",
       "algorithm": {
@@ -228,25 +274,11 @@
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [
-            32,
-            8,
-            4,
-            0,
-            1
-          ],
-          [
-            64,
-            4,
-            2,
-            0,
-            1
-          ],
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
           [64, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [
-          512
-        ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -257,8 +289,9 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 0.00025
+          "name": "AdamW",
+          "lr": 2.5e-4,
+          "eps": 1e-5
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
@@ -269,18 +302,17 @@
     },
     "env": {
       "name": "${env}",
-      "continuous": true,
       "num_envs": 16,
-      "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e7,
+      "life_loss_info": true,
+      "repeat_action_probability": 0.0
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
       "log_frequency": 10000,
-      "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 4
+      "max_trial": 1
     }
   }
 }

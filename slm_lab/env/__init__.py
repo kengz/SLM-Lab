@@ -18,6 +18,7 @@ from gymnasium.wrappers.vector import (
     ClipReward as VectorClipReward,
     NormalizeObservation as VectorNormalizeObservation,
     NormalizeReward as VectorNormalizeReward,
+    RecordEpisodeStatistics as VectorRecordEpisodeStatistics,
     RescaleAction as VectorRescaleAction,
 )
 
@@ -27,117 +28,90 @@ from slm_lab.env.wrappers import (
     TrackReward,
     VectorClipObservation,
     VectorClockWrapper,
+    VectorFullGameStatistics,
     VectorRenderAll,
-    VectorTrackReward,
 )
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import render
 
-# Alias ClockWrapper as Clock for backward compatibility
-Clock = ClockWrapper
+Clock = ClockWrapper  # Backward compatibility alias
 
-# Register ALE environments immediately on module import
+# Register ALE environments on import
 try:
     import ale_py
-
     os.environ.setdefault("ALE_PY_SILENCE", "1")
     gym.register_envs(ale_py)
 except ImportError:
-    pass  # Silent fail - will error later if Atari envs are actually needed
+    pass
 
 logger = logger.get_logger(__name__)
 
+# Keys handled by make_env, not passed to gym.make
+RESERVED_KEYS = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward", "clip_obs", "clip_reward"}
+
 
 def _needs_action_rescaling(env: gym.Env) -> bool:
-    """Check if environment needs action rescaling.
-
-    Returns True if the action space is Box with bounds not equal to [-1, 1].
-    This allows the policy to output actions in [-1, 1] which are then
-    rescaled to the actual action bounds.
-    """
-    import numpy as np
+    """Check if action space needs rescaling to [-1, 1]."""
     action_space = getattr(env, 'single_action_space', env.action_space)
     if not isinstance(action_space, spaces.Box):
         return False
-    # Check if bounds are already [-1, 1] (within tolerance)
-    is_normalized = (
+    return not (
         np.allclose(action_space.low, -1.0, atol=1e-6) and
         np.allclose(action_space.high, 1.0, atol=1e-6)
     )
-    return not is_normalized
 
 
-def _get_vectorization_mode(name: str, num_envs: int) -> str | None:
-    """Select sync/async/vector_entry_point vectorization based on environment complexity."""
-    # Detect complex environments that benefit from async parallelization
+def _get_vectorization_mode(name: str, num_envs: int, is_rendering: bool = False) -> str:
+    """Select vectorization mode based on environment type."""
     entry_point = gym.envs.registry[name].entry_point.lower()
-    # specific value for ALE environments (required for automatic preprocessing)
+
+    # ALE: use AtariVectorEnv for speed, but sync mode when rendering
+    # (AtariVectorEnv.render() not implemented)
     if "ale_py" in entry_point:
-        return "vector_entry_point"
+        return "sync" if is_rendering else "vector_entry_point"
 
-    is_complex = not ("classic_control" in entry_point or "box2d" in entry_point)
-    # Thresholds based on benchmark data: only async for complex envs
-    mode = "async" if (is_complex and num_envs >= 8) else "sync"
-    complexity = "complex" if is_complex else "simple"
-    logger.info(
-        f"Using {mode} vectorization for {name} ({complexity} env, {num_envs} envs)"
-    )
-    return mode
+    # Complex envs benefit from async parallelization
+    is_simple = "classic_control" in entry_point or "box2d" in entry_point
+    return "sync" if is_simple or num_envs < 8 else "async"
 
 
-def _set_logging_config(env: gym.Env, spec: dict[str, Any]) -> None:
-    """Set logging and evaluation frequencies from spec"""
+def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
+    """Set SLM-Lab environment attributes."""
+    env_spec = spec["env"]
+
+    # Determine if vector env based on actual type, not spec
+    env.is_venv = isinstance(env, VectorEnv)
+    if not hasattr(env, "num_envs"):
+        env.num_envs = env.num_envs if env.is_venv else 1
+    util.set_attr(env, env_spec, ["name", "max_t", "max_frame"])
+
+    # Logging config
     defaults = dict(eval_frequency=10000, log_frequency=10000)
     util.set_attr(env, defaults)
     util.set_attr(env, spec["meta"], ["eval_frequency", "log_frequency"])
 
-
-def _set_basic_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
-    """Set basic environment attributes from spec"""
-    env_spec = spec["env"]
-
-    # Set num_envs if not already set (vector envs already have this)
-    if not hasattr(env, "num_envs"):
-        env.num_envs = env_spec.get("num_envs", 1)
-
-    # Set vectorization flag based on actual num_envs
-    env.is_venv = env.num_envs > 1
-
-    # Set basic attributes from env spec
-    util.set_attr(env, env_spec, ["name", "max_t", "max_frame"])
-
-
-def _set_canonical_spaces(env: gym.Env) -> None:
-    """Set canonical observation/action spaces for consistent access"""
+    # Canonical spaces for consistent access
     if isinstance(env, VectorEnv):
         env.observation_space = env.single_observation_space
         env.action_space = env.single_action_space
 
-
-def _extract_state_dim(env: gym.Env) -> None:
-    """Extract state dimension from observation space"""
+    # State dimension
     obs_space = env.observation_space
-
     if isinstance(obs_space, spaces.Box):
-        shape = obs_space.shape
-        env.state_dim = shape[0] if len(shape) == 1 else shape
+        env.state_dim = obs_space.shape[0] if len(obs_space.shape) == 1 else obs_space.shape
     else:
         env.state_dim = getattr(obs_space, "n", obs_space.shape)
 
-
-def _extract_action_properties(env: gym.Env) -> None:
-    """Extract action dimension and type properties from action space"""
+    # Action properties
     action_space = env.action_space
-
     if isinstance(action_space, spaces.Discrete):
         env.action_dim = action_space.n
         env.is_discrete = True
         env.is_multi = False
     elif isinstance(action_space, spaces.Box):
-        shape = action_space.shape
-        env.action_dim = shape[0] if len(shape) == 1 else shape
+        env.action_dim = action_space.shape[0] if len(action_space.shape) == 1 else action_space.shape
         env.is_discrete = False
-        env.is_multi = len(shape) > 1 or shape[0] > 1
+        env.is_multi = len(action_space.shape) > 1 or action_space.shape[0] > 1
     elif isinstance(action_space, spaces.MultiDiscrete):
         env.action_dim = action_space.nvec.tolist()
         env.is_discrete = True
@@ -147,139 +121,142 @@ def _extract_action_properties(env: gym.Env) -> None:
         env.is_discrete = True
         env.is_multi = True
     else:
-        raise NotImplementedError(
-            f"Action space type {type(action_space)} not supported"
-        )
+        raise NotImplementedError(f"Action space {type(action_space)} not supported")
 
-
-def _set_timing_config(env: gym.Env, spec: dict[str, Any]) -> None:
-    """Set timing and frame counting configuration"""
-    # Set max_t from environment spec or defaults
-    env.max_t = env.max_t or env.spec.max_episode_steps or 108000
-
-    # Adjust max_frame for distributed training
+    # Timing config
+    env.max_t = env_spec.get("max_t") or getattr(env.spec, "max_episode_steps", None) or 108000
     if spec["meta"]["distributed"] is not False:
         env.max_frame = int(env.max_frame / spec["meta"]["max_session"])
-
-    # Initialize tracking attributes
     env.done = False
 
 
-def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
-    """Set environment attributes needed by SLM-Lab"""
-    _set_logging_config(env, spec)
-    _set_basic_attributes(env, spec)
-    _set_canonical_spaces(env)
-    _extract_state_dim(env)
-    _extract_action_properties(env)
-    _set_timing_config(env, spec)
-
-
 def make_env(spec: dict[str, Any]) -> gym.Env:
-    """Create a gymnasium environment with SLM-Lab compatibility"""
+    """Create a gymnasium environment.
+
+    Gymnasium defaults are sensible - only override what's needed.
+    For Atari (ALE/*), AtariVectorEnv handles all preprocessing natively.
+    """
     env_spec = spec["env"]
     name = env_spec["name"]
     num_envs = env_spec.get("num_envs", 1)
+    is_atari = name.startswith("ALE/")
     render_mode = "human" if render() else None
 
-    # Build kwargs for gym.make() - pass through any extra env kwargs
-    # Reserved keys that are handled separately by SLM-Lab, not passed to gym.make()
-    # Note: episodic_life was removed - gymnasium's default (terminal_on_life_loss=False) is correct
-    # CleanRL's EpisodicLifeEnv does the OPPOSITE of terminal_on_life_loss=True
-    reserved_keys = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward", "clip_obs", "clip_reward", "episodic_life"}
-    make_kwargs = {k: v for k, v in env_spec.items() if k not in reserved_keys}
+    # Pass through env kwargs (life_loss_info, repeat_action_probability, etc.)
+    make_kwargs = {k: v for k, v in env_spec.items() if k not in RESERVED_KEYS}
 
-    # Optional normalization (useful for MuJoCo and other continuous control envs)
+    # Normalization options (for MuJoCo/continuous control)
     normalize_obs = env_spec.get("normalize_obs", False)
     normalize_reward = env_spec.get("normalize_reward", False)
-    # Observation clipping bounds after normalization (CleanRL uses [-10, 10])
-    # Enabled by default when normalize_obs=True (like CleanRL)
     clip_obs = env_spec.get("clip_obs", 10.0 if normalize_obs else None)
-    # Reward clipping bounds (CleanRL uses [-10, 10] after normalization)
-    # Can be float for symmetric bounds or tuple for (min, max)
     clip_reward = env_spec.get("clip_reward", 10.0 if normalize_reward else None)
-    # Get gamma from agent spec for reward normalization (default 0.99)
     gamma = spec.get("agent", {}).get("algorithm", {}).get("gamma", 0.99)
 
-    if num_envs > 1:  # make vector environment
-        vectorization_mode = _get_vectorization_mode(name, num_envs)
-        # For Atari vector envs, render_mode is not supported in kwargs
-        if not name.startswith("ALE/"):
-            make_kwargs["render_mode"] = "rgb_array" if render_mode else None
-
-        # Note: For Atari, gymnasium's make_vec automatically includes FrameStackObservation + AtariPreprocessing
-        env = gym.make_vec(
-            name, num_envs=num_envs, vectorization_mode=vectorization_mode, **make_kwargs
-        )
-        if _needs_action_rescaling(env):
-            action_space = env.single_action_space
-            logger.info(f"Action rescaling enabled: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
-            env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
-        # Add reward tracking FIRST to capture raw rewards (before any normalization)
-        env = VectorTrackReward(env)
-        # Add observation normalization (normalizes inputs to policy network)
-        if normalize_obs:
-            env = VectorNormalizeObservation(env)
-            logger.info("Observation normalization enabled")
-        # Add observation clipping after normalization (CleanRL uses [-10, 10])
-        if clip_obs is not None:
-            env = VectorClipObservation(env, bound=float(clip_obs))
-            logger.info(f"Observation clipping enabled: [-{clip_obs}, {clip_obs}]")
-        # Add reward normalization AFTER tracking (agent sees normalized, we report raw)
-        if normalize_reward:
-            env = VectorNormalizeReward(env, gamma=gamma)
-            logger.info(f"Reward normalization enabled (gamma={gamma})")
-        # Add reward clipping after normalization (CleanRL uses [-10, 10])
-        if clip_reward is not None:
-            if isinstance(clip_reward, (int, float)):
-                env = VectorClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
-            else:
-                env = VectorClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
-            logger.info(f"Reward clipping enabled: {clip_reward}")
-        # Add grid rendering for all envs
-        if render_mode:
-            env = VectorRenderAll(env)
+    if num_envs > 1:
+        env = _make_vector_env(name, num_envs, is_atari, render_mode, make_kwargs,
+                               normalize_obs, normalize_reward, clip_obs, clip_reward, gamma)
     else:
-        make_kwargs["render_mode"] = render_mode
-        env = gym.make(name, **make_kwargs)
-        # gymnasium forgot to do this for single Atari env like in make_vec
-        if name.startswith("ALE/"):
-            env = FrameStackObservation(
-                AtariPreprocessing(env, frame_skip=1),
-                stack_size=4
-            )
-        if _needs_action_rescaling(env):
-            action_space = env.action_space
-            logger.info(f"Action rescaling enabled: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
-            env = RescaleAction(env, min_action=-1.0, max_action=1.0)
-        # Add reward tracking FIRST to capture raw rewards (before any normalization)
-        env = TrackReward(env)
-        # Add observation normalization (normalizes inputs to policy network)
-        if normalize_obs:
-            env = NormalizeObservation(env)
-            logger.info("Observation normalization enabled")
-        # Add observation clipping after normalization (CleanRL uses [-10, 10])
-        if clip_obs is not None:
-            env = ClipObservation(env, bound=float(clip_obs))
-            logger.info(f"Observation clipping enabled: [-{clip_obs}, {clip_obs}]")
-        # Add reward normalization AFTER tracking (agent sees normalized, we report raw)
-        if normalize_reward:
-            env = NormalizeReward(env, gamma=gamma)
-            logger.info(f"Reward normalization enabled (gamma={gamma})")
-        # Add reward clipping after normalization (CleanRL uses [-10, 10])
-        if clip_reward is not None:
-            if isinstance(clip_reward, (int, float)):
-                env = ClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
-            else:
-                env = ClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
-            logger.info(f"Reward clipping enabled: {clip_reward}")
+        env = _make_single_env(name, is_atari, render_mode, make_kwargs,
+                               normalize_obs, normalize_reward, clip_obs, clip_reward, gamma)
 
-    # Set SLM-Lab attributes
     _set_env_attributes(env, spec)
-
-    # Wrap with appropriate ClockWrapper for automatic timing
-    # Use attributes set by _set_env_attributes instead of recomputing
     ClockWrapperClass = VectorClockWrapper if env.is_venv else ClockWrapper
-    env = ClockWrapperClass(env, env.max_frame)
+    return ClockWrapperClass(env, env.max_frame)
+
+
+def _make_vector_env(name: str, num_envs: int, is_atari: bool, render_mode: str | None,
+                     make_kwargs: dict, normalize_obs: bool, normalize_reward: bool,
+                     clip_obs: float | None, clip_reward: float | None, gamma: float) -> gym.Env:
+    """Create vector environment."""
+    is_rendering = bool(render_mode)
+    vectorization_mode = _get_vectorization_mode(name, num_envs, is_rendering)
+    per_env_wrappers = None
+
+    if is_atari:
+        if vectorization_mode == "vector_entry_point":
+            # AtariVectorEnv: native preprocessing, disable internal reward clipping
+            make_kwargs["reward_clipping"] = False
+            logger.info(f"AtariVectorEnv: {num_envs} envs, native preprocessing")
+        else:
+            # Sync mode for rendering - match AtariVectorEnv preprocessing
+            make_kwargs.pop("life_loss_info", None)
+            make_kwargs.pop("reward_clipping", None)
+            make_kwargs["render_mode"] = "rgb_array"
+            def preprocess(env):
+                return FrameStackObservation(
+                    AtariPreprocessing(env, frame_skip=1), stack_size=4, padding_type="zero"
+                )
+            per_env_wrappers = [preprocess]
+            logger.info(f"Atari sync: {num_envs} envs with preprocessing wrappers")
+    else:
+        make_kwargs["render_mode"] = "rgb_array" if render_mode else None
+
+    env = gym.make_vec(name, num_envs=num_envs, vectorization_mode=vectorization_mode,
+                       wrappers=per_env_wrappers, **make_kwargs)
+
+    if _needs_action_rescaling(env):
+        action_space = env.single_action_space
+        logger.info(f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
+        env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
+
+    env = VectorRecordEpisodeStatistics(env)
+    if is_atari:
+        env = VectorFullGameStatistics(env)  # Track full-game scores across life losses
+
+    if normalize_obs:
+        env = VectorNormalizeObservation(env)
+    if clip_obs is not None:
+        env = VectorClipObservation(env, bound=float(clip_obs))
+    if normalize_reward:
+        env = VectorNormalizeReward(env, gamma=gamma)
+    if is_atari:
+        env = VectorClipReward(env, min_reward=-1.0, max_reward=1.0)
+    elif clip_reward is not None:
+        if isinstance(clip_reward, (int, float)):
+            env = VectorClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
+        else:
+            env = VectorClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
+
+    if render_mode:
+        env = VectorRenderAll(env)
+
+    return env
+
+
+def _make_single_env(name: str, is_atari: bool, render_mode: str | None,
+                     make_kwargs: dict, normalize_obs: bool, normalize_reward: bool,
+                     clip_obs: float | None, clip_reward: float | None, gamma: float) -> gym.Env:
+    """Create single environment."""
+    if is_atari:
+        make_kwargs.pop("life_loss_info", None)
+        make_kwargs.pop("reward_clipping", None)
+
+    make_kwargs["render_mode"] = render_mode
+    env = gym.make(name, **make_kwargs)
+
+    # Match AtariVectorEnv preprocessing
+    if is_atari:
+        env = FrameStackObservation(
+            AtariPreprocessing(env, frame_skip=1), stack_size=4, padding_type="zero"
+        )
+
+    if _needs_action_rescaling(env):
+        action_space = env.action_space
+        logger.info(f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
+        env = RescaleAction(env, min_action=-1.0, max_action=1.0)
+
+    env = TrackReward(env)
+
+    if normalize_obs:
+        env = NormalizeObservation(env)
+    if clip_obs is not None:
+        env = ClipObservation(env, bound=float(clip_obs))
+    if normalize_reward:
+        env = NormalizeReward(env, gamma=gamma)
+    if clip_reward is not None:
+        if isinstance(clip_reward, (int, float)):
+            env = ClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
+        else:
+            env = ClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
 
     return env

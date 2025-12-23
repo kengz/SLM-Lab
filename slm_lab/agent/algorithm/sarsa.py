@@ -74,8 +74,10 @@ class SARSA(Algorithm):
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
+        # steps_per_schedule: frames processed per scheduler.step() call
+        steps_per_schedule = self.training_frequency * self.agent.env.num_envs
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
@@ -137,6 +139,9 @@ class SARSA(Algorithm):
             loss = self.calc_q_loss(batch)
             self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
             self.agent.env.tick_opt_step()
+            # Step LR scheduler once per training iteration
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')

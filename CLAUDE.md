@@ -92,143 +92,197 @@ You are a seasoned software engineer with the following traits:
 5. **Document**: Update README, API docs, architecture notes as needed
 6. **Commit**: Use Conventional Commit message
 
-> Work autonomously: use document to track work, use time efficiently and run things in parallel if needed; keep reminding yourself to continue without waiting; check on tasks regularly, update, plan and pick up the next tasks immediately until all tasks are completed.
+> Work autonomously: use document to track work, use time efficiently and run things in parallel if needed; keep reminding yourself to continue without pausing; check on tasks regularly, update, plan and pick up the next tasks immediately until all tasks are completed. refresh your memory on the instructions doc as needed.
 
 ---
 
-## Project-Specific Notes
+## SLM-Lab: Deep RL Framework
 
-1. **Document major changes** in `MIGRATION_CHANGELOG.md`
+**For Users**: See `README.md` for installation, basic usage, and getting started.
 
-## Project Overview
+**For Agents**: This document covers development workflows - understanding the architecture, running tests, and executing benchmarks.
 
-Modular deep reinforcement learning framework in PyTorch. Originally designed for comprehensive RL experimentation with flexible algorithm implementations and environment support. Currently being migrated to modern dependencies (gymnasium, latest PyTorch, etc.).
+### Project Overview
 
-## Development Environment
+Modular deep reinforcement learning framework in PyTorch for RL research and experimentation. Supports multiple algorithms (DQN, PPO, SAC, etc.), environments (Gymnasium, Atari, MuJoCo), and distributed training with hyperparameter search.
 
-### Cloud Compute
+**Key capabilities:**
+- Reproducible experiments via JSON specs
+- Modular algorithm/network/memory components
+- ASHA hyperparameter search with early termination
+- Cloud GPU training (optional - use dstack or your own infrastructure)
+- Benchmark tracking with automated metrics extraction
 
-- **Use dstack** for GPU-intensive training and development
-- **One-time setup**: `uv tool install dstack && dstack project add --name kengz --url https://sky.dstack.ai --token $DSTACK_TOKEN -y` (get token from dstack Sky web UI; saved to `~/.dstack/config.yml`)
-- **Fleet setup (dstack 0.20+)**: Create fleet first with `dstack apply -f .dstack/fleet-gpu.yml` before running tasks
-- **IMPORTANT**: Always `source .env` before running remote experiments for HF upload credentials
-- **Always use `--gpu`**: Cheaper ($0.39/hr L4 vs $0.54/hr 16-CPU) and faster with fractional GPU sharing
-- Run: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name train -n run-name`
-- ASHA search: `source .env && uv run slm-lab run-remote --gpu spec.json spec_name search -n run-name`
-- Check status: `dstack ps`, `dstack logs <run-name>`
-- Stop runs: `dstack stop <run-name> -y`
-- **Customize hardware**: Edit `.dstack/run-{gpu,cpu}-{train,search}.yml` files to change resources or backends
-- **Max duration**: All runs have 4h safeguard (`max_duration: 4h`) to prevent runaway costs
-- See [dstack docs](https://dstack.ai/llms-full.txt) for full reference
+## Framework Architecture
 
-### Remote Agent Workflow
+Understanding SLM-Lab's modular design is essential for development work.
 
-For running Claude Code on a lightweight orchestration box (no local training).
-See [dstack docs](https://dstack.ai/llms-full.txt) for reference.
+### Core Components
+
+1. **Agent** (`slm_lab/agent/`) - RL algorithm implementations
+   - `algorithm/`: DQN, PPO, SAC, A2C, REINFORCE variants
+   - Each algorithm: `__init__`, `act()`, `update()`, `sample()`
+
+2. **Network** (`slm_lab/agent/net/`) - Neural network architectures
+   - `mlp.py`: Fully-connected networks
+   - `conv.py`: Convolutional networks (Atari)
+   - `recurrent.py`: RNN/LSTM networks
+
+3. **Memory** (`slm_lab/agent/memory/`) - Experience storage
+   - `replay.py`: Experience replay buffer
+   - `prioritized.py`: Prioritized experience replay
+
+4. **Environment** (`slm_lab/env/`) - Gym wrappers and vectorization
+   - `vec_env.py`: Vectorized environments (parallel rollouts)
+   - `wrapper.py`: Atari preprocessing, normalization
+
+5. **Experiment** (`slm_lab/experiment/`) - Training loop and search
+   - `control.py`: Session/trial management
+   - `search.py`: ASHA hyperparameter search
+
+6. **Spec System** (`slm_lab/spec/`) - JSON configuration for reproducibility
+   - Structure: `meta`, `agent`, `env`, `body`, `search`
+   - Variable substitution: `${var}` with `-s var=value`
+
+### Key Patterns
+
+- **Modularity**: Swap algorithms/networks/memories via spec changes
+- **Vectorization**: Parallel env rollouts for sample efficiency
+- **Spec-driven**: All experiments defined in JSON - no code changes needed
+- **Checkpointing**: Auto-save at intervals, resume from checkpoints
+
+## Development Setup
+
+### Local Testing & Bug Fixes
+
+For reproducing issues or testing changes locally:
 
 ```bash
-# System deps (one-time)
-# macOS: brew install swig
-# Linux: apt-get install -y swig openssh-client
+# Install with full dependencies
+uv sync
 
-# Setup (one-time)
-git clone https://github.com/kengz/SLM-Lab.git && cd SLM-Lab
-git checkout dustoff
-uv sync --only-group minimal
+# Quick test run (CartPole - 30 seconds)
+uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole train
+
+# Test with rendering (visual verification)
+uv run slm-lab --render slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole dev
+
+# Run tests
+uv run pytest
+
+# Format code
+uv run ruff format
+```
+
+**Quick test specs** (for verification):
+- `ppo_cartpole.json` - PPO on CartPole (fastest)
+- `ppo_lunar.json` - PPO on LunarLander
+
+### Cloud GPU Training (Optional)
+
+**You can run on your own GPU infrastructure** or use [dstack](https://dstack.ai) for cloud GPUs.
+
+**When to use cloud GPUs:**
+- Atari/MuJoCo benchmarks (hours of training)
+- Large-scale hyperparameter search
+- Parallel runs across multiple seeds
+
+**Local vs Cloud:**
+- Local: Fine for development, debugging, quick tests
+- Cloud: Necessary for benchmarks, large experiments
+
+**dstack setup** (if using cloud GPUs):
+
+```bash
+# One-time setup
 uv tool install dstack
-dstack project add --name kengz --url https://sky.dstack.ai --token $DSTACK_TOKEN -y  # get token from dstack Sky web UI
+dstack project add --name kengz --url https://sky.dstack.ai --token $DSTACK_TOKEN -y
 
-# Test setup - run quick CartPole train on CPU, verify it starts successfully
-source .env && uv run slm-lab run-remote slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole train -n test-cartpole
-dstack ps  # should show test-cartpole running
-dstack stop test-cartpole -y  # stop after verifying
+# Create .env with HuggingFace token for result uploads
+echo "HF_TOKEN=hf_xxx" > .env
 
-# Dispatch runs - see docs/BENCHMARKS.md "Active Runs" section for commands
-# Pattern: source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME <train|search> -n NAME
+# Launch remote run (source .env provides HF credentials)
+source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME train -n run-name
 
 # Monitor
-dstack ps
-dstack logs <run-name>
-dstack stop <run-name> -y
+dstack ps  # check status
+dstack logs <run-name>  # view logs
+dstack stop <run-name> -y  # terminate
 
-# Pull results
-uv run slm-lab pull SPEC_NAME
+# See .dstack/*.yml for configuration
 ```
 
-**Workflow**:
-1. Check `docs/BENCHMARKS.md` "Active Runs" section for work queue
-2. Run command, update "Current Runs" section
-3. When complete, update status and env table results
-4. Move to "Completed Runs" with results
+## Benchmarking Workflow
 
-## Framework Design Patterns
+**Purpose**: Validate algorithm performance, reproduce published results, track improvements.
 
-### SLM-Lab Architecture
+**Documentation**: `docs/BENCHMARKS.md` is the single source of truth - results tables, targets, active runs.
 
-SLM-Lab follows a modular design pattern with these core components:
+**Benchmark requirements** (ensure fairness and reproducibility):
+- Respect `max_frame` from spec (e.g., 10M frames for Atari)
+- Use specified `max_session` for multi-seed averaging
+- Follow environment settings in BENCHMARKS.md (sticky actions, life_loss_info, etc.)
+- Compare against targets from reference implementations
 
-1. **Agent** (`slm_lab/agent/`) - Algorithm implementations (A2C, PPO, SAC, etc.)
-2. **Environment** (`slm_lab/env/`) - Environment wrappers and utilities
-3. **Networks** (`slm_lab/agent/net/`) - Neural network architectures
-4. **Memory** (`slm_lab/agent/memory/`) - Experience replay and storage
-5. **Experiment** (`slm_lab/experiment/`) - Training loop and search utilities
-6. **Spec System** (`slm_lab/spec/`) - JSON configuration for reproducible experiments
+### Running Benchmarks
 
-### Key Components
-
-- **Environment wrappers**: Support for OpenAI/gymnasium, Unity, VizDoom
-- **Algorithm diversity**: DQN, A2C, PPO, SAC, and variants
-- **Network types**: MLP, ConvNet, RNN with flexible architectures
-- **Memory systems**: Experience replay, prioritized replay
-- **Experiment management**: Hyperparameter search, distributed training
-
-## How to Run SLM-Lab
+**Pattern**: Launch → Monitor → Extract → Update table → Commit
 
 ```bash
-# Basic usage
-uv tool install --editable .          # Install first
-slm-lab --help                        # help menu
-slm-lab                               # PPO CartPole (default)
-slm-lab --render                      # with rendering
-slm-lab spec.json spec_name dev       # custom experiment
-slm-lab --job job.json                # batch experiments
+# Launch (example: Atari Pong with PPO)
+source .env && uv run slm-lab run-remote --gpu \
+  -s env=ALE/Pong-v5 \
+  slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari train \
+  -n pong-lam95
 
-# ✅ Validated algorithms (confirmed working)
-# PPO CartPole (default - fastest for quick tests)
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cartpole.json ppo_cartpole train
-# DQN CartPole
-uv run slm-lab slm_lab/spec/demo.json dqn_cartpole train
-# REINFORCE
-uv run slm-lab slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json reinforce_cartpole train
-# DDQN PER
-uv run slm-lab slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json ddqn_per_concat_lunar train
-# PPO Lunar
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_lunar.json ppo_lunar train
-# PPO Continuous
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_cont.json ppo_bipedalwalker train
-# PPO Atari
-uv run slm-lab slm_lab/spec/benchmark/ppo/ppo_pong.json ppo_pong train
+# Check status
+dstack ps  # running jobs
+dstack ps -a | grep "exited (0)"  # completed
+dstack ps -a | grep "exited (1)"  # failed
 
-# Variable substitution for specs with ${var} placeholders
-slm-lab --set env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari dev
-slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_mujoco dev
+# Extract results (when complete)
+dstack logs pong-lam95 | grep "trial_metrics"
+# Output: trial_metrics: frame:1.00e+07 | total_reward_ma:15.2 | ...
+# Extract the total_reward_ma value (15.2)
+
+# Update BENCHMARKS.md table with score
+# Commit changes
 ```
 
-## Benchmarking
+### Extracting Metrics
 
-### Documentation Structure
+At trial completion, logs print `trial_metrics` (scalar metrics JSON):
 
-- **`docs/BENCHMARKS.md`**: Single source of truth for benchmark results, targets, environment details, and active runs tracking
+```
+2026-01-06 05:01:58 | INFO | Session 0 done
+2026-01-06 05:01:59 | INFO | trial_metrics: frame:1.00e+07 | total_reward_ma:816.18 | strength:570.4 | ...
+2026-01-06 05:01:59 | INFO | Trial 0 done
+```
 
-### Three-Stage Search Process
+**Extract `total_reward_ma`** - this is the benchmark score. Update `docs/BENCHMARKS.md` table.
 
-| Stage | Mode | Config | Purpose |
-|-------|------|--------|---------|
-| ASHA | `search` | `max_session=1`, `search_scheduler` enabled | Wide exploration with early termination |
-| Multi | `search` | `max_session=4`, NO `search_scheduler` | Robust validation with averaging |
-| Validate | `train` | Final spec | Confirmation run |
+### Autonomous Execution
 
-**ASHA Config**:
+**When benchmarking, work continuously:**
+
+1. **Launch in parallel** - fill available GPU capacity (~30 concurrent runs)
+2. **Check status regularly** - every 30 minutes for long-running tasks, don't idle
+3. **Extract immediately** - when runs complete, get scores and update table
+4. **Iterate on failures** - don't wait, launch improved configs
+5. **Track in BENCHMARKS.md** - keep "Active Runs" section current
+6. **Commit frequently** - document updates, spec improvements
+
+**IMPORTANT**: Autonomous means YOU actively wait and check in using sleep commands directly - do NOT delegate to background bash processes or scripts. Stay engaged in the conversation.
+
+## Hyperparameter Search
+
+SLM-Lab uses ASHA (Asynchronous Successive Halving Algorithm) for efficient hyperparameter tuning.
+
+### ASHA Search Strategy
+
+**Concept**: Run many trials in parallel, terminate unpromising ones early based on performance.
+
+**Config example**:
 ```json
 {
   "meta": {
@@ -244,101 +298,91 @@ slm-lab -s env=HalfCheetah-v4 slm_lab/spec/benchmark/ppo/ppo_mujoco.json ppo_muj
 }
 ```
 
-### Spec Organization
-
-- **Naming**: `<algo>_<env>` (e.g., `ppo_hopper`, `sac_lunar`). No variant suffixes.
-- **Template specs**: Use `${env}` placeholder with `-s env=EnvName-v5` for variable substitution
-- **Search block**: Stays in spec after search - doesn't affect `train` mode
-- **Finalization**: Successful envs get dedicated specs with tuned defaults
-
-### Search Space Sizing
-
-**Rule: ~3-4 trials per search dimension minimum.**
-
-| Trials | Max Dims | Notes |
-|--------|----------|-------|
-| 8 | 2-3 | Very focused search |
-| 12-16 | 3-4 | Typical refinement |
-| 20 | 5 | Wide exploration |
-| 30 | 6-7 | Broad ASHA search |
-
-**Common mistake**: Too many dimensions wastes trials exploring combinations that won't be sampled adequately. Focus on high-impact hyperparameters:
-- **Most impactful**: learning rates, gamma, lam
-- **Less impactful**: minibatch_size, training_epoch, network architecture (fix these based on successful runs)
-
-After a search run, analyze results and **narrow** the search space around best-performing values before re-running.
-
-### Workflow
-
-1. Check `docs/BENCHMARKS.md` "Active Runs" section for next task
-2. Run, update "Current Runs" in BENCHMARKS.md
-3. When complete: update env table results, move to "Completed Runs"
-4. If successful: update spec defaults, commit, validation run
-
----
-
-## TODO: Benchmark Work
-
-When user says "let's get to work" or "benchmark work", execute this workflow:
-
-### 1. Check Active Runs
+**Launch search**:
 ```bash
-dstack ps
+source .env && uv run slm-lab run-remote --gpu \
+  slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari search \
+  -n atari-search
 ```
-- Review running jobs, check for completions
-- Pull logs for completed/failed runs: `dstack logs <name>`
 
-### 2. Process Completed Runs
-For each completed run, update **all places in BENCHMARKS.md**:
-1. Check final results in logs (look for `total_reward_ma`)
-2. Move from "Current Runs" to "Completed Runs" with results
-3. Update env table row with MA score and status
-4. **Spec file**: if successful (✅), pull results (`uv run slm-lab pull SPEC_NAME`), extract best hyperparameters from experiment_df.csv or trial spec, update spec defaults
-5. Commit all changes together
-6. Add to "Key Findings" if notable patterns discovered
+### Search Space Design
 
-**Note**: On session resume, always check Completed Runs for any ✅ results that may need spec updates.
+**Rule**: ~3-4 trials per dimension minimum.
 
-### 3. Launch Next Runs
-1. Check `docs/BENCHMARKS.md` "Active Runs" section for next items to run
-2. Prioritize by:
-   - Running jobs that fill GPU capacity (8 parallel trials per GPU)
-   - Work Line 1 (Phase 1-2 completion) before Work Line 2 (MuJoCo)
-   - Items close to target (⚠️) before failures (❌)
-3. Copy command, execute with `source .env && ...`
-4. Update "Current Runs" section with new job
+| Trials | Max Dims | Strategy |
+|--------|----------|----------|
+| 8 | 2-3 | Focused refinement |
+| 12-16 | 3-4 | Typical search |
+| 20+ | 5-7 | Broad exploration |
 
-### 4. Analyze & Improve Failing Specs
-For runs with poor results:
-1. **First**: Launch hyperparameter search immediately - don't wait
-2. Compare with successful specs (e.g., PPO Hopper/HalfCheetah params)
-3. Check: learning rates, entropy decay, normalization, gamma/lam
-4. Update spec search ranges based on findings
-5. **If search still fails**: Check CleanRL/rlzoo implementations for reference configs
-6. Queue for re-run with improved settings
+**Use continuous distributions** (not discrete choices):
+- `__uniform`: `[min, max]` - uniform sampling (e.g., gamma 0.99-0.999)
+- `__loguniform`: `[min, max]` - log-uniform for learning rates (e.g., 1e-4 to 1e-3)
+- Avoid `__choice`: Discrete choices fragment the search space, making it harder for the algorithm to interpolate
 
-### 5. Track Progress
-- Keep BENCHMARKS.md up to date (Active Runs section + env tables)
-- Commit documentation updates regularly
-- Note patterns in "Key Findings" section
+**High-impact hyperparameters** (search these first):
+- Learning rate (`lr`) - use `loguniform`
+- Discount factor (`gamma`) - use `uniform`
+- GAE lambda (`lam`) - use `uniform`
 
-**CRITICAL REMINDER**: Continue autonomously, check in regularly, kill unpromising runs and iterate immediately. Run things in parallel without waiting for unrelated tasks. Continue work until full solution.
+**Low-impact** (fix based on successful runs):
+- Batch sizes, training epochs, network architecture
+
+**After search**: Analyze results, narrow ranges around best values, re-run if needed. Update spec defaults with best hyperparameters.
 
 ---
 
-## TODO: Feature Improvements
+## Active Benchmark Work
 
-### 1. Symlog Value Transform ✅
-- [x] Add `symlog(x) = sign(x) * ln(|x| + 1)` and `symexp` inverse to `math_util.py`
-- [x] Add `symlog_transform: true` option to algorithm spec (ActorCritic, PPO)
-- [x] Add unit tests for symlog/symexp functions
-- [ ] Test on MuJoCo env with varying reward scales
+**When user says "let's get to work" or "benchmark work"**, execute this autonomous workflow:
 
-### 2. Layer Normalization ✅
-- [x] Add `layer_norm: true` option to MLPNet spec
-- [x] Insert `nn.LayerNorm` after hidden layer activations
-- [x] Add unit test for layer norm network construction
+### Atari Benchmark Strategy
 
-### 3. Higher Replay Ratio for SAC ✅
-- [x] Increase default `training_iter` from 1-4 to 8 in SAC MuJoCo specs
-- [ ] A/B test on SAC LunarLander and MuJoCo
+For Atari games, use lambda variants based on game characteristics:
+1. Run ALL games with `ppo_atari` (lam95) first - this is the default spec
+2. If lam95 fails OR historical data shows better results from other variants, run those variants
+3. Lambda guidelines: lam95 (long-horizon), lam85 (middle), lam70 (action games)
+4. Fill available GPU capacity (~30 concurrent runs), check status every 5-10 minutes
+
+### Workflow Loop
+
+1. **Check status**: `dstack ps` - identify completed/failed/running jobs
+2. **Extract results**: For completed runs, `dstack logs <name> | grep "trial_metrics"`, get `total_reward_ma`
+3. **Update table**: Fill in `docs/BENCHMARKS.md` with scores, move to "Completed Runs"
+4. **Update specs**: If run succeeded (✅), update spec defaults with best hyperparameters
+5. **Launch next**: Check "Active Runs" section, launch next batch to fill GPU capacity
+6. **Iterate on failures**: For failed runs, launch hyperparameter search or improved config immediately
+7. **Commit progress**: Regular commits of table updates and spec improvements
+8. **Repeat**: Continue loop every 5-10 minutes until all benchmarks complete
+
+### Getting Unstuck
+
+When stuck on failing runs:
+- **Check GPU utilization**: `dstack metrics <run-name>` - low GPU usage (<50%) often indicates CPU bottleneck (env stepping) or config issue, not training problem
+- Compare with reference implementations (CleanRL, SB3)
+- Kill unpromising runs early - iterate faster with new configs
+- If same issue across runs, it's framework/config, not hyperparameters - investigate code
+
+**Key principle**: Work continuously, check in regularly, iterate immediately on failures. Fill GPU capacity (~30 concurrent runs). Never idle waiting.
+
+---
+
+## Results & HuggingFace
+
+Benchmark results are uploaded to [HuggingFace](https://huggingface.co/datasets/SLM-Lab/benchmark) for reproducibility:
+
+- **Development**: Upload to [`SLM-Lab/benchmark-dev`](https://huggingface.co/datasets/SLM-Lab/benchmark-dev) during active work
+- **Graduated**: Once benchmark passes, pull results and re-upload to [`SLM-Lab/benchmark`](https://huggingface.co/datasets/SLM-Lab/benchmark) (public-facing)
+
+**Workflow**:
+1. Remote runs auto-upload to `benchmark-dev` (via `source .env` credentials)
+2. After validation, use `slm-lab pull SPEC_NAME` to download results
+3. Upload graduated results to public `SLM-Lab/benchmark` repo
+
+---
+
+## Documentation
+
+- **Major changes**: Document in `CHANGELOG.md` (bug fixes, new features, breaking changes)
+- **Benchmark results**: Always update `docs/BENCHMARKS.md` with results tables, findings, and reproducibility instructions
+- **Spec updates**: When improving specs, document rationale in commit messages

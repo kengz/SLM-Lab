@@ -263,6 +263,12 @@ class PPO(ActorCritic):
                         self.agent.env.tick_opt_step()
                         loss = policy_loss + val_loss
                     total_loss += loss
+            # Step LR scheduler once per training iteration (per batch of collected experience)
+            # This ensures proper LR decay matching CleanRL's approach
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
+            if not self.shared and hasattr(self, 'critic_lr_scheduler') and self.critic_lr_scheduler is not None:
+                self.critic_lr_scheduler.step()
             loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0

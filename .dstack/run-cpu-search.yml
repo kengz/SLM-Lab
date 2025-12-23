@@ -3,7 +3,6 @@ name: slm-lab
 
 python: 3.12
 
-# Mount local files to /workflow
 files:
   - ..:/workflow
 
@@ -13,23 +12,20 @@ env:
   - SPEC_FILE
   - SPEC_NAME
   - LAB_MODE
-  - SPEC_VARS  # --set overrides, e.g. "-s env=Hopper-v5"
+  - SPEC_VARS  # --set overrides, e.g. "-s env=ALE/Breakout-v5"
 
 commands:
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
   - cd /workflow && uv sync
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
-# CPU search: 16+ CPUs for ASHA parallelism (more cores = more parallel trials)
 resources:
   gpu: 0
   cpu: 16..
   memory: 32GB..
 
-spot_policy: on-demand
 max_duration: 4h
 max_price: 0.30
-# backends: [runpod, aws, gcp, azure, vastai]  # commented out for wider availability
 retry:
   on_events: [no-capacity]
   duration: 1h

@@ -83,7 +83,7 @@
       "log_frequency": 10000,
       "rigorous_eval": 0,
       "max_trial": 1,
-      "max_session": 1
+      "max_session": 4
     }
   }
 }

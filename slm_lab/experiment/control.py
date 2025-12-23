@@ -202,6 +202,8 @@ class Trial:
         else:
             session_metrics_list = self.run_distributed_sessions()
         metrics = analysis.analyze_trial(self.spec, session_metrics_list)
+        # Log final trial metrics for easy extraction from dstack logs
+        logger.info(f"trial_metrics: {' | '.join(util.format_metrics(metrics['scalar']))}")
         self.close()
         return metrics["scalar"]
 

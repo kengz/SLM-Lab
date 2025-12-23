@@ -74,14 +74,24 @@ def get_loss_fn(cls, loss_spec):
     return loss_fn
 
 
-def get_lr_scheduler(optim, lr_scheduler_spec):
-    '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
+def get_lr_scheduler(optim, lr_scheduler_spec, steps_per_schedule=1):
+    '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler.
+
+    Args:
+        optim: The optimizer to schedule
+        lr_scheduler_spec: Scheduler configuration dict
+        steps_per_schedule: Number of env frames processed per scheduler.step() call.
+            For PPO: training_frequency * num_envs (e.g., 128 * 8 = 1024)
+            This converts frame-based specs to update-based scheduling.
+    '''
     if ps.is_empty(lr_scheduler_spec):
         lr_scheduler = NoOpLRScheduler(optim)
     elif lr_scheduler_spec['name'] == 'LinearToZero':
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, 'LambdaLR')
         frame = float(lr_scheduler_spec['frame'])
-        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x: 1 - x / frame)
+        # Convert from total frames to number of scheduler updates
+        num_updates = max(1, frame / steps_per_schedule)
+        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x, n=num_updates: max(0, 1 - x / n))
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
@@ -249,23 +259,26 @@ def save_algorithm(algorithm, ckpt=None):
 
 
 def load(net, model_path):
-    '''Save model weights from a path into a net module'''
+    '''Load model weights from a path into a net module'''
     device = None if torch.cuda.is_available() else 'cpu'
     net.load_state_dict(torch.load(util.smart_path(model_path), map_location=device))
 
 
 def load_algorithm(algorithm):
-    '''Save all the nets for an algorithm'''
+    '''Load all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
     model_prepath = agent.spec['meta']['model_prepath']
-    if lab_mode() == 'enjoy':
+    is_enjoy = lab_mode() == 'enjoy'
+    if is_enjoy:
         model_prepath += '_ckpt-best'
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {model_prepath}_*.pt')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{model_prepath}_{net_name}_model.pt'
         load(net, model_path)
+        if is_enjoy:  # skip loading optim in enjoy mode - not needed for inference
+            continue
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim

@@ -36,12 +36,16 @@ slm-lab run --render                           # with visualization
 # Run custom experiment
 slm-lab run spec.json spec_name train          # local training
 slm-lab run-remote spec.json spec_name train   # cloud training (dstack)
+
+# Help (CLI uses Typer)
+slm-lab --help                                 # list all commands
+slm-lab run --help                             # options for run command
 ```
 
 ## Features
 
 - **Algorithms**: DQN, DDQN+PER, A2C, PPO, SAC and variants
-- **Environments**: Gymnasium (Atari, MuJoCo, Box2D), Unity, VizDoom
+- **Environments**: Gymnasium (Atari, MuJoCo, Box2D)
 - **Networks**: MLP, ConvNet, RNN with flexible architectures
 - **Hyperparameter Search**: ASHA scheduler with Ray Tune
 - **Cloud Training**: dstack integration with auto HuggingFace sync

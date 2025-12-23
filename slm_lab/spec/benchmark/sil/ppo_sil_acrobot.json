@@ -74,7 +74,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "rigorous_eval": 0,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 20,
       "search_resources": {"cpu": 1, "gpu": 0.125},
       "search_scheduler": {

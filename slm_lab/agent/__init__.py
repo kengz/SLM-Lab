@@ -333,18 +333,7 @@ class MetricsTracker:
 
         prefix = self.get_log_prefix()
         last_row = self.get_last_row(df_mode)
-
-        # Simple format: clean up floats, keep NaNs for debugging
-        items = []
-        for k, v in last_row.items():
-            if str(v).lower() == "nan":
-                items.append(f"{k}:nan")
-            elif k in ("total_reward", "total_reward_ma"):
-                items.append(f"{k}:{v:.2f}")
-            elif isinstance(v, float) and not v.is_integer():
-                items.append(f"{k}:{v:.3g}")
-            else:
-                items.append(f"{k}:{v:g}")
+        items = util.format_metrics(last_row)
 
         # Simple grid: 4 per line with equal spacing
         w = max(len(item) for item in items)

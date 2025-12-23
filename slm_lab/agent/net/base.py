@@ -53,9 +53,10 @@ class Net(ABC):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        # Clock tick is now handled by algorithms calling env.tick_opt_step()
-        if lr_scheduler is not None:
-            lr_scheduler.step()
+        # NOTE: lr_scheduler.step() is NOT called here - it should be called once per
+        # training iteration by the algorithm, not per gradient step. This ensures
+        # proper LR decay for algorithms like PPO that have multiple gradient updates
+        # per batch of collected experience.
         return loss
 
     def store_grad_norms(self):

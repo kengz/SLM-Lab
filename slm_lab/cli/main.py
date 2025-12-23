@@ -17,8 +17,7 @@ def _lazy_imports():
     global EVAL_MODES, TRAIN_MODES, Experiment, Session, Trial, logger, util, hf, spec_util
     from slm_lab import EVAL_MODES, TRAIN_MODES
     from slm_lab.experiment.control import Experiment, Session, Trial
-    from slm_lab.lib import logger as _logger, util
-    from slm_lab.lib import hf
+    from slm_lab.lib import logger as _logger, util, hf
     from slm_lab.spec import spec_util
     logger = _logger.get_logger(__name__)
 
@@ -43,6 +42,12 @@ def set_variables(spec, sets: list[str] | None):
     return spec
 
 
+def find_saved_spec(predir: str, spec_name: str) -> str | None:
+    """Find saved spec file in predir, returns latest trial spec or None."""
+    saved_specs = sorted(glob(f"{predir}/{spec_name}_t*_spec.json"))
+    return saved_specs[-1] if saved_specs else None
+
+
 def get_spec(
     spec_file: str,
     spec_name: str,
@@ -59,16 +64,21 @@ def get_spec(
             predir = pre_
             if predir == "latest":
                 predir = sorted(glob(f"data/{spec_name}*/"))[-1]
-            experiment_ts = util.get_experiment_ts(predir)
             logger.info(f"Resolved to train@{predir}")
-            spec = spec_util.get(spec_file, spec_name, experiment_ts)
+            # Use saved spec to preserve max_session from previous run
+            saved_spec_path = find_saved_spec(predir, spec_name)
+            if saved_spec_path:
+                spec = util.read(saved_spec_path)
+            else:
+                experiment_ts = util.get_experiment_ts(predir)
+                spec = spec_util.get(spec_file, spec_name, experiment_ts)
     elif lab_mode == "enjoy":
-        # for enjoy@{session_spec_file}
-        session_spec_file = pre_
-        assert session_spec_file is not None, (
-            "enjoy mode must specify a `enjoy@{session_spec_file}`"
+        # for enjoy@{spec_file}
+        spec_file_path = pre_
+        assert spec_file_path is not None, (
+            "enjoy mode must specify `enjoy@{spec_file}`"
         )
-        spec = util.read(f"{session_spec_file}")
+        spec = util.read(spec_file_path)
     else:
         raise ValueError(
             f"Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}"
@@ -104,9 +114,9 @@ def run_spec(
             Trial(spec).run()
 
         logger.info(f"Output: {spec['meta']['predir']}")
-        # Upload after training completion
-        hf.upload(spec)
+        hf.upload(spec)  # cleanup happens inside upload()
     elif lab_mode in EVAL_MODES:
+        spec_util.tick(spec, "session")
         Session(spec).run()
     else:
         raise ValueError(
@@ -124,9 +134,9 @@ def stop_ray_processes():
         subprocess.run(["pkill", "-f", "slm-lab"], check=False)
         # Also kill lingering multiprocessing workers
         subprocess.run(["pkill", "-9", "-f", "multiprocessing"], check=False)
-        logger.info("Stopped Ray cluster and killed SLM-Lab processes")
+        print("Stopped Ray cluster and killed SLM-Lab processes")
     except Exception as e:
-        logger.warning(f"Failed to kill processes: {e}")
+        print(f"Warning: Failed to kill processes: {e}")
 
 
 def run_experiment(
@@ -173,9 +183,6 @@ def run(
     ),
     render: bool = typer.Option(
         False, "--render", envvar="RENDER", help="Enable environment rendering"
-    ),
-    job: str | None = typer.Option(
-        None, "--job", help="Run batch experiments from job file"
     ),
     log_level: str = typer.Option(
         "INFO",
@@ -230,7 +237,6 @@ def run(
         slm-lab run --render                                           # With rendering
         slm-lab run spec.json spec_name train                          # Custom experiment
         slm-lab run --set env=ALE/Breakout-v5 spec.json atari dev      # With env override
-        slm-lab run --job job/experiments.json                         # Batch experiments
         slm-lab run --stop-ray                                         # Stop Ray processes
     """
     # Handle --stop-ray flag first
@@ -250,12 +256,7 @@ def run(
         mode,
     )
 
-    if job is not None:
-        for spec_file, spec_and_mode in util.read(job).items():
-            for spec_name, lab_mode in spec_and_mode.items():
-                run_experiment(spec_file, spec_name, lab_mode, sets, keep)
-    else:
-        run_experiment(spec_file, spec_name, mode, sets, keep)
+    run_experiment(spec_file, spec_name, mode, sets, keep)
 
 
 def cli():

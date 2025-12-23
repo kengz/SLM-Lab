@@ -1,20 +1,12 @@
 type: fleet
-name: gpu-fleet
+name: slm-lab
 
-# Dynamic provisioning: 0-7 instances based on demand
-nodes: 0..7
-
-# Keep instances alive for 10 minutes after task completes
+# Matches run-gpu-train.yml resources and max_price
+nodes: 0..32
 idle_duration: 10m
 
-# Match run-gpu-train.yml resource requirements
 resources:
-  gpu:
-    count: 1
-    memory: ..16GB
-  cpu: 4..
-  memory: 14GB..
+  gpu: 1..
+  memory: 4GB..
 
-# Cost controls matching existing config
-spot_policy: on-demand
-max_price: 0.20
+max_price: 0.25

@@ -6,7 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from slm_lab.cli import app
-from slm_lab.cli.main import set_variables, get_spec, stop_ray_processes, _lazy_imports
+from slm_lab.cli.main import set_variables, get_spec, stop_ray_processes, _lazy_imports, find_saved_spec
 
 
 runner = CliRunner()
@@ -79,6 +79,31 @@ class TestSetVariables:
         result = set_variables(spec, ["env=ALE/Qbert-v5", "lr=0.0003"])
         assert result["name"] == "ppo_atari_qbert"
         assert result["lr"] == "0.0003"
+
+
+class TestFindSavedSpec:
+    """Tests for find_saved_spec function."""
+
+    def test_returns_latest_trial_spec(self, tmp_path):
+        predir = tmp_path / "data" / "ppo_test_2024"
+        predir.mkdir(parents=True)
+        (predir / "ppo_test_t0_spec.json").touch()
+        (predir / "ppo_test_t1_spec.json").touch()
+        result = find_saved_spec(str(predir), "ppo_test")
+        assert result == str(predir / "ppo_test_t1_spec.json")
+
+    def test_returns_none_if_no_match(self, tmp_path):
+        predir = tmp_path / "empty"
+        predir.mkdir()
+        result = find_saved_spec(str(predir), "ppo_test")
+        assert result is None
+
+    def test_returns_single_spec(self, tmp_path):
+        predir = tmp_path / "data"
+        predir.mkdir()
+        (predir / "ppo_test_t0_spec.json").touch()
+        result = find_saved_spec(str(predir), "ppo_test")
+        assert result == str(predir / "ppo_test_t0_spec.json")
 
 
 @pytest.mark.usefixtures("lazy_imports")
@@ -166,7 +191,6 @@ class TestCliCommands:
         assert "--render" in result.output
         assert "--log-level" in result.output
         assert "--set" in result.output
-        assert "--job" in result.output
         assert "--keep" in result.output
 
     def test_run_remote_help(self):

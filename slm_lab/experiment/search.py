@@ -273,6 +273,6 @@ def cleanup_trial_models(spec, experiment_df, keep_top_n=3):
         for f in files:
             os.remove(f)
             removed_count += 1
-    
+
     if removed_count > 0:
         logger.info(f'Cleaned up {removed_count} model files, kept top {keep_top_n} trials: {sorted(keep_trials)}')

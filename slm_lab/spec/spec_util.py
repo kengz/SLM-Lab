@@ -1,6 +1,7 @@
 # The spec module
-# Manages specification to run things in lab
 import os
+import re
+from glob import glob
 
 import pydash as ps
 
@@ -40,6 +41,8 @@ logger = logger.get_logger(__name__)
 def check_comp_spec(comp_spec, comp_spec_format):
     '''Base method to check component spec'''
     for spec_k, spec_format_v in comp_spec_format.items():
+        if spec_k not in comp_spec:
+            continue  # Optional key not specified
         comp_spec_v = comp_spec[spec_k]
         if ps.is_list(spec_format_v):
             v_set = spec_format_v
@@ -190,6 +193,31 @@ def save(spec, unit='experiment'):
     util.write(spec, f'{prepath}_spec.json')
 
 
+def get_best_session(spec) -> int:
+    '''Find best performing session based on total_reward_ma.'''
+    info_prepath = spec['meta'].get('info_prepath')
+    if not info_prepath:
+        return 0
+    pattern = f"{ROOT_DIR}/{info_prepath}_s*_session_metrics_scalar_train.json"
+    files = glob(pattern)
+    if not files:
+        return 0
+
+    best_session, best_reward = 0, float('-inf')
+    for f in files:
+        match = re.search(r'_t\d+_s(\d+)_', f)
+        if not match:
+            continue
+        try:
+            reward = util.read(f).get('total_reward_ma', float('-inf'))
+            if reward > best_reward:
+                best_reward, best_session = reward, int(match.group(1))
+        except Exception:
+            continue
+    logger.info(f"Best session: {best_session} (reward: {best_reward:.2f})")
+    return best_session
+
+
 def tick(spec, unit):
     '''
     Method to tick lab unit (experiment, trial, session) in meta spec to advance their indices
@@ -197,12 +225,13 @@ def tick(spec, unit):
     spec_util.tick(spec, 'session')
     session = Session(spec)
     '''
-    if lab_mode() == 'enjoy':  # don't tick in enjoy mode
-        return spec
-
     meta_spec = spec['meta']
+    is_enjoy = lab_mode() == 'enjoy'
+
+    # Advance indices based on unit
     if unit == 'experiment':
-        meta_spec['experiment_ts'] = util.get_ts()
+        if not is_enjoy:
+            meta_spec['experiment_ts'] = util.get_ts()
         meta_spec['experiment'] += 1
         meta_spec['trial'] = -1
         meta_spec['session'] = -1
@@ -216,10 +245,22 @@ def tick(spec, unit):
             meta_spec['experiment'] += 1
         if meta_spec['trial'] == -1:
             meta_spec['trial'] += 1
-        meta_spec['session'] += 1
+        # In enjoy mode, use best performing session; otherwise increment normally
+        if is_enjoy:
+            meta_spec['session'] = get_best_session(spec)
+        else:
+            meta_spec['session'] += 1
     else:
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
-    # set prepath and predir since they are determined at this point
+
+    if is_enjoy:
+        prepath = util.get_prepath(spec, unit='session')
+        meta_spec['prepath'] = prepath
+        for folder in ('graph', 'info', 'log', 'model'):
+            meta_spec[f'{folder}_prepath'] = util.insert_folder(prepath, folder)
+        return spec
+
+    # Set prepath/predir and create directories for training
     meta_spec['predir'] = util.get_predir(spec)
     meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
     for folder in ('graph', 'info', 'log', 'model'):

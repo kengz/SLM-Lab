@@ -11,6 +11,23 @@ from slm_lab.lib import env_var, logger
 logger = logger.get_logger(__name__)
 
 
+def cleanup_models(predir: str) -> float:
+    """Remove optim files not needed for enjoy mode before upload. Returns MB saved."""
+    model_dir = Path(predir) / "model"
+    if not model_dir.exists():
+        return 0.0
+
+    bytes_saved = 0
+    for f in model_dir.glob("*_optim.pt"):
+        bytes_saved += f.stat().st_size
+        f.unlink()
+
+    mb_saved = bytes_saved / (1024 * 1024)
+    if mb_saved > 0:
+        logger.info(f"Cleanup saved {mb_saved:.1f} MB")
+    return mb_saved
+
+
 def get_repo_id():
     """Get HF dataset repo ID from HF_REPO env var."""
     return os.getenv("HF_REPO", "SLM-Lab/benchmark-dev")
@@ -38,6 +55,7 @@ def upload(spec_or_predir: dict | str):
         return
 
     repo_id = get_repo_id()
+    cleanup_models(predir)
 
     try:
         HfApi().whoami()

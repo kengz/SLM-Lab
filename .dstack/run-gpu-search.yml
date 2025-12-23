@@ -3,7 +3,6 @@ name: slm-lab
 
 python: 3.12
 
-# Mount local files to /workflow
 files:
   - ..:/workflow
 
@@ -20,16 +19,12 @@ commands:
   - cd /workflow && uv sync
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
-# GPU search: 16-24GB VRAM for parallel trials, extra CPUs for ASHA
 resources:
-  gpu: 16GB..24GB
-  cpu: 8..
-  memory: 32GB..
+  gpu: 1..
+  memory: 4GB..
 
-spot_policy: on-demand
 max_duration: 6h
-max_price: 0.40
-# backends: [runpod, datacrunch]  # commented out for wider availability
+max_price: 0.25
 retry:
   on_events: [no-capacity]
   duration: 1h
