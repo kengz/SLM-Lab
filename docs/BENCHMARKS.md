@@ -386,6 +386,10 @@ source .env && uv run slm-lab run-remote --gpu -s env=ALE/Breakout-v5 slm_lab/sp
 
 #### Sticky Actions Validation (v5 vs v4-style)
 
+**Status**: 10 runs active (launched 2026-01-09 11:30-11:37 EST)
+- Running (4): skiing, frostbite, elevatoraction, gravitar
+- Submitted (6): alien, atlantis, breakout, kungfumaster, pong, wizardofwor
+
 Testing hypothesis that lower scores are due to sticky actions (`repeat_action_probability=0.25` in v5 vs `0.0` in v4/CleanRL).
 
 **Environment**: Same as above, but with `repeat_action_probability=0.0` (matching CleanRL/old v4 behavior)
@@ -398,13 +402,15 @@ source .env && uv run slm-lab run-remote --gpu -s env=ALE/Skiing-v5 slm_lab/spec
 
 **Results** (Testing games with significant regression):
 
-| env | v5 (sticky=0.25) | v4-style (sticky=0.0) | Diff | Notes |
-| --- | ---------------- | --------------------- | ---- | ----- |
-| ALE/Skiing-v5 | -19340 | - | - | Worst regression (-115%) |
-| ALE/Frostbite-v5 | 301 | - | - | -68% from old |
-| ALE/ElevatorAction-v5 | 5446 | - | - | -64% from old |
-| ALE/Gravitar-v5 | 599 | - | - | -41% from old |
-| ALE/WizardOfWor-v5 | 5814 | - | - | -30% from old |
-| ALE/Alien-v5 | 1453 | - | - | -26% from old |
-| ALE/KungFuMaster-v5 | 29068 | - | - | -22% from old |
-| ALE/Atlantis-v5 | 792886 | - | - | -20% from old |
+| env | v5 (sticky=0.25) | v4-style (sticky=0.0) | Diff | % Change |
+| --- | ---------------- | --------------------- | ---- | -------- |
+| ALE/Skiing-v5 | -19340 | - | - | - |
+| ALE/Frostbite-v5 | 301 | - | - | - |
+| ALE/ElevatorAction-v5 | 5446 | - | - | - |
+| ALE/Gravitar-v5 | 599 | - | - | - |
+| ALE/WizardOfWor-v5 | 5814 | - | - | - |
+| ALE/Alien-v5 | 1453 | - | - | - |
+| ALE/KungFuMaster-v5 | 29068 | - | - | - |
+| ALE/Atlantis-v5 | 792886 | - | - | - |
+| ALE/Pong-v5 | 15.01 | - | - | - |
+| ALE/Breakout-v5 | 191 | - | - | - |
