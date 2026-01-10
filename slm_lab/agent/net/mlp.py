@@ -75,7 +75,6 @@ class MLPNet(Net, nn.Module):
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
-            layer_norm=False,  # Add LayerNorm after hidden layers for stability
             log_std_init=None,  # State-independent log_std (CleanRL-style) if set
             actor_init_std=None,  # CleanRL uses 0.01 for Atari
             critic_init_std=None,  # CleanRL uses 1.0 for Atari
@@ -94,14 +93,13 @@ class MLPNet(Net, nn.Module):
             'update_frequency',
             'polyak_coef',
             'gpu',
-            'layer_norm',
             'log_std_init',
             'actor_init_std',
             'critic_init_std',
         ])
 
         dims = [self.in_dim] + self.hid_layers
-        self.model = net_util.build_fc_model(dims, self.hid_layers_activation, layer_norm=self.layer_norm)
+        self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
         self.tails, self.log_std = net_util.build_tails(dims[-1], self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)

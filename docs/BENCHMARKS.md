@@ -1,44 +1,73 @@
 # SLM-Lab Benchmarks
 
-Systematic algorithm validation across Gymnasium environments.
-
-**Results**: [HuggingFace](https://huggingface.co/datasets/SLM-Lab/benchmark) | **Updated**: 2026-01-06
+Reproducible deep RL algorithm validation across Gymnasium environments (Classic Control, Box2D, MuJoCo, Atari).
 
 ---
 
 ## Usage
 
+After [installation](../README.md#quick-start), copy `SPEC_FILE` and `SPEC_NAME` from result tables below (Atari uses one shared spec file - see [Phase 4](#phase-4-atari)).
+
+### Running Benchmarks
+
+**Local** - runs on your machine (Classic Control: minutes):
 ```bash
-# Local
-uv run slm-lab SPEC_FILE SPEC_NAME train
-uv run slm-lab SPEC_FILE SPEC_NAME search
-
-# Remote (dstack) - always source .env for HF upload
-source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME train -n NAME
-source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME
-
-# Monitor
-dstack ps                    # List runs
-dstack logs <run-name>       # View logs
-dstack stop <run-name> -y    # Stop run
-
-# Pull results from HuggingFace (models, metrics, plots)
-source .env && uv run slm-lab pull SPEC_NAME
+slm-lab run SPEC_FILE SPEC_NAME train
 ```
 
-### Guidelines
+**Remote** - cloud GPU via [dstack](https://dstack.ai), auto-syncs to HuggingFace:
+```bash
+source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME train -n NAME
+```
 
-#### Hyperparameter Search
+Remote setup: `cp .env.example .env` then set `HF_TOKEN`. See [README](../README.md#cloud-training-dstack) for dstack config.
 
-**When to use**: Algorithm fails to reach target on first run.
+### Atari
+
+All games share one spec file (54 tested, 5 hard exploration skipped). Use `-s env=ENV` to substitute. Runs take ~2-3 hours on GPU.
+
+```bash
+source .env && slm-lab run-remote --gpu -s env=ALE/Pong-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari train -n pong
+```
+
+### Download Results
+
+Trained models and metrics sync to [HuggingFace](https://huggingface.co/datasets/SLM-Lab/benchmark). Pull locally:
+```bash
+source .env && slm-lab pull SPEC_NAME
+slm-lab list  # see available experiments
+```
+
+### Environment Settings
+
+Standardized settings for fair comparison. The **Settings** line in each result table shows these values.
+
+| Env Category | num_envs | max_frame | log_frequency | grace_period |
+|--------------|----------|-----------|---------------|--------------|
+| Classic Control | 4 | 2e5-3e5 | 500 | 1e4 |
+| Box2D | 8-16 | 3e5-3e6 | 1000 | 5e4-2e5 |
+| MuJoCo (easy) | 4-16 | 1e6-3e6 | 500-1000 | 1e5-2e5 |
+| MuJoCo (hard) | 16 | 10e6-50e6 | 1000 | 1e6 |
+| Atari | 16 | 10e6 | 10000 | 5e5 |
+
+log_frequency ≈ episode length for responsive MA updates (Reacher=50, Pusher=100, others=1000).
+
+### Hyperparameter Search
+
+When algorithm fails to reach target, run search instead of train:
+
+```bash
+slm-lab run SPEC_FILE SPEC_NAME search                                        # local
+source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME    # remote
+```
 
 | Stage | Mode | Config | Purpose |
 |-------|------|--------|---------|
-| ASHA | `search` | `max_session=1`, `search_scheduler` enabled | Wide exploration |
-| Multi | `search` | `max_session=4`, NO `search_scheduler` | Robust validation |
-| Validate | `train` | Final spec | Confirmation |
+| ASHA | `search` | `max_session=1`, `search_scheduler` enabled | Wide exploration with early stopping |
+| Multi | `search` | `max_session=4`, NO `search_scheduler` | Robust validation with averaging |
+| Validate | `train` | Final spec | Confirmation run |
 
-**Search budget**: ~3-4 trials per dimension minimum (8 trials = 2-3 dims, 16 = 3-4, 20+ = 5+).
+Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20+ = 5+ dims).
 
 ```json
 {
@@ -54,26 +83,6 @@ source .env && uv run slm-lab pull SPEC_NAME
   }
 }
 ```
-
-#### Environment Settings
-
-**IMPORTANT**: All specs MUST strictly follow these settings for fair comparison across algorithms.
-
-| Env Category | num_envs | max_frame | log_frequency | grace_period |
-|--------------|----------|-----------|---------------|--------------|
-| Classic Control | 4 | 2e5-3e5 | 500 | 1e4 |
-| Box2D | 8-16 | 3e5-3e6 | 1e3 | 5e4-2e5 |
-| MuJoCo (easy) | 4-16 | 1e6-3e6 | 500-1000 | 1e5-2e5 |
-| MuJoCo (hard) | 16 | 10e6-50e6 | 1000 | 1e6 |
-| Atari | 16 | 10e6 | 1e4 | 5e5 |
-
-**Note**: log_frequency should be ~episode_length for responsive MA updates (Reacher=50, Pusher=100, others=1000).
-
-#### MuJoCo PPO Standard
-
-- **Network**: `[256, 256]` + tanh + orthogonal init
-- **Normalization**: `normalize_obs=true`, `normalize_reward=true`, `normalize_v_targets=true`
-- **Search**: 3 params (gamma, lam, lr) × 16 trials
 
 ---
 
@@ -100,13 +109,13 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 2e5 | num_envs 4 | max_session 4 | log_frequency 500
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 499.7 | [ppo_cartpole.json](../slm_lab/spec/benchmark/ppo/ppo_cartpole.json) | `ppo_cartpole` |
-| A2C | ✅ | 488.7 | [a2c_gae_cartpole.json](../slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json) | `a2c_gae_cartpole` |
-| DQN | ✅ | 437.8 | [dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | `dqn_boltzmann_cartpole` |
-| DDQN+PER | ✅ | 430.4 | [dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | `ddqn_per_boltzmann_cartpole` |
-| SAC | ✅ | 431.1 | [sac_cartpole.json](../slm_lab/spec/benchmark/sac/sac_cartpole.json) | `sac_cartpole` |
+| PPO | ✅ | 499.7 | [slm_lab/spec/benchmark/ppo/ppo_cartpole.json](../slm_lab/spec/benchmark/ppo/ppo_cartpole.json) | ppo_cartpole |
+| A2C | ✅ | 488.7 | [slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json](../slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json) | a2c_gae_cartpole |
+| DQN | ✅ | 437.8 | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | dqn_boltzmann_cartpole |
+| DDQN+PER | ✅ | 430.4 | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | ddqn_per_boltzmann_cartpole |
+| SAC | ✅ | 431.1 | [slm_lab/spec/benchmark/sac/sac_cartpole.json](../slm_lab/spec/benchmark/sac/sac_cartpole.json) | sac_cartpole |
 
 #### 1.2 Acrobot-v1
 
@@ -114,13 +123,13 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e5 | num_envs 4 | max_session 4 | log_frequency 500
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | -80.8 | [ppo_acrobot.json](../slm_lab/spec/benchmark/ppo/ppo_acrobot.json) | `ppo_acrobot` |
-| DQN | ✅ | -96.2 | [dqn_acrobot.json](../slm_lab/spec/benchmark/dqn/dqn_acrobot.json) | `dqn_boltzmann_acrobot` |
-| DDQN+PER | ✅ | -83.0 | [ddqn_per_acrobot.json](../slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | `ddqn_per_acrobot` |
-| A2C | ✅ | -84.2 | [a2c_gae_acrobot.json](../slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json) | `a2c_gae_acrobot` |
-| SAC | ✅ | -97 | [sac_acrobot.json](../slm_lab/spec/benchmark/sac/sac_acrobot.json) | `sac_acrobot` |
+| PPO | ✅ | -80.8 | [slm_lab/spec/benchmark/ppo/ppo_acrobot.json](../slm_lab/spec/benchmark/ppo/ppo_acrobot.json) | ppo_acrobot |
+| DQN | ✅ | -96.2 | [slm_lab/spec/benchmark/dqn/dqn_acrobot.json](../slm_lab/spec/benchmark/dqn/dqn_acrobot.json) | dqn_boltzmann_acrobot |
+| DDQN+PER | ✅ | -83.0 | [slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json](../slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | ddqn_per_acrobot |
+| A2C | ✅ | -84.2 | [slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json](../slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json) | a2c_gae_acrobot |
+| SAC | ✅ | -97 | [slm_lab/spec/benchmark/sac/sac_acrobot.json](../slm_lab/spec/benchmark/sac/sac_acrobot.json) | sac_acrobot |
 
 #### 1.3 Pendulum-v1
 
@@ -128,10 +137,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e5 | num_envs 4 | max_session 4 | log_frequency 500
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | -178 | [ppo_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_pendulum.json) | `ppo_pendulum` |
-| SAC | ✅ | -150 | [sac_pendulum.json](../slm_lab/spec/benchmark/sac/sac_pendulum.json) | `sac_pendulum` |
+| PPO | ✅ | -178 | [slm_lab/spec/benchmark/ppo/ppo_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_pendulum.json) | ppo_pendulum |
+| SAC | ✅ | -150 | [slm_lab/spec/benchmark/sac/sac_pendulum.json](../slm_lab/spec/benchmark/sac/sac_pendulum.json) | sac_pendulum |
 
 ### Phase 2: Box2D
 
@@ -141,14 +150,14 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e5 | num_envs 8 | max_session 4 | log_frequency 1000
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| DDQN+PER | ✅ | 230.0 | [ddqn_per_lunar.json](../slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | `ddqn_per_concat_lunar` |
-| PPO | ✅ | 229.9 | [ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar` |
-| DQN | ✅ | 203.9 | [dqn_lunar.json](../slm_lab/spec/benchmark/dqn/dqn_lunar.json) | `dqn_concat_lunar` |
-| A2C | 📊 | +41 | [a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | `a2c_gae_lunar` ¹ |
+| DDQN+PER | ✅ | 230.0 | [slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json](../slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | ddqn_per_concat_lunar |
+| PPO | ✅ | 229.9 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | ppo_lunar |
+| DQN | ✅ | 203.9 | [slm_lab/spec/benchmark/dqn/dqn_lunar.json](../slm_lab/spec/benchmark/dqn/dqn_lunar.json) | dqn_concat_lunar |
+| A2C | 📊 ¹ | +41 | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | a2c_gae_lunar |
 
-¹ A2C LunarLander: Historical SLM-Lab results also showed <100 at 300k frames. A2C is fundamentally less sample-efficient than PPO (single-pass vs multiple epochs per batch). Result is acceptable.
+¹ A2C LunarLander: Historical SLM-Lab results showed <100 at 300k frames. A2C is less sample-efficient than PPO. Result acceptable.
 
 #### 2.2 LunarLander-v3 (Continuous)
 
@@ -156,13 +165,18 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e5 | num_envs 8 | max_session 4 | log_frequency 1000
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 245.7 | [ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | `ppo_lunar_continuous` |
-| SAC | ✅ | 241.6 | [sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | `sac_lunar_continuous` |
-| A2C | ❌ 1% | 2.5 | [a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | `a2c_gae_lunar_continuous` |
+| PPO | ✅ | 245.7 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | ppo_lunar_continuous |
+| SAC | ✅ | 241.6 | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | sac_lunar_continuous |
+| A2C | ❌ 1% | 2.5 | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | a2c_gae_lunar_continuous |
 
 ### Phase 3: MuJoCo
+
+**PPO Standard Config**:
+- **Network**: `[256, 256]` hidden layers, tanh activation, orthogonal init
+- **Normalization**: `normalize_obs=true`, `normalize_reward=true`, `normalize_v_targets=true`
+- **Search**: 3 params (gamma, lam, lr) × 16 trials
 
 #### 3.1 Hopper-v5
 
@@ -170,10 +184,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: PPO: max_frame 1e6, num_envs 16 | SAC: max_frame 1e6, num_envs 1 (SB3 standard)
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 2914 | [ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | `ppo_hopper` |
-| SAC | ✅ | 2719 | [sac_hopper.json](../slm_lab/spec/benchmark/sac/sac_hopper.json) | `sac_hopper` |
+| PPO | ✅ | 2914 | [slm_lab/spec/benchmark/ppo/ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | ppo_hopper |
+| SAC | ✅ | 2719 | [slm_lab/spec/benchmark/sac/sac_hopper.json](../slm_lab/spec/benchmark/sac/sac_hopper.json) | sac_hopper |
 
 #### 3.2 HalfCheetah-v5
 
@@ -181,12 +195,12 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 6383 | [ppo_halfcheetah.json](../slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | `ppo_halfcheetah` |
-| SAC | ✅ | 7410 | [sac_halfcheetah.json](../slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | `sac_halfcheetah` ³ |
+| PPO | ✅ | 6383 | [slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json](../slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | ppo_halfcheetah |
+| SAC | ✅ ² | 7410 | [slm_lab/spec/benchmark/sac/sac_halfcheetah.json](../slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | sac_halfcheetah |
 
-³ SAC HalfCheetah solved: All 4 sessions exceeded target 5000 (MA=6989-7410, 140-148%). Run terminated at 89% (max_duration 4h) before HF upload.
+² SAC HalfCheetah: All 4 sessions exceeded target (MA=6989-7410). Run terminated at 89% before HF upload.
 
 #### 3.3 Walker2d-v5
 
@@ -194,10 +208,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: PPO: max_frame 8e6, num_envs 16 | SAC: max_frame 1e6, num_envs 1 (SB3 standard)
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 5700 | [ppo_walker2d.json](../slm_lab/spec/benchmark/ppo/ppo_walker2d.json) | `ppo_walker2d` |
-| SAC | ✅ | 3824 | [sac_walker2d.json](../slm_lab/spec/benchmark/sac/sac_walker2d.json) | `sac_walker2d` |
+| PPO | ✅ | 5700 | [slm_lab/spec/benchmark/ppo/ppo_walker2d.json](../slm_lab/spec/benchmark/ppo/ppo_walker2d.json) | ppo_walker2d |
+| SAC | ✅ | 3824 | [slm_lab/spec/benchmark/sac/sac_walker2d.json](../slm_lab/spec/benchmark/sac/sac_walker2d.json) | sac_walker2d |
 
 #### 3.4 Ant-v5
 
@@ -205,10 +219,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: PPO: max_frame 8e6, num_envs 16 | SAC: max_frame 1e6, num_envs 1 (SB3 standard)
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 2190 | [ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | `ppo_ant` |
-| SAC | ✅ | 3131 | [sac_ant.json](../slm_lab/spec/benchmark/sac/sac_ant.json) | `sac_ant` |
+| PPO | ✅ | 2190 | [slm_lab/spec/benchmark/ppo/ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | ppo_ant |
+| SAC | ✅ | 3131 | [slm_lab/spec/benchmark/sac/sac_ant.json](../slm_lab/spec/benchmark/sac/sac_ant.json) | sac_ant |
 
 #### 3.5 Swimmer-v5
 
@@ -216,10 +230,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: PPO: max_frame 8e6, num_envs 16 | SAC: max_frame 1e6, num_envs 1 (SB3 standard)
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 349 | [ppo_swimmer.json](../slm_lab/spec/benchmark/ppo/ppo_swimmer.json) | `ppo_swimmer` |
-| SAC | ✅ | 333 | [sac_swimmer.json](../slm_lab/spec/benchmark/sac/sac_swimmer.json) | `sac_swimmer` ⁴ |
+| PPO | ✅ | 349 | [slm_lab/spec/benchmark/ppo/ppo_swimmer.json](../slm_lab/spec/benchmark/ppo/ppo_swimmer.json) | ppo_swimmer |
+| SAC | ✅ | 333 | [slm_lab/spec/benchmark/sac/sac_swimmer.json](../slm_lab/spec/benchmark/sac/sac_swimmer.json) | sac_swimmer |
 
 #### 3.6 Reacher-v5
 
@@ -227,10 +241,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | -5.29 | [ppo_reacher.json](../slm_lab/spec/benchmark/ppo/ppo_reacher.json) | `ppo_reacher` |
-| SAC | ⚠️ 96% | -5.18 | [sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_reacher` |
+| PPO | ✅ | -5.29 | [slm_lab/spec/benchmark/ppo/ppo_reacher.json](../slm_lab/spec/benchmark/ppo/ppo_reacher.json) | ppo_reacher |
+| SAC | ✅ | -5.18 | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | sac_reacher |
 
 #### 3.7 Pusher-v5
 
@@ -238,10 +252,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | -40.46 | [ppo_pusher.json](../slm_lab/spec/benchmark/ppo/ppo_pusher.json) | `ppo_pusher` |
-| SAC | ✅ | -37.7 | [sac_pusher.json](../slm_lab/spec/benchmark/sac/sac_pusher.json) | `sac_pusher` |
+| PPO | ✅ | -40.46 | [slm_lab/spec/benchmark/ppo/ppo_pusher.json](../slm_lab/spec/benchmark/ppo/ppo_pusher.json) | ppo_pusher |
+| SAC | ✅ | -37.7 | [slm_lab/spec/benchmark/sac/sac_pusher.json](../slm_lab/spec/benchmark/sac/sac_pusher.json) | sac_pusher |
 
 #### 3.8 InvertedPendulum-v5
 
@@ -249,10 +263,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 3e6 | num_envs 4 | max_session 4 | log_frequency 1e4
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 982 | [ppo_inverted_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json) | `ppo_inverted_pendulum` |
-| SAC | ✅ | 1000 | [sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_inverted_pendulum` |
+| PPO | ✅ | 982 | [slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json) | ppo_inverted_pendulum |
+| SAC | ✅ | 1000 | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | sac_inverted_pendulum |
 
 #### 3.9 InvertedDoublePendulum-v5
 
@@ -260,10 +274,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 9059 | [ppo_inverted_double_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json) | `ppo_inverted_double_pendulum` |
-| SAC | ✅ | 9347 | [sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | `sac_inverted_double_pendulum` |
+| PPO | ✅ | 9059 | [slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json) | ppo_inverted_double_pendulum |
+| SAC | ✅ | 9347 | [slm_lab/spec/benchmark/sac/sac_mujoco.json](../slm_lab/spec/benchmark/sac/sac_mujoco.json) | sac_inverted_double_pendulum |
 
 #### 3.10 Humanoid-v5
 
@@ -271,10 +285,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1000
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 1573 | [ppo_humanoid.json](../slm_lab/spec/benchmark/ppo/ppo_humanoid.json) | `ppo_humanoid` |
-| SAC | ✅ | 4860 | [sac_humanoid.json](../slm_lab/spec/benchmark/sac/sac_humanoid.json) | `sac_humanoid` ⁵ |
+| PPO | ✅ | 1573 | [slm_lab/spec/benchmark/ppo/ppo_humanoid.json](../slm_lab/spec/benchmark/ppo/ppo_humanoid.json) | ppo_humanoid |
+| SAC | ✅ | 4860 | [slm_lab/spec/benchmark/sac/sac_humanoid.json](../slm_lab/spec/benchmark/sac/sac_humanoid.json) | sac_humanoid |
 
 #### 3.11 HumanoidStandup-v5
 
@@ -282,10 +296,10 @@ source .env && uv run slm-lab pull SPEC_NAME
 
 **Settings**: max_frame 6e6 | num_envs 16 | max_session 4 | log_frequency 1000
 
-| Algorithm | Status | MA | Spec File | Spec Name |
+| Algorithm | Status | MA | SPEC_FILE | SPEC_NAME |
 |-----------|--------|-----|-----------|-----------|
-| PPO | ✅ | 103k | [ppo_humanoid_standup.json](../slm_lab/spec/benchmark/ppo/ppo_humanoid_standup.json) | `ppo_humanoid_standup` |
-| SAC | ✅ | 154k | [sac_humanoid_standup.json](../slm_lab/spec/benchmark/sac/sac_humanoid_standup.json) | `sac_humanoid_standup` ⁶ |
+| PPO | ✅ | 103k | [slm_lab/spec/benchmark/ppo/ppo_humanoid_standup.json](../slm_lab/spec/benchmark/ppo/ppo_humanoid_standup.json) | ppo_humanoid_standup |
+| SAC | ✅ | 154k | [slm_lab/spec/benchmark/sac/sac_humanoid_standup.json](../slm_lab/spec/benchmark/sac/sac_humanoid_standup.json) | sac_humanoid_standup |
 
 ### Phase 4: Atari
 
@@ -300,19 +314,22 @@ source .env && uv run slm-lab pull SPEC_NAME
 **Algorithm: PPO**:
 - **Network**: ConvNet [32,64,64] + 512fc (Nature CNN), orthogonal init, normalize=true, clip_grad_val=0.5
 - **Hyperparams**: AdamW (lr=2.5e-4, eps=1e-5), minibatch_size=256, time_horizon=128, training_epoch=4, clip_eps=0.1, entropy_coef=0.01
-- **Lambda variants**: 0.95 (long-horizon), 0.85 (middle), 0.70 (action games) - different games benefit from different GAE lambda values
 
-**Reproduce**:
+**Lambda Variants**: All use one spec file ([slm_lab/spec/benchmark/ppo/ppo_atari.json](../slm_lab/spec/benchmark/ppo/ppo_atari.json)), differing only in GAE lambda. Lower lambda = bias toward immediate rewards (action games), higher = longer credit horizon (strategic games).
+
+| SPEC_NAME | Lambda | Best for |
+|-----------|--------|----------|
+| ppo_atari | 0.95 | Long-horizon, strategic games (default) |
+| ppo_atari_lam85 | 0.85 | Mixed/moderate games |
+| ppo_atari_lam70 | 0.70 | Fast action games |
+
+**Reproduce**: Copy `ENV` from first column, `SPEC_NAME` from column header. All use the same SPEC_FILE:
 ```bash
-# Use env and spec from table below - Example: ALE/Pong-v5 with ppo_atari (lam95)
-source .env && uv run slm-lab run-remote --gpu -s env=ALE/Pong-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari train -n pong
-# Example: ALE/Breakout-v5 with ppo_atari_lam70
-source .env && uv run slm-lab run-remote --gpu -s env=ALE/Breakout-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari_lam70 train -n breakout
+source .env && slm-lab run-remote --gpu -s env=ENV \
+  slm_lab/spec/benchmark/ppo/ppo_atari.json SPEC_NAME train -n NAME
 ```
 
-**Results** (Clean Rerun - In Progress):
-
-| env\spec | ppo_atari (lam95) | ppo_atari_lam85 | ppo_atari_lam70 |
+| ENV\SPEC_NAME | ppo_atari | ppo_atari_lam85 | ppo_atari_lam70 |
 | -------- | ----------------- | --------------- | --------------- |
 | ALE/Adventure-v5 | Skip | Skip | Skip |
 | ALE/AirRaid-v5 | **8245** | - | - |
@@ -378,31 +395,25 @@ source .env && uv run slm-lab run-remote --gpu -s env=ALE/Breakout-v5 slm_lab/sp
 | ALE/YarsRevenge-v5 | **17120** | - | - |
 | ALE/Zaxxon-v5 | **10756** | - | - |
 
-**Spec File**: [ppo_atari.json](../slm_lab/spec/benchmark/ppo/ppo_atari.json)
-
-**Legend**: **Bold** = Best score among lambda variants | Skip = Hard exploration games | - = Not tested
+**Legend**: **Bold** = Best score | Skip = Hard exploration | - = Not tested
 
 ---
 
 #### Sticky Actions Validation (v5 vs v4-style)
 
-**Status**: 10 runs active (launched 2026-01-09 11:30-11:37 EST)
-- Running (4): skiing, frostbite, elevatoraction, gravitar
-- Submitted (6): alien, atlantis, breakout, kungfumaster, pong, wizardofwor
-
 Testing hypothesis that lower scores are due to sticky actions (`repeat_action_probability=0.25` in v5 vs `0.0` in v4/CleanRL).
 
 **Environment**: Same as above, but with `repeat_action_probability=0.0` (matching CleanRL/old v4 behavior)
 
-**Reproduce**:
+**Reproduce**: Copy `ENV` from first column:
 ```bash
-# Test with no sticky actions (v4-style)
-source .env && uv run slm-lab run-remote --gpu -s env=ALE/Skiing-v5 slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari_nosticky train -n skiing-nosticky
+source .env && slm-lab run-remote --gpu -s env=ENV \
+  slm_lab/spec/benchmark/ppo/ppo_atari.json ppo_atari_nosticky train -n NAME
 ```
 
 **Results** (Testing games with significant regression):
 
-| env | v5 (sticky=0.25) | v4-style (sticky=0.0) | Diff | % Change |
+| ENV | v5 (sticky=0.25) | v4-style (sticky=0.0) | Diff | % Change |
 | --- | ---------------- | --------------------- | ---- | -------- |
 | ALE/Skiing-v5 | -19340 | - | - | - |
 | ALE/Frostbite-v5 | 301 | - | - | - |
@@ -414,3 +425,4 @@ source .env && uv run slm-lab run-remote --gpu -s env=ALE/Skiing-v5 slm_lab/spec
 | ALE/Atlantis-v5 | 792886 | - | - | - |
 | ALE/Pong-v5 | 15.01 | - | - | - |
 | ALE/Breakout-v5 | 191 | - | - | - |
+

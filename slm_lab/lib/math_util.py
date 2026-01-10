@@ -3,31 +3,6 @@ import numpy as np
 import torch
 
 
-# Symlog transform from DreamerV3 - handles varying reward scales gracefully
-# Reference: https://arxiv.org/abs/2301.04104
-
-def symlog(x):
-    '''
-    Symmetric logarithmic transform: sign(x) * ln(|x| + 1)
-    Maps large values to smaller range while preserving sign and being invertible.
-    Works with both numpy arrays and torch tensors.
-    '''
-    if isinstance(x, torch.Tensor):
-        return torch.sign(x) * torch.log1p(torch.abs(x))
-    return np.sign(x) * np.log1p(np.abs(x))
-
-
-def symexp(x):
-    '''
-    Inverse of symlog: sign(x) * (exp(|x|) - 1)
-    Recovers original scale from symlog-transformed values.
-    Works with both numpy arrays and torch tensors.
-    '''
-    if isinstance(x, torch.Tensor):
-        return torch.sign(x) * (torch.exp(torch.abs(x)) - 1)
-    return np.sign(x) * (np.exp(np.abs(x)) - 1)
-
-
 # general math methods
 
 def center_mean(v):
