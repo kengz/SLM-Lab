@@ -1,5 +1,5 @@
 {
-  "sac_walker2d": {
+  "sac_reacher": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
@@ -40,15 +40,15 @@
       }
     },
     "env": {
-      "name": "Walker2d-v5",
+      "name": "Reacher-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 8e6
+      "max_frame": 3e6
     },
     "meta": {
       "distributed": false,
       "log_frequency": 10000,
-      "eval_frequency": 10000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1

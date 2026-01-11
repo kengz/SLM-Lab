@@ -8,8 +8,8 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1,
-        "training_iter": 1,
-        "training_start_step": 10000
+        "training_iter": 16,
+        "training_start_step": 1000
       },
       "memory": {
         "name": "Replay",
@@ -19,7 +19,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": null,
@@ -38,9 +41,9 @@
     },
     "env": {
       "name": "Ant-v5",
-      "num_envs": 1,
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 8e6
     },
     "meta": {
       "distributed": false,

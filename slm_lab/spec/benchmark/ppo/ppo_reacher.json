@@ -35,7 +35,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -65,21 +68,33 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
+      "log_frequency": 10000,
       "eval_frequency": 500,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 16,
-      "search_resources": {"cpu": 1, "gpu": 0.125},
+      "search_resources": {
+        "cpu": 1,
+        "gpu": 0.125
+      },
       "search_scheduler": {
         "grace_period": 5e5,
         "reduction_factor": 3
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.98, 0.999],
-      "agent.algorithm.lam__uniform": [0.9, 0.98],
-      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
+      "agent.algorithm.gamma__uniform": [
+        0.98,
+        0.999
+      ],
+      "agent.algorithm.lam__uniform": [
+        0.9,
+        0.98
+      ],
+      "agent.net.optim_spec.lr__loguniform": [
+        1e-4,
+        1e-3
+      ]
     }
   }
 }

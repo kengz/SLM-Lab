@@ -16,7 +16,7 @@
         "gamma": 0.987,
         "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -48,7 +48,8 @@
     "env": {
       "name": "Acrobot-v1",
       "max_t": null,
-      "max_frame": 300000
+      "max_frame": 300000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,
@@ -62,10 +63,23 @@
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [0.99, 0.999],
-      "agent.algorithm.explore_var_spec.end_val__uniform": [0.05, 0.15],
-      "agent.algorithm.explore_var_spec.end_step__qrandint": [10000, 20000, 5000],
-      "agent.net.optim_spec.lr__loguniform": [0.0003, 0.001]
+      "agent.algorithm.gamma__uniform": [
+        0.99,
+        0.999
+      ],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [
+        0.05,
+        0.15
+      ],
+      "agent.algorithm.explore_var_spec.end_step__qrandint": [
+        10000,
+        20000,
+        5000
+      ],
+      "agent.net.optim_spec.lr__loguniform": [
+        0.0003,
+        0.001
+      ]
     }
   },
   "dqn_boltzmann_acrobot": {
@@ -117,10 +131,12 @@
     "env": {
       "name": "Acrobot-v1",
       "max_t": null,
-      "max_frame": 300000
+      "max_frame": 300000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 500,
       "eval_frequency": 500,
       "max_session": 4,
       "max_trial": 1

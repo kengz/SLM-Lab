@@ -15,7 +15,7 @@
         },
         "gamma": 0.99,
         "training_batch_iter": 1,
-        "training_iter": 1,
+        "training_iter": 4,
         "training_frequency": 1,
         "training_start_step": 32
       },
@@ -49,7 +49,7 @@
     },
     "env": {
       "name": "LunarLander-v3",
-      "num_envs": 4,
+      "num_envs": 8,
       "max_t": null,
       "max_frame": 300000
     },

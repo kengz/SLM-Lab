@@ -16,7 +16,7 @@
         "gamma": 0.99,
         "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -45,7 +45,8 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 30000
+      "max_frame": 30000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,
@@ -126,10 +127,12 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 200000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 500,
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 1
@@ -152,7 +155,7 @@
         "gamma": 0.995,
         "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -165,7 +168,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.55,
         "loss_spec": {
@@ -183,10 +189,12 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 200000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 500,
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 1
@@ -209,7 +217,7 @@
         "gamma": 0.99,
         "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -240,7 +248,8 @@
     "env": {
       "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100000
+      "max_frame": 200000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,

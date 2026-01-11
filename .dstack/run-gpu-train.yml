@@ -23,7 +23,7 @@ resources:
   gpu: 1..
   memory: 4GB..
 
-max_duration: 4h
+max_duration: 8h
 max_price: 0.25
 retry:
   on_events: [no-capacity]

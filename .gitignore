@@ -35,3 +35,6 @@ nb.py
 *.log
 *.meta
 SLM-Env
+.venv/
+.ruff_cache/
+temp_check/

@@ -16,7 +16,7 @@
         "gamma": 0.99,
         "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -49,9 +49,9 @@
     },
     "env": {
       "name": "Acrobot-v1",
-      "num_envs": 1,
       "max_t": null,
-      "max_frame": 300000
+      "max_frame": 300000,
+      "num_envs": 4
     },
     "meta": {
       "distributed": false,

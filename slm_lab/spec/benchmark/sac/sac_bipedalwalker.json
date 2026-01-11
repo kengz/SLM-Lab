@@ -9,7 +9,7 @@
         "gamma": 0.99,
         "training_frequency": 20,
         "training_iter": 20,
-        "training_start_step": 10000
+        "training_start_step": 1000
       },
       "memory": {
         "name": "Replay",

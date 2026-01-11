@@ -386,3 +386,63 @@ Benchmark results are uploaded to [HuggingFace](https://huggingface.co/datasets/
 - **Major changes**: Document in `CHANGELOG.md` (bug fixes, new features, breaking changes)
 - **Benchmark results**: Always update `docs/BENCHMARKS.md` with results tables, findings, and reproducibility instructions
 - **Spec updates**: When improving specs, document rationale in commit messages
+
+## TODO
+
+### Phase 1-3 Rerun Guidelines
+**Refer to [Verification & Contribution in BENCHMARKS.md](docs/BENCHMARKS.md#benchmark-contribution) for full instructions.**
+
+**Summary**:
+1.  **Monitor**: Watch for completion in `dstack`.
+2.  **Audit**: Check `spec.json` against requirements.
+3.  **Process**: Extract score from logs, commit specs, plot with explicit folders, update `BENCHMARKS.md`.
+
+### Phase 1: Classic Control Rerun
+- [ ] CartPole (All *re-launched*) - Plot waiting for new data
+- [ ] Acrobot (All *re-launched*) - Plot waiting for new data
+- [ ] Pendulum (All *re-launched*) - Plot waiting for new data
+
+### Phase 2: Box2D Rerun
+- [ ] LunarLander Discrete (All *re-launched*) - Plot waiting for new data
+- [ ] LunarLander Continuous (All *re-launched*) - Plot waiting for new data
+
+### Phase 3: MuJoCo Rerun
+- [x] Hopper (PPO ✓, SAC Error) - Plot waiting for SAC
+- [x] Ant (PPO ✓, SAC Running) - Plot waiting for SAC
+- [x] Swimmer (PPO ✓, SAC Running) - Plot waiting for SAC
+- [x] HalfCheetah (PPO ✓, SAC ✓ 10744) - Scores extracted, Plot pending
+- [x] Walker2d (PPO ✓, SAC Running) - Plot waiting for SAC
+- [x] Reacher (PPO -6.78, SAC -5.54) - Scores extracted, Plot pending
+- [x] Pusher (PPO -40.46, SAC -39.3) - Scores extracted, Plot pending
+- [x] InvertedPendulum (PPO 982, SAC 971.8) - Scores extracted, Plot pending
+- [x] InvertedDoublePendulum (PPO 7518, SAC 9203) - Scores extracted, Plot pending
+- [x] Humanoid (PPO 1573, SAC 889.8) - Scores extracted, Plot pending
+- [x] HumanoidStandup (PPO 103k, SAC 139k) - Scores extracted, Plot pending
+
+### Pending Actions
+1. **Monitor Reruns**:
+   - [ ] **All Fixes (clean-v5/fix-v6)**: Phase 1 (DQN, REINFORCE/SARSA), Phase 2 (Regressions), Phase 3 (Ant, Hopper, Swimmer, Walker2d).
+   - [ ] **Status Check**: Verify completion of newly launched runs.
+2. **Analysis & Documentation**:
+   - [x] **Spec Audit**: Added `audit_downloaded.py` and updated `BENCHMARKS.md` guidelines.
+   - [x] **Guidelines**: Updated `BENCHMARKS.md` with Verification & Contribution section.
+   - [x] **Scores**: Extracted scores for completed Phase 3 runs (Humanoid, Reacher, etc.).
+   - [ ] **Pull & Plot**: Pull data for completed runs and generate multi-trial plots.
+   - [ ] **Commit Specs**: Ensure all `spec.json` are committed.
+3. **Documentation**:
+   - [x] BENCHMARKS.md updated with valid scores.
+   - [ ] Add final plots to `BENCHMARKS.md`.
+
+### Phase 1: Classic Control Rerun
+- [x] CartPole (PPO valid 426). DQN/REINFORCE/SARSA Running (Fix-v6).
+- [x] Acrobot (PPO valid -81, DDQN valid -83, A2C valid). DQN Running (Fix-v6).
+- [x] Pendulum (PPO, SAC valid).
+
+### Phase 2: Box2D Rerun
+- [x] LunarLander Discrete (PPO, DDQN valid). DQN Regressed.
+- [x] LunarLander Continuous (PPO valid). SAC Regressed (100 vs target 200).
+
+### Phase 3: MuJoCo Rerun
+- [x] Reacher, Pusher, HalfCheetah, Humanoid, HumStandup, InvPendulum, InvDoublePendulum (Scores Extracted).
+- [ ] Ant, Hopper, Swimmer, Walker2d (Running/Error).
+

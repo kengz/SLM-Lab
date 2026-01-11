@@ -40,6 +40,7 @@
     },
     "env": {
       "name": "CartPole-v1",
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 200000
     },

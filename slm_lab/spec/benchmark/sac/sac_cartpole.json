@@ -21,7 +21,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256],
+        "hid_layers": [
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
         "clip_grad_val": null,
@@ -51,11 +53,29 @@
       "max_trial": 10
     },
     "search": {
-      "agent.memory.batch_size__qrandint": [1024, 4096, 1024],
-      "agent.algorithm.training_iter__qrandint": [10, 30, 10],
-      "agent.algorithm.training_frequency__qrandint": [10, 40, 10],
-      "agent.net.polyak_coef__loguniform": [0.005, 0.5],
-      "agent.net.hid_layers_activation__choice": ["tanh", "relu"]
+      "agent.memory.batch_size__qrandint": [
+        1024,
+        4096,
+        1024
+      ],
+      "agent.algorithm.training_iter__qrandint": [
+        10,
+        30,
+        10
+      ],
+      "agent.algorithm.training_frequency__qrandint": [
+        10,
+        40,
+        10
+      ],
+      "agent.net.polyak_coef__loguniform": [
+        0.005,
+        0.5
+      ],
+      "agent.net.hid_layers_activation__choice": [
+        "tanh",
+        "relu"
+      ]
     }
   }
 }

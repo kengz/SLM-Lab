@@ -163,10 +163,11 @@
       "name": "CartPole-v1",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 150000
+      "max_frame": 200000
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 500,
       "eval_frequency": 500,
       "max_trial": 1,
       "max_session": 4
