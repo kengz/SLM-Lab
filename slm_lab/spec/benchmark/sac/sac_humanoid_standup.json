@@ -43,11 +43,11 @@
             "name": "HumanoidStandup-v5",
             "num_envs": 16,
             "max_t": null,
-            "max_frame": 6e6
+            "max_frame": 3e6
         },
         "meta": {
             "distributed": false,
-            "log_frequency": 1000,
+            "log_frequency": 10000,
             "eval_frequency": 1000,
             "rigorous_eval": 0,
             "max_session": 4,

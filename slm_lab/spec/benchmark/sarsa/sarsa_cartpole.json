@@ -129,15 +129,15 @@
       "algorithm": {
         "name": "SARSA",
         "action_pdtype": "Argmax",
-        "action_policy": "boltzmann",
+        "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "start_val": 3.0,
-          "end_val": 1.0,
+          "start_val": 1.0,
+          "end_val": 0.05,
           "start_step": 0,
           "end_step": 15000
         },
-        "gamma": 0.997,
+        "gamma": 0.99,
         "training_frequency": 32
       },
       "memory": {
@@ -146,16 +146,16 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [
-          64
+          128
         ],
-        "hid_layers_activation": "selu",
-        "clip_grad_val": 0.5,
+        "hid_layers_activation": "tanh",
+        "clip_grad_val": 0.35,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "RMSprop",
-          "lr": 0.025
+          "lr": 0.0087
         }
       }
     },

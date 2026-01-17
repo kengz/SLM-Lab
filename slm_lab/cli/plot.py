@@ -13,9 +13,21 @@ logger = logger.get_logger(__name__)
 TRIAL_METRICS_PATH = '*t0_trial_metrics.json'
 SPEC_PATH = '*spec.json'
 
-# Master color palette for consistent coloring across plots
+# Algorithm order for legend (fixed ordering)
 ALGO_ORDER = ['REINFORCE', 'SARSA', 'DQN', 'DDQN+PER', 'A2C', 'PPO', 'SAC']
-ALGO_PALETTE = dict(zip(ALGO_ORDER, viz.get_palette(len(ALGO_ORDER))))
+# Colors by algorithm lineage:
+# - REINFORCE/SARSA: yellow/brown (classic methods)
+# - DQN/DDQN+PER: teal/green tones (value-based)
+# - A2C/PPO/SAC: blue/purple/red tones (actor-critic family)
+ALGO_PALETTE = {
+    'REINFORCE': 'hsl(45, 80%, 55%)',   # golden yellow
+    'SARSA': 'hsl(30, 60%, 45%)',        # brown
+    'DQN': 'hsl(175, 55%, 45%)',         # teal
+    'DDQN+PER': 'hsl(145, 50%, 45%)',    # green
+    'A2C': 'hsl(220, 65%, 55%)',         # blue
+    'PPO': 'hsl(280, 55%, 55%)',         # purple
+    'SAC': 'hsl(350, 65%, 55%)',         # red
+}
 
 
 def get_spec_data(folder_path: Path) -> dict | None:
@@ -25,7 +37,7 @@ def get_spec_data(folder_path: Path) -> dict | None:
     matches = list(folder_path.glob(SPEC_PATH))
     if not matches:
         matches = list((folder_path / 'info').glob(SPEC_PATH))
-    
+
     if matches:
         return util.read(str(matches[0]))
     return None
@@ -41,13 +53,13 @@ def get_algo_name_from_spec(spec: dict) -> str:
             # Get the first key (spec_name)
             spec_name = list(spec.keys())[0]
             agent_spec = spec[spec_name]['agent']
-        
+
         # Handle list of agents (multi-agent) or single agent dict
         if isinstance(agent_spec, list):
             algo_name = agent_spec[0]['algorithm']['name']
         else:
             algo_name = agent_spec['algorithm']['name']
-            
+
         # Standardize names
         name_map = {
             'VanillaDQN': 'DQN',
@@ -58,8 +70,10 @@ def get_algo_name_from_spec(spec: dict) -> str:
             'ActorCritic': 'A2C',
             'SoftActorCritic': 'SAC',
             'DQN': 'DQN',
+            'Reinforce': 'REINFORCE',
+            'REINFORCE': 'REINFORCE',
         }
-        
+
         # specific check for DDQN/PER
         if algo_name == 'DoubleDQN':
              memory_name = ''
@@ -71,7 +85,7 @@ def get_algo_name_from_spec(spec: dict) -> str:
              if 'Prioritized' in memory_name:
                  return 'DDQN+PER'
              return 'DDQN'
-             
+
         return name_map.get(algo_name, algo_name)
     except Exception as e:
         logger.warning(f"Could not extract algo name from spec: {e}")
@@ -111,7 +125,7 @@ def plot(
 
     Examples:
         slm-lab plot -f ppo_cartpole_2026_01_11_100728,a2c_gae_cartpole_2026_01_11_100724
-        
+
         slm-lab plot -t "Custom Title" -f folder1,folder2
     """
     data_path = Path(util.smart_path(data_folder))
@@ -135,7 +149,7 @@ def plot(
             raise typer.Exit(1)
 
         trial_metrics_paths.append(metrics_path)
-        
+
         # Get metadata from spec
         spec = get_spec_data(folder_path)
         if spec:
@@ -145,7 +159,7 @@ def plot(
                 detected_title = env_name
         else:
             algo_name = folder_name.split('_')[0].upper() # Fallback
-            
+
         legends.append(algo_name)
         logger.info(f"  {algo_name}: {metrics_path}")
 
@@ -161,15 +175,15 @@ def plot(
         except ValueError:
             order = 999  # Put unknown at end
         combined.append((order, legend, path))
-    
+
     combined.sort()
-    
+
     legends = [x[1] for x in combined]
     trial_metrics_paths = [x[2] for x in combined]
 
     # Use detected title if not provided
     final_title = title if title else (detected_title if detected_title else "Benchmark")
-    
+
     # Build palette (consistent colors for same algorithms)
     palette = [ALGO_PALETTE.get(legend, None) for legend in legends]
     # If any palette entry is None (unknown algo), fill with default palette

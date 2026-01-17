@@ -24,6 +24,7 @@ resources:
   cpu: 2..
   memory: 4GB..
 
+spot_policy: on-demand
 max_duration: 4h
 max_price: 0.15
 retry:

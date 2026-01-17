@@ -21,9 +21,10 @@ commands:
 
 resources:
   gpu: 0
-  cpu: 16..
-  memory: 32GB..
+  cpu: 8..
+  memory: 16GB..
 
+spot_policy: on-demand
 max_duration: 4h
 max_price: 0.30
 retry:

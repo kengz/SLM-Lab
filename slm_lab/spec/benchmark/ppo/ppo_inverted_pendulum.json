@@ -35,10 +35,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -49,12 +46,12 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 5.7e-4
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 3e6
+          "frame": "${max_frame}"
         },
         "gpu": "auto"
       }
@@ -63,7 +60,7 @@
       "name": "InvertedPendulum-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 3e6,
+      "max_frame": "${max_frame}",
       "normalize_obs": true,
       "normalize_reward": true
     },

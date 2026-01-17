@@ -23,7 +23,8 @@ resources:
   gpu: 1..
   memory: 4GB..
 
-max_duration: 8h
+spot_policy: on-demand
+max_duration: 6h
 max_price: 0.25
 retry:
   on_events: [no-capacity]

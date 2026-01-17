@@ -296,8 +296,8 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title,
         all_data += list(fig.data)
     layout = create_layout(title, name, time)
     fig = go.Figure(all_data, layout)
-    # Update layout to make legend symbols show as thin lines
-    fig.update_layout(legend=dict(tracegroupgap=5))  # Add spacing between items
+    # Update layout: preserve trace order in legend, add spacing
+    fig.update_layout(legend=dict(traceorder='normal', tracegroupgap=5))
     return fig
 
 

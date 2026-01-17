@@ -6,7 +6,8 @@ import pytest
 from typer.testing import CliRunner
 
 from slm_lab.cli import app
-from slm_lab.cli.main import set_variables, get_spec, stop_ray_processes, _lazy_imports, find_saved_spec
+from slm_lab.cli.main import get_spec, stop_ray_processes, _lazy_imports, find_saved_spec
+from slm_lab.spec.spec_util import set_variables
 
 
 runner = CliRunner()
@@ -21,64 +22,53 @@ def lazy_imports():
 class TestSetVariables:
     """Tests for set_variables helper function."""
 
-    def test_no_sets_returns_spec_unchanged(self):
-        spec = {"agent": {"algorithm": {"lr": 0.001}}}
-        result = set_variables(spec, None)
-        assert result == spec
+    def test_no_sets_returns_unchanged(self):
+        spec_str = '{"agent": {"algorithm": {"lr": 0.001}}}'
+        result, env_short = set_variables(spec_str, None)
+        assert result == spec_str
+        assert env_short is None
 
-    def test_empty_sets_returns_spec_unchanged(self):
-        spec = {"agent": {"algorithm": {"lr": 0.001}}}
-        result = set_variables(spec, [])
-        assert result == spec
+    def test_empty_sets_returns_unchanged(self):
+        spec_str = '{"agent": {"algorithm": {"lr": 0.001}}}'
+        result, env_short = set_variables(spec_str, [])
+        assert result == spec_str
+        assert env_short is None
 
     def test_single_variable_substitution(self):
-        spec = {"env": {"name": "${env}"}}
-        result = set_variables(spec, ["env=CartPole-v1"])
-        assert result["env"]["name"] == "CartPole-v1"
+        spec_str = '{"env": {"name": "${env}"}}'
+        result, _ = set_variables(spec_str, ["env=CartPole-v1"])
+        assert '"name": "CartPole-v1"' in result
 
-    def test_multiple_variable_substitution(self):
-        spec = {"env": {"name": "${env}"}, "agent": {"algorithm": {"lr": "${lr}"}}}
-        result = set_variables(spec, ["env=CartPole-v1", "lr=0.0003"])
-        assert result["env"]["name"] == "CartPole-v1"
-        assert result["agent"]["algorithm"]["lr"] == "0.0003"
+    def test_numeric_variable_substitution(self):
+        spec_str = '{"env": {"max_frame": "${max_frame}"}}'
+        result, _ = set_variables(spec_str, ["max_frame=3e6"])
+        assert '"max_frame": 3e6' in result  # unquoted number
 
     def test_variable_with_equals_in_value(self):
-        spec = {"meta": {"note": "${note}"}}
-        result = set_variables(spec, ["note=key=value"])
-        assert result["meta"]["note"] == "key=value"
+        spec_str = '{"meta": {"note": "${note}"}}'
+        result, _ = set_variables(spec_str, ["note=key=value"])
+        assert '"note": "key=value"' in result
 
     def test_unmatched_variable_unchanged(self):
-        spec = {"env": {"name": "${env}"}, "other": "${other}"}
-        result = set_variables(spec, ["env=CartPole-v1"])
-        assert result["env"]["name"] == "CartPole-v1"
-        assert result["other"] == "${other}"
+        spec_str = '{"env": {"name": "${env}"}, "other": "${other}"}'
+        result, _ = set_variables(spec_str, ["env=CartPole-v1"])
+        assert '"name": "CartPole-v1"' in result
+        assert '"other": "${other}"' in result
 
-    def test_nested_variable_substitution(self):
-        spec = {"a": {"b": {"c": {"d": "${deep}"}}}}
-        result = set_variables(spec, ["deep=value"])
-        assert result["a"]["b"]["c"]["d"] == "value"
+    def test_env_returns_shortname(self):
+        spec_str = '{"env": {"name": "${env}"}}'
+        _, env_short = set_variables(spec_str, ["env=ALE/Pong-v5"])
+        assert env_short == "pong"
 
-    def test_env_appends_shortname_with_ale_prefix(self):
-        spec = {"name": "ppo_atari", "env": {"name": "${env}"}}
-        result = set_variables(spec, ["env=ALE/Pong-v5"])
-        assert result["name"] == "ppo_atari_pong"
-        assert result["env"]["name"] == "ALE/Pong-v5"
+    def test_env_shortname_without_prefix(self):
+        spec_str = '{"env": {"name": "${env}"}}'
+        _, env_short = set_variables(spec_str, ["env=HalfCheetah-v5"])
+        assert env_short == "halfcheetah"
 
-    def test_env_appends_shortname_without_prefix(self):
-        spec = {"name": "ppo_mujoco", "env": {"name": "${env}"}}
-        result = set_variables(spec, ["env=HalfCheetah-v5"])
-        assert result["name"] == "ppo_mujoco_halfcheetah"
-
-    def test_non_env_var_does_not_append_shortname(self):
-        spec = {"name": "test", "lr": "${lr}"}
-        result = set_variables(spec, ["lr=0.001"])
-        assert result["name"] == "test"
-
-    def test_env_with_multiple_vars_appends_shortname(self):
-        spec = {"name": "ppo_atari", "env": {"name": "${env}"}, "lr": "${lr}"}
-        result = set_variables(spec, ["env=ALE/Qbert-v5", "lr=0.0003"])
-        assert result["name"] == "ppo_atari_qbert"
-        assert result["lr"] == "0.0003"
+    def test_non_env_var_no_shortname(self):
+        spec_str = '{"lr": "${lr}"}'
+        _, env_short = set_variables(spec_str, ["lr=0.001"])
+        assert env_short is None
 
 
 class TestFindSavedSpec:
@@ -114,20 +104,20 @@ class TestGetSpec:
     def test_train_mode_new_trial(self, mock_spec_util):
         mock_spec_util.get.return_value = {"meta": {}, "agent": {}}
         result = get_spec("spec.json", "test_spec", "train", None, None)
-        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec")
+        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec", sets=None)
         assert result == {"meta": {}, "agent": {}}
 
     @patch("slm_lab.cli.main.spec_util")
     def test_dev_mode_new_trial(self, mock_spec_util):
         mock_spec_util.get.return_value = {"meta": {}, "agent": {}}
         get_spec("spec.json", "test_spec", "dev", None, None)
-        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec")
+        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec", sets=None)
 
     @patch("slm_lab.cli.main.spec_util")
     def test_search_mode_new_trial(self, mock_spec_util):
         mock_spec_util.get.return_value = {"meta": {}, "agent": {}}
         get_spec("spec.json", "test_spec", "search", None, None)
-        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec")
+        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec", sets=None)
 
     @patch("slm_lab.cli.main.util")
     @patch("slm_lab.cli.main.spec_util")
@@ -137,7 +127,7 @@ class TestGetSpec:
         get_spec("spec.json", "test_spec", "train", "data/test_spec_2024", None)
         mock_util.get_experiment_ts.assert_called_once_with("data/test_spec_2024")
         mock_spec_util.get.assert_called_once_with(
-            "spec.json", "test_spec", "2024_01_01_120000"
+            "spec.json", "test_spec", "2024_01_01_120000", sets=None
         )
 
     @patch("slm_lab.cli.main.util")
@@ -157,8 +147,9 @@ class TestGetSpec:
 
     @patch("slm_lab.cli.main.spec_util")
     def test_with_variable_sets(self, mock_spec_util):
-        mock_spec_util.get.return_value = {"env": {"name": "${env}"}}
+        mock_spec_util.get.return_value = {"env": {"name": "CartPole-v1"}}
         result = get_spec("spec.json", "test_spec", "train", None, ["env=CartPole-v1"])
+        mock_spec_util.get.assert_called_once_with("spec.json", "test_spec", sets=["env=CartPole-v1"])
         assert result["env"]["name"] == "CartPole-v1"
 
 

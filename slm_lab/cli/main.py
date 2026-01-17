@@ -1,6 +1,5 @@
 """SLM-Lab CLI using typer."""
 
-import json
 import os
 import subprocess
 from glob import glob
@@ -26,22 +25,6 @@ def _lazy_imports():
 logger = None
 
 
-def set_variables(spec, sets: list[str] | None):
-    """Replace ${var} in spec. If env= set, appends shortname to spec['name'] (e.g. ppo_atari_pong)."""
-    if not sets:
-        return spec
-    spec_str, env_short = json.dumps(spec), None
-    for item in sets:
-        k, v = item.split("=", 1)
-        spec_str = spec_str.replace(f"${{{k}}}", v)
-        if k == "env":
-            env_short = v.split("/")[-1].split("-")[0].lower()
-    spec = json.loads(spec_str)
-    if env_short and "name" in spec:
-        spec["name"] = f"{spec['name']}_{env_short}"
-    return spec
-
-
 def find_saved_spec(predir: str, spec_name: str) -> str | None:
     """Find saved spec file in predir, returns latest trial spec or None."""
     saved_specs = sorted(glob(f"{predir}/{spec_name}_t*_spec.json"))
@@ -58,7 +41,7 @@ def get_spec(
     """Get spec using args processed from inputs"""
     if lab_mode in TRAIN_MODES:
         if pre_ is None:  # new train trial
-            spec = spec_util.get(spec_file, spec_name)
+            spec = spec_util.get(spec_file, spec_name, sets=sets)
         else:
             # for resuming with train@{predir}
             predir = pre_
@@ -71,7 +54,7 @@ def get_spec(
                 spec = util.read(saved_spec_path)
             else:
                 experiment_ts = util.get_experiment_ts(predir)
-                spec = spec_util.get(spec_file, spec_name, experiment_ts)
+                spec = spec_util.get(spec_file, spec_name, experiment_ts, sets=sets)
     elif lab_mode == "enjoy":
         # for enjoy@{spec_file}
         spec_file_path = pre_
@@ -83,9 +66,6 @@ def get_spec(
         raise ValueError(
             f"Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}"
         )
-
-    # Set variables if provided
-    spec = set_variables(spec, sets)
     return spec
 
 

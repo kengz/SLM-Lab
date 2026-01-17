@@ -47,7 +47,7 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
+      "log_frequency": 10000,
       "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,

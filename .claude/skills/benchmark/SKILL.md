@@ -1,0 +1,141 @@
+---
+name: slm-lab-benchmark
+description: Run SLM-Lab deep RL benchmarks, monitor dstack jobs, extract results, and update BENCHMARKS.md. Use when asked to run benchmarks, check run status, extract scores, update benchmark tables, or generate plots.
+---
+
+# SLM-Lab Benchmark Workflow
+
+## Critical Rules
+
+1. **NEVER push to remote** without explicit user permission - commit locally only
+2. **ONLY train runs** in BENCHMARKS.md - NEVER use search results (search folders = UNACCEPTABLE)
+3. **Respect Settings line** for each env (max_frame, num_envs, etc.) - see [BENCHMARKS.md](docs/BENCHMARKS.md)
+4. **Use `${max_frame}` variable** in specs - never hardcode max_frame values
+5. **Verify HF links work** before updating table
+6. **Runs must complete in <6h**
+
+## Benchmark Contribution Workflow
+
+### 1. Audit Spec Settings
+
+**Before Running**: Ensure spec matches the **Settings** line in BENCHMARKS.md for each env.
+
+Example Settings line: `max_frame 3e5 | num_envs 4 | max_session 4 | log_frequency 500`
+
+**After Pulling**: Verify downloaded `spec.json` matches these rules before using data.
+
+### 2. Run Benchmark & Commit Specs
+
+```bash
+# Remote (GPU) - auto-syncs to HuggingFace
+source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME train -n NAME
+
+# With variable substitution (MuJoCo/Atari)
+source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=MAX_FRAME \
+  SPEC_FILE SPEC_NAME train -n NAME
+
+# Local (Classic Control only)
+slm-lab run SPEC_FILE SPEC_NAME train
+```
+
+**Always commit the spec file** used for the run. Ensure BENCHMARKS.md has entry with correct SPEC_FILE and SPEC_NAME.
+
+### 3. Monitor Status
+
+**Monitor autonomously** - use sleep to check in periodically until completion:
+```bash
+sleep 900 && dstack ps                 # wait 15min then check
+```
+
+```bash
+dstack ps                              # running jobs
+dstack ps -a | head -20                # recent jobs (done/failed)
+dstack logs NAME                       # view logs
+dstack logs NAME | grep "trial_metrics" # extract final score
+dstack stop NAME -y                    # terminate run
+```
+
+### 4. Record Scores & Plots
+
+**Score**: At end of run, extract `total_reward_ma` from logs (`trial_metrics`):
+```
+trial_metrics: frame:1.00e+07 | total_reward_ma:816.18 | strength:570.4 | ...
+```
+
+**Link**: Add HuggingFace folder link to table:
+- Format: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
+
+**Plot**:
+```bash
+source .env && slm-lab pull SPEC_NAME   # download results
+# Verify scores in trial_metrics.json match logs
+# Ensure all runs share same max_frame
+
+# Generate plot using ONLY folders from table
+slm-lab plot -t "ENV_NAME" -f folder1,folder2,folder3
+```
+
+**Status legend**: ✅ Solved | ⚠️ Close (>80%) | ❌ Failed
+
+### 5. Commit Changes
+
+```bash
+git add docs/BENCHMARKS.md slm_lab/spec/benchmark/...
+git commit -m "docs: update ENV benchmark (SCORE)"
+# NEVER push without explicit permission
+```
+
+## Environment Settings
+
+| Category | num_envs | max_frame | log_frequency |
+|----------|----------|-----------|---------------|
+| Classic Control | 4 | 2e5-3e5 | 500 |
+| Box2D | 8 | 3e5 | 1000 |
+| MuJoCo | 16 | 1e6-10e6 | 1e4 |
+| Atari | 16 | 10e6 | 10000 |
+
+## Quick Reference
+
+### MuJoCo Specs
+
+| Env | SPEC_FILE | SPEC_NAME | max_frame |
+|-----|-----------|-----------|-----------|
+| HalfCheetah, Walker, Humanoid | ppo_mujoco.json | ppo_mujoco | 10e6 |
+| HumanoidStandup | ppo_mujoco.json | ppo_mujoco | 3e6 |
+| Reacher, Pusher | ppo_mujoco.json | ppo_mujoco_longhorizon | 3e6 |
+| Hopper | ppo_hopper.json | ppo_hopper | 3e6 |
+| Swimmer | ppo_swimmer.json | ppo_swimmer | 3e6 |
+| Ant | ppo_ant.json | ppo_ant | 10e6 |
+| IP | ppo_inverted_pendulum.json | ppo_inverted_pendulum | 3e6 |
+| IDP | ppo_inverted_double_pendulum.json | ppo_inverted_double_pendulum | 10e6 |
+
+### Atari Lambda Variants
+
+All use `ppo_atari.json` with `-s env=ALE/GAME-v5`:
+
+| SPEC_NAME | Lambda | Best for |
+|-----------|--------|----------|
+| ppo_atari | 0.95 | Strategic games (default) |
+| ppo_atari_lam85 | 0.85 | Mixed games |
+| ppo_atari_lam70 | 0.70 | Action games |
+
+## Hyperparameter Search
+
+Only when algorithm fails to reach target. Use search to find hyperparams, then run final `train` for benchmark.
+
+```bash
+source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME
+```
+
+**Search budget**: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims).
+
+**After search**: Update spec with best hyperparams, run `train` mode, use that result in BENCHMARKS.md.
+
+## Troubleshooting
+
+- **Run interrupted**: Expected with spot instances - relaunch with same command, increment run name (e.g. rv2 → rv3)
+- **Low GPU usage** (<50%): CPU bottleneck or config issue, not training problem
+- **Score below target**: Check hyperparams match spec, try search mode
+- **HF link 404**: Run didn't complete or upload failed, rerun
+
+For full details, see [docs/BENCHMARKS.md](docs/BENCHMARKS.md).

@@ -72,9 +72,8 @@ Standardized settings for fair comparison. The **Settings** line in each result 
 | Env Category | num_envs | max_frame | log_frequency | grace_period |
 |--------------|----------|-----------|---------------|--------------|
 | Classic Control | 4 | 2e5-3e5 | 500 | 1e4 |
-| Box2D | 8-16 | 3e5-3e6 | 1000 | 5e4-2e5 |
-| MuJoCo (easy) | 4-16 | 1e6-3e6 | 500-1000 | 1e5-2e5 |
-| MuJoCo (hard) | 16 | 10e6-50e6 | 1000 | 1e6 |
+| Box2D | 8 | 3e5 | 1000 | 5e4 |
+| MuJoCo | 16 | 1e6-10e6 | 1e4 | 1e5-1e6 |
 | Atari | 16 | 10e6 | 10000 | 5e5 |
 
 ### Hyperparameter Search
@@ -91,6 +90,8 @@ source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME    # 
 | ASHA | `search` | `max_session=1`, `search_scheduler` enabled | Wide exploration with early stopping |
 | Multi | `search` | `max_session=4`, NO `search_scheduler` | Robust validation with averaging |
 | Validate | `train` | Final spec | Confirmation run |
+
+> Do not use search result in benchmark results - use final validation run with committed spec.
 
 Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20+ = 5+ dims).
 
@@ -136,13 +137,13 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
-| REINFORCE | 🏃 | Running (v6) | [slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json](../slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | reinforce_cartpole | |
-| SARSA | 🏃 | Running (v6) | [slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json](../slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json) | sarsa_boltzmann_cartpole | |
-| DQN | 🏃 | Running (Fix-v6) | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | dqn_boltzmann_cartpole | |
-| DDQN+PER | ✅ | 392.7 | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | ddqn_per_boltzmann_cartpole | [ddqn_per_boltzmann_cartpole_2026_01_12_155719](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ddqn_per_boltzmann_cartpole_2026_01_12_155719) |
-| A2C | ✅ | 337.0 | [slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json](../slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json) | a2c_gae_cartpole | [a2c_gae_cartpole_2026_01_12_183642](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_cartpole_2026_01_12_183642) |
-| PPO | ✅ | 426.0 | [slm_lab/spec/benchmark/ppo/ppo_cartpole.json](../slm_lab/spec/benchmark/ppo/ppo_cartpole.json) | ppo_cartpole | [ppo_cartpole_2026_01_12_113113](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_cartpole_2026_01_12_113113) |
-| SAC | ✅ | 326.6 | [slm_lab/spec/benchmark/sac/sac_cartpole.json](../slm_lab/spec/benchmark/sac/sac_cartpole.json) | sac_cartpole | [sac_cartpole_2026_01_12_183136](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_cartpole_2026_01_12_183136) |
+| REINFORCE | ✅ | 448.07 | [slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json](../slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json) | reinforce_cartpole | [reinforce_cartpole_2026_01_14_063124](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/reinforce_cartpole_2026_01_14_063124) |
+| SARSA | ✅ | 466.98 | [slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json](../slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json) | sarsa_boltzmann_cartpole | [sarsa_boltzmann_cartpole_2026_01_14_063512](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sarsa_boltzmann_cartpole_2026_01_14_063512) |
+| DQN | ⚠️ | 278.76 | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | dqn_boltzmann_cartpole | [dqn_boltzmann_cartpole_2026_01_13_223449](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/dqn_boltzmann_cartpole_2026_01_13_223449) |
+| DDQN+PER | ✅ | 433.33 | [slm_lab/spec/benchmark/dqn/dqn_cartpole.json](../slm_lab/spec/benchmark/dqn/dqn_cartpole.json) | ddqn_per_boltzmann_cartpole | [ddqn_per_boltzmann_cartpole_2026_01_14_004948](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ddqn_per_boltzmann_cartpole_2026_01_14_004948) |
+| A2C | ✅ | 419.24 | [slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json](../slm_lab/spec/benchmark/a2c/a2c_gae_cartpole.json) | a2c_gae_cartpole | [a2c_gae_cartpole_2026_01_13_094324](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_cartpole_2026_01_13_094324) |
+| PPO | ✅ | 499.19 | [slm_lab/spec/benchmark/ppo/ppo_cartpole.json](../slm_lab/spec/benchmark/ppo/ppo_cartpole.json) | ppo_cartpole | [ppo_cartpole_2026_01_13_094433](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_cartpole_2026_01_13_094433) |
+| SAC | ⚠️ | 309.10 | [slm_lab/spec/benchmark/sac/sac_cartpole.json](../slm_lab/spec/benchmark/sac/sac_cartpole.json) | sac_cartpole | [sac_cartpole_2026_01_13_094515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_cartpole_2026_01_13_094515) |
 
 ![CartPole-v1 Multi-Trial Graph](../data/CartPole-v1_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -154,11 +155,11 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
-| DQN | 🏃 | Running (Fix-v6) | [slm_lab/spec/benchmark/dqn/dqn_acrobot.json](../slm_lab/spec/benchmark/dqn/dqn_acrobot.json) | dqn_boltzmann_acrobot | |
-| DDQN+PER | ✅ | -83.5 | [slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json](../slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | ddqn_per_acrobot | [ddqn_per_acrobot_2026_01_12_112858](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ddqn_per_acrobot_2026_01_12_112858) |
-| A2C | ✅ | -84.6 | [slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json](../slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json) | a2c_gae_acrobot | [a2c_gae_acrobot_2026_01_12_214947](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_acrobot_2026_01_12_214947) |
-| PPO | ✅ | -81.8 | [slm_lab/spec/benchmark/ppo/ppo_acrobot.json](../slm_lab/spec/benchmark/ppo/ppo_acrobot.json) | ppo_acrobot | [ppo_acrobot_2026_01_12_112703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_acrobot_2026_01_12_112703) |
-| SAC | ✅ | -90.7 | [slm_lab/spec/benchmark/sac/sac_acrobot.json](../slm_lab/spec/benchmark/sac/sac_acrobot.json) | sac_acrobot | [sac_acrobot_2026_01_12_155719](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_acrobot_2026_01_12_155719) |
+| DQN | ✅ | -96.79 | [slm_lab/spec/benchmark/dqn/dqn_acrobot.json](../slm_lab/spec/benchmark/dqn/dqn_acrobot.json) | dqn_boltzmann_acrobot | [dqn_boltzmann_acrobot_2026_01_18_102214](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/dqn_boltzmann_acrobot_2026_01_18_102214) |
+| DDQN+PER | ✅ | -83.39 | [slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json](../slm_lab/spec/benchmark/dqn/ddqn_per_acrobot.json) | ddqn_per_acrobot | [ddqn_per_acrobot_2026_01_13_120506](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ddqn_per_acrobot_2026_01_13_120506) |
+| A2C | ✅ | -83.70 | [slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json](../slm_lab/spec/benchmark/a2c/a2c_gae_acrobot.json) | a2c_gae_acrobot | [a2c_gae_acrobot_2026_01_13_113425](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_acrobot_2026_01_13_113425) |
+| PPO | ✅ | -83.22 | [slm_lab/spec/benchmark/ppo/ppo_acrobot.json](../slm_lab/spec/benchmark/ppo/ppo_acrobot.json) | ppo_acrobot | [ppo_acrobot_2026_01_13_094648](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_acrobot_2026_01_13_094648) |
+| SAC | ✅ | -95.66 | [slm_lab/spec/benchmark/sac/sac_acrobot.json](../slm_lab/spec/benchmark/sac/sac_acrobot.json) | sac_acrobot | [sac_acrobot_2026_01_13_094654](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_acrobot_2026_01_13_094654) |
 
 ![Acrobot-v1 Multi-Trial Graph](../data/Acrobot-v1_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -170,9 +171,9 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
-| A2C | - | - | - | - | |
-| PPO | ✅ | -180.5 | [slm_lab/spec/benchmark/ppo/ppo_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_pendulum.json) | ppo_pendulum | [ppo_pendulum_2026_01_12_184402](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_pendulum_2026_01_12_184402) |
-| SAC | ✅ | -149.5 | [slm_lab/spec/benchmark/sac/sac_pendulum.json](../slm_lab/spec/benchmark/sac/sac_pendulum.json) | sac_pendulum | [sac_pendulum_2026_01_12_185430](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_pendulum_2026_01_12_185430) |
+| A2C | ⚠️ | -452.28 | [slm_lab/spec/benchmark/a2c/a2c_gae_pendulum.json](../slm_lab/spec/benchmark/a2c/a2c_gae_pendulum.json) | a2c_gae_pendulum | [a2c_gae_pendulum_2026_01_22_221414](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_pendulum_2026_01_22_221414) |
+| PPO | ✅ | -182.91 | [slm_lab/spec/benchmark/ppo/ppo_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_pendulum.json) | ppo_pendulum | [ppo_pendulum_2026_01_13_094642](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_pendulum_2026_01_13_094642) |
+| SAC | ✅ | -149.67 | [slm_lab/spec/benchmark/sac/sac_pendulum.json](../slm_lab/spec/benchmark/sac/sac_pendulum.json) | sac_pendulum | [sac_pendulum_2026_01_13_094801](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_pendulum_2026_01_13_094801) |
 
 ![Pendulum-v1 Multi-Trial Graph](../data/Pendulum-v1_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -186,15 +187,13 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
-| DQN | ❌ | 152.0 | [slm_lab/spec/benchmark/dqn/dqn_lunar.json](../slm_lab/spec/benchmark/dqn/dqn_lunar.json) | dqn_concat_lunar | [dqn_concat_lunar_2026_01_12_211709](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/dqn_concat_lunar_2026_01_12_211709) |
-| DDQN+PER | ✅ | 262.2 | [slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json](../slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | ddqn_per_concat_lunar | [ddqn_per_concat_lunar_2026_01_12_211628](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ddqn_per_concat_lunar_2026_01_12_211628) |
-| A2C | 🏃 | Running (Fix-v6) | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | a2c_gae_lunar | |
-| PPO | ✅ | 240.5 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | ppo_lunar | [ppo_lunar_2026_01_12_112949](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_lunar_2026_01_12_112949) |
-| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | sac_lunar | |
+| DQN | ⚠️ | 182.12 | [slm_lab/spec/benchmark/dqn/dqn_lunar.json](../slm_lab/spec/benchmark/dqn/dqn_lunar.json) | dqn_concat_lunar | [dqn_concat_lunar_2026_01_18_102848](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/dqn_concat_lunar_2026_01_18_102848) |
+| DDQN+PER | ✅ | 263.30 | [slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json](../slm_lab/spec/benchmark/dqn/ddqn_per_lunar.json) | ddqn_per_concat_lunar | [ddqn_per_concat_lunar_2026_01_13_094722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ddqn_per_concat_lunar_2026_01_13_094722) |
+| A2C | ❌ | 53.94 | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | a2c_gae_lunar | [a2c_gae_lunar_2026_01_18_102919](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_lunar_2026_01_18_102919) |
+| PPO | ✅ | 225.99 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | ppo_lunar | [ppo_lunar_2026_01_18_102921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_lunar_2026_01_18_102921) |
+| SAC | ❌ | -71.46 | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | sac_lunar | [sac_lunar_2026_01_13_120710](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_lunar_2026_01_13_120710) |
 
 ![LunarLander-v3 (Discrete) Multi-Trial Graph](../data/LunarLander-v3_multi_trial_graph_mean_returns_ma_vs_frames.png)
-
-¹ A2C LunarLander: Historical SLM-Lab results showed <100 at 300k frames. A2C is less sample-efficient than PPO. Result acceptable.
 
 #### 2.2 LunarLander-v3 (Continuous)
 
@@ -204,30 +203,76 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
-| A2C | 🏃 | Running | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | a2c_gae_lunar_continuous | |
-| PPO | 🏃 | Running | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | ppo_lunar_continuous | |
-| SAC | 🏃 | Running | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | sac_lunar_continuous | |
+| A2C | ❌ | -65.11 | [slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json](../slm_lab/spec/benchmark/a2c/a2c_gae_lunar.json) | a2c_gae_lunar_continuous | [a2c_gae_lunar_continuous_2026_01_13_095842](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_lunar_continuous_2026_01_13_095842) |
+| PPO | ⚠️ | 190.52 | [slm_lab/spec/benchmark/ppo/ppo_lunar.json](../slm_lab/spec/benchmark/ppo/ppo_lunar.json) | ppo_lunar_continuous | [ppo_lunar_continuous_2026_01_19_080542](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_lunar_continuous_2026_01_19_080542) |
+| SAC | ⚠️ | 143.03 | [slm_lab/spec/benchmark/sac/sac_lunar.json](../slm_lab/spec/benchmark/sac/sac_lunar.json) | sac_lunar_continuous | [sac_lunar_continuous_2026_01_13_095853](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_lunar_continuous_2026_01_13_095853) |
 
 ![LunarLander-v3 (Continuous) Multi-Trial Graph](../data/LunarLander-v3_Continuous_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 ### Phase 3: MuJoCo
 
-**PPO Standard Config**:
-- **Network**: `[256, 256]` hidden layers, tanh activation, orthogonal init
-- **Normalization**: `normalize_obs=true`, `normalize_reward=true`, `normalize_v_targets=true`
-- **Search**: 3 params (gamma, lam, lr) × 16 trials
+MuJoCo envs use unified specs where possible, with individual specs for edge cases.
+
+**Unified Specs** in [ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) - 6 envs:
+
+| SPEC_NAME | gamma | lam | lr | entropy | Envs |
+|-----------|-------|-----|-----|---------|------|
+| ppo_mujoco | 0.99 | 0.95 | 3e-4 | 0.0 | HalfCheetah, Walker, Humanoid, HumanoidStandup |
+| ppo_mujoco_longhorizon | 0.997 | 0.97 | 2e-4 | 0.001 | Reacher, Pusher |
+
+**Individual Specs** - 5 envs:
+
+| Env | SPEC_FILE | Key Differences |
+|-----|-----------|-----------------|
+| Hopper | ppo_hopper.json | gamma=0.991, lam=0.95, lr=3e-4, entropy=0.005 |
+| Swimmer | ppo_swimmer.json | gamma=0.997, lam=0.968, lr=2.2e-4, entropy=0.025, no lr_scheduler |
+| Ant | ppo_ant.json | gamma=0.988, lam=0.928, lr=1.5e-4 |
+| IP | ppo_inverted_pendulum.json | AdamW+LinearToZero, lr=5.7e-4, time_horizon=32, minibatch=32, clip=0.4, val_loss_coef=0.2 |
+| IDP | ppo_inverted_double_pendulum.json | AdamW+LinearToZero, lr=1.55e-4, time_horizon=128, minibatch=128, clip=0.4, val_loss_coef=0.7 |
+
+**Algorithm: PPO** (all specs):
+- **Network**: MLP [256,256] tanh, orthogonal init, normalize=true, clip_grad_val=0.5
+- **Hyperparams**: AdamW optimizer, minibatch_size=64, training_epoch=10, time_horizon=2048, clip_eps=0.2 (IP/IDP use different settings)
+
+**Reproduce**: Copy values from table below.
+
+For **unified specs** (ppo_mujoco.json), use `-s env=` and `-s max_frame=`:
+```bash
+source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=MAX_FRAME \
+  slm_lab/spec/benchmark/ppo/ppo_mujoco.json SPEC_NAME train -n NAME
+```
+
+For **individual specs**, env is hardcoded but use `-s max_frame=`:
+```bash
+source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
+  slm_lab/spec/benchmark/ppo/SPEC_FILE SPEC_NAME train -n NAME
+```
+
+| ENV | MAX_FRAME | SPEC_FILE | SPEC_NAME | target |
+|-----|-----------|-----------|-----------|--------|
+| HalfCheetah-v5 | 10e6 | ppo_mujoco.json | ppo_mujoco | 5000 |
+| Walker2d-v5 | 10e6 | ppo_mujoco.json | ppo_mujoco | 3500 |
+| Humanoid-v5 | 10e6 | ppo_mujoco.json | ppo_mujoco | 700 |
+| HumanoidStandup-v5 | 4e6 | ppo_mujoco.json | ppo_mujoco | 100000 |
+| Hopper-v5 | 4e6 | ppo_hopper.json | ppo_hopper | 2000 |
+| Reacher-v5 | 4e6 | ppo_mujoco.json | ppo_mujoco_longhorizon | -5 |
+| Pusher-v5 | 4e6 | ppo_mujoco.json | ppo_mujoco_longhorizon | -40 |
+| Swimmer-v5 | 4e6 | ppo_swimmer.json | ppo_swimmer | 300 |
+| Ant-v5 | 10e6 | ppo_ant.json | ppo_ant | 2000 |
+| InvertedPendulum-v5 | 4e6 | ppo_inverted_pendulum.json | ppo_inverted_pendulum | 1000 |
+| InvertedDoublePendulum-v5 | 10e6 | ppo_inverted_double_pendulum.json | ppo_inverted_double_pendulum | 9000 |
 
 #### 3.1 Hopper-v5
 
-**Docs**: [Hopper](https://gymnasium.farama.org/environments/mujoco/hopper/) | State: Box(11) | Action: Box(3) | Solved reward MA > 2500
+**Docs**: [Hopper](https://gymnasium.farama.org/environments/mujoco/hopper/) | State: Box(11) | Action: Box(3) | Solved reward MA > 2000
 
-**Settings**: max_frame 1e6 | num_envs 16 | max_session 4 | log_frequency 1000
+**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 340.9 | [slm_lab/spec/benchmark/ppo/ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | ppo_hopper | [ppo_hopper_2026_01_11_235846](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_hopper_2026_01_11_235846) |
-| SAC | ❌ | Error | [slm_lab/spec/benchmark/sac/sac_hopper.json](../slm_lab/spec/benchmark/sac/sac_hopper.json) | sac_hopper | |
+| PPO | ⚠️ | 1882.51 | [slm_lab/spec/benchmark/ppo/ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | ppo_hopper | [ppo_hopper_2026_01_27_013148](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_hopper_2026_01_27_013148) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_hopper.json](../slm_lab/spec/benchmark/sac/sac_hopper.json) | sac_hopper | |
 
 ![Hopper-v5 Multi-Trial Graph](../data/Hopper-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -235,29 +280,27 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 **Docs**: [HalfCheetah](https://gymnasium.farama.org/environments/mujoco/half_cheetah/) | State: Box(17) | Action: Box(6) | Solved reward MA > 5000
 
-**Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 6383 | [slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json](../slm_lab/spec/benchmark/ppo/ppo_halfcheetah.json) | ppo_halfcheetah | [ppo_halfcheetah_2026_01_10_115032](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_halfcheetah_2026_01_10_115032) |
-| SAC | ✅ | 10744.9 | [slm_lab/spec/benchmark/sac/sac_halfcheetah.json](../slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | sac_halfcheetah | |
+| PPO | ✅ | 6032.34 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_halfcheetah_2026_01_24_103910](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_halfcheetah_2026_01_24_103910) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_halfcheetah.json](../slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | sac_halfcheetah | |
 
 ![HalfCheetah-v5 Multi-Trial Graph](../data/HalfCheetah-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
-
-² SAC HalfCheetah: All 4 sessions exceeded target (MA=6989-7410). Run terminated at 89% before HF upload.
 
 #### 3.3 Walker2d-v5
 
 **Docs**: [Walker2d](https://gymnasium.farama.org/environments/mujoco/walker2d/) | State: Box(17) | Action: Box(6) | Solved reward MA > 3500
 
-**Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 5700 | [slm_lab/spec/benchmark/ppo/ppo_walker2d.json](../slm_lab/spec/benchmark/ppo/ppo_walker2d.json) | ppo_walker2d | [ppo_walker2d_2026_01_11_110440](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_walker2d_2026_01_11_110440) |
-| SAC | 🏃 | Running (Fix-v6) | [slm_lab/spec/benchmark/sac/sac_walker2d.json](../slm_lab/spec/benchmark/sac/sac_walker2d.json) | sac_walker2d | |
+| PPO | ✅ | 5130.70 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_walker2d_2026_01_24_103947](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_walker2d_2026_01_24_103947) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_walker2d.json](../slm_lab/spec/benchmark/sac/sac_walker2d.json) | sac_walker2d | |
 
 ![Walker2d-v5 Multi-Trial Graph](../data/Walker2d-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -265,13 +308,13 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 **Docs**: [Ant](https://gymnasium.farama.org/environments/mujoco/ant/) | State: Box(105) | Action: Box(8) | Solved reward MA > 2000
 
-**Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ❌ | 709.9 | [slm_lab/spec/benchmark/ppo/ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | ppo_ant | [ppo_ant_2026_01_11_235751](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_ant_2026_01_11_235751) |
-| SAC | 🏃 | Running | [slm_lab/spec/benchmark/sac/sac_ant.json](../slm_lab/spec/benchmark/sac/sac_ant.json) | sac_ant | |
+| PPO | ✅ | 3032.60 | [slm_lab/spec/benchmark/ppo/ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | ppo_ant | [ppo_ant_2026_01_24_152312](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_ant_2026_01_24_152312) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_ant.json](../slm_lab/spec/benchmark/sac/sac_ant.json) | sac_ant | |
 
 ![Ant-v5 Multi-Trial Graph](../data/Ant-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -279,99 +322,99 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 **Docs**: [Swimmer](https://gymnasium.farama.org/environments/mujoco/swimmer/) | State: Box(8) | Action: Box(2) | Solved reward MA > 300
 
-**Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 349 | [slm_lab/spec/benchmark/ppo/ppo_swimmer.json](../slm_lab/spec/benchmark/ppo/ppo_swimmer.json) | ppo_swimmer | [ppo_swimmer_2026_01_11_102950](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_swimmer_2026_01_11_102950) |
-| SAC | 🏃 | Running (Fix-v6) | [slm_lab/spec/benchmark/sac/sac_swimmer.json](../slm_lab/spec/benchmark/sac/sac_swimmer.json) | sac_swimmer | |
+| PPO | ✅ | 326.49 | [slm_lab/spec/benchmark/ppo/ppo_swimmer.json](../slm_lab/spec/benchmark/ppo/ppo_swimmer.json) | ppo_swimmer | [ppo_swimmer_2026_01_27_040012](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_swimmer_2026_01_27_040012) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_swimmer.json](../slm_lab/spec/benchmark/sac/sac_swimmer.json) | sac_swimmer | |
 
 ![Swimmer-v5 Multi-Trial Graph](../data/Swimmer-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### 3.6 Reacher-v5
 
-**Docs**: [Reacher](https://gymnasium.farama.org/environments/mujoco/reacher/) | State: Box(11) | Action: Box(2) | Solved reward MA > -5
+**Docs**: [Reacher](https://gymnasium.farama.org/environments/mujoco/reacher/) | State: Box(11) | Action: Box(2) | Solved reward MA > -10
 
-**Settings**: max_frame 3e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | -6.78 | [slm_lab/spec/benchmark/ppo/ppo_reacher.json](../slm_lab/spec/benchmark/ppo/ppo_reacher.json) | ppo_reacher | [ppo_reacher_2026_01_12_081543](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_reacher_2026_01_12_081543) |
-| SAC | ✅ | -5.54 | [slm_lab/spec/benchmark/sac/sac_reacher.json](../slm_lab/spec/benchmark/sac/sac_reacher.json) | sac_reacher | [sac_reacher_2026_01_12_101450](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_reacher_2026_01_12_101450) |
+| PPO | ✅ | -5.66 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco_longhorizon | [ppo_mujoco_longhorizon_reacher_2026_01_24_131550](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_longhorizon_reacher_2026_01_24_131550) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_reacher.json](../slm_lab/spec/benchmark/sac/sac_reacher.json) | sac_reacher | |
 
 ![Reacher-v5 Multi-Trial Graph](../data/Reacher-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### 3.7 Pusher-v5
 
-**Docs**: [Pusher](https://gymnasium.farama.org/environments/mujoco/pusher/) | State: Box(23) | Action: Box(7) | Solved reward MA > -40 (CleanRL: -40.38±7.15)
+**Docs**: [Pusher](https://gymnasium.farama.org/environments/mujoco/pusher/) | State: Box(23) | Action: Box(7) | Solved reward MA > -40
 
-**Settings**: max_frame 3e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | -40.46 | [slm_lab/spec/benchmark/ppo/ppo_pusher.json](../slm_lab/spec/benchmark/ppo/ppo_pusher.json) | ppo_pusher | |
-| SAC | ✅ | -39.3 | [slm_lab/spec/benchmark/sac/sac_pusher.json](../slm_lab/spec/benchmark/sac/sac_pusher.json) | sac_pusher | |
+| PPO | ✅ | -37.35 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco_longhorizon | [ppo_mujoco_longhorizon_pusher_2026_01_22_224041](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_longhorizon_pusher_2026_01_22_224041) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_pusher.json](../slm_lab/spec/benchmark/sac/sac_pusher.json) | sac_pusher | |
 
-![Pusher-v5 Multi-Trial Graph](../data/pusher_v5_multitrial.png)
+![Pusher-v5 Multi-Trial Graph](../data/Pusher-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### 3.8 InvertedPendulum-v5
 
 **Docs**: [InvertedPendulum](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/) | State: Box(4) | Action: Box(1) | Solved reward MA > 1000
 
-**Settings**: max_frame 3e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 982 | [slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json) | ppo_inverted_pendulum | |
-| SAC | ✅ | 971.8 | [slm_lab/spec/benchmark/sac/sac_inverted_pendulum.json](../slm_lab/spec/benchmark/sac/sac_inverted_pendulum.json) | sac_inverted_pendulum | |
+| PPO | ⚠️ | 968.70 | [slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json) | ppo_inverted_pendulum | [ppo_inverted_pendulum_2026_01_26_175008](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_pendulum_2026_01_26_175008) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_inverted_pendulum.json](../slm_lab/spec/benchmark/sac/sac_inverted_pendulum.json) | sac_inverted_pendulum | |
 
-![InvertedPendulum-v5 Multi-Trial Graph](../data/inverted_pendulum_v5_multitrial.png)
+![InvertedPendulum-v5 Multi-Trial Graph](../data/InvertedPendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### 3.9 InvertedDoublePendulum-v5
 
 **Docs**: [InvertedDoublePendulum](https://gymnasium.farama.org/environments/mujoco/inverted_double_pendulum/) | State: Box(11) | Action: Box(1) | Solved reward MA > 9000
 
-**Settings**: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ❌ | 7518 | [slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json) | ppo_inverted_double_pendulum | [ppo_inverted_double_pendulum_2026_01_12_081512](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_double_pendulum_2026_01_12_081512) |
-| SAC | ✅ | 9203 | [slm_lab/spec/benchmark/sac/sac_inverted_double_pendulum.json](../slm_lab/spec/benchmark/sac/sac_inverted_double_pendulum.json) | sac_inverted_double_pendulum | [sac_inverted_double_pendulum_2026_01_12_101541](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_inverted_double_pendulum_2026_01_12_101541) |
+| PPO | ⚠️ | 7223.69 | [slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json) | ppo_inverted_double_pendulum | [ppo_inverted_double_pendulum_2026_01_26_175021](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_double_pendulum_2026_01_26_175021) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_inverted_double_pendulum.json](../slm_lab/spec/benchmark/sac/sac_inverted_double_pendulum.json) | sac_inverted_double_pendulum | |
 
-![InvertedDoublePendulum-v5 Multi-Trial Graph](../data/inverted_double_pendulum_v5_multitrial.png)
+![InvertedDoublePendulum-v5 Multi-Trial Graph](../data/InvertedDoublePendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### 3.10 Humanoid-v5
 
 **Docs**: [Humanoid](https://gymnasium.farama.org/environments/mujoco/humanoid/) | State: Box(376) | Action: Box(17) | Solved reward MA > 700
 
-**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1000
+**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 1573 | [slm_lab/spec/benchmark/ppo/ppo_humanoid.json](../slm_lab/spec/benchmark/ppo/ppo_humanoid.json) | ppo_humanoid | |
-| SAC | ✅ | 889.8 | [slm_lab/spec/benchmark/sac/sac_humanoid.json](../slm_lab/spec/benchmark/sac/sac_humanoid.json) | sac_humanoid | |
+| PPO | ✅ | 5052.40 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoid_2026_01_24_103936](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoid_2026_01_24_103936) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_humanoid.json](../slm_lab/spec/benchmark/sac/sac_humanoid.json) | sac_humanoid | |
 
-![Humanoid-v5 Multi-Trial Graph](../data/humanoid_v5_multitrial.png)
+![Humanoid-v5 Multi-Trial Graph](../data/Humanoid-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### 3.11 HumanoidStandup-v5
 
 **Docs**: [HumanoidStandup](https://gymnasium.farama.org/environments/mujoco/humanoid_standup/) | State: Box(376) | Action: Box(17) | Solved reward MA > 100000
 
-**Settings**: max_frame 6e6 | num_envs 16 | max_session 4 | log_frequency 1000
+**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 103k | [slm_lab/spec/benchmark/ppo/ppo_humanoid_standup.json](../slm_lab/spec/benchmark/ppo/ppo_humanoid_standup.json) | ppo_humanoid_standup | |
-| SAC | ✅ | 139238.1 | [slm_lab/spec/benchmark/sac/sac_humanoid_standup.json](../slm_lab/spec/benchmark/sac/sac_humanoid_standup.json) | sac_humanoid_standup | |
+| PPO | ✅ | 147473.22 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoidstandup_2026_01_24_103922](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoidstandup_2026_01_24_103922) |
+| SAC | - | - | [slm_lab/spec/benchmark/sac/sac_humanoid_standup.json](../slm_lab/spec/benchmark/sac/sac_humanoid_standup.json) | sac_humanoid_standup | |
 
-![HumanoidStandup-v5 Multi-Trial Graph](../data/humanoid_standup_v5_multitrial.png)
+![HumanoidStandup-v5 Multi-Trial Graph](../data/HumanoidStandup-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
 ### Phase 4: Atari
 

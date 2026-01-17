@@ -8,7 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.991,
-        "lam": 0.951,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.2,
@@ -18,8 +18,8 @@
         },
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.0,
-          "end_val": 0.0,
+          "start_val": 0.005,
+          "end_val": 0.005,
           "start_step": 0,
           "end_step": 0
         },
@@ -35,10 +35,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -49,12 +46,12 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1.4e-4
+          "name": "AdamW",
+          "lr": 3e-4
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 1e6
+          "frame": "${max_frame}"
         },
         "gpu": "auto"
       }
@@ -63,13 +60,13 @@
       "name": "Hopper-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e6,
+      "max_frame": "${max_frame}",
       "normalize_obs": true,
       "normalize_reward": true
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
+      "log_frequency": 10000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 4,
@@ -84,18 +81,9 @@
       }
     },
     "search": {
-      "agent.algorithm.gamma__uniform": [
-        0.98,
-        0.999
-      ],
-      "agent.algorithm.lam__uniform": [
-        0.9,
-        0.98
-      ],
-      "agent.net.optim_spec.lr__loguniform": [
-        1e-4,
-        1e-3
-      ]
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.net.optim_spec.lr__loguniform": [1e-4, 1e-3]
     }
   }
 }

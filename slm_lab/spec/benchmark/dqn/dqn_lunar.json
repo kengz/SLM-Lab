@@ -9,11 +9,11 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.01,
+          "end_val": 0.039,
           "start_step": 0,
           "end_step": 50000
         },
-        "gamma": 0.99,
+        "gamma": 0.982,
         "training_batch_iter": 1,
         "training_iter": 4,
         "training_frequency": 1,
@@ -38,7 +38,7 @@
         },
         "optim_spec": {
           "name": "AdamW",
-          "lr": 0.001
+          "lr": 0.000724
         },
         "update_type": "replace",
         "update_frequency": 100,
@@ -56,7 +56,17 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 12,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [0.01, 0.05],
+      "agent.net.optim_spec.lr__loguniform": [0.0003, 0.003],
+      "agent.net.update_frequency__qrandint": [50, 150, 25]
     }
   }
 }

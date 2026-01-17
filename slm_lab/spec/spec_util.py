@@ -1,4 +1,5 @@
 # The spec module
+import json
 import os
 import re
 from glob import glob
@@ -118,24 +119,55 @@ def extend_meta_spec(spec, experiment_ts=None):
     return spec
 
 
-def get(spec_file, spec_name, experiment_ts=None):
+def set_variables(spec_str: str, sets: list[str] | None) -> tuple[str, str | None]:
+    """Replace ${var} placeholders in spec JSON string before parsing.
+
+    Returns (substituted_str, env_short) where env_short is used to suffix spec name.
+    """
+    if not sets:
+        return spec_str, None
+    env_short = None
+    for item in sets:
+        k, v = item.split("=", 1)
+        # For numeric values, replace quoted "${var}" with unquoted value
+        try:
+            float(v)
+            spec_str = spec_str.replace(f'"${{{k}}}"', v)
+        except ValueError:
+            pass
+        spec_str = spec_str.replace(f"${{{k}}}", v)
+        if k == "env":
+            env_short = v.split("/")[-1].split("-")[0].lower()
+    return spec_str, env_short
+
+
+def get(spec_file, spec_name, experiment_ts=None, sets: list[str] | None = None):
     '''
     Get an experiment spec from spec_file, spec_name.
-    Auto-check spec.
     @param str:spec_file
     @param str:spec_name
     @param str:experiment_ts Use this experiment_ts if given; used for resuming training
+    @param list[str]:sets Variable substitutions like ["env=Hopper-v5", "max_frame=3e6"]
     @example
 
     spec = spec_util.get('demo.json', 'ppo_cartpole')
+    spec = spec_util.get('ppo_mujoco.json', 'ppo_mujoco', sets=['env=Hopper-v5', 'max_frame=3e6'])
     '''
     spec_file = spec_file.replace(SPEC_DIR, '')  # guard
     spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
-    spec_dict = util.read(spec_file)
+
+    # Read raw JSON, substitute variables, then parse
+    with open(spec_file) as f:
+        spec_str = f.read()
+    spec_str, env_short = set_variables(spec_str, sets)
+    spec_dict = json.loads(spec_str)
+
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
     spec = spec_dict[spec_name]
     # fill-in info at runtime
     spec['name'] = spec_name
+    if env_short:
+        spec['name'] = f"{spec['name']}_{env_short}"
     spec = extend_meta_spec(spec, experiment_ts)
     check(spec)
     return spec

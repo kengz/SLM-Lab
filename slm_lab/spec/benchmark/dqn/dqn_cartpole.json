@@ -90,12 +90,12 @@
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
-          "end_step": 6000
+          "end_step": 12000
         },
         "gamma": 0.995,
         "training_batch_iter": 2,
         "training_iter": 2,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -116,7 +116,7 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "update_type": "replace",
@@ -135,7 +135,17 @@
       "log_frequency": 500,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 16,
+      "search_scheduler": {
+        "grace_period": 20000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.95, 0.999],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [0.02, 0.15],
+      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.003],
+      "agent.net.update_frequency__qrandint": [50, 150, 25]
     }
   },
   "ddqn_per_boltzmann_cartpole": {
@@ -150,7 +160,7 @@
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
-          "end_step": 6000
+          "end_step": 12000
         },
         "gamma": 0.995,
         "training_batch_iter": 2,
@@ -178,7 +188,7 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "update_type": "replace",
@@ -237,7 +247,7 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.0003
         },
         "update_type": "replace",

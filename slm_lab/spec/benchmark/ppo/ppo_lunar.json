@@ -7,8 +7,8 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.9899,
-        "lam": 0.9539,
+        "gamma": 0.9914,
+        "lam": 0.9527,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.236,
@@ -48,12 +48,12 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.000285
+          "name": "AdamW",
+          "lr": 0.000565
         },
         "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.003907
+          "name": "AdamW",
+          "lr": 0.00558
         },
         "gpu": "auto"
       }
@@ -69,7 +69,17 @@
       "log_frequency": 1000,
       "eval_frequency": 1024,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 16,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.001, 0.01]
     }
   },
   "ppo_lunar_continuous": {
@@ -80,8 +90,8 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.9842,
-        "lam": 0.9618,
+        "gamma": 0.9858,
+        "lam": 0.9758,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.128,
@@ -121,12 +131,12 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.000221
+          "name": "AdamW",
+          "lr": 0.000267
         },
         "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.00119
+          "name": "AdamW",
+          "lr": 0.00134
         },
         "gpu": "auto"
       }

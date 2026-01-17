@@ -290,7 +290,7 @@ def analyze_trial(trial_spec, session_metrics_list=None):
         # Use smart_path to get absolute path for glob (fixes Ray Tune working directory issues)
         abs_info_prepath = util.smart_path(info_prepath)
         session_files = sorted(glob.glob(f'{abs_info_prepath}_s*_session_metrics_train.json'))
-        session_metrics_list = [m for f in session_files if (m := ps.attempt(util.read, f))]
+        session_metrics_list = [m for f in session_files if (m := ps.attempt(util.read, f)) and isinstance(m, dict)]
         if not session_metrics_list:
             return None
     # calculate metrics

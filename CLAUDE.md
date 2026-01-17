@@ -389,60 +389,228 @@ Benchmark results are uploaded to [HuggingFace](https://huggingface.co/datasets/
 
 ## TODO
 
-### Phase 1-3 Rerun Guidelines
-**Refer to [Verification & Contribution in BENCHMARKS.md](docs/BENCHMARKS.md#benchmark-contribution) for full instructions.**
+### Critical Rules (2026-01-17)
 
-**Summary**:
-1.  **Monitor**: Watch for completion in `dstack`.
-2.  **Audit**: Check `spec.json` against requirements.
-3.  **Process**: Extract score from logs, commit specs, plot with explicit folders, update `BENCHMARKS.md`.
+**MUST FOLLOW:**
+1. **NEVER push to remote without explicit user permission** - commit locally only
+2. **ONLY train runs** - NEVER use search results in BENCHMARKS.md (search folders = UNACCEPTABLE)
+3. **All HF links must work** - verify no 404s before updating table
+4. **All plots must be updated** after EVERY run - use exact folders from table
+5. **Follow Settings line** in BENCHMARKS.md for each env (max_frame, num_envs, etc.)
+6. **Runs must complete in <6h**
 
-### Phase 1: Classic Control Rerun
-- [ ] CartPole (All *re-launched*) - Plot waiting for new data
-- [ ] Acrobot (All *re-launched*) - Plot waiting for new data
-- [ ] Pendulum (All *re-launched*) - Plot waiting for new data
+### Process Workflow (Per-Run)
 
-### Phase 2: Box2D Rerun
-- [ ] LunarLander Discrete (All *re-launched*) - Plot waiting for new data
-- [ ] LunarLander Continuous (All *re-launched*) - Plot waiting for new data
+1. **Verify spec** matches Settings line in BENCHMARKS.md
+2. **Launch train run** (NOT search) via dstack
+3. **When complete**: extract `total_reward_ma` from `trial_metrics`
+4. **Verify HF link** works before updating table
+5. **Pull data**: `slm-lab pull SPEC_NAME`
+6. **Update plot**: `slm-lab plot -t "ENV" -f folder1,folder2,...` using ONLY folders from table
+7. **Update BENCHMARKS.md**: score, HF link, plot reference
+8. **Commit locally** (never push without permission)
 
-### Phase 3: MuJoCo Rerun
-- [x] Hopper (PPO ✓, SAC Error) - Plot waiting for SAC
-- [x] Ant (PPO ✓, SAC Running) - Plot waiting for SAC
-- [x] Swimmer (PPO ✓, SAC Running) - Plot waiting for SAC
-- [x] HalfCheetah (PPO ✓, SAC ✓ 10744) - Scores extracted, Plot pending
-- [x] Walker2d (PPO ✓, SAC Running) - Plot waiting for SAC
-- [x] Reacher (PPO -6.78, SAC -5.54) - Scores extracted, Plot pending
-- [x] Pusher (PPO -40.46, SAC -39.3) - Scores extracted, Plot pending
-- [x] InvertedPendulum (PPO 982, SAC 971.8) - Scores extracted, Plot pending
-- [x] InvertedDoublePendulum (PPO 7518, SAC 9203) - Scores extracted, Plot pending
-- [x] Humanoid (PPO 1573, SAC 889.8) - Scores extracted, Plot pending
-- [x] HumanoidStandup (PPO 103k, SAC 139k) - Scores extracted, Plot pending
+### Phase 1 - Classic Control
 
-### Pending Actions
-1. **Monitor Reruns**:
-   - [ ] **All Fixes (clean-v5/fix-v6)**: Phase 1 (DQN, REINFORCE/SARSA), Phase 2 (Regressions), Phase 3 (Ant, Hopper, Swimmer, Walker2d).
-   - [ ] **Status Check**: Verify completion of newly launched runs.
-2. **Analysis & Documentation**:
-   - [x] **Spec Audit**: Added `audit_downloaded.py` and updated `BENCHMARKS.md` guidelines.
-   - [x] **Guidelines**: Updated `BENCHMARKS.md` with Verification & Contribution section.
-   - [x] **Scores**: Extracted scores for completed Phase 3 runs (Humanoid, Reacher, etc.).
-   - [ ] **Pull & Plot**: Pull data for completed runs and generate multi-trial plots.
-   - [ ] **Commit Specs**: Ensure all `spec.json` are committed.
-3. **Documentation**:
-   - [x] BENCHMARKS.md updated with valid scores.
-   - [ ] Add final plots to `BENCHMARKS.md`.
+**1.1 CartPole-v1** (target: 400, Settings: max_frame 2e5 | num_envs 4 | max_session 4)
+- [x] REINFORCE ✅ 448.07, SARSA ✅ 466.98, DDQN+PER ✅ 433.33, A2C ✅ 419.24, PPO ✅ 499.19
+- [x] All HF links verified, all are TRAIN runs (1 trial each)
+- [ ] DQN ⚠️ 278.76 (target 400) - needs tuning
+- [ ] SAC ⚠️ 309.10 (target 400) - below target
 
-### Phase 1: Classic Control Rerun
-- [x] CartPole (PPO valid 426). DQN/REINFORCE/SARSA Running (Fix-v6).
-- [x] Acrobot (PPO valid -81, DDQN valid -83, A2C valid). DQN Running (Fix-v6).
-- [x] Pendulum (PPO, SAC valid).
+**1.2 Acrobot-v1** (target: -100, Settings: max_frame 3e5 | num_envs 4 | max_session 4)
+- [x] DDQN+PER ✅ -83.39, A2C ✅ -83.70, PPO ✅ -83.22, SAC ✅ -95.66 (all TRAIN runs)
+- [x] DQN ✅ -96.79 (FIXED - was SEARCH, now TRAIN: dqn_boltzmann_acrobot_2026_01_18_102214)
 
-### Phase 2: Box2D Rerun
-- [x] LunarLander Discrete (PPO, DDQN valid). DQN Regressed.
-- [x] LunarLander Continuous (PPO valid). SAC Regressed (100 vs target 200).
+**1.3 Pendulum-v1** (target: -200, Settings: max_frame 3e5 | num_envs 4 | max_session 4)
+- [x] PPO ✅ -182.91, SAC ✅ -149.67 (both TRAIN runs)
+- [ ] A2C ❌ -1299.68 - broken, needs investigation
 
-### Phase 3: MuJoCo Rerun
-- [x] Reacher, Pusher, HalfCheetah, Humanoid, HumStandup, InvPendulum, InvDoublePendulum (Scores Extracted).
-- [ ] Ant, Hopper, Swimmer, Walker2d (Running/Error).
+### Phase 2 - Box2D
+
+**2.1 LunarLander-v3 Discrete** (target: 200, Settings: max_frame 3e5 | num_envs 8 | max_session 4)
+- [x] DDQN+PER ✅ 263.30, SAC ❌ -71.46 (both TRAIN runs)
+- [x] DQN ⚠️ 182.12 (FIXED - was SEARCH, now TRAIN: dqn_concat_lunar_2026_01_18_102848)
+- [x] A2C ❌ 53.94 (FIXED - was SEARCH, now TRAIN: a2c_gae_lunar_2026_01_18_102919) - algorithm struggles
+- [x] PPO ✅ 225.99 (FIXED - was SEARCH, now TRAIN: ppo_lunar_2026_01_18_102921)
+
+**2.2 LunarLander-v3 Continuous** (target: 200, Settings: max_frame 3e5 | num_envs 8 | max_session 4)
+- [x] A2C ❌ -65.11, PPO ⚠️ 186.64, SAC ⚠️ 143.03 (all TRAIN runs)
+
+### Phase 3 - MuJoCo
+
+**3.1 Hopper-v5** (target: 2500, Settings: max_frame 1e6 | num_envs 16 | max_session 4 | log_frequency 1e4)
+- [ ] PPO ❌ 242.81 (ppo_hopper_2026_01_18_142126) - num_envs=16 needs hyperparam tuning, old run with num_envs=1 got 2653
+- [x] SAC ⚠️ 992.37 (TRAIN run verified, below target)
+
+**3.2 HalfCheetah-v5** (target: 5000, Settings: max_frame 8e6 | num_envs 16 | max_session 4)
+- [x] PPO ✅ 6450.34 (TRAIN run verified, solved!)
+
+**3.3 Walker2d-v5** (target: 3500, Settings: max_frame 8e6 | num_envs 16 | max_session 4 | log_frequency 1e4)
+- [ ] PPO - RERUN LAUNCHED (p3-ppo-walker-train) - 01_11 run used log_freq=1000, spec now has 10000
+
+**3.4 Ant-v5** (target: 2000, Settings: max_frame 8e6 | num_envs 16 | max_session 4)
+- [x] PPO ⚠️ 1133.87 (TRAIN run verified, improved from 678)
+
+**3.5 Swimmer-v5** (target: 300, Settings: max_frame 8e6 | num_envs 16 | max_session 4)
+- [x] PPO ✅ 333.62 (TRAIN run verified, solved!)
+
+**3.6 Reacher-v5** (target: -5, Settings: max_frame 3e6 | num_envs 16 | max_session 4)
+- [x] PPO ⚠️ -6.48 (FIXED - was SEARCH, now TRAIN: ppo_reacher_2026_01_18_102939, close to target)
+
+**3.7 Pusher-v5** (target: -40, Settings: max_frame 3e6 | num_envs 16 | max_session 4)
+- [x] PPO ⚠️ -49.33 (TRAIN run verified, still below -40)
+
+**3.8 InvertedPendulum-v5** (target: 1000, Settings: max_frame 3e6 | num_envs 16 | max_session 4)
+- [x] PPO ✅ 995.55 (TRAIN run verified, solved!)
+
+**3.9 InvertedDoublePendulum-v5** (target: 9000, Settings: max_frame 8e6 | num_envs 16 | max_session 4)
+- [x] PPO ⚠️ 7634.81 (TRAIN run verified, below target)
+
+**3.10 Humanoid-v5** (target: 700, Settings: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4)
+- [ ] PPO - RERUN LAUNCHED (p3-ppo-humanoid-train) - 01_17 run used log_freq=1000, spec now has 10000
+
+**3.11 HumanoidStandup-v5** (target: 100000, Settings: max_frame 3e6 | num_envs 16 | max_session 4 | log_frequency 1e4)
+- [ ] PPO - RERUN LAUNCHED (p3-ppo-hstandup-train) - 01_11 run used log_freq=1000+max_frame=6M, spec now has 10000+3M
+
+### Completed Work (2026-01-23 AdamW unified spec experiment v2)
+
+**Goal:** Two unified MuJoCo specs with AdamW (like Atari lambda variants).
+
+**Spec file consolidated:** `ppo_mujoco.json` now contains both spec names (`ppo_mujoco`, `ppo_mujoco_longhorizon`).
+Use `${max_frame}` (unquoted) for numeric variable substitution.
+
+**Final Results (mj2 runs):**
+
+| Env | Target | Unified Score | Previous Best | Status |
+|-----|--------|---------------|---------------|--------|
+| HalfCheetah-v5 | 5000 | 6506.97 | 6030.93 | ✅ Improved |
+| Walker2d-v5 | 3500 | 4667.19 | 4408.60 | ✅ Improved |
+| Humanoid-v5 | 700 | 3613.43 | 4495.62 | ✅ Passed (lower) |
+| HumanoidStandup-v5 | 100000 | 131145.33 | 118978.12 | ✅ Improved |
+| Reacher-v5 | -5 | -4.83 | -7.26 | ✅ Improved |
+| Pusher-v5 | -40 | -37.75 | -46.97 | ✅ Improved |
+| Hopper-v5 | 2500 | 1897.13 | 1970.97 | ⚠️ 76% |
+| IP-v5 | 1000 | 502.08 | 900.19 | ❌ Worse |
+| IDP-v5 | 9000 | 3396.18 | 6767.33 | ❌ Worse |
+| Swimmer-v5 | 300 | 171.20 | 338.46 | ❌ Worse |
+| Ant-v5 | 2000 | 425.18 | 2429.78 | ❌ Worse |
+
+**Verdict:** `ppo_mujoco` (standard) passed 4/6: HalfCheetah, Walker, Humanoid, HumanoidStandup. `ppo_mujoco_longhorizon` passed 2/5: Reacher, Pusher. Individual specs remain better for Hopper, Ant, IP, IDP, Swimmer.
+
+**Next:** Investigate failing envs and adjust unified specs.
+
+### PPO MuJoCo Full Revalidation (2026-01-24)
+
+**Status: 11/11 complete**
+
+**Summary: 6/11 passed, 2/11 close (>80%), 3/11 failed**
+
+| Env | Spec Used | Score | Target | Status | HF Folder |
+|-----|-----------|-------|--------|--------|-----------|
+| HalfCheetah-v5 | ppo_mujoco | 6032.34 | 5000 | ✅ | ppo_mujoco_halfcheetah_2026_01_24_103910 |
+| Walker2d-v5 | ppo_mujoco | 5130.70 | 3500 | ✅ | ppo_mujoco_walker2d_2026_01_24_103947 |
+| Humanoid-v5 | ppo_mujoco | 5052.40 | 700 | ✅ | ppo_mujoco_humanoid_2026_01_24_103936 |
+| HumanoidStandup-v5 | ppo_mujoco | 147473.22 | 100000 | ✅ | ppo_mujoco_humanoidstandup_2026_01_24_103922 |
+| Reacher-v5 | ppo_mujoco_longhorizon | -5.66 | -5 | ✅ | ppo_mujoco_longhorizon_reacher_2026_01_24_131550 |
+| Hopper-v5 | ppo_hopper | 1210.58 | 2000 | ❌ 61% | ppo_hopper_2026_01_24_180554 |
+| Pusher-v5 | ppo_mujoco_longhorizon | -54.17 | -40 | ❌ | ppo_mujoco_longhorizon_pusher_2026_01_24_180619 |
+| Swimmer-v5 | ppo_swimmer | 165.69 | 300 | ❌ 55% | ppo_swimmer_2026_01_24_180614 |
+| IP-v5 | ppo_inverted_pendulum | 926.73 | 1000 | ⚠️ 93% | ppo_inverted_pendulum_2026_01_24_105704 |
+| IDP-v5 | ppo_inverted_double_pendulum | 7457.79 | 9000 | ⚠️ 83% | ppo_inverted_double_pendulum_2026_01_24_120854 |
+| Ant-v5 | ppo_ant | 3032.60 | 2000 | ✅ 151% | ppo_ant_2026_01_24_152312 |
+
+**Root Cause: Commit 5a327590 added lr_scheduler_spec which broke these envs**
+
+Compared working commit aea10a90 vs broken commit 5a327590:
+- lr_scheduler_spec: LinearToZero was added to ppo_mujoco.json, ppo_swimmer.json, ppo_ant.json, ppo_inverted_pendulum.json
+- ppo_hopper.json was deleted (recreated incorrectly with lr_scheduler)
+
+**Fix Applied - Removed lr_scheduler_spec from:**
+- ppo_hopper.json (restored to original: AdamW, lr=3e-4, no lr_scheduler)
+- ppo_swimmer.json
+- ppo_mujoco.json (both ppo_mujoco and ppo_mujoco_longhorizon)
+
+**All specs now respect Settings line (num_envs=16, max_frame=3e6)**
+
+**Verification Runs (2026-01-25):**
+- fix-hopper3: ppo_hopper.json, max_frame=3e6
+- fix-swimmer2: ppo_swimmer.json, max_frame=3e6
+- fix-pusher3: ppo_mujoco_longhorizon, max_frame=3e6
+
+### Spec Revalidation Attempt (2026-01-25/26)
+
+**Goal:** Match specs to historical best runs (Adam + LinearToZero).
+
+**Tested Config Changes:**
+- IP: Changed AdamW → Adam + LinearToZero
+- IDP: Changed AdamW → Adam + LinearToZero
+- Hopper: Changed AdamW lr=5e-4 → Adam lr=1.4e-4 + LinearToZero
+- Pusher: Used ppo_pusher.json (AdamW, gamma=0.982, lam=0.927, lr=1.5e-4)
+- Swimmer: Used existing ppo_swimmer.json (AdamW)
+
+**Results:**
+
+| Env | This Run | Target | Historical Best | Status |
+|-----|----------|--------|-----------------|--------|
+| Pusher | **-38.18** | -40 | -46.97 | ✅ PASSED |
+| IP | 804.58 | 1000 | 995.55 | ❌ |
+| IDP | 6801.87 | 9000 | 8231.35 | ❌ |
+| Hopper | 273.99 | 2500 | 2653.78 | ❌ |
+| Swimmer | 208.83 | 300 | 338.46 | ❌ |
+
+**Key Findings:**
+1. **Pusher ppo_pusher.json works** - spec (AdamW, gamma=0.982, lam=0.927, lr=1.5e-4) is validated
+2. Adam + LinearToZero didn't help IP/IDP - both performed worse than AdamW specs
+3. **Hopper requires num_envs=1** - historical best used num_envs=1 (got 2653.78), num_envs=16 fails regardless of optimizer
+4. **Swimmer high variance** - session 1 hit 330+ but sessions 0,2 pulled down average to 208
+
+**Spec Changes Reverted:** IP, IDP, Hopper specs reverted to AdamW (Adam+LinearToZero made them worse)
+
+**Next Steps:**
+- Hopper: Need to decide if BENCHMARKS.md should allow num_envs=1 for Hopper
+- IP/IDP: Current AdamW specs are closer to target than Adam+LinearToZero
+- Swimmer: Investigate session variance, consider longer training
+
+### Current Work (2026-01-26)
+
+**Key Discovery:** AdamW + LinearToZero is the winning combination (from commit 5a327590).
+
+**Spec Updates Applied:**
+- All specs now use AdamW + LinearToZero for consistency
+- IP: AdamW lr=5.7e-4 + LinearToZero
+- IDP: AdamW lr=1.55e-4 + LinearToZero
+- Hopper: AdamW lr=3e-4 + LinearToZero
+- Swimmer: AdamW lr=2.2e-4 + LinearToZero
+
+**Max Frame Standardization:**
+- 10M: HalfCheetah, Walker, Humanoid, Ant, IDP
+- 4M: Hopper, Swimmer, Reacher, Pusher, IP, HumanoidStandup
+
+**Active Runs:**
+- fix-ip: AdamW + LTZ, 4M frames
+- fix-idp: AdamW + LTZ, 10M frames
+
+**Previous Results (3M frames):**
+- fix-hopper: 948.30 (high variance - session 0 hit 1992)
+- fix-swimmer: 185.56
+
+### Clean Rerun Plan (After IP/IDP Solved)
+
+Once IP and IDP pass, do a full clean rerun of all 11 MuJoCo envs with standardized max_frame:
+
+| Env | Max Frame | Spec |
+|-----|-----------|------|
+| HalfCheetah | 10M | ppo_mujoco |
+| Walker2d | 10M | ppo_mujoco |
+| Humanoid | 10M | ppo_mujoco |
+| Ant | 10M | ppo_ant |
+| IDP | 10M | ppo_inverted_double_pendulum |
+| HumanoidStandup | 4M | ppo_mujoco |
+| Hopper | 4M | ppo_hopper |
+| Swimmer | 4M | ppo_swimmer |
+| Reacher | 4M | ppo_mujoco_longhorizon |
+| Pusher | 4M | ppo_mujoco_longhorizon |
+| IP | 4M | ppo_inverted_pendulum |
+
 

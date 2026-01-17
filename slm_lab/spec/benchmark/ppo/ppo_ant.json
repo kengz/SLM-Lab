@@ -49,12 +49,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1.2e-4
-        },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 8e6
+          "name": "AdamW",
+          "lr": 1.5e-4
         },
         "gpu": "auto"
       }
@@ -63,7 +59,7 @@
       "name": "Ant-v5",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 8e6,
+      "max_frame": "${max_frame}",
       "normalize_obs": true,
       "normalize_reward": true
     },
