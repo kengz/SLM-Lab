@@ -411,7 +411,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 147473.22 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoidstandup_2026_01_24_103922](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoidstandup_2026_01_24_103922) |
+| PPO | ✅ | 153541.08 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoidstandup_2026_01_27_081758](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoidstandup_2026_01_27_081758) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_humanoid_standup.json](../slm_lab/spec/benchmark/sac/sac_humanoid_standup.json) | sac_humanoid_standup | |
 
 ![HumanoidStandup-v5 Multi-Trial Graph](../data/HumanoidStandup-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
