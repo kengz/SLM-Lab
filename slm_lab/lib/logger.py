@@ -1,7 +1,6 @@
 import os
 import sys
 import warnings
-import pandas as pd
 from loguru import logger as loguru_logger
 from slm_lab import ROOT_DIR
 
