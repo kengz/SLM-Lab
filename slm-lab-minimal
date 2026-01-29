@@ -1,0 +1,5 @@
+#!/bin/bash
+# Minimal mode wrapper for slm-lab CLI
+# Usage: ./slm-lab-minimal run-remote ...
+# Requires: uv sync --only-group minimal
+PYTHONPATH="$(dirname "$0")" uv run --no-project python -c "from slm_lab.cli import cli; cli()" "$@"

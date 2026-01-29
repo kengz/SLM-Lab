@@ -2891,6 +2891,48 @@ name = "slm-lab"
 version = "4.3.0"
 source = { editable = "." }
 dependencies = [
+    { name = "ale-py" },
+    { name = "colorlover" },
+    { name = "gputil" },
+    { name = "gymnasium", extra = ["box2d", "classic-control", "mujoco"] },
+    { name = "huggingface-hub" },
+    { name = "kaleido" },
+    { name = "lightning-thunder", marker = "sys_platform == 'linux'" },
+    { name = "loguru" },
+    { name = "nvfuser-cu128-torch28", marker = "sys_platform == 'linux'" },
+    { name = "nvidia-cudnn-cu12", marker = "sys_platform == 'linux'" },
+    { name = "nvidia-cudnn-frontend", marker = "sys_platform == 'linux'" },
+    { name = "opencv-python" },
+    { name = "optuna" },
+    { name = "pandas" },
+    { name = "pillow" },
+    { name = "plotly" },
+    { name = "psutil" },
+    { name = "pydash" },
+    { name = "pygame" },
+    { name = "pyyaml" },
+    { name = "ray", extra = ["default", "tune"] },
+    { name = "regex" },
+    { name = "tensorboard" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'darwin'" },
+    { name = "torch", version = "2.8.0+cu128", source = { registry = "https://download.pytorch.org/whl/cu128" }, marker = "sys_platform != 'darwin'" },
+    { name = "typer" },
+    { name = "ujson" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "coverage" },
+    { name = "flaky" },
+    { name = "glances" },
+    { name = "ipykernel" },
+    { name = "nvidia-ml-py" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-timeout" },
+    { name = "ruff" },
+]
+minimal = [
     { name = "colorlover" },
     { name = "dstack" },
     { name = "huggingface-hub" },
@@ -2906,70 +2948,36 @@ dependencies = [
     { name = "ujson" },
 ]
 
-[package.optional-dependencies]
-ml = [
-    { name = "ale-py" },
-    { name = "gputil" },
-    { name = "gymnasium", extra = ["box2d", "classic-control", "mujoco"] },
-    { name = "lightning-thunder", marker = "sys_platform == 'linux'" },
-    { name = "nvfuser-cu128-torch28", marker = "sys_platform == 'linux'" },
-    { name = "nvidia-cudnn-cu12", marker = "sys_platform == 'linux'" },
-    { name = "nvidia-cudnn-frontend", marker = "sys_platform == 'linux'" },
-    { name = "opencv-python" },
-    { name = "optuna" },
-    { name = "psutil" },
-    { name = "pygame" },
-    { name = "ray", extra = ["default", "tune"] },
-    { name = "tensorboard" },
-    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'darwin'" },
-    { name = "torch", version = "2.8.0+cu128", source = { registry = "https://download.pytorch.org/whl/cu128" }, marker = "sys_platform != 'darwin'" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "coverage" },
-    { name = "flaky" },
-    { name = "glances" },
-    { name = "ipykernel" },
-    { name = "nvidia-ml-py" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-timeout" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
-    { name = "ale-py", marker = "extra == 'ml'", specifier = "==0.11.2" },
+    { name = "ale-py", specifier = "==0.11.2" },
     { name = "colorlover", specifier = ">=0.3.0" },
-    { name = "dstack", specifier = ">=0.18.0" },
-    { name = "gputil", marker = "extra == 'ml'", specifier = ">=1.4.0" },
-    { name = "gymnasium", extras = ["box2d", "classic-control", "mujoco"], marker = "extra == 'ml'", specifier = "==1.2.0" },
+    { name = "gputil", specifier = ">=1.4.0" },
+    { name = "gymnasium", extras = ["box2d", "classic-control", "mujoco"], specifier = "==1.2.0" },
     { name = "huggingface-hub", specifier = ">=0.34.4" },
     { name = "kaleido", specifier = "==0.2.0" },
-    { name = "lightning-thunder", marker = "sys_platform == 'linux' and extra == 'ml'", specifier = ">=0.2.4" },
+    { name = "lightning-thunder", marker = "sys_platform == 'linux'", specifier = ">=0.2.4" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "nvfuser-cu128-torch28", marker = "sys_platform == 'linux' and extra == 'ml'", specifier = ">=0.2.31.dev20250901" },
-    { name = "nvidia-cudnn-cu12", marker = "sys_platform == 'linux' and extra == 'ml'", specifier = ">=9.10.2.21" },
-    { name = "nvidia-cudnn-frontend", marker = "sys_platform == 'linux' and extra == 'ml'", specifier = ">=1.14.1" },
-    { name = "opencv-python", marker = "extra == 'ml'", specifier = ">=4.11.0.86" },
-    { name = "optuna", marker = "extra == 'ml'", specifier = ">=4.4.0" },
+    { name = "nvfuser-cu128-torch28", marker = "sys_platform == 'linux'", specifier = ">=0.2.31.dev20250901" },
+    { name = "nvidia-cudnn-cu12", marker = "sys_platform == 'linux'", specifier = ">=9.10.2.21" },
+    { name = "nvidia-cudnn-frontend", marker = "sys_platform == 'linux'", specifier = ">=1.14.1" },
+    { name = "opencv-python", specifier = ">=4.11.0.86" },
+    { name = "optuna", specifier = ">=4.4.0" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pillow", specifier = ">=11.1.0" },
     { name = "plotly", specifier = ">=6.0.1" },
-    { name = "psutil", marker = "extra == 'ml'", specifier = ">=7.0.0" },
+    { name = "psutil", specifier = ">=7.0.0" },
     { name = "pydash", specifier = ">=8.0.5" },
-    { name = "pygame", marker = "extra == 'ml'", specifier = ">=2.6.1" },
+    { name = "pygame", specifier = ">=2.6.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "ray", extras = ["default", "tune"], marker = "extra == 'ml'", specifier = ">=2.44.0" },
+    { name = "ray", extras = ["default", "tune"], specifier = ">=2.44.0" },
     { name = "regex", specifier = ">=2024.11.6" },
-    { name = "tensorboard", marker = "extra == 'ml'", specifier = ">=2.19.0" },
-    { name = "torch", marker = "sys_platform == 'darwin' and extra == 'ml'", specifier = ">=2.8.0" },
-    { name = "torch", marker = "sys_platform != 'darwin' and extra == 'ml'", specifier = ">=2.8.0", index = "https://download.pytorch.org/whl/cu128" },
+    { name = "tensorboard", specifier = ">=2.19.0" },
+    { name = "torch", marker = "sys_platform != 'darwin'", specifier = ">=2.8.0", index = "https://download.pytorch.org/whl/cu128" },
+    { name = "torch", marker = "sys_platform == 'darwin'", specifier = ">=2.8.0" },
     { name = "typer", specifier = ">=0.12.0" },
     { name = "ujson", specifier = ">=5.10.0" },
 ]
-provides-extras = ["ml"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2982,6 +2990,21 @@ dev = [
     { name = "pytest-cov", specifier = ">=2.7.1" },
     { name = "pytest-timeout", specifier = ">=1.3.3" },
     { name = "ruff", specifier = ">=0.8.3" },
+]
+minimal = [
+    { name = "colorlover", specifier = ">=0.3.0" },
+    { name = "dstack", specifier = ">=0.18.0" },
+    { name = "huggingface-hub", specifier = ">=0.34.4" },
+    { name = "kaleido", specifier = "==0.2.0" },
+    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "pandas", specifier = ">=2.2.3" },
+    { name = "pillow", specifier = ">=11.1.0" },
+    { name = "plotly", specifier = ">=6.0.1" },
+    { name = "pydash", specifier = ">=8.0.5" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "regex", specifier = ">=2024.11.6" },
+    { name = "typer", specifier = ">=0.12.0" },
+    { name = "ujson", specifier = ">=5.10.0" },
 ]
 
 [[package]]
