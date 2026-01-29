@@ -77,10 +77,10 @@ Config options in `.dstack/`: `run-gpu-train.yml`, `run-gpu-search.yml`, `run-cp
 For a lightweight box that only dispatches dstack runs, syncs results, and generates plots (no local ML training):
 
 ```bash
-uv sync --only-group minimal
-PYTHONPATH=. uv run --no-project python -m slm_lab.cli run-remote spec.json spec_name train
-PYTHONPATH=. uv run --no-project python -m slm_lab.cli pull spec_name
-PYTHONPATH=. uv run --no-project python -m slm_lab.cli plot -f folder1,folder2
+uv sync --no-default-groups
+uv run --no-default-groups slm-lab run-remote spec.json spec_name train
+uv run --no-default-groups slm-lab pull spec_name
+uv run --no-default-groups slm-lab plot -f folder1,folder2
 ```
 
 ## Documentation
