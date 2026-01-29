@@ -72,6 +72,17 @@ slm-lab list              # List available experiments
 
 Config options in `.dstack/`: `run-gpu-train.yml`, `run-gpu-search.yml`, `run-cpu-train.yml`, `run-cpu-search.yml`
 
+### Minimal Install (Orchestration Only)
+
+For a lightweight box that only dispatches dstack runs, syncs results, and generates plots (no local ML training):
+
+```bash
+uv sync --only-group minimal
+PYTHONPATH=. uv run --no-project python -m slm_lab.cli run-remote spec.json spec_name train
+PYTHONPATH=. uv run --no-project python -m slm_lab.cli pull spec_name
+PYTHONPATH=. uv run --no-project python -m slm_lab.cli plot -f folder1,folder2
+```
+
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Development guide and methodology

@@ -178,6 +178,17 @@ uv run ruff format
 - `ppo_cartpole.json` - PPO on CartPole (fastest)
 - `ppo_lunar.json` - PPO on LunarLander
 
+### Minimal Install (Orchestration Only)
+
+For a small box that only dispatches dstack runs and syncs results (no local ML training):
+
+```bash
+uv sync --only-group minimal
+PYTHONPATH=. uv run --no-project python -m slm_lab.cli run-remote spec.json spec_name train
+PYTHONPATH=. uv run --no-project python -m slm_lab.cli pull spec_name
+PYTHONPATH=. uv run --no-project python -m slm_lab.cli plot -f folder1,folder2
+```
+
 ### Cloud GPU Training (Optional)
 
 **You can run on your own GPU infrastructure** or use [dstack](https://dstack.ai) for cloud GPUs.
