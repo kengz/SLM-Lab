@@ -52,8 +52,9 @@ dependencies = [
 ]
 
 [dependency-groups]
-# Minimal CLI orchestration - install with: uv sync --only-group minimal
-# Then run with: PYTHONPATH=. uv run python -m slm_lab.cli.main
+# Minimal CLI orchestration (no ML deps) - for dstack dispatch, plotting, HF sync
+# Install: uv sync --only-group minimal
+# Run:     PYTHONPATH=. uv run --no-project python -m slm_lab.cli <command>
 minimal = [
     "colorlover>=0.3.0",
     "dstack>=0.18.0",
