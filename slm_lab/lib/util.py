@@ -6,9 +6,7 @@ from loguru import logger as loguru_logger
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
 from slm_lab.lib.env_var import lab_mode
-import cv2
 import json
-import numpy as np
 import operator
 import os
 import pandas as pd
@@ -17,12 +15,53 @@ import regex as re
 import subprocess
 import sys
 import time
-import torch
-import torch.multiprocessing as mp
 import ujson
 import yaml
 
-NUM_CPUS = mp.cpu_count()
+# Lazy imports for heavy deps (torch, cv2, numpy) - loaded on first use
+# This allows minimal mode (dstack orchestration, plotting) without ML deps
+_np = None
+_torch = None
+_cv2 = None
+_mp = None
+
+
+def _get_np():
+    global _np
+    if _np is None:
+        import numpy
+        _np = numpy
+    return _np
+
+
+def _get_torch():
+    global _torch
+    if _torch is None:
+        import torch
+        _torch = torch
+    return _torch
+
+
+def _get_cv2():
+    global _cv2
+    if _cv2 is None:
+        import cv2
+        _cv2 = cv2
+    return _cv2
+
+
+def _get_mp():
+    global _mp
+    if _mp is None:
+        import torch.multiprocessing
+        _mp = torch.multiprocessing
+    return _mp
+
+
+def _num_cpus():
+    return _get_mp().cpu_count()
+
+
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 
@@ -58,6 +97,7 @@ def format_metrics(metrics: dict) -> list[str]:
 
 class LabJsonEncoder(json.JSONEncoder):
     def default(self, obj):
+        np = _get_np()
         if isinstance(obj, np.integer):
             return int(obj)
         elif isinstance(obj, np.floating):
@@ -71,7 +111,7 @@ class LabJsonEncoder(json.JSONEncoder):
 def batch_get(arr, idxs):
     '''Get multi-idxs from an array depending if it's a python list or np.array'''
     if isinstance(arr, (list, deque)):
-        return np.array(operator.itemgetter(*idxs)(arr))
+        return _get_np().array(operator.itemgetter(*idxs)(arr))
     else:
         return arr[idxs]
 
@@ -124,6 +164,7 @@ def concat_batches(batches):
     Also concat any nested epi sub-batches into flat batch
     {k: arr1} + {k: arr2} = {k: arr1 + arr2}
     '''
+    np = _get_np()
     # if is nested, then is episodic
     is_episodic = isinstance(batches[0]['dones'][0], (list, np.ndarray))
     concat_batch = {}
@@ -152,7 +193,7 @@ def epi_done(done):
     Vector environments handle their own resets automatically via gymnasium,
     so only single environments need explicit reset in control loop.
     '''
-    return np.isscalar(done) and done
+    return _get_np().isscalar(done) and done
 
 
 def frame_mod(frame, frequency, num_envs):
@@ -193,7 +234,7 @@ def get_class_attr(obj):
     '''Get the class attr of an object as dict'''
     attr_dict = {}
     for k, v in obj.__dict__.items():
-        if isinstance(v, torch.nn.Module):
+        if isinstance(v, _get_torch().nn.Module):
             val = f'(device:{v.device}) {v}'
         elif hasattr(v, '__dict__') or ps.is_tuple(v):
             val = str(v)
@@ -340,13 +381,15 @@ def monkey_patch(base_cls, extend_cls):
         setattr(base_cls, fn, getattr(extend_cls, fn))
 
 
-def parallelize(fn, args, num_cpus=NUM_CPUS):
+def parallelize(fn, args, num_cpus=None):
     '''
     Parallelize a method fn, args and return results with order preserved per args.
     args should be a list of tuples.
     @returns {list} results Order preserved output from fn.
     '''
-    with mp.Pool(num_cpus, maxtasksperchild=1) as pool:
+    if num_cpus is None:
+        num_cpus = _num_cpus()
+    with _get_mp().Pool(num_cpus, maxtasksperchild=1) as pool:
         results = pool.starmap(fn, args)
     return results
 
@@ -451,6 +494,7 @@ def set_attr(obj, attr_dict, keys=None):
 def use_gpu(spec_gpu: str | bool | None) -> bool:
     '''Check if GPU should be used based on gpu setting: auto, true, false, or legacy boolean'''
     if spec_gpu in ('auto', None):
+        torch = _get_torch()
         return torch.cuda.is_available() and torch.cuda.device_count() > 0
     return spec_gpu not in ('false', False)
 
@@ -468,6 +512,7 @@ def set_cuda_id(spec):
         session_idx = 0
     job_idx = trial_idx * meta_spec['max_session'] + session_idx
     job_idx += meta_spec['cuda_offset']
+    torch = _get_torch()
     device_count = torch.cuda.device_count()
     cuda_id = job_idx % device_count if torch.cuda.is_available() else None
 
@@ -498,9 +543,10 @@ def set_random_seed(spec):
     trial = spec['meta']['trial']
     session = spec['meta']['session']
     random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
+    torch = _get_torch()
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)
-    np.random.seed(random_seed)
+    _get_np().random.seed(random_seed)
     spec['meta']['random_seed'] = random_seed
     return random_seed
 
@@ -554,6 +600,7 @@ def smart_path(data_path, as_dir=False):
 
 def split_minibatch(batch, mb_size):
     '''Split a batch into minibatches of mb_size or smaller, without replacement'''
+    np = _get_np()
     size = len(batch['rewards'])
     # If minibatch size >= batch size, just return the whole batch
     if mb_size >= size:
@@ -580,6 +627,8 @@ def to_json(d, indent=2):
 
 def to_torch_batch(batch, device, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
+    np = _get_np()
+    torch = _get_torch()
     for k in batch:
         if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])
@@ -669,17 +718,19 @@ def to_pytorch_image(im):
 
 
 def grayscale_image(im):
+    cv2 = _get_cv2()
     return cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
 
 
 def resize_image(im, w_h):
+    cv2 = _get_cv2()
     return cv2.resize(im, w_h, interpolation=cv2.INTER_AREA)
 
 
 def normalize_image(im):
     '''Normalizing image by dividing max value 255'''
     # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
-    return np.divide(im, 255.0)
+    return _get_np().divide(im, 255.0)
 
 
 def preprocess_image(im, w_h=(84, 84)):
@@ -690,7 +741,7 @@ def preprocess_image(im, w_h=(84, 84)):
     im = to_opencv_image(im)
     im = grayscale_image(im)
     im = resize_image(im, w_h)
-    im = np.expand_dims(im, 0)
+    im = _get_np().expand_dims(im, 0)
     return im
 
 
@@ -699,6 +750,9 @@ def debug_image(im):
     Renders an image for debugging; pauses process until key press
     Handles tensor/numpy and conventions among libraries
     '''
+    torch = _get_torch()
+    cv2 = _get_cv2()
+    np = _get_np()
     if torch.is_tensor(im):  # if PyTorch tensor, get numpy
         im = im.cpu().numpy()
     im = to_opencv_image(im)
