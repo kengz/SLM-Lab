@@ -21,56 +21,44 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+# Core dependencies - lightweight, sufficient for CLI orchestration (run-remote, plot, pull)
 dependencies = [
     "colorlover>=0.3.0",
+    "dstack>=0.18.0",
+    "huggingface-hub>=0.34.4",
+    "kaleido==0.2.0",
+    "loguru>=0.7.3",
     "pandas>=2.2.3",
     "pillow>=11.1.0",
     "plotly>=6.0.1",
-    "psutil>=7.0.0",
     "pydash>=8.0.5",
     "pyyaml>=6.0.2",
     "regex>=2024.11.6",
+    "typer>=0.12.0",
     "ujson>=5.10.0",
+]
+
+[project.optional-dependencies]
+# ML/training dependencies - install with: uv sync --extra ml
+ml = [
     "torch>=2.8.0",
     "opencv-python>=4.11.0.86",
     "ray[default,tune]>=2.44.0",
     "optuna>=4.4.0",
     "tensorboard>=2.19.0",
     "gymnasium[box2d,classic-control,mujoco]==1.2.0",
-    "kaleido==0.2.0",
-    "loguru>=0.7.3",
-    "typer>=0.12.0",
     "ale-py==0.11.2",
     "lightning-thunder>=0.2.4; platform_system == 'Linux'",
     "nvfuser-cu128-torch28>=0.2.31.dev20250901; platform_system == 'Linux'",
     "nvidia-cudnn-cu12>=9.10.2.21; platform_system == 'Linux'",
     "nvidia-cudnn-frontend>=1.14.1; platform_system == 'Linux'",
     "gputil>=1.4.0",
-    "huggingface-hub>=0.34.4",
+    "psutil>=7.0.0",
     "pygame>=2.6.1",
 ]
 
 [dependency-groups]
-# Minimal environment for agent/remote orchestration - does NOT run training locally
-# Install: uv sync --only-group minimal
-# Use case: Small box that dispatches dstack runs, pulls results, manages benchmarks, generates plots
-minimal = [
-    "typer>=0.12.0",
-    "dstack>=0.18.0",
-    "huggingface-hub>=0.34.4",
-    "pyyaml>=6.0.2",
-    "ujson>=5.10.0",
-    "pydash>=8.0.5",
-    "loguru>=0.7.3",
-    "pandas>=2.2.3",
-    "regex>=2024.11.6",
-    # Plot dependencies (lightweight - no ML/env deps)
-    "plotly>=6.0.1",
-    "colorlover>=0.3.0",
-    "kaleido==0.2.0",
-    "pillow>=11.1.0",
-]
-# Full dev environment - includes all training dependencies
+# Dev dependencies - install with: uv sync --group dev
 dev = [
     "coverage>=7.6.1",
     "flaky>=3.5.3",
