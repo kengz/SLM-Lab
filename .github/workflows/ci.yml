@@ -26,13 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y swig
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
-      - name: Install minimal dependencies
-        run: uv sync --no-default-groups
+      - name: Install dependencies
+        run: uv sync --group dev
 
-      - name: Test CLI works
-        run: uv run --no-default-groups slm-lab --help
+      - name: Run tests
+        run: uv run pytest
