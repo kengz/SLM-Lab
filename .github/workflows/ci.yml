@@ -18,8 +18,7 @@ jobs:
           enable-cache: true
 
       - name: Lint with ruff
-        run: |
-          uv run ruff check .
+        run: uvx ruff check .
 
   test:
     needs: lint
