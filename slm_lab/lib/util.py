@@ -405,10 +405,25 @@ def write_as_plain(data, data_path):
     open_file = open(data_path, 'w')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        json.dump(data, open_file, indent=2, default=str)
+        json.dump(data, open_file, indent=2, default=_json_default)
     elif ext == '.yml':
         yaml.dump(data, open_file)
     else:
         open_file.write(str(data))
     open_file.close()
     return data_path
+
+
+def _json_default(obj):
+    '''JSON serializer for numpy types and other non-serializable objects'''
+    try:
+        import numpy as np
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+    except ImportError:
+        pass
+    return str(obj)
