@@ -1,3 +1,8 @@
+"""Core utilities - I/O, paths, helpers. No heavy ML dependencies.
+
+ML utilities (numpy, torch, cv2) are in ml_util.py and re-exported here for compatibility.
+"""
+
 from collections import deque
 from contextlib import contextmanager
 from datetime import datetime
@@ -7,7 +12,6 @@ from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
 from slm_lab.lib.env_var import lab_mode
 import json
-import operator
 import os
 import pandas as pd
 import pydash as ps
@@ -18,30 +22,37 @@ import time
 import ujson
 import yaml
 
-# Heavy deps (numpy, torch, cv2) imported locally in functions that need them
+
+def _lazy_import_ml_util():
+    """Lazy import ml_util to avoid loading heavy deps unless needed."""
+    from slm_lab.lib import ml_util
+    return ml_util
 
 
-def _num_cpus():
-    import torch.multiprocessing as mp
-    return mp.cpu_count()
+# Re-export ML functions for backwards compatibility (lazy loaded)
+def __getattr__(name):
+    """Lazy load ml_util functions on first access."""
+    ml_funcs = [
+        'NUM_CPUS', 'LabJsonEncoder', 'batch_get', 'concat_batches', 'epi_done',
+        'get_class_attr', 'parallelize', 'use_gpu', 'set_cuda_id', 'set_random_seed',
+        'split_minibatch', 'to_torch_batch', 'to_opencv_image', 'to_pytorch_image',
+        'grayscale_image', 'resize_image', 'normalize_image', 'preprocess_image', 'debug_image'
+    ]
+    if name in ml_funcs:
+        ml_util = _lazy_import_ml_util()
+        return getattr(ml_util, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 
 
 def format_metrics(metrics: dict) -> list[str]:
-    """Format metrics dict into clean key:value strings for logging.
-
-    Handles numpy types, NaN values, and applies appropriate precision:
-    - frame: scientific notation (1.00e+07)
-    - total_reward, total_reward_ma: 2 decimal places
-    - other floats: 4 significant figures
-    """
+    """Format metrics dict into clean key:value strings for logging."""
     items = []
     for k, v in metrics.items():
-        # Convert numpy types to Python types
         if hasattr(v, 'item'):
             v = v.item()
-
         if str(v).lower() == 'nan':
             items.append(f'{k}:nan')
         elif k == 'frame':
@@ -57,30 +68,8 @@ def format_metrics(metrics: dict) -> list[str]:
     return items
 
 
-class LabJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        import numpy as np
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, (np.ndarray, pd.Series)):
-            return obj.tolist()
-        else:
-            return str(obj)
-
-
-def batch_get(arr, idxs):
-    '''Get multi-idxs from an array depending if it's a python list or np.array'''
-    import numpy as np
-    if isinstance(arr, (list, deque)):
-        return np.array(operator.itemgetter(*idxs)(arr))
-    else:
-        return arr[idxs]
-
-
 def calc_srs_mean_std(sr_list):
-    '''Given a list of series, calculate their mean and std. Truncates to min length to handle mismatched sizes.'''
+    '''Given a list of series, calculate their mean and std.'''
     min_len = min(len(sr) for sr in sr_list)
     truncated = [sr.iloc[:min_len].reset_index(drop=True) for sr in sr_list]
     cat_df = pd.DataFrame(dict(enumerate(truncated)))
@@ -90,86 +79,41 @@ def calc_srs_mean_std(sr_list):
 
 
 def calc_ts_diff(ts2, ts1):
-    '''
-    Calculate the time from tss ts1 to ts2
-    @param {str} ts2 Later ts in the FILE_TS_FORMAT
-    @param {str} ts1 Earlier ts in the FILE_TS_FORMAT
-    @returns {str} delta_t in %H:%M:%S format
-    @example
-
-    ts1 = '2017_10_17_084739'
-    ts2 = '2017_10_17_084740'
-    ts_diff = util.calc_ts_diff(ts2, ts1)
-    # => '0:00:01'
-    '''
+    '''Calculate the time from ts1 to ts2'''
     delta_t = datetime.strptime(ts2, FILE_TS_FORMAT) - datetime.strptime(ts1, FILE_TS_FORMAT)
     return str(delta_t)
 
 
 def cast_df(val):
-    '''missing pydash method to cast value as DataFrame'''
+    '''Cast value as DataFrame'''
     if isinstance(val, pd.DataFrame):
         return val
     return pd.DataFrame(val)
 
 
 def cast_list(val):
-    '''missing pydash method to cast value as list'''
+    '''Cast value as list'''
     if ps.is_list(val):
         return val
-    else:
-        return [val]
-
-
-def concat_batches(batches):
-    '''
-    Concat batch objects from agent.memory.sample() into one batch, when all agents experience similar envs
-    Also concat any nested epi sub-batches into flat batch
-    {k: arr1} + {k: arr2} = {k: arr1 + arr2}
-    '''
-    import numpy as np
-    # if is nested, then is episodic
-    is_episodic = isinstance(batches[0]['dones'][0], (list, np.ndarray))
-    concat_batch = {}
-    for k in batches[0]:
-        datas = []
-        for batch in batches:
-            data = batch[k]
-            if is_episodic:  # make into plain batch instead of nested
-                data = np.concatenate(data)
-            datas.append(data)
-        concat_batch[k] = np.concatenate(datas)
-    return concat_batch
+    return [val]
 
 
 def downcast_float32(df):
-    '''Downcast any float64 col to float32 to allow safer pandas comparison'''
+    '''Downcast any float64 col to float32'''
     for col in df.columns:
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
 
 
-def epi_done(done):
-    '''
-    General method to check if episode is done for both single and vectorized env
-    Vector environments handle their own resets automatically via gymnasium,
-    so only single environments need explicit reset in control loop.
-    '''
-    import numpy as np
-    return np.isscalar(done) and done
-
-
 def frame_mod(frame, frequency, num_envs):
-    '''
-    Generic mod for (frame % frequency == 0) for when num_envs is 1 or more,
-    since frame will increase multiple ticks for vector env, use the remainder'''
+    '''Generic mod for (frame % frequency == 0) for vector env'''
     remainder = num_envs or 1
     return (frame % frequency < remainder)
 
 
 def flatten_dict(obj, delim='.'):
-    '''Missing pydash method to flatten dict'''
+    '''Flatten nested dict'''
     nobj = {}
     for key, val in obj.items():
         if ps.is_dict(val) and not ps.is_empty(val):
@@ -194,31 +138,13 @@ def get_class_name(obj, lower=False):
     return class_name
 
 
-def get_class_attr(obj):
-    '''Get the class attr of an object as dict'''
-    import torch
-    attr_dict = {}
-    for k, v in obj.__dict__.items():
-        if isinstance(v, torch.nn.Module):
-            val = f'(device:{v.device}) {v}'
-        elif hasattr(v, '__dict__') or ps.is_tuple(v):
-            val = str(v)
-        else:
-            val = v
-        attr_dict[k] = val
-    return attr_dict
-
-
 def get_file_ext(data_path):
-    '''get the `.ext` of file.ext'''
+    '''Get the file extension'''
     return os.path.splitext(data_path)[-1]
 
 
 def get_fn_list(a_cls):
-    '''
-    Get the callable, non-private functions of a class
-    @returns {[*str]} A list of strings of fn names
-    '''
+    '''Get the callable, non-private functions of a class'''
     fn_list = ps.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
 
@@ -227,12 +153,11 @@ def get_git_sha():
     try:
         return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return 'unknown'  # git not available (e.g., in minimal/remote env)
+        return 'unknown'
 
 
 def get_port():
-    '''Get a unique port number for a run time as 4xxx, where xxx is the last 3 digits from the PID, front-padded with 0'''
-    # get 3 digits from pid
+    '''Get a unique port number for a run time as 4xxx'''
     xxx = ps.pad_start(str(os.getpid())[-3:], 3, 0)
     port = int(f'4{xxx}')
     return port
@@ -245,8 +170,9 @@ def get_predir(spec):
     predir = f"data/{spec_name}_{meta_spec['experiment_ts']}"
     return predir
 
+
 def get_experiment_ts(path):
-    """Extract experiment timestamp from a path like 'data/exp_name_2025_09_26_123456'."""
+    """Extract experiment timestamp from a path."""
     matches = RE_FILE_TS.findall(path)
     return matches[0] if matches else None
 
@@ -269,21 +195,13 @@ def get_prepath(spec, unit='experiment'):
 
 
 def get_session_df_path(session_spec, df_mode):
-    '''Method to return standard filepath for session_df (agent.mt.train_df/eval_df) for saving and loading'''
+    '''Return standard filepath for session_df'''
     info_prepath = session_spec['meta']['info_prepath']
     return f'{info_prepath}_session_df_{df_mode}.csv'
 
 
 def get_ts(pattern=FILE_TS_FORMAT):
-    '''
-    Get current ts, defaults to format used for filename
-    @param {str} pattern To format the ts
-    @returns {str} ts
-    @example
-
-    util.get_ts()
-    # => '2017_10_17_084739'
-    '''
+    '''Get current timestamp'''
     ts_obj = datetime.now()
     ts = ts_obj.strftime(pattern)
     assert RE_FILE_TS.search(ts)
@@ -315,21 +233,11 @@ def is_jupyter():
         return True
     except NameError:
         return False
-    return False
 
 
 @contextmanager
 def ctx_lab_mode(lab_mode):
-    '''
-    Creates context to run method with a specific lab_mode
-    @example
-    with util.ctx_lab_mode('eval'):
-        foo()
-
-    @util.ctx_lab_mode('eval')
-    def foo():
-        ...
-    '''
+    '''Creates context to run method with a specific lab_mode'''
     prev_lab_mode = os.environ.get('lab_mode')
     os.environ['lab_mode'] = lab_mode
     yield
@@ -346,22 +254,8 @@ def monkey_patch(base_cls, extend_cls):
         setattr(base_cls, fn, getattr(extend_cls, fn))
 
 
-def parallelize(fn, args, num_cpus=None):
-    '''
-    Parallelize a method fn, args and return results with order preserved per args.
-    args should be a list of tuples.
-    @returns {list} results Order preserved output from fn.
-    '''
-    import torch.multiprocessing as mp
-    if num_cpus is None:
-        num_cpus = mp.cpu_count()
-    with mp.Pool(num_cpus, maxtasksperchild=1) as pool:
-        results = pool.starmap(fn, args)
-    return results
-
-
 def prepath_to_idxs(prepath):
-    '''Extract trial index and session index from prepath if available'''
+    '''Extract trial index and session index from prepath'''
     tidxs = re.findall(r'_t(\d+)', prepath)
     trial_index = int(tidxs[0]) if tidxs else None
     sidxs = re.findall(r'_s(\d+)', prepath)
@@ -370,29 +264,7 @@ def prepath_to_idxs(prepath):
 
 
 def read(data_path, **kwargs):
-    '''
-    Universal data reading method with smart data parsing
-    - {.csv} to DataFrame
-    - {.json} to dict, list
-    - {.yml} to dict
-    - {*} to str
-    @param {str} data_path The data path to read from
-    @returns {data} The read data in sensible format
-    @example
-
-    data_df = util.read('test/fixture/lib/util/test_df.csv')
-    # => <DataFrame>
-
-    data_dict = util.read('test/fixture/lib/util/test_dict.json')
-    data_dict = util.read('test/fixture/lib/util/test_dict.yml')
-    # => <dict>
-
-    data_list = util.read('test/fixture/lib/util/test_list.json')
-    # => <list>
-
-    data_str = util.read('test/fixture/lib/util/test_str.txt')
-    # => <str>
-    '''
+    '''Universal data reading method with smart data parsing'''
     data_path = smart_path(data_path)
     try:
         assert os.path.isfile(data_path)
@@ -407,15 +279,12 @@ def read(data_path, **kwargs):
 
 
 def read_as_df(data_path, **kwargs):
-    '''Submethod to read data as DataFrame'''
-    data = pd.read_csv(data_path, **kwargs)
-    return data
-
-
+    '''Read data as DataFrame'''
+    return pd.read_csv(data_path, **kwargs)
 
 
 def read_as_plain(data_path, **kwargs):
-    '''Submethod to read data as plain type'''
+    '''Read data as plain type'''
     open_file = open(data_path, 'r')
     ext = get_file_ext(data_path)
     if ext == '.json':
@@ -442,7 +311,7 @@ def log_dict(data: dict, title: str = None):
 
 def log_self_desc(cls, omit=None):
     '''Log self description in YAML-style format.'''
-    obj_dict = get_class_attr(cls)
+    obj_dict = get_class_attr(cls)  # Uses __getattr__ to lazy load from ml_util
     if omit:
         obj_dict = ps.omit(obj_dict, omit)
     log_dict(obj_dict, get_class_name(cls))
@@ -457,41 +326,12 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def use_gpu(spec_gpu: str | bool | None) -> bool:
-    '''Check if GPU should be used based on gpu setting: auto, true, false, or legacy boolean'''
-    import torch
-    if spec_gpu in ('auto', None):
-        return torch.cuda.is_available() and torch.cuda.device_count() > 0
-    return spec_gpu not in ('false', False)
-
-
-def set_cuda_id(spec):
-    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
-    import torch
-    # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
-    # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
-    if not use_gpu(spec['agent']['net'].get('gpu')):
-        return
-    meta_spec = spec['meta']
-    trial_idx = meta_spec['trial'] or 0
-    session_idx = meta_spec['session'] or 0
-    if meta_spec['distributed'] == 'shared':  # shared hogwild uses only global networks, offset them to idx 0
-        session_idx = 0
-    job_idx = trial_idx * meta_spec['max_session'] + session_idx
-    job_idx += meta_spec['cuda_offset']
-    device_count = torch.cuda.device_count()
-    cuda_id = job_idx % device_count if torch.cuda.is_available() else None
-
-    spec['agent']['net']['cuda_id'] = cuda_id
-
-
 def set_logger(spec, logger, unit=None):
     '''Set the logger for a lab unit give its spec'''
     os.environ['LOG_PREPATH'] = insert_folder(get_prepath(spec, unit=unit), 'log')
     log_filepath = os.path.join(ROOT_DIR, os.environ['LOG_PREPATH'] + '.log')
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
-    # Remove existing file handlers (stdout remains)
     while len(loguru_logger._core.handlers) > 1:
         loguru_logger.remove(list(loguru_logger._core.handlers.keys())[-1])
 
@@ -504,20 +344,6 @@ def set_logger(spec, logger, unit=None):
     )
 
 
-def set_random_seed(spec):
-    '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed'''
-    import numpy as np
-    import torch
-    trial = spec['meta']['trial']
-    session = spec['meta']['session']
-    random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
-    torch.cuda.manual_seed_all(random_seed)
-    torch.manual_seed(random_seed)
-    np.random.seed(random_seed)
-    spec['meta']['random_seed'] = random_seed
-    return random_seed
-
-
 def _sizeof(obj, seen=None):
     '''Recursively finds size of objects'''
     size = sys.getsizeof(obj)
@@ -526,8 +352,6 @@ def _sizeof(obj, seen=None):
     obj_id = id(obj)
     if obj_id in seen:
         return 0
-    # Important mark as seen *before* entering recursion to gracefully handle
-    # self-referential objects
     seen.add(obj_id)
     if isinstance(obj, dict):
         size += sum([_sizeof(v, seen) for v in obj.values()])
@@ -545,19 +369,7 @@ def sizeof(obj, divisor=1e6):
 
 
 def smart_path(data_path, as_dir=False):
-    '''
-    Resolve data_path into abspath with fallback to join from ROOT_DIR
-    @param {str} data_path The input data path to resolve
-    @param {bool} as_dir Whether to return as dirname
-    @returns {str} The normalized absolute data_path
-    @example
-
-    util.smart_path('slm_lab/lib')
-    # => '/Users/ANON/Documents/slm_lab/slm_lab/lib'
-
-    util.smart_path('/tmp')
-    # => '/tmp'
-    '''
+    '''Resolve data_path into abspath with fallback to join from ROOT_DIR'''
     if not os.path.isabs(data_path):
         data_path = os.path.join(ROOT_DIR, data_path)
     if as_dir:
@@ -565,70 +377,13 @@ def smart_path(data_path, as_dir=False):
     return os.path.normpath(data_path)
 
 
-def split_minibatch(batch, mb_size):
-    '''Split a batch into minibatches of mb_size or smaller, without replacement'''
-    import numpy as np
-    size = len(batch['rewards'])
-    # If minibatch size >= batch size, just return the whole batch
-    if mb_size >= size:
-        return [batch]
-    idxs = np.arange(size)
-    np.random.shuffle(idxs)
-    chunks = int(size / mb_size)
-    nested_idxs = np.array_split(idxs[:chunks * mb_size], chunks)
-    if size % mb_size != 0:  # append leftover from split
-        nested_idxs += [idxs[chunks * mb_size:]]
-    mini_batches = []
-    for minibatch_idxs in nested_idxs:
-        minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
-        mini_batches.append(minibatch)
-    return mini_batches
-
-
 def to_json(d, indent=2):
     '''Shorthand method for stringify JSON with indent'''
-    return json.dumps(d, indent=indent, cls=LabJsonEncoder)
-
-
-
-
-def to_torch_batch(batch, device, is_episodic):
-    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    import numpy as np
-    import torch
-    for k in batch:
-        if is_episodic:  # for episodic format
-            batch[k] = np.concatenate(batch[k])
-        elif ps.is_list(batch[k]):
-            batch[k] = np.array(batch[k])
-        # Optimize tensor creation - direct device placement avoids intermediate CPU tensor
-        if batch[k].dtype != np.float32:
-            batch[k] = batch[k].astype(np.float32)
-        batch[k] = torch.from_numpy(batch[k]).to(device, non_blocking=True)
-    return batch
+    return json.dumps(d, indent=indent, default=str)
 
 
 def write(data, data_path):
-    '''
-    Universal data writing method with smart data parsing
-    - {.csv} from DataFrame
-    - {.json} from dict, list
-    - {.yml} from dict
-    - {*} from str(*)
-    @param {*} data The data to write
-    @param {str} data_path The data path to write to
-    @returns {data_path} The data path written to
-    @example
-
-    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.csv')
-
-    data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.json')
-    data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.yml')
-
-    data_path = util.write(data_list, 'test/fixture/lib/util/test_list.json')
-
-    data_path = util.write(data_str, 'test/fixture/lib/util/test_str.txt')
-    '''
+    '''Universal data writing method with smart data parsing'''
     data_path = smart_path(data_path)
     data_dir = os.path.dirname(data_path)
     os.makedirs(data_dir, exist_ok=True)
@@ -641,93 +396,21 @@ def write(data, data_path):
 
 
 def write_as_df(data, data_path):
-    '''Submethod to write data as DataFrame'''
+    '''Write data as DataFrame'''
     df = cast_df(data)
     df.to_csv(data_path, index=False)
     return data_path
 
 
-
-
 def write_as_plain(data, data_path):
-    '''Submethod to write data as plain type'''
+    '''Write data as plain type'''
     open_file = open(data_path, 'w')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        json.dump(data, open_file, indent=2, cls=LabJsonEncoder)
+        json.dump(data, open_file, indent=2, default=str)
     elif ext == '.yml':
         yaml.dump(data, open_file)
     else:
         open_file.write(str(data))
     open_file.close()
     return data_path
-
-
-# Atari image preprocessing
-
-
-def to_opencv_image(im):
-    '''Convert to OpenCV image shape h,w,c'''
-    shape = im.shape
-    if len(shape) == 3 and shape[0] < shape[-1]:
-        return im.transpose(1, 2, 0)
-    else:
-        return im
-
-
-def to_pytorch_image(im):
-    '''Convert to PyTorch image shape c,h,w'''
-    shape = im.shape
-    if len(shape) == 3 and shape[-1] < shape[0]:
-        return im.transpose(2, 0, 1)
-    else:
-        return im
-
-
-def grayscale_image(im):
-    import cv2
-    return cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
-
-
-def resize_image(im, w_h):
-    import cv2
-    return cv2.resize(im, w_h, interpolation=cv2.INTER_AREA)
-
-
-def normalize_image(im):
-    '''Normalizing image by dividing max value 255'''
-    import numpy as np
-    # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
-    return np.divide(im, 255.0)
-
-
-def preprocess_image(im, w_h=(84, 84)):
-    '''
-    Image preprocessing using OpenAI Baselines method: grayscale, resize
-    This resize uses stretching instead of cropping
-    '''
-    import numpy as np
-    im = to_opencv_image(im)
-    im = grayscale_image(im)
-    im = resize_image(im, w_h)
-    im = np.expand_dims(im, 0)
-    return im
-
-
-def debug_image(im):
-    '''
-    Renders an image for debugging; pauses process until key press
-    Handles tensor/numpy and conventions among libraries
-    '''
-    import cv2
-    import numpy as np
-    import torch
-    if torch.is_tensor(im):  # if PyTorch tensor, get numpy
-        im = im.cpu().numpy()
-    im = to_opencv_image(im)
-    im = im.astype(np.uint8)  # typecast guard
-    if im.shape[0] == 3:  # RGB image
-        # accommodate from RGB (numpy) to BGR (cv2)
-        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-    cv2.imshow('debug image', im)
-    cv2.waitKey(0)
