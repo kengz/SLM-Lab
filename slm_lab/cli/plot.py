@@ -259,5 +259,5 @@ def list_data(
         status = "✓" if metrics_files else "○"
         logger.info(f"  {status} {exp}")
 
-    logger.info(f"\n✓ = has trial_metrics (ready for plotting)")
-    logger.info(f"○ = no trial_metrics")
+    logger.info("\n✓ = has trial_metrics (ready for plotting)")
+    logger.info("○ = no trial_metrics")

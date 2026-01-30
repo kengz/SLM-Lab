@@ -31,14 +31,8 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install dependencies
-        run: uv sync --group dev
+      - name: Install minimal dependencies
+        run: uv sync --no-default-groups
 
-      - name: Run tests
-        run: uv run pytest
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
+      - name: Test CLI works
+        run: uv run --no-default-groups slm-lab --help

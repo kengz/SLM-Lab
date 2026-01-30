@@ -10,7 +10,7 @@ import gymnasium as gym
 from gymnasium.wrappers.vector import RecordEpisodeStatistics as VectorRecordEpisodeStatistics
 
 from slm_lab.env import make_env
-from slm_lab.env.wrappers import TrackReward, ClockMixin
+from slm_lab.env.wrappers import TrackReward
 
 
 # ============================================================================

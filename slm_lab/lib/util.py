@@ -3,10 +3,8 @@
 ML utilities (numpy, torch, cv2) are in ml_util.py and re-exported here for compatibility.
 """
 
-from collections import deque
 from contextlib import contextmanager
 from datetime import datetime
-from importlib import reload
 from loguru import logger as loguru_logger
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
 from slm_lab.lib import logger
@@ -18,7 +16,6 @@ import pydash as ps
 import regex as re
 import subprocess
 import sys
-import time
 import ujson
 import yaml
 
@@ -311,7 +308,8 @@ def log_dict(data: dict, title: str = None):
 
 def log_self_desc(cls, omit=None):
     '''Log self description in YAML-style format.'''
-    obj_dict = get_class_attr(cls)  # Uses __getattr__ to lazy load from ml_util
+    from slm_lab.lib.ml_util import get_class_attr
+    obj_dict = get_class_attr(cls)
     if omit:
         obj_dict = ps.omit(obj_dict, omit)
     log_dict(obj_dict, get_class_name(cls))
