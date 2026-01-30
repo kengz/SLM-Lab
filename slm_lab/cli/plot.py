@@ -5,9 +5,31 @@ from pathlib import Path
 
 import typer
 
-from slm_lab.lib import logger, util, viz
+from slm_lab import ROOT_DIR
+from slm_lab.lib import logger, viz
 
 logger = logger.get_logger(__name__)
+
+
+def _smart_path(data_path: str) -> str:
+    """Resolve path with fallback to ROOT_DIR."""
+    path = Path(data_path)
+    if path.is_absolute() and path.exists():
+        return str(path)
+    # Try relative to cwd first
+    if path.exists():
+        return str(path.resolve())
+    # Fallback to ROOT_DIR
+    root_path = Path(ROOT_DIR) / data_path
+    if root_path.exists():
+        return str(root_path)
+    return str(path.resolve())
+
+
+def _read_json(file_path: str) -> dict:
+    """Read JSON file."""
+    with open(file_path) as f:
+        return json.load(f)
 
 # File patterns for trial metrics
 TRIAL_METRICS_PATH = '*t0_trial_metrics.json'
@@ -39,7 +61,7 @@ def get_spec_data(folder_path: Path) -> dict | None:
         matches = list((folder_path / 'info').glob(SPEC_PATH))
 
     if matches:
-        return util.read(str(matches[0]))
+        return _read_json(str(matches[0]))
     return None
 
 
@@ -128,8 +150,8 @@ def plot(
 
         slm-lab plot -t "Custom Title" -f folder1,folder2
     """
-    data_path = Path(util.smart_path(data_folder))
-    output_path = Path(util.smart_path(output_folder)) if output_folder else data_path
+    data_path = Path(_smart_path(data_folder))
+    output_path = Path(_smart_path(output_folder)) if output_folder else data_path
 
     folder_list = [f.strip() for f in folders.split(',')]
 
@@ -219,7 +241,7 @@ def list_data(
 
     Shows which experiments have trial_metrics files ready for plotting.
     """
-    data_path = Path(util.smart_path(data_folder))
+    data_path = Path(_smart_path(data_folder))
     if not data_path.exists():
         logger.error(f"Data folder not found: {data_folder}")
         raise typer.Exit(1)
