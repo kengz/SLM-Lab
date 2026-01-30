@@ -13,6 +13,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
+from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.perf import log_perf_setup, optimize
 from slm_lab.spec import spec_util
 

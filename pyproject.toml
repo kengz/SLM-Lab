@@ -112,3 +112,12 @@ packages = ["slm_lab"]
 [project.scripts]
 slm-lab = "slm_lab.cli:cli"
 slm-retro = "slm_lab.experiment.retro_analysis:app"
+
+[tool.ruff]
+# Ignore pre-existing lint issues in legacy code
+lint.ignore = [
+    "F401",  # unused imports (some are re-exports)
+    "F403",  # star imports in __init__.py
+    "F541",  # f-strings without placeholders
+    "F841",  # unused local variables
+]

@@ -184,7 +184,7 @@ def report(mt: MetricsTracker):
 
 def run_ray_search(spec: dict) -> dict:
     """Ray Tune search using Tuner API with Optuna integration and optional ASHA scheduling."""
-    num_trials = spec["meta"]["max_trial"]
+    name, num_trials = spec["name"], spec["meta"]["max_trial"]
     use_scheduler = spec["meta"].get("search_scheduler") is not None
 
     # ASHA scheduler requires single-session trials for periodic metric reporting
@@ -213,7 +213,7 @@ def run_ray_search(spec: dict) -> dict:
     elif max_session > 1:
         logger.info(f"Multi-session search (max_session={max_session}): trials run to completion (no early termination)")
     else:
-        logger.info("Single-session search without scheduler: trials run to completion")
+        logger.info(f"Single-session search without scheduler: trials run to completion")
 
     logger.info(
         f"Ray Tune search: {num_trials} trials, {metric} ({mode}) | Dashboard: http://127.0.0.1:8265 | Stop: slm-lab --stop-ray"

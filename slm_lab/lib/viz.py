@@ -140,6 +140,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
     - additional plots from session_df: losses, exploration variable, entropy
     '''
     meta_spec = session_spec['meta']
+    prepath = meta_spec['prepath']
     graph_prepath = meta_spec['graph_prepath']
     title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
 

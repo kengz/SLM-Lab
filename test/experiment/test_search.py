@@ -3,6 +3,7 @@ import glob
 import os
 import pandas as pd
 import pytest
+import tempfile
 import shutil
 
 from slm_lab.experiment.search import cleanup_trial_models
