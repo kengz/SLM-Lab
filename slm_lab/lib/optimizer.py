@@ -21,15 +21,9 @@ class GlobalAdam(torch.optim.Adam):
                 state['exp_avg_sq'] = p.data.new().resize_as_(p.data).zero_()
 
     def share_memory(self):
-        '''Move state to CPU (required for multiprocessing) and share memory'''
         for group in self.param_groups:
             for p in group['params']:
                 state = self.state[p]
-                # Move to CPU first (share_memory only works on CPU tensors)
-                state['step'] = state['step'].cpu()
-                state['exp_avg'] = state['exp_avg'].cpu()
-                state['exp_avg_sq'] = state['exp_avg_sq'].cpu()
-                # Now share memory for multiprocessing
                 state['step'].share_memory_()
                 state['exp_avg'].share_memory_()
                 state['exp_avg_sq'].share_memory_()
@@ -43,26 +37,23 @@ class GlobalAdam(torch.optim.Adam):
             for p in group['params']:
                 if p.grad is None:
                     continue
-                # Ensure grad is on same device as state (CPU for shared memory)
                 grad = p.grad.data
                 state = self.state[p]
                 exp_avg, exp_avg_sq = state['exp_avg'], state['exp_avg_sq']
-                if grad.device != exp_avg.device:
-                    grad = grad.to(exp_avg.device)
                 beta1, beta2 = group['betas']
                 state['step'] += 1
                 if group['weight_decay'] != 0:
-                    grad = grad.add(p.data.to(grad.device), alpha=group['weight_decay'])
+                    grad = grad.add(group['weight_decay'], p.data)
 
                 # Decay the first and second moment running average coefficient
-                exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)
-                exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
+                exp_avg.mul_(beta1).add_(1 - beta1, grad)
+                exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
                 denom = exp_avg_sq.sqrt().add_(group['eps'])
                 bias_correction1 = 1 - beta1 ** state['step'].item()
                 bias_correction2 = 1 - beta2 ** state['step'].item()
                 step_size = group['lr'] * math.sqrt(
                     bias_correction2) / bias_correction1
-                p.data.addcdiv_(exp_avg, denom, value=-step_size)
+                p.data.addcdiv_(-step_size, exp_avg, denom)
         return loss
 
 
@@ -83,14 +74,9 @@ class GlobalRMSprop(torch.optim.RMSprop):
                 state['square_avg'] = p.data.new().resize_as_(p.data).zero_()
 
     def share_memory(self):
-        '''Move state to CPU (required for multiprocessing) and share memory'''
         for group in self.param_groups:
             for p in group['params']:
                 state = self.state[p]
-                # Move to CPU first (share_memory only works on CPU tensors)
-                state['step'] = state['step'].cpu()
-                state['square_avg'] = state['square_avg'].cpu()
-                # Now share memory for multiprocessing
                 state['step'].share_memory_()
                 state['square_avg'].share_memory_()
 
@@ -103,20 +89,17 @@ class GlobalRMSprop(torch.optim.RMSprop):
             for p in group['params']:
                 if p.grad is None:
                     continue
-                # Ensure grad is on same device as state (CPU for shared memory)
                 grad = p.grad.data
                 state = self.state[p]
                 square_avg = state['square_avg']
-                if grad.device != square_avg.device:
-                    grad = grad.to(square_avg.device)
                 alpha = group['alpha']
                 state['step'] += 1
                 if group['weight_decay'] != 0:
-                    grad = grad.add(p.data.to(grad.device), alpha=group['weight_decay'])
+                    grad = grad.add(group['weight_decay'], p.data)
 
-                square_avg.mul_(alpha).addcmul_(grad, grad, value=1 - alpha)
+                square_avg.mul_(alpha).addcmul_(1 - alpha, grad, grad)
                 avg = square_avg.sqrt().add_(group['eps'])
-                p.data.addcdiv_(grad, avg, value=-group['lr'])
+                p.data.addcdiv_(-group['lr'], grad, avg)
         return loss
 
 
