@@ -1,0 +1,21 @@
+name: test
+on:
+  push:
+    branches: [master]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y swig
+      - uses: astral-sh/setup-uv@v4
+      - name: Set up Python
+        run: uv python install
+      - name: Install the project
+        run: uv sync --group dev
+      - name: Run tests
+        run: uv run pytest
+        env:
+          NO_COLOR: 1
