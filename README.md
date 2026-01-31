@@ -1,15 +1,28 @@
+---
+license: mit
+language:
+- en
+pretty_name: SLM-Lab Benchmark Results
+tags:
+- reinforcement-learning
+- deep-learning
+- pytorch
+task_categories:
+- reinforcement-learning
+---
+
 # SLM Lab <br> ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/kengz/slm-lab) ![CI](https://github.com/kengz/SLM-Lab/workflows/CI/badge.svg)
 
 
 <p align="center">
   <i>Modular Deep Reinforcement Learning framework in PyTorch.</i>
-  <br><br>
-  <b>Documentation:</b><br>
-  <a href="https://slm-lab.gitbook.io/slm-lab/">https://slm-lab.gitbook.io/slm-lab/</a>
-  <br><br>
+  <br>
+  <a href="https://slm-lab.gitbook.io/slm-lab/">Documentation</a> · <a href="https://github.com/kengz/SLM-Lab/blob/master/docs/BENCHMARKS.md">Benchmark Results</a>
 </p>
 
->NOTE: the `book` branch has been updated for issue fixes. For the original code in the book _Foundations of Deep Reinforcement Learning_, check out to git tag `v4.1.1`
+>**NOTE:** v5.0 updates to Gymnasium, `uv` tooling, and modern dependencies with ARM support - see [CHANGELOG.md](CHANGELOG.md).
+>
+>Book readers: `git checkout v4.1.1` for *Foundations of Deep Reinforcement Learning* code.
 
 |||||
 |:---:|:---:|:---:|:---:|
@@ -40,6 +53,9 @@ slm-lab run-remote spec.json spec_name train   # cloud training (dstack)
 # Help (CLI uses Typer)
 slm-lab --help                                 # list all commands
 slm-lab run --help                             # options for run command
+
+# Troubleshoot: if slm-lab not found, use uv run
+uv run slm-lab run
 ```
 
 ## Features
@@ -56,9 +72,9 @@ Run experiments on cloud GPUs with automatic result sync to HuggingFace.
 
 ```bash
 # Setup
-cp .env.example .env  # Add HF_TOKEN and configure HF_REPO
+cp .env.example .env  # Add HF_TOKEN
 uv tool install dstack  # Install dstack CLI
-dstack config  # Configure dstack
+# Configure dstack server - see https://dstack.ai/docs/quickstart
 
 # Run on cloud
 slm-lab run-remote spec.json spec_name train           # CPU training (default)
@@ -82,9 +98,4 @@ uv run --no-default-groups slm-lab run-remote spec.json spec_name train
 uv run --no-default-groups slm-lab pull spec_name
 uv run --no-default-groups slm-lab plot -f folder1,folder2
 ```
-
-## Documentation
-
-- [CLAUDE.md](CLAUDE.md) - Development guide and methodology
-- [docs/BENCHMARKS.md](docs/BENCHMARKS.md) - Benchmark results, targets, and active runs tracking
 

@@ -65,9 +65,22 @@ trial_metrics: frame:1.00e+07 | total_reward_ma:816.18 | strength:570.4 | ...
 **Link**: Add HuggingFace folder link to table:
 - Format: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
 
+**Pull Data Efficiently** (avoid rate limiting):
+```bash
+# DON'T use slm-lab pull for bulk downloads - will get rate limited
+# Instead, pull specific folders directly from HF:
+
+# Get folder name from run logs
+dstack logs NAME | grep "SLM-Lab: Running"
+# Output shows: data/FOLDER_NAME/...
+
+# Pull only the folder you need
+source .env && uv run hf download SLM-Lab/benchmark-dev \
+  --include "data/FOLDER_NAME/*" --local-dir hf_data --repo-type dataset
+```
+
 **Plot**:
 ```bash
-source .env && slm-lab pull SPEC_NAME   # download results
 # Verify scores in trial_metrics.json match logs
 # Ensure all runs share same max_frame
 
@@ -84,6 +97,47 @@ git add docs/BENCHMARKS.md slm_lab/spec/benchmark/...
 git commit -m "docs: update ENV benchmark (SCORE)"
 # NEVER push without explicit permission
 ```
+
+## Publishing to Public Dataset
+
+During development, runs upload to `SLM-Lab/benchmark-dev` (noisy, iterative). When benchmarks are finalized, publish clean results to the public `SLM-Lab/benchmark` dataset.
+
+### Strategy: `hf_data/` IS the Manifest
+
+The `hf_data/data/` directory defines what gets uploaded. Same process works for any subset (Phase 1-3, Atari, single env).
+
+### Upload Workflow
+
+HF dataset mirrors repo structure: `README.md`, `docs/`, `data/`
+
+```bash
+# 1. Clear hf_data/ before upload cycle
+rm -rf hf_data/
+
+# 2. Pull only folders you want from benchmark-dev
+source .env && uv run hf download SLM-Lab/benchmark-dev \
+  --include "data/ppo_cartpole_2026*/*" "data/sac_lunar*/*" \
+  --local-dir hf_data --repo-type dataset
+
+# 3. Upload README to public repo
+source .env && uv run hf upload SLM-Lab/benchmark README.md README.md --repo-type dataset
+
+# 4. Upload data to public repo
+source .env && uv run hf upload SLM-Lab/benchmark hf_data/data data --repo-type dataset
+
+# 5. Update BENCHMARKS.md links: benchmark-dev -> benchmark
+#    (data now exists on public repo, so links will work)
+
+# 6. Upload docs (with updated links)
+source .env && uv run hf upload SLM-Lab/benchmark docs docs --repo-type dataset
+```
+
+### Two-Repo Strategy
+
+| Repo | Purpose | Links in BENCHMARKS.md |
+|------|---------|------------------------|
+| `SLM-Lab/benchmark-dev` | Development iterations, noisy | During active work |
+| `SLM-Lab/benchmark` | Public, finalized results | After publishing |
 
 ## Hyperparameter Search
 

@@ -115,7 +115,7 @@ def plot(
     folders: str = typer.Option(..., "--folders", "-f", help="Comma-separated data folder names (e.g., ppo_cartpole_2026_01_11,a2c_gae_cartpole_2026_01_11)"),
     title: str = typer.Option(None, "--title", "-t", help="Plot title. If omitted, extracted from spec env name."),
     data_folder: str = typer.Option("data", "--data-folder", "-d", help="Base data folder path"),
-    output_folder: str = typer.Option(None, "--output", "-o", help="Output folder (default: data folder)"),
+    output_folder: str = typer.Option("docs/plots", "--output", "-o", help="Output folder for plots"),
     showlegend: bool = typer.Option(True, "--legend/--no-legend", help="Show legend on plot"),
 ):
     """
@@ -129,7 +129,7 @@ def plot(
         slm-lab plot -t "Custom Title" -f folder1,folder2
     """
     data_path = Path(util.smart_path(data_folder))
-    output_path = Path(util.smart_path(output_folder)) if output_folder else data_path
+    output_path = Path(util.smart_path(output_folder))
 
     folder_list = [f.strip() for f in folders.split(',')]
 
