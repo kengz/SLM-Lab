@@ -69,7 +69,7 @@
           "name": "GlobalAdam",
           "lr": 0.0007
         },
-        "gpu": "auto"
+        "gpu": false
       }
     },
     "env": {
@@ -156,7 +156,7 @@
           "name": "GlobalAdam",
           "lr": 0.0001
         },
-        "gpu": "auto"
+        "gpu": false
       }
     },
     "env": {
