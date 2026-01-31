@@ -59,8 +59,9 @@ def check_comp_spec(comp_spec, comp_spec_format):
 def check_compatibility(spec):
     '''Check compatibility among spec setups'''
     # TODO expand to be more comprehensive
-    if spec['meta'].get('distributed') == 'synced':
-        assert not util.use_gpu(ps.get(spec, 'agent.net.gpu')), 'Distributed mode "synced" works with CPU only. Set gpu: false.'
+    # Note: distributed mode now supports GPU - global nets stay on CPU for sharing,
+    # local nets use GPU for compute. See net_util.init_global_nets.
+    pass
 
 
 def check(spec):

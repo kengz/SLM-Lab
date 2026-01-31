@@ -1,0 +1,3 @@
+# Exclude large directories from dstack archive (keeps them in git)
+docs/plots/
+test/

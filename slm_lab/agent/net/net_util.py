@@ -279,8 +279,12 @@ def load_algorithm(algorithm):
 
 
 def copy(src_net, tar_net):
-    '''Copy model weights from src to target'''
-    tar_net.load_state_dict(src_net.state_dict())
+    '''Copy model weights from src to target, handling cross-device transfer (CPU<->GPU)'''
+    state_dict = src_net.state_dict()
+    # Transfer state dict to target device if different
+    if hasattr(tar_net, 'device') and tar_net.device != getattr(src_net, 'device', 'cpu'):
+        state_dict = {k: v.to(tar_net.device) for k, v in state_dict.items()}
+    tar_net.load_state_dict(state_dict)
 
 
 def polyak_update(src_net, tar_net, old_ratio=0.5):
@@ -394,6 +398,9 @@ def init_global_nets(algorithm):
     in spec.meta.distributed, specify either:
     - 'shared': global network parameter is shared all the time. In this mode, algorithm local network will be replaced directly by global_net via overriding by identify attribute name
     - 'synced': global network parameter is periodically synced to local network after each gradient push. In this mode, algorithm will keep a separate reference to `global_{net}` for each of its network
+
+    GPU Support: Global nets are kept on CPU for shared memory across processes.
+    Local nets can run on GPU - gradients are transferred CPU<->GPU during sync.
     '''
     dist_mode = algorithm.agent.spec['meta']['distributed']
     assert dist_mode in ('shared', 'synced'), 'Unrecognized distributed mode'
@@ -403,6 +410,9 @@ def init_global_nets(algorithm):
         if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
             continue
         g_net = getattr(algorithm, net_name)
+        # Move global net to CPU for shared memory (required for multiprocessing)
+        g_net.to('cpu')
+        g_net.device = 'cpu'
         g_net.share_memory()  # make net global
         if dist_mode == 'shared':  # use the same name to override the local net
             global_nets[net_name] = g_net
@@ -433,11 +443,15 @@ def set_global_nets(algorithm, global_nets):
 
 
 def push_global_grads(net, global_net):
-    '''Push gradients to global_net, call inside train_step between loss.backward() and optim.step()'''
+    '''Push gradients to global_net, call inside train_step between loss.backward() and optim.step()
+    Handles GPU->CPU transfer when local net is on GPU and global net is on CPU.
+    '''
     for param, global_param in zip(net.parameters(), global_net.parameters()):
         if global_param.grad is not None:
             return  # quick skip
-        global_param._grad = param.grad
+        if param.grad is not None:
+            # Transfer grad to global_net's device (typically CPU for shared memory)
+            global_param._grad = param.grad.to(global_param.device)
 
 
 def build_tails(tail_in_dim, out_dim, out_layer_activation, log_std_init=None):
