@@ -85,40 +85,6 @@ git commit -m "docs: update ENV benchmark (SCORE)"
 # NEVER push without explicit permission
 ```
 
-## Environment Settings
-
-| Category | num_envs | max_frame | log_frequency |
-|----------|----------|-----------|---------------|
-| Classic Control | 4 | 2e5-3e5 | 500 |
-| Box2D | 8 | 3e5 | 1000 |
-| MuJoCo | 16 | 1e6-10e6 | 1e4 |
-| Atari | 16 | 10e6 | 10000 |
-
-## Quick Reference
-
-### MuJoCo Specs
-
-| Env | SPEC_FILE | SPEC_NAME | max_frame |
-|-----|-----------|-----------|-----------|
-| HalfCheetah, Walker, Humanoid | ppo_mujoco.json | ppo_mujoco | 10e6 |
-| HumanoidStandup | ppo_mujoco.json | ppo_mujoco | 3e6 |
-| Reacher, Pusher | ppo_mujoco.json | ppo_mujoco_longhorizon | 3e6 |
-| Hopper | ppo_hopper.json | ppo_hopper | 3e6 |
-| Swimmer | ppo_swimmer.json | ppo_swimmer | 3e6 |
-| Ant | ppo_ant.json | ppo_ant | 10e6 |
-| IP | ppo_inverted_pendulum.json | ppo_inverted_pendulum | 3e6 |
-| IDP | ppo_inverted_double_pendulum.json | ppo_inverted_double_pendulum | 10e6 |
-
-### Atari Lambda Variants
-
-All use `ppo_atari.json` with `-s env=ALE/GAME-v5`:
-
-| SPEC_NAME | Lambda | Best for |
-|-----------|--------|----------|
-| ppo_atari | 0.95 | Strategic games (default) |
-| ppo_atari_lam85 | 0.85 | Mixed games |
-| ppo_atari_lam70 | 0.70 | Action games |
-
 ## Hyperparameter Search
 
 Only when algorithm fails to reach target. Use search to find hyperparams, then run final `train` for benchmark.

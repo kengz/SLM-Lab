@@ -1,5 +1,6 @@
 """Tests for slm_lab.cli.main module."""
 
+import re
 from unittest.mock import patch
 
 import pytest
@@ -11,6 +12,11 @@ from slm_lab.spec.spec_util import set_variables
 
 
 runner = CliRunner()
+
+# Strip ANSI color codes for consistent test assertions
+ANSI_PATTERN = re.compile(r'\x1b\[[0-9;]*m')
+def strip_ansi(text):
+    return ANSI_PATTERN.sub('', text)
 
 
 @pytest.fixture(scope="module", autouse=False)
@@ -178,25 +184,28 @@ class TestCliCommands:
     def test_run_help(self):
         result = runner.invoke(app, ["run", "--help"])
         assert result.exit_code == 0
-        assert "Run SLM-Lab experiments locally" in result.output
-        assert "--render" in result.output
-        assert "--log-level" in result.output
-        assert "--set" in result.output
-        assert "--keep" in result.output
+        output = strip_ansi(result.output)
+        assert "Run SLM-Lab experiments locally" in output
+        assert "--render" in output
+        assert "--log-level" in output
+        assert "--set" in output
+        assert "--keep" in output
 
     def test_run_remote_help(self):
         result = runner.invoke(app, ["run-remote", "--help"])
         assert result.exit_code == 0
-        assert "Launch experiment on dstack" in result.output
-        assert "--name" in result.output
-        assert "--gpu" in result.output
-        assert "--set" in result.output
+        output = strip_ansi(result.output)
+        assert "Launch experiment on dstack" in output
+        assert "--name" in output
+        assert "--gpu" in output
+        assert "--set" in output
 
     def test_pull_help(self):
         result = runner.invoke(app, ["pull", "--help"])
         assert result.exit_code == 0
-        assert "Pull experiment results from HuggingFace" in result.output
-        assert "--list" in result.output
+        output = strip_ansi(result.output)
+        assert "Pull experiment results from HuggingFace" in output
+        assert "--list" in output
 
     def test_push_help(self):
         result = runner.invoke(app, ["push", "--help"])

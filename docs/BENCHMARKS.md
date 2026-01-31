@@ -271,7 +271,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ⚠️ | 1882.51 | [slm_lab/spec/benchmark/ppo/ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | ppo_hopper | [ppo_hopper_2026_01_27_013148](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_hopper_2026_01_27_013148) |
+| PPO | ✅ | 2101.38 | [slm_lab/spec/benchmark/ppo/ppo_hopper.json](../slm_lab/spec/benchmark/ppo/ppo_hopper.json) | ppo_hopper | [ppo_hopper_2026_01_27_125500](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_hopper_2026_01_27_125500) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_hopper.json](../slm_lab/spec/benchmark/sac/sac_hopper.json) | sac_hopper | |
 
 ![Hopper-v5 Multi-Trial Graph](../data/Hopper-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -285,7 +285,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 6032.34 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_halfcheetah_2026_01_24_103910](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_halfcheetah_2026_01_24_103910) |
+| PPO | ✅ | 5146.35 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_halfcheetah_2026_01_27_125434](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_halfcheetah_2026_01_27_125434) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_halfcheetah.json](../slm_lab/spec/benchmark/sac/sac_halfcheetah.json) | sac_halfcheetah | |
 
 ![HalfCheetah-v5 Multi-Trial Graph](../data/HalfCheetah-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -299,7 +299,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 5130.70 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_walker2d_2026_01_24_103947](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_walker2d_2026_01_24_103947) |
+| PPO | ✅ | 4610.15 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_walker2d_2026_01_27_125445](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_walker2d_2026_01_27_125445) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_walker2d.json](../slm_lab/spec/benchmark/sac/sac_walker2d.json) | sac_walker2d | |
 
 ![Walker2d-v5 Multi-Trial Graph](../data/Walker2d-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -313,7 +313,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 3032.60 | [slm_lab/spec/benchmark/ppo/ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | ppo_ant | [ppo_ant_2026_01_24_152312](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_ant_2026_01_24_152312) |
+| PPO | ✅ | 2499.19 | [slm_lab/spec/benchmark/ppo/ppo_ant.json](../slm_lab/spec/benchmark/ppo/ppo_ant.json) | ppo_ant | [ppo_ant_2026_01_27_200444](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_ant_2026_01_27_200444) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_ant.json](../slm_lab/spec/benchmark/sac/sac_ant.json) | sac_ant | |
 
 ![Ant-v5 Multi-Trial Graph](../data/Ant-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -327,7 +327,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 326.49 | [slm_lab/spec/benchmark/ppo/ppo_swimmer.json](../slm_lab/spec/benchmark/ppo/ppo_swimmer.json) | ppo_swimmer | [ppo_swimmer_2026_01_27_040012](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_swimmer_2026_01_27_040012) |
+| PPO | ⚠️ | 281.05 | [slm_lab/spec/benchmark/ppo/ppo_swimmer.json](../slm_lab/spec/benchmark/ppo/ppo_swimmer.json) | ppo_swimmer | [ppo_swimmer_2026_01_27_200344](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_swimmer_2026_01_27_200344) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_swimmer.json](../slm_lab/spec/benchmark/sac/sac_swimmer.json) | sac_swimmer | |
 
 ![Swimmer-v5 Multi-Trial Graph](../data/Swimmer-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -341,7 +341,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | -5.66 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco_longhorizon | [ppo_mujoco_longhorizon_reacher_2026_01_24_131550](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_longhorizon_reacher_2026_01_24_131550) |
+| PPO | ✅ | -5.13 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco_longhorizon | [ppo_mujoco_longhorizon_reacher_2026_01_27_200557](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_longhorizon_reacher_2026_01_27_200557) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_reacher.json](../slm_lab/spec/benchmark/sac/sac_reacher.json) | sac_reacher | |
 
 ![Reacher-v5 Multi-Trial Graph](../data/Reacher-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -355,7 +355,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | -37.35 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco_longhorizon | [ppo_mujoco_longhorizon_pusher_2026_01_22_224041](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_longhorizon_pusher_2026_01_22_224041) |
+| PPO | ⚠️ | -47.68 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco_longhorizon | [ppo_mujoco_longhorizon_pusher_2026_01_27_201001](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_longhorizon_pusher_2026_01_27_201001) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_pusher.json](../slm_lab/spec/benchmark/sac/sac_pusher.json) | sac_pusher | |
 
 ![Pusher-v5 Multi-Trial Graph](../data/Pusher-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -369,7 +369,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ⚠️ | 968.70 | [slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json) | ppo_inverted_pendulum | [ppo_inverted_pendulum_2026_01_26_175008](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_pendulum_2026_01_26_175008) |
+| PPO | ⚠️ | 989.56 | [slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_pendulum.json) | ppo_inverted_pendulum | [ppo_inverted_pendulum_2026_01_27_213336](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_pendulum_2026_01_27_213336) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_inverted_pendulum.json](../slm_lab/spec/benchmark/sac/sac_inverted_pendulum.json) | sac_inverted_pendulum | |
 
 ![InvertedPendulum-v5 Multi-Trial Graph](../data/InvertedPendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -383,7 +383,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ⚠️ | 7223.69 | [slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json) | ppo_inverted_double_pendulum | [ppo_inverted_double_pendulum_2026_01_26_175021](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_double_pendulum_2026_01_26_175021) |
+| PPO | ⚠️ | 8317.59 | [slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json](../slm_lab/spec/benchmark/ppo/ppo_inverted_double_pendulum.json) | ppo_inverted_double_pendulum | [ppo_inverted_double_pendulum_2026_01_27_220908](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_inverted_double_pendulum_2026_01_27_220908) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_inverted_double_pendulum.json](../slm_lab/spec/benchmark/sac/sac_inverted_double_pendulum.json) | sac_inverted_double_pendulum | |
 
 ![InvertedDoublePendulum-v5 Multi-Trial Graph](../data/InvertedDoublePendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -397,7 +397,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 5052.40 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoid_2026_01_24_103936](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoid_2026_01_24_103936) |
+| PPO | ✅ | 3178.45 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoid_2026_01_27_125525](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoid_2026_01_27_125525) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_humanoid.json](../slm_lab/spec/benchmark/sac/sac_humanoid.json) | sac_humanoid | |
 
 ![Humanoid-v5 Multi-Trial Graph](../data/Humanoid-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
@@ -411,7 +411,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Repo |
 |-----------|--------|-----|-----------|-----------|---------|
 | A2C | - | - | - | - | |
-| PPO | ✅ | 147473.22 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoidstandup_2026_01_24_103922](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoidstandup_2026_01_24_103922) |
+| PPO | ✅ | 153541.08 | [slm_lab/spec/benchmark/ppo/ppo_mujoco.json](../slm_lab/spec/benchmark/ppo/ppo_mujoco.json) | ppo_mujoco | [ppo_mujoco_humanoidstandup_2026_01_27_081758](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_mujoco_humanoidstandup_2026_01_27_081758) |
 | SAC | - | - | [slm_lab/spec/benchmark/sac/sac_humanoid_standup.json](../slm_lab/spec/benchmark/sac/sac_humanoid_standup.json) | sac_humanoid_standup | |
 
 ![HumanoidStandup-v5 Multi-Trial Graph](../data/HumanoidStandup-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)

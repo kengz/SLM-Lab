@@ -1,5 +1,6 @@
 """Tests for slm_lab.cli.remote module."""
 
+import re
 from unittest.mock import patch
 
 from typer.testing import CliRunner
@@ -8,6 +9,11 @@ from slm_lab.cli import app
 
 
 runner = CliRunner()
+
+# Strip ANSI color codes for consistent test assertions
+ANSI_PATTERN = re.compile(r'\x1b\[[0-9;]*m')
+def strip_ansi(text):
+    return ANSI_PATTERN.sub('', text)
 
 
 class TestRunRemote:
@@ -120,8 +126,9 @@ class TestRunRemote:
         cmd = call_args[0][0]
         assert cmd[0] == "uv"
         assert cmd[1] == "run"
-        assert cmd[2] == "dstack"
-        assert cmd[3] == "apply"
+        assert cmd[2] == "--no-default-groups"  # minimal install mode
+        assert cmd[3] == "dstack"
+        assert cmd[4] == "apply"
         assert "-y" in cmd
         assert "--detach" in cmd
 
@@ -133,12 +140,13 @@ class TestRunRemoteCli:
         """Test run-remote help shows all options."""
         result = runner.invoke(app, ["run-remote", "--help"])
         assert result.exit_code == 0
-        assert "Launch experiment on dstack" in result.output
-        assert "SPEC_FILE" in result.output
-        assert "SPEC_NAME" in result.output
-        assert "--name" in result.output
-        assert "--gpu" in result.output
-        assert "--set" in result.output
+        output = strip_ansi(result.output)
+        assert "Launch experiment on dstack" in output
+        assert "SPEC_FILE" in output
+        assert "SPEC_NAME" in output
+        assert "--name" in output
+        assert "--gpu" in output
+        assert "--set" in output
 
     def test_run_remote_missing_args(self):
         """Test run-remote fails without required args."""

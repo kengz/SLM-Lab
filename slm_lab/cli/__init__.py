@@ -3,7 +3,6 @@
 from slm_lab.cli.main import app, cli
 from slm_lab.cli import plot, remote, sync
 
-# Register commands from submodules
 app.command("run-remote")(remote.run_remote)
 app.command()(sync.pull)
 app.command()(sync.push)

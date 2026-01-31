@@ -1,5 +1,6 @@
 """Tests for slm_lab.cli.sync module."""
 
+import re
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -10,6 +11,11 @@ from slm_lab.cli.sync import pull, list_experiments
 
 
 runner = CliRunner()
+
+# Strip ANSI color codes for consistent test assertions
+ANSI_PATTERN = re.compile(r'\x1b\[[0-9;]*m')
+def strip_ansi(text):
+    return ANSI_PATTERN.sub('', text)
 
 
 class TestPull:
@@ -253,9 +259,10 @@ class TestSyncCli:
         """Test pull help shows all options."""
         result = runner.invoke(app, ["pull", "--help"])
         assert result.exit_code == 0
-        assert "Pull experiment results from HuggingFace" in result.output
-        assert "PATTERN" in result.output
-        assert "--list" in result.output
+        output = strip_ansi(result.output)
+        assert "Pull experiment results from HuggingFace" in output
+        assert "PATTERN" in output
+        assert "--list" in output
 
     def test_push_help(self):
         """Test push help shows all options."""
