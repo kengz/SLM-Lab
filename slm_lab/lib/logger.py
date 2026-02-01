@@ -25,9 +25,10 @@ CONSOLE_FORMAT = (
 )
 
 # Setup console logging with shorter tracebacks
+# Use stderr for multiprocessing compatibility (spawn method captures stderr better)
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 loguru_logger.add(
-    sys.stdout,
+    sys.stderr,
     format=CONSOLE_FORMAT,
     level=log_level,
     colorize=True,

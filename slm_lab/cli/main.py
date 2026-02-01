@@ -127,13 +127,13 @@ def run_experiment(
     keep_trials: int = 3,
 ):
     """Core experiment runner"""
-    _lazy_imports()  # Load heavy deps only when running experiments
-    # Set multiprocessing start method for training
+    # Set multiprocessing start method BEFORE importing PyTorch (required for A3C CUDA compatibility)
     import torch.multiprocessing as mp
     try:
         mp.set_start_method("spawn")
     except RuntimeError:
         pass
+    _lazy_imports()  # Load heavy deps only when running experiments
     if "@" in lab_mode:  # process lab_mode@{predir/prename}
         lab_mode, pre_ = lab_mode.split("@")
     else:

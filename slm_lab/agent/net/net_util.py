@@ -280,7 +280,13 @@ def load_algorithm(algorithm):
 
 def copy(src_net, tar_net):
     '''Copy model weights from src to target'''
-    tar_net.load_state_dict(src_net.state_dict())
+    state_dict = src_net.state_dict()
+    # Transfer state dict to target device if different
+    tar_device = next(tar_net.parameters()).device
+    src_device = next(src_net.parameters()).device
+    if tar_device != src_device:
+        state_dict = {k: v.to(tar_device) for k, v in state_dict.items()}
+    tar_net.load_state_dict(state_dict)
 
 
 def polyak_update(src_net, tar_net, old_ratio=0.5):
@@ -394,6 +400,9 @@ def init_global_nets(algorithm):
     in spec.meta.distributed, specify either:
     - 'shared': global network parameter is shared all the time. In this mode, algorithm local network will be replaced directly by global_net via overriding by identify attribute name
     - 'synced': global network parameter is periodically synced to local network after each gradient push. In this mode, algorithm will keep a separate reference to `global_{net}` for each of its network
+
+    NOTE: A3C Hogwild is CPU-only because PyTorch share_memory_() requires CPU tensors.
+    For GPU-accelerated training, use A2C or PPO instead.
     '''
     dist_mode = algorithm.agent.spec['meta']['distributed']
     assert dist_mode in ('shared', 'synced'), 'Unrecognized distributed mode'
@@ -403,6 +412,8 @@ def init_global_nets(algorithm):
         if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
             continue
         g_net = getattr(algorithm, net_name)
+        # Move to CPU for share_memory_() (required by PyTorch multiprocessing)
+        g_net.to('cpu')
         g_net.share_memory()  # make net global
         if dist_mode == 'shared':  # use the same name to override the local net
             global_nets[net_name] = g_net
@@ -437,7 +448,9 @@ def push_global_grads(net, global_net):
     for param, global_param in zip(net.parameters(), global_net.parameters()):
         if global_param.grad is not None:
             return  # quick skip
-        global_param._grad = param.grad
+        if param.grad is not None:
+            # Transfer grad to global_net's device (CPU for shared memory)
+            global_param._grad = param.grad.to(global_param.device)
 
 
 def build_tails(tail_in_dim, out_dim, out_layer_activation, log_std_init=None):

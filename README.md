@@ -1,21 +1,7 @@
----
-license: mit
-language:
-- en
-pretty_name: SLM-Lab Benchmark Results
-tags:
-- reinforcement-learning
-- deep-learning
-- pytorch
-task_categories:
-- reinforcement-learning
----
-
-# SLM Lab <br> ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/kengz/slm-lab) ![CI](https://github.com/kengz/SLM-Lab/workflows/CI/badge.svg)
-
+# [SLM Lab](https://www.amazon.com/dp/0135172381) <br> ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/kengz/slm-lab) ![CI](https://github.com/kengz/SLM-Lab/workflows/CI/badge.svg)
 
 <p align="center">
-  <i>Modular Deep Reinforcement Learning framework in PyTorch.</i>
+  <i>Companion library of the book <a href="https://www.amazon.com/dp/0135172381">Foundations of Deep Reinforcement Learning</a>.</i>
   <br>
   <a href="https://slm-lab.gitbook.io/slm-lab/">Documentation</a> · <a href="https://github.com/kengz/SLM-Lab/blob/master/docs/BENCHMARKS.md">Benchmark Results</a>
 </p>
