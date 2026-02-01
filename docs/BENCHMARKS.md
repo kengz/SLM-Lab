@@ -307,7 +307,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 
 #### 3.6 Reacher-v5
 
-**Docs**: [Reacher](https://gymnasium.farama.org/environments/mujoco/reacher/) | State: Box(11) | Action: Box(2) | Target reward MA > -10
+**Docs**: [Reacher](https://gymnasium.farama.org/environments/mujoco/reacher/) | State: Box(10) | Action: Box(2) | Target reward MA > -10
 
 **Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
@@ -343,7 +343,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 
 #### 3.9 InvertedDoublePendulum-v5
 
-**Docs**: [InvertedDoublePendulum](https://gymnasium.farama.org/environments/mujoco/inverted_double_pendulum/) | State: Box(11) | Action: Box(1) | Target reward MA ~8000
+**Docs**: [InvertedDoublePendulum](https://gymnasium.farama.org/environments/mujoco/inverted_double_pendulum/) | State: Box(9) | Action: Box(1) | Target reward MA ~8000
 
 **Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
@@ -355,7 +355,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 
 #### 3.10 Humanoid-v5
 
-**Docs**: [Humanoid](https://gymnasium.farama.org/environments/mujoco/humanoid/) | State: Box(376) | Action: Box(17) | Target reward MA > 1000
+**Docs**: [Humanoid](https://gymnasium.farama.org/environments/mujoco/humanoid/) | State: Box(348) | Action: Box(17) | Target reward MA > 1000
 
 **Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
@@ -367,7 +367,7 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 
 #### 3.11 HumanoidStandup-v5
 
-**Docs**: [HumanoidStandup](https://gymnasium.farama.org/environments/mujoco/humanoid_standup/) | State: Box(376) | Action: Box(17) | Target reward MA > 100000
+**Docs**: [HumanoidStandup](https://gymnasium.farama.org/environments/mujoco/humanoid_standup/) | State: Box(348) | Action: Box(17) | Target reward MA > 100000
 
 **Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
