@@ -114,7 +114,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | 1 | Classic Control | 3 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | Rerun pending |
 | 2 | Box2D | 2 | N/A | N/A | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 | Rerun pending |
 | 3 | MuJoCo | 11 | N/A | N/A | N/A | N/A | 🔄 | 🔄 | 🔄 | Rerun pending |
-| 4 | Atari | 59 | N/A | N/A | Skip | Skip | Skip | 🔄 | N/A | **54 games** (not in this rerun) |
+| 4 | Atari | 59 | N/A | N/A | N/A | Skip | 🔄 | ✅ | N/A | **54 games** |
 
 **Legend**: ✅ Solved | ⚠️ Close (>80%) | 📊 Acceptable | ❌ Failed | 🔄 In progress/Pending | Skip Not started | N/A Not applicable
 
@@ -387,7 +387,28 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 - Gymnasium ALE v5 with `life_loss_info=true`
 - v5 uses sticky actions (`repeat_action_probability=0.25`) per [Machado et al. (2018)](https://arxiv.org/abs/1709.06009) best practices
 
-**Algorithm: PPO** with ConvNet [32,64,64] + 512fc (Nature CNN), AdamW (lr=2.5e-4), minibatch=256, horizon=128, epochs=4
+**Algorithms**: PPO, DDQN+PER, A2C (GAE) - all use Nature CNN [32,64,64] + 512fc
+
+**Reproduce**:
+```bash
+# PPO
+source .env && slm-lab run-remote --gpu -s env=ENV \
+  slm_lab/spec/benchmark/ppo/ppo_atari.json SPEC_NAME train -n NAME
+
+# DDQN+PER
+source .env && slm-lab run-remote --gpu -s env=ENV \
+  slm_lab/spec/benchmark/dqn/ddqn_per_atari.json ddqn_per_atari train -n NAME
+
+# A2C (GAE)
+source .env && slm-lab run-remote --gpu -s env=ENV \
+  slm_lab/spec/benchmark/a2c/a2c_gae_atari.json SPEC_NAME train -n NAME
+```
+
+---
+
+#### 4.1 PPO
+
+AdamW (lr=2.5e-4), minibatch=256, horizon=128, epochs=4
 
 **Lambda Variants**: All use [ppo_atari.json](../slm_lab/spec/benchmark/ppo/ppo_atari.json). Table shows best result per game.
 
@@ -396,12 +417,6 @@ source .env && slm-lab run-remote --gpu -s max_frame=MAX_FRAME \
 | ppo_atari | 0.95 | Strategic games (default) |
 | ppo_atari_lam85 | 0.85 | Mixed games |
 | ppo_atari_lam70 | 0.70 | Action games |
-
-**Reproduce**:
-```bash
-source .env && slm-lab run-remote --gpu -s env=ENV \
-  slm_lab/spec/benchmark/ppo/ppo_atari.json SPEC_NAME train -n NAME
-```
 
 | ENV | Score | SPEC_NAME | HF Repo |
 |-----|-------|-----------|---------|
@@ -634,3 +649,33 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 <p>
 <img src="plots/Zaxxon_multi_trial_graph_mean_returns_ma_vs_frames.png" width="32%">
 </p>
+
+---
+
+#### 4.2 DDQN+PER (Skipped)
+
+**Not practical for Atari at 10M frames.** Off-policy DQN variants are ~6x slower than on-policy methods (A2C/PPO):
+- DDQN: ~230 fps → 12+ hours per game
+- A2C/PPO: ~1500 fps → 2 hours per game
+
+DDQN+PER benchmarks are included for Classic Control and Box2D where frame budgets are smaller (300k-3M frames). For Atari, use PPO or A2C.
+
+---
+
+#### 4.3 A2C (GAE)
+
+Advantage Actor-Critic with Generalized Advantage Estimation. RMSprop (lr=7e-4), training_frequency=32.
+
+**Spec**: [a2c_gae_atari.json](../slm_lab/spec/benchmark/a2c/a2c_gae_atari.json)
+
+| ENV | Score | SPEC_NAME | HF Repo |
+|-----|-------|-----------|---------|
+| ALE/Alien-v5 | 1488 | a2c_gae_atari | [a2c_gae_atari_alien_2026_02_01_000858](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_alien_2026_02_01_000858) |
+| ALE/BeamRider-v5 | 2768 | a2c_gae_atari | [a2c_gae_atari_beamrider_2026_02_01_000921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_beamrider_2026_02_01_000921) |
+| ALE/Breakout-v5 | 273 | a2c_gae_atari | [a2c_gae_atari_breakout_2026_01_31_213610](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_breakout_2026_01_31_213610) |
+| ALE/Enduro-v5 | 681 | a2c_gae_atari | [a2c_gae_atari_enduro_2026_02_01_001123](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_enduro_2026_02_01_001123) |
+| ALE/MsPacman-v5 | 2110 | a2c_gae_atari | [a2c_gae_atari_mspacman_2026_02_01_001100](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_mspacman_2026_02_01_001100) |
+| ALE/Pong-v5 | 10.17 | a2c_gae_atari | [a2c_gae_atari_pong_2026_01_31_213635](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_pong_2026_01_31_213635) |
+| ALE/Qbert-v5 | 12619 | a2c_gae_atari | [a2c_gae_atari_qbert_2026_01_31_213720](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_qbert_2026_01_31_213720) |
+| ALE/Seaquest-v5 | 850 | a2c_gae_atari | [a2c_gae_atari_seaquest_2026_02_01_001001](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_seaquest_2026_02_01_001001) |
+| ALE/SpaceInvaders-v5 | 784 | a2c_gae_atari | [a2c_gae_atari_spaceinvaders_2026_02_01_000950](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/a2c_gae_atari_spaceinvaders_2026_02_01_000950) |

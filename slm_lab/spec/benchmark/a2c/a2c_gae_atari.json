@@ -27,31 +27,11 @@
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [
-            32,
-            8,
-            4,
-            0,
-            1
-          ],
-          [
-            64,
-            4,
-            2,
-            0,
-            1
-          ],
-          [
-            32,
-            3,
-            1,
-            0,
-            1
-          ]
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [64, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [
-          512
-        ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -63,15 +43,15 @@
         },
         "actor_optim_spec": {
           "name": "RMSprop",
-          "lr": 0.0007,
+          "lr": 7e-4,
           "alpha": 0.99,
-          "eps": 1e-05
+          "eps": 1e-5
         },
         "critic_optim_spec": {
           "name": "RMSprop",
-          "lr": 0.0007,
+          "lr": 7e-4,
           "alpha": 0.99,
-          "eps": 1e-05
+          "eps": 1e-5
         },
         "gpu": "auto"
       }
@@ -79,108 +59,15 @@
     "env": {
       "name": "${env}",
       "num_envs": 16,
-      "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e7,
+      "life_loss_info": true
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
       "log_frequency": 10000,
-      "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 4
-    }
-  },
-  "a2c_gae_atari_full": {
-    "agent": {
-      "name": "A2C",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
-        },
-        "val_loss_coef": 0.5,
-        "training_frequency": 32
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "ConvNet",
-        "shared": true,
-        "conv_hid_layers": [
-          [
-            32,
-            8,
-            4,
-            0,
-            1
-          ],
-          [
-            64,
-            4,
-            2,
-            0,
-            1
-          ],
-          [
-            32,
-            3,
-            1,
-            0,
-            1
-          ]
-        ],
-        "fc_hid_layers": [
-          512
-        ],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "normalize": true,
-        "batch_norm": false,
-        "clip_grad_val": 0.5,
-        "use_same_optim": false,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "actor_optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.0007,
-          "alpha": 0.99,
-          "eps": 1e-05
-        },
-        "critic_optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.0007,
-          "alpha": 0.99,
-          "eps": 1e-05
-        },
-        "gpu": "auto"
-      }
-    },
-    "env": {
-      "name": "${env}",
-      "num_envs": 16,
-      "max_t": null,
-      "max_frame": 1e7
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 10000,
-      "log_frequency": 10000,
-      "rigorous_eval": 0,
-      "max_session": 4,
-      "max_trial": 60
+      "max_trial": 1
     }
   }
 }

@@ -30,6 +30,10 @@ node_modules/
 # Data files
 data/
 model/
+hf_data/
+
+# Generated plots (can be regenerated with slm-lab plot)
+docs/plots/
 nb.py
 *.html
 *.log
