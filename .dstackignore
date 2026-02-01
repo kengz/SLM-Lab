@@ -1,0 +1,4 @@
+# Exclude large directories from dstack archive
+docs/plots/
+test/
+data/

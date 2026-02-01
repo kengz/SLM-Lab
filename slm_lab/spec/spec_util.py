@@ -58,9 +58,11 @@ def check_comp_spec(comp_spec, comp_spec_format):
 
 def check_compatibility(spec):
     '''Check compatibility among spec setups'''
-    # TODO expand to be more comprehensive
-    if spec['meta'].get('distributed') == 'synced':
-        assert not util.use_gpu(ps.get(spec, 'agent.net.gpu')), 'Distributed mode "synced" works with CPU only. Set gpu: false.'
+    # A3C Hogwild (distributed=synced) now supports GPU:
+    # - Global nets are kept on CPU for share_memory_() across processes
+    # - Worker local nets run on GPU for fast forward/backward
+    # - Gradients and params are transferred during sync
+    pass
 
 
 def check(spec):
