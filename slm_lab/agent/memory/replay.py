@@ -1,10 +1,8 @@
 from collections import deque
-from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import logger, math_util, util
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -67,23 +65,28 @@ class Replay(Memory):
     }
     '''
 
-    def __init__(self, memory_spec, body):
-        super().__init__(memory_spec, body)
+    def __init__(self, memory_spec, agent):
+        super().__init__(memory_spec, agent)
+        util.set_attr(self, dict(
+            use_cer=False,
+        ))
         util.set_attr(self, self.memory_spec, [
             'batch_size',
             'max_size',
             'use_cer',
         ])
+        self.max_size = int(self.max_size)  # convert scientific notation (e.g. 1e6) to int
         self.is_episodic = False
         self.batch_idxs = None
         self.size = 0  # total experiences stored
         self.seen_size = 0  # total experiences seen cumulatively
         self.head = -1  # index of most recent experience
+        self.last_sample_head = -1  # head at last sample (for CER)
         # generic next_state buffer to store last next_states (allow for multiple for venv)
-        self.ns_idx_offset = self.body.env.num_envs if body.env.is_venv else 1
+        self.ns_idx_offset = agent.env.num_envs if agent.env.is_venv else 1
         self.ns_buffer = deque(maxlen=self.ns_idx_offset)
         # declare what data keys to store
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'terminateds', 'truncateds']
         self.reset()
 
     def reset(self):
@@ -95,18 +98,35 @@ class Replay(Memory):
                 setattr(self, k, [None] * self.max_size)
         self.size = 0
         self.head = -1
+        self.last_sample_head = -1
         self.ns_buffer.clear()
 
     @lab_api
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state, action, reward, next_state, done, terminated, truncated):
         '''Interface method to update memory'''
-        if self.body.env.is_venv:
-            for sarsd in zip(state, action, reward, next_state, done):
-                self.add_experience(*sarsd)
+        if self.agent.env.is_venv:
+            for s, a, r, ns, d, term, trunc in zip(state, action, reward, next_state, done, terminated, truncated):
+                self.add_experience(
+                    state=s,
+                    action=a,
+                    reward=r,
+                    next_state=ns,
+                    done=d,
+                    terminated=term,
+                    truncated=trunc
+                )
         else:
-            self.add_experience(state, action, reward, next_state, done)
+            self.add_experience(
+                state=state,
+                action=action,
+                reward=reward,
+                next_state=next_state,
+                done=done,
+                terminated=terminated,
+                truncated=truncated
+            )
 
-    def add_experience(self, state, action, reward, next_state, done):
+    def add_experience(self, *, state, action, reward, next_state, done, terminated, truncated):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
@@ -115,12 +135,14 @@ class Replay(Memory):
         self.rewards[self.head] = reward
         self.ns_buffer.append(next_state.astype(np.float16))
         self.dones[self.head] = done
+        self.terminateds[self.head] = terminated
+        self.truncateds[self.head] = truncated
         # Actually occupied size of memory
         if self.size < self.max_size:
             self.size += 1
         self.seen_size += 1
         # set to_train using memory counters head, seen_size instead of tick since clock will step by num_envs when on venv; to_train will be set to 0 after training step
-        algorithm = self.body.agent.algorithm
+        algorithm = self.agent.algorithm
         algorithm.to_train = algorithm.to_train or (self.seen_size > algorithm.training_start_step and self.head % algorithm.training_frequency == 0)
 
     @lab_api
@@ -145,9 +167,20 @@ class Replay(Memory):
                 batch[k] = util.batch_get(getattr(self, k), self.batch_idxs)
         return batch
 
+    def apply_cer(self, batch_idxs):
+        '''Apply CER: replace some indices with new experiences, return modified indices'''
+        num_new_total = (self.head - self.last_sample_head) % self.max_size
+        num_new = min(num_new_total, len(batch_idxs), self.size)
+        if num_new > 0:
+            # Replace last num_new indices with new experiences
+            new_idxs = (self.last_sample_head + 1 + np.arange(num_new)) % self.max_size
+            batch_idxs = np.concatenate([batch_idxs[:-num_new] if num_new < len(batch_idxs) else np.array([], dtype=int), new_idxs])
+            self.last_sample_head = (self.last_sample_head + num_new) % self.max_size
+        return batch_idxs
+
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.randint(self.size, size=batch_size)
-        if self.use_cer:  # add the latest sample
-            batch_idxs[-1] = self.head
+        if self.use_cer:
+            batch_idxs = self.apply_cer(batch_idxs)
         return batch_idxs

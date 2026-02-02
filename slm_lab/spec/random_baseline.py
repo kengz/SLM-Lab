@@ -1,98 +1,78 @@
 # Module to generate random baselines
 # Run as: python slm_lab/spec/random_baseline.py
 from slm_lab.lib import logger, util
-import gym
+import gymnasium as gym
 import numpy as np
-import pydash as ps
-import roboschool
-import pybullet_envs
+
+# Ensure ALE environments are registered (same as slm_lab.env.gym)
+try:
+    import ale_py
+    import os
+    import warnings
+    # Silence ALE output more aggressively
+    os.environ['ALE_PY_SILENCE'] = '1'
+    warnings.filterwarnings('ignore', category=UserWarning, module='ale_py')
+    gym.register_envs(ale_py)
+except ImportError:
+    pass
 
 
 FILEPATH = 'slm_lab/spec/_random_baseline.json'
 NUM_EVAL = 100
-# extra envs to include
-INCLUDE_ENVS = [
-    'vizdoom-v0',
-]
-EXCLUDE_ENVS = [
-    'CarRacing-v0',  # window bug
-    'Reacher-v2',  # exclude mujoco
-    'Pusher-v2',
-    'Thrower-v2',
-    'Striker-v2',
-    'InvertedPendulum-v2',
-    'InvertedDoublePendulum-v2',
-    'HalfCheetah-v3',
-    'Hopper-v3',
-    'Swimmer-v3',
-    'Walker2d-v3',
-    'Ant-v3',
-    'Humanoid-v3',
-    'HumanoidStandup-v2',
-    'FetchSlide-v1',
-    'FetchPickAndPlace-v1',
-    'FetchReach-v1',
-    'FetchPush-v1',
-    'HandReach-v0',
-    'HandManipulateBlockRotateZ-v0',
-    'HandManipulateBlockRotateParallel-v0',
-    'HandManipulateBlockRotateXYZ-v0',
-    'HandManipulateBlockFull-v0',
-    'HandManipulateBlock-v0',
-    'HandManipulateBlockTouchSensors-v0',
-    'HandManipulateEggRotate-v0',
-    'HandManipulateEggFull-v0',
-    'HandManipulateEgg-v0',
-    'HandManipulateEggTouchSensors-v0',
-    'HandManipulatePenRotate-v0',
-    'HandManipulatePenFull-v0',
-    'HandManipulatePen-v0',
-    'HandManipulatePenTouchSensors-v0',
-    'FetchSlideDense-v1',
-    'FetchPickAndPlaceDense-v1',
-    'FetchReachDense-v1',
-    'FetchPushDense-v1',
-    'HandReachDense-v0',
-    'HandManipulateBlockRotateZDense-v0',
-    'HandManipulateBlockRotateParallelDense-v0',
-    'HandManipulateBlockRotateXYZDense-v0',
-    'HandManipulateBlockFullDense-v0',
-    'HandManipulateBlockDense-v0',
-    'HandManipulateBlockTouchSensorsDense-v0',
-    'HandManipulateEggRotateDense-v0',
-    'HandManipulateEggFullDense-v0',
-    'HandManipulateEggDense-v0',
-    'HandManipulateEggTouchSensorsDense-v0',
-    'HandManipulatePenRotateDense-v0',
-    'HandManipulatePenFullDense-v0',
-    'HandManipulatePenDense-v0',
-    'HandManipulatePenTouchSensorsDense-v0',
-]
 
 
 def enum_envs():
-    '''Enumerate all the env names of the latest version'''
-    envs = [es.id for es in gym.envs.registration.registry.all()]
-    def get_name(s): return s.split('-')[0]
-    # filter out the old stuff
-    envs = ps.reverse(ps.uniq_by(ps.reverse(envs), get_name))
-    # filter out the excluded envs
-    envs = ps.difference_by(envs, EXCLUDE_ENVS, get_name)
-    envs += INCLUDE_ENVS
-    return envs
+    '''Enumerate only the latest version of each environment, preferring ALE/ over legacy variants'''
+    envs = []
+    # Skip problematic environments that fail during random baseline generation
+    skip_envs = {
+        'tabular/Blackjack-v0', 
+        'tabular/CliffWalking-v0',
+        'GymV21Environment-v0',
+        'GymV26Environment-v0',
+        'phys2d/CartPole-v0',
+        'phys2d/CartPole-v1',
+        'phys2d/Pendulum-v0'
+    }
+    
+    for env_spec in gym.envs.registry.values():
+        env_id = env_spec.id
+        entry_point = str(env_spec.entry_point).lower()
+        
+        # Skip known problematic environments
+        if env_id in skip_envs:
+            continue
+        
+        # For ALE environments, only keep ALE/ prefixed ones
+        if 'ale_py' in entry_point and not env_id.startswith('ALE/'):
+            continue  # Skip legacy atari variants
+            
+        envs.append(env_id)
+    
+    # Get latest version of each environment family
+    envs = sorted(envs)
+    latest = {}
+    for env_id in envs:
+        base = env_id.split('-v')[0] if '-v' in env_id else env_id
+        latest[base] = env_id  # sorted order ensures latest overwrites earlier
+    return list(latest.values())
 
 
 def gen_random_return(env_name, seed):
     '''Generate a single-episode random policy return for an environment'''
-    # TODO generalize for unity too once it has a gym wrapper
-    env = gym.make(env_name)
-    env.seed(seed)
-    env.reset()
-    done = False
+    env = gym.make(env_name)  # No render_mode = no rendering (headless)
+    state, info = env.reset(seed=seed)
+    
     total_reward = 0
-    while not done:
-        _, reward, done, _ = env.step(env.action_space.sample())
+    while True:
+        action = env.action_space.sample()
+        state, reward, terminated, truncated, info = env.step(action)
         total_reward += reward
+        
+        if terminated or truncated:
+            break
+    
+    env.close()
     return total_reward
 
 
@@ -113,7 +93,7 @@ def get_random_baseline(env_name):
         try:
             logger.info(f'Generating random baseline for {env_name}')
             baseline = gen_random_baseline(env_name, NUM_EVAL)
-        except Exception as e:
+        except Exception:
             logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
             baseline = None
         # update immediately
@@ -129,6 +109,11 @@ def main():
     Run as: python slm_lab/spec/random_baseline.py
     '''
     envs = enum_envs()
+    logger.info(f'Will generate random baselines for {len(envs)} environments:')
+    for env_name in envs:
+        logger.info(f'  - {env_name}')
+    logger.info('')
+    
     for idx, env_name in enumerate(envs):
         logger.info(f'Generating random baseline for {env_name}: {idx + 1}/{len(envs)}')
         get_random_baseline(env_name)

@@ -26,7 +26,7 @@ some code snippets
 1. spec file location:
 2. git SHA (find this inside the spec file):
 
-Run command: `python run_lab.py <spec file>`
+Run command: `uv run slm-lab <spec file>`
 
 ## Result and Discussion
 

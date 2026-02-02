@@ -1,15 +1,18 @@
-from slm_lab.lib import logger, util, viz
-from slm_lab.spec import random_baseline
+import warnings
+from copy import deepcopy
+import glob
+
 import numpy as np
 import pandas as pd
 import pydash as ps
-import shutil
 import torch
-import warnings
 
+from slm_lab.lib import logger, util, viz
+from slm_lab.spec import random_baseline, spec_util
 
 METRICS_COLS = [
-    'final_return_ma',
+    'frame',
+    'total_reward_ma',
     'strength', 'max_strength', 'final_strength',
     'sample_efficiency', 'training_efficiency',
     'stability', 'consistency',
@@ -23,16 +26,17 @@ logger = logger.get_logger(__name__)
 def gen_return(agent, env):
     '''Generate return for an agent and an env in eval mode. eval_env should be a vec env with NUM_EVAL instances'''
     vec_dones = False  # done check for single and vec env
-    # swap ref to allow inference based on body.env
-    body_env = agent.body.env
-    agent.body.env = env
+    # swap ref to allow inference based on agent.env
+    original_env = agent.env
+    agent.env = env
     # start eval loop
-    state = env.reset()
+    state, info = env.reset()
     while not np.all(vec_dones):
         action = agent.act(state)
-        state, reward, done, info = env.step(action)
+        state, reward, term, trunc, info = env.step(action)
+        done = np.logical_or(term, trunc)
         vec_dones = np.logical_or(vec_dones, done)  # wait till every vec slot done turns True
-    agent.body.env = body_env  # restore swapped ref
+    agent.env = original_env  # restore swapped ref
     return np.mean(env.total_reward)
 
 
@@ -50,7 +54,7 @@ def gen_avg_return(agent, env):
 # metrics calculation methods
 
 def calc_strength(mean_returns, mean_rand_returns):
-    '''
+    r'''
     Calculate strength for metric
     str &= \frac{1}{N} \sum_{i=0}^N \overline{R}_i - \overline{R}_{rand}
     @param Series:mean_returns A series of mean returns from each checkpoint
@@ -63,7 +67,7 @@ def calc_strength(mean_returns, mean_rand_returns):
 
 
 def calc_efficiency(local_strs, ts):
-    '''
+    r'''
     Calculate efficiency for metric
     e &= \frac{\sum_{i=0}^N \frac{1}{t_i} str_i}{\sum_{i=0}^N \frac{1}{t_i}}
     @param Series:local_strs A series of local strengths
@@ -78,7 +82,7 @@ def calc_efficiency(local_strs, ts):
 
 
 def calc_stability(local_strs):
-    '''
+    r'''
     Calculate stability for metric
     sta &= 1 - \left| \frac{\sum_{i=0}^{N-1} \min(str_{i+1} - str_i, 0)}{\sum_{i=0}^{N-1} str_i} \right|
     @param Series:local_strs A series of local strengths
@@ -95,7 +99,7 @@ def calc_stability(local_strs):
 
 
 def calc_consistency(local_strs_list):
-    '''
+    r'''
     Calculate consistency for metric
     con &= 1 - \frac{\sum_{i=0}^N 2 stdev_j(str_{i,j})}{\sum_{i=0}^N avg_j(str_{i,j})}
     @param Series:local_strs_list A list of multiple series of local strengths from different sessions
@@ -105,6 +109,11 @@ def calc_consistency(local_strs_list):
     local_cons = 1 - 2 * std_local_strs / mean_local_strs
     con = 1 - 2 * std_local_strs.sum() / mean_local_strs.sum()
     return con, local_cons
+
+
+def to_series(data):
+    '''Convert list to Series if needed (for JSON deserialization compatibility)'''
+    return pd.Series(data) if isinstance(data, list) else data
 
 
 def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
@@ -119,16 +128,26 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     rand_bl = random_baseline.get_random_baseline(env_name)
     if rand_bl is None:
         mean_rand_returns = 0.0
-        logger.warn('Random baseline unavailable for environment. Please generate separately.')
+        logger.warning('Random baseline unavailable for environment. Please generate separately.')
     else:
         mean_rand_returns = rand_bl['mean']
     mean_returns = session_df['total_reward']
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
-    final_return_ma = mean_returns[-viz.PLOT_MA_WINDOW:].mean()
-    str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
-    max_str, final_str = local_strs.max(), local_strs.iloc[-1]
+    # Protect against insufficient data points
+    if len(mean_returns) == 0:
+        logger.warning('Empty session data - using NaN metrics')
+        total_reward_ma = np.nan
+        str_, local_strs = np.nan, pd.Series(dtype=float)
+        max_str, final_str = np.nan, np.nan
+    else:
+        # Use available data if less than PLOT_MA_WINDOW
+        window_size = min(len(mean_returns), viz.PLOT_MA_WINDOW)
+        # total_reward_ma: same calculation as real-time total_reward_ma, but computed post-hoc for final analysis
+        total_reward_ma = mean_returns[-window_size:].mean()
+        str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
+        max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     with warnings.catch_warnings():  # mute np.nanmean warning
         warnings.filterwarnings('ignore')
         sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
@@ -137,7 +156,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
 
     # all the scalar session metrics
     scalar = {
-        'final_return_ma': final_return_ma,
+        'total_reward_ma': total_reward_ma,
         'strength': str_,
         'max_strength': max_str,
         'final_strength': final_str,
@@ -160,10 +179,8 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
         'local': local,
     }
     if info_prepath is not None:  # auto-save if info_prepath is given
-        util.write(metrics, f'{info_prepath}_session_metrics_{df_mode}.pkl')
+        util.write(metrics, f'{info_prepath}_session_metrics_{df_mode}.json')
         util.write(scalar, f'{info_prepath}_session_metrics_scalar_{df_mode}.json')
-        # save important metrics in info_prepath directly
-        util.write(scalar, f'{info_prepath.replace("info/", "")}_session_metrics_scalar_{df_mode}.json')
     return metrics
 
 
@@ -178,19 +195,21 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
-    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
-    local_strs_list = [sm['local']['strengths'] for sm in session_metrics_list]
-    local_se_list = [sm['local']['sample_efficiencies'] for sm in session_metrics_list]
-    local_te_list = [sm['local']['training_efficiencies'] for sm in session_metrics_list]
-    local_sta_list = [sm['local']['stabilities'] for sm in session_metrics_list]
-    frames = session_metrics_list[0]['local']['frames']
-    opt_steps = session_metrics_list[0]['local']['opt_steps']
+    # Convert lists to Series (JSON deserialization artifact)
+    mean_returns_list = [to_series(sm['local']['mean_returns']) for sm in session_metrics_list]
+    local_strs_list = [to_series(sm['local']['strengths']) for sm in session_metrics_list]
+    local_se_list = [to_series(sm['local']['sample_efficiencies']) for sm in session_metrics_list]
+    local_te_list = [to_series(sm['local']['training_efficiencies']) for sm in session_metrics_list]
+    local_sta_list = [to_series(sm['local']['stabilities']) for sm in session_metrics_list]
+    frames = to_series(session_metrics_list[0]['local']['frames'])
+    opt_steps = to_series(session_metrics_list[0]['local']['opt_steps'])
     # calculate consistency
     con, local_cons = calc_consistency(local_strs_list)
 
     # all the scalar trial metrics
     scalar = {
-        'final_return_ma': mean_scalar['final_return_ma'],
+        'frame': frames.iloc[-1] if len(frames) > 0 else 0,
+        'total_reward_ma': mean_scalar['total_reward_ma'],
         'strength': mean_scalar['strength'],
         'max_strength': mean_scalar['max_strength'],
         'final_strength': mean_scalar['final_strength'],
@@ -216,9 +235,9 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
         'local': local,
     }
     if info_prepath is not None:  # auto-save if info_prepath is given
-        util.write(metrics, f'{info_prepath}_trial_metrics.pkl')
+        util.write(metrics, f'{info_prepath}_trial_metrics.json')
         util.write(scalar, f'{info_prepath}_trial_metrics_scalar.json')
-        # save important metrics in info_prepath directly
+        # save important trial metrics in predir for easy access
         util.write(scalar, f'{info_prepath.replace("info/", "")}_trial_metrics_scalar.json')
     return metrics
 
@@ -232,10 +251,10 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
     # insert trial index
-    experiment_df.insert(0, 'trial', experiment_df.index.astype(np.int))
+    experiment_df.insert(0, 'trial', experiment_df.index.astype(int))
     if info_prepath is not None:
         util.write(experiment_df, f'{info_prepath}_experiment_df.csv')
-        # save important metrics in info_prepath directly
+        # save important experiment df in predir for easy access
         util.write(experiment_df, f'{info_prepath.replace("info/", "")}_experiment_df.csv')
     return experiment_df
 
@@ -243,13 +262,13 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
 # interface analyze methods
 
 def analyze_session(session_spec, session_df, df_mode, plot=True):
-    '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: body.eval_df and body.train_df'''
+    '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: agent.mt.eval_df and agent.mt.train_df'''
     info_prepath = session_spec['meta']['info_prepath']
     session_df = session_df.copy()  # prevent modification
-    assert len(session_df) > 2, f'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
+    assert len(session_df) > 2, 'Need more than 2 datapoint to calculate metrics'  # first datapoint at frame 0 is empty
     util.write(session_df, util.get_session_df_path(session_spec, df_mode))
     # calculate metrics
-    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
+    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.name'), info_prepath, df_mode)
     if plot:
         # plot graph
         viz.plot_session(session_spec, session_metrics, session_df, df_mode)
@@ -257,20 +276,28 @@ def analyze_session(session_spec, session_df, df_mode, plot=True):
     return session_metrics
 
 
-def analyze_trial(trial_spec, session_metrics_list):
-    '''Analyze trial and save data, then return metrics'''
+def analyze_trial(trial_spec, session_metrics_list=None):
+    '''Analyze trial and save data, then return metrics. If session_metrics_list not provided, load from saved files.'''
+    # Guard: detect if session spec passed instead of trial spec (session >= 0)
+    # Restore to trial_spec which has its own meta prepaths without session infix
+    if trial_spec['meta']['session'] >= 0:
+        trial_spec = deepcopy(trial_spec)
+        trial_spec['meta']['trial'] -= 1
+        spec_util.tick(trial_spec, 'trial')
     info_prepath = trial_spec['meta']['info_prepath']
+    # Load session metrics if not provided
+    if session_metrics_list is None:
+        # Use smart_path to get absolute path for glob (fixes Ray Tune working directory issues)
+        abs_info_prepath = util.smart_path(info_prepath)
+        session_files = sorted(glob.glob(f'{abs_info_prepath}_s*_session_metrics_train.json'))
+        session_metrics_list = [m for f in session_files if (m := ps.attempt(util.read, f)) and isinstance(m, dict)]
+        if not session_metrics_list:
+            return None
     # calculate metrics
     trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
     # plot graphs
     viz.plot_trial(trial_spec, trial_metrics)
     viz.plot_trial(trial_spec, trial_metrics, ma=True)
-    # zip files
-    if util.get_lab_mode() == 'train':
-        predir, _, _, _, _ = util.prepath_split(info_prepath)
-        zipdir = util.smart_path(predir)
-        shutil.make_archive(zipdir, 'zip', zipdir)
-        logger.info(f'All trial data zipped to {predir}.zip')
     return trial_metrics
 
 
@@ -283,9 +310,4 @@ def analyze_experiment(spec, trial_data_dict):
     # plot graph
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
     viz.plot_experiment_trials(spec, experiment_df, METRICS_COLS)
-    # zip files
-    predir, _, _, _, _ = util.prepath_split(info_prepath)
-    zipdir = util.smart_path(predir)
-    shutil.make_archive(zipdir, 'zip', zipdir)
-    logger.info(f'All experiment data zipped to {predir}.zip')
     return experiment_df

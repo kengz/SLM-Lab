@@ -1,0 +1,21 @@
+# dstack apply -f .dstack/dev.yml
+type: dev-environment
+ide: vscode
+name: vscode
+
+python: 3.12
+
+setup:
+  - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
+
+inactivity_duration: 30m
+
+# volumes:
+#   - cache-volume:/root/.cache
+# - data-volume:/workflow/data
+
+resources:
+  cpu: 4
+  gpu: L4
+
+backends: [gcp]

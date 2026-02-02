@@ -1,6 +1,6 @@
 {
   "async_sac_qbert": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -20,11 +20,32 @@
         "type": "ConvNet",
         "shared": false,
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [256, 256],
+        "fc_hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -36,40 +57,31 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "image_downsize": [64, 64],
-      "reward_scale": "sign",
+    },
+    "env": {
+      "name": "ALE/Qbert-v5",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 1000,
+      "log_frequency": 10000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "async_sac_qbert_small": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -89,11 +101,32 @@
         "type": "ConvNet",
         "shared": false,
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [256, 256],
+        "fc_hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "leakyrelu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -105,28 +138,19 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "image_downsize": [64, 64],
-      "reward_scale":null,
+    },
+    "env": {
+      "name": "ALE/Qbert-v5",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 1e7
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 10000000.0
     },
     "meta": {
       "distributed": "shared",
@@ -134,11 +158,11 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     }
   },
   "async_sac_qbert_bignethighlr": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -158,11 +182,32 @@
         "type": "ConvNet",
         "shared": false,
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [64, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            64,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [256, 256],
+        "fc_hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -174,27 +219,19 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 2.5e-4,
+          "lr": 0.00025
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+    },
+    "env": {
+      "name": "ALE/Qbert-v5",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 2e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 2000000.0
     },
     "meta": {
       "distributed": "shared",
@@ -202,7 +239,7 @@
       "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

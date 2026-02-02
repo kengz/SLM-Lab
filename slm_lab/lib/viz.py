@@ -4,6 +4,7 @@ from glob import glob
 from plotly import graph_objs as go, io as pio, subplots
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
+from slm_lab.lib.env_var import log_extra
 import colorlover as cl
 import os
 import pydash as ps
@@ -45,11 +46,20 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
-        legend=dict(x=0.0, y=-0.25, orientation='h'),
+        legend=dict(
+            x=0.0, y=-0.25,  # further below plot to avoid clipping
+            orientation='h',  # horizontal
+            font=dict(size=9),
+            bgcolor='rgba(0,0,0,0)',  # transparent background (no box)
+            bordercolor='rgba(0,0,0,0)',  # no border
+            borderwidth=0,
+            tracegroupgap=0,  # enable multi-column wrapping
+            itemsizing='constant',  # consistent spacing
+        ),
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.layout.Margin(l=60, r=30, t=60, b=60),
+        margin=go.layout.Margin(l=60, r=30, t=60, b=140),  # more bottom margin for lower legend
     )
     layout.update(layout_kwargs)
     return layout
@@ -75,10 +85,9 @@ def plot(*args, **kwargs):
 
 def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
     '''Plot a series'''
-    x = time_sr.tolist()
     color = color or get_palette(1)[0]
     main_trace = go.Scatter(
-        x=x, y=sr, mode='lines', showlegend=False,
+        x=time_sr, y=sr, mode='lines', showlegend=False,
         line={'color': color, 'width': 1},
     )
     data = [main_trace]
@@ -119,7 +128,7 @@ def save_image(figure, filepath):
     try:
         pio.write_image(figure, filepath, scale=2)
     except Exception as e:
-        logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`')
+        logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your command with `xvfb-run -a `, for example `xvfb-run -a uv run slm-lab`')
 
 
 # analysis plot methods
@@ -136,13 +145,18 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
     title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
 
     local_metrics = session_metrics['local']
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames'),
-    ]
+    # Always plot mean_returns
+    name_time_pairs = [('mean_returns', 'frames')]
+    
+    # Only add extra metrics if log_extra is enabled
+    if log_extra():
+        name_time_pairs.extend([
+            ('strengths', 'frames'),
+            ('sample_efficiencies', 'frames'),
+            ('training_efficiencies', 'opt_steps'),
+            ('stabilities', 'frames'),
+        ])
+    
     for name, time in name_time_pairs:
         sr = local_metrics[name]
         if ma:
@@ -151,8 +165,6 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         fig = plot_sr(
             sr, local_metrics[time], title, name, time)
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
-            save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
     if ma:
         return
@@ -163,9 +175,10 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=F
         ('entropy', 'frame'),
     ]
     for name, time in name_time_pairs:
-        fig = plot_sr(
-            session_df[name], session_df[time], title, name, time)
-        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+        if name in session_df.columns:  # Only plot if column exists
+            fig = plot_sr(
+                session_df[name], session_df[time], title, name, time)
+            save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
 def plot_trial(trial_spec, trial_metrics, ma=False):
@@ -180,14 +193,19 @@ def plot_trial(trial_spec, trial_metrics, ma=False):
     title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
 
     local_metrics = trial_metrics['local']
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames'),
-        ('consistencies', 'frames'),
-    ]
+    # Always plot mean_returns
+    name_time_pairs = [('mean_returns', 'frames')]
+    
+    # Only add extra metrics if log_extra is enabled
+    if log_extra():
+        name_time_pairs.extend([
+            ('strengths', 'frames'),
+            ('sample_efficiencies', 'frames'),
+            ('training_efficiencies', 'opt_steps'),
+            ('stabilities', 'frames'),
+            ('consistencies', 'frames'),
+        ])
+    
     for name, time in name_time_pairs:
         if name == 'consistencies':
             sr = local_metrics[name]
@@ -213,8 +231,19 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     Plot the metrics vs. specs parameters of an experiment, where each point is a trial.
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
-    y_cols = metrics_cols
-    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols + ['trial'])
+    # Exclude frame from Y-axis (not a meaningful metric to plot vs hparams)
+    y_cols = [col for col in metrics_cols if col != 'frame']
+
+    # Filter extra metrics if log_extra is disabled
+    if not log_extra():
+        extra_metrics = ['strength', 'sample_efficiency', 'training_efficiency', 'stability', 'consistency',
+                        'max_strength', 'final_strength']
+        y_cols = [col for col in y_cols if col not in extra_metrics]
+
+    # Handle both pandas Index and list columns
+    columns = experiment_df.columns.tolist() if hasattr(experiment_df.columns, 'tolist') else list(experiment_df.columns)
+    # Exclude all metrics_cols from x-axis (not just y_cols), only show hparams on x-axis
+    x_cols = ps.difference(columns, metrics_cols + ['trial'])
     fig = subplots.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()
@@ -256,12 +285,39 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title,
         fig = plot_mean_sr(
             local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
         if legend_list is not None:
-            # update legend for the main trace
-            fig.data[0].update({'showlegend': showlegend, 'name': legend_list[idx]})
+            # update legend for the main trace - only show line in legend (no rectangle)
+            fig.data[0].update({
+                'showlegend': showlegend,
+                'name': legend_list[idx],
+            })
+            # Hide envelope trace from legend (it makes rectangles)
+            if len(fig.data) > 1:
+                fig.data[1].update({'showlegend': False})
         all_data += list(fig.data)
     layout = create_layout(title, name, time)
     fig = go.Figure(all_data, layout)
+    # Update layout: preserve trace order in legend, add spacing
+    fig.update_layout(legend=dict(traceorder='normal', tracegroupgap=5))
     return fig
+
+
+def restore_metric_types(local_metrics: dict) -> None:
+    """Restore pandas types after JSON deserialization (JSON converts Series to lists)."""
+    import pandas as pd
+
+    # Convert time axes (single Series)
+    for key in ['frames', 'opt_steps']:
+        if isinstance(local_metrics.get(key), list):
+            local_metrics[key] = pd.Series(local_metrics[key])
+
+    # Convert metric lists (list of Series)
+    for key in ['mean_returns', 'strengths', 'sample_efficiencies', 'training_efficiencies', 'stabilities']:
+        if key in local_metrics and isinstance(local_metrics[key], list):
+            local_metrics[key] = [pd.Series(sr) if isinstance(sr, list) else sr for sr in local_metrics[key]]
+
+    # consistencies is a single Series
+    if isinstance(local_metrics.get('consistencies'), list):
+        local_metrics['consistencies'] = pd.Series(local_metrics['consistencies'])
 
 
 def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False, name_time_pairs=None, frame_scales=None, palette=None, showlegend=True):
@@ -283,17 +339,23 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
     viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     '''
     local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
+    for local_metrics in local_metrics_list:
+        restore_metric_types(local_metrics)
+    
     # for plotting with async runs to adjust frame scale
     if frame_scales is not None:
         for idx, scale in frame_scales:
             local_metrics_list[idx]['frames'] = local_metrics_list[idx]['frames'] * scale
-    name_time_pairs = name_time_pairs or [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames')
-    ]
+    # Always plot mean_returns, only add extra metrics if log_extra is enabled
+    if name_time_pairs is None:
+        name_time_pairs = [('mean_returns', 'frames')]
+        if log_extra():
+            name_time_pairs.extend([
+                ('strengths', 'frames'),
+                ('sample_efficiencies', 'frames'),
+                ('training_efficiencies', 'opt_steps'),
+                ('stabilities', 'frames')
+            ])
     for name, time in name_time_pairs:
         if ma:
             for local_metrics in local_metrics_list:
@@ -309,32 +371,38 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
 
 
 def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
-    '''Format trial variables in experiment_df into legend strings'''
-    var_df = experiment_df.drop(metrics_cols, axis=1).set_index('trial')
-    trial_legends = []
-    for trial_idx in trial_idxs:
-        trial_vars = var_df.loc[trial_idx].to_dict()
-        var_list = []
-        for k, v in trial_vars.items():
-            if hasattr(v, '__round__'):
-                v = round(v, 8)  # prevent long float digits in formatting
-            var_list.append(f'{k.split(".").pop()} {v}')
-        var_str = ' '.join(var_list)
-        legend = f't{trial_idx}: {var_str}'
-        trial_legends.append(legend)
-    trial_legends
-    return trial_legends
+    '''Format trial legends as simple trial numbers (hparams visible in experiment_graph)'''
+    # Just show trial number - hparams are already visible in experiment_graph
+    return [f't{trial_idx}' for trial_idx in trial_idxs]
 
 
 def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
-    trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
-    # sort by trial id
-    trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=lambda k: util.prepath_to_idxs(k)[0]))
+    
+    # Always look in info_prepath for trial_metrics.json files
+    # Trials save to the main info directory, not Ray Tune subdirectories
+    # For single-session trials, prefer _s0 suffix files, fallback to non-suffixed
+    trial_metrics_path_list = glob(f'{info_prepath}*_s0_trial_metrics.json')
+    if not trial_metrics_path_list:
+        # Fallback to non-suffixed pattern for backward compatibility
+        trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.json')
+        # Filter out _s0 files if they somehow got included
+        trial_metrics_path_list = [p for p in trial_metrics_path_list if '_s0_trial_metrics.json' not in p]
+    
+    if not trial_metrics_path_list:
+        logger.warning('No trial metrics found for multi-trial plot')
+        return
+    
+    # sort by trial id (handle Ray Tune paths gracefully)
+    def safe_sort_key(path):
+        trial_idx = util.prepath_to_idxs(path)[0]
+        return trial_idx if trial_idx is not None else 0
+    trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=safe_sort_key))
 
-    # get trial indices to build legends
-    trial_idxs = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+    # get trial indices to build legends - sorted for consistent ordering
+    # Use trial indices from experiment_df instead of parsing from paths (Ray Tune compatibility)
+    trial_idxs = sorted(experiment_df['trial'].tolist())
     legend_list = get_trial_legends(experiment_df, trial_idxs, metrics_cols)
 
     title = f'multi trial graph: {experiment_spec["name"]}'

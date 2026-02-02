@@ -7,31 +7,20 @@ trap "exit" INT
 
 echo "--- Installing system dependencies ---"
 pacman -Suy
-pacman -Sy --needed git cmake gcc
-pacman -Sy --needed zlib libjpeg-turbo xorg-server-xvfb gst-libav xorg-server-devel python-opengl boost sdl swig base-devel gcc-libs hdf5 openblas
+pacman -Sy --needed git cmake gcc base-devel swig
+pacman -Sy --needed xorg-server-xvfb sdl2 glibc libxext libsm libxrender
 
-echo "--- Installing Conda ---"
-if which conda >/dev/null; then
-  echo "Conda is already installed"
+echo "--- Installing uv ---"
+if which uv >/dev/null; then
+  echo "uv is already installed"
 else
-  pacman -Sy --needed python-conda
-  echo '. /etc/profile.d/conda.sh' >> ~/.bashrc
-  source ~/.bashrc
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
 fi
 
-echo "--- Installing Conda environment ---"
-if conda env list | grep "^lab " >/dev/null; then
-  echo "conda env lab is already installed"
-else
-  conda create -n lab python=3.7.3 -y
-fi
+echo "--- Installing Python dependencies with uv ---"
+# uv will automatically create virtual environment and install dependencies
+uv sync
 
-# remove for reset:
-# conda deactivate
-# conda env remove -n lab -y
-# conda env export > environment.yml
-echo "--- Updating Conda environment ---"
-conda env update -f environment.yml
-
-source ~/.bashrc
+export PATH="$HOME/.local/bin:$PATH"
 echo "--- Lab setup complete ---"

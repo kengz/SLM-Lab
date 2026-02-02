@@ -1,0 +1,57 @@
+{
+    "sac_humanoid": {
+        "agent": {
+            "name": "SoftActorCritic",
+            "algorithm": {
+                "name": "SoftActorCritic",
+                "action_pdtype": "default",
+                "action_policy": "default",
+                "gamma": 0.99,
+                "training_frequency": 1,
+                "training_iter": 16,
+                "training_start_step": 1000
+            },
+            "memory": {
+                "name": "Replay",
+                "batch_size": 256,
+                "max_size": 1e6,
+                "use_cer": false
+            },
+            "net": {
+                "type": "MLPNet",
+                "hid_layers": [
+                    256,
+                    256
+                ],
+                "hid_layers_activation": "relu",
+                "init_fn": "orthogonal_",
+                "clip_grad_val": null,
+                "loss_spec": {
+                    "name": "MSELoss"
+                },
+                "optim_spec": {
+                    "name": "Adam",
+                    "lr": 3e-4
+                },
+                "update_type": "polyak",
+                "update_frequency": 1,
+                "polyak_coef": 0.005,
+                "gpu": "auto"
+            }
+        },
+        "env": {
+            "name": "Humanoid-v5",
+            "num_envs": 16,
+            "max_t": null,
+            "max_frame": 10e6
+        },
+        "meta": {
+            "distributed": false,
+            "log_frequency": 10000,
+            "eval_frequency": 1000,
+            "rigorous_eval": 0,
+            "max_session": 4,
+            "max_trial": 1
+        }
+    }
+}

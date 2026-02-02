@@ -1,0 +1,98 @@
+{
+  "dqn_epsilon_greedy_cartpole_search": {
+    "agent": {
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 50000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128
+        ],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.00012
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": null,
+      "max_frame": 100000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 2000,
+      "max_session": 4,
+      "max_trial": 8,
+      "log_frequency": 500
+    },
+    "search": {
+      "agent": {
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [
+              2000,
+              2500,
+              3000
+            ]
+          },
+          "training_batch_iter__choice": [
+            8,
+            10
+          ]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [
+              128
+            ],
+            [
+              256
+            ]
+          ],
+          "optim_spec": {
+            "lr__choice": [
+              0.0001,
+              0.00012,
+              0.00015
+            ]
+          },
+          "update_frequency__choice": [
+            80,
+            100
+          ]
+        }
+      }
+    }
+  }
+}

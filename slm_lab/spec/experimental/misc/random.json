@@ -1,6 +1,6 @@
 {
   "random_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -9,25 +9,22 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 100
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 5,
-      "max_trial": 1,
+      "max_session": 1,
+      "max_trial": 1
     }
   },
   "random_pendulum": {
-    "agent": [{
+    "agent": {
       "name": "Random",
       "algorithm": {
         "name": "Random"
@@ -36,81 +33,90 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "Pendulum-v0",
-      "max_t": null,
-      "max_frame": 100
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 5,
-      "max_trial": 1,
-    }
-  },
-  "random_2dball": {
-    "agent": [{
-      "name": "Random",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "2DBall",
-      "max_t": 1000,
-      "max_frame": 100
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 5,
-      "max_trial": 1,
-    }
-  },
-  "random_breakout": {
-    "agent": [{
-      "name": "Random",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "BreakoutNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+    "env": {
+      "name": "Pendulum-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 10000,
-      "eval_frequency": 10000,
-      "rigorous_eval": 0,
+      "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
+      "max_trial": 1
+    }
+  },
+  "random_lunarlander": {
+    "agent": {
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {}
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 500000.0
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  },
+  "random_bipedalwalker": {
+    "agent": {
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {}
+    },
+    "env": {
+      "name": "BipedalWalker-v3",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 500000.0
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 1
+    }
+  },
+  "random_pong": {
+    "agent": {
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {}
+    },
+    "env": {
+      "name": "ALE/Pong-v5",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 500000.0
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 1,
+      "max_trial": 1
     }
   }
 }

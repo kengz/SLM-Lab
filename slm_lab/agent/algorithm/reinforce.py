@@ -65,10 +65,12 @@ class Reinforce(Algorithm):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
-        self.body.explore_var = self.explore_var_scheduler.start_val
+        self.agent.explore_var = self.explore_var_scheduler.start_val
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
-            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
+            self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
+            self.agent.mt.register_algo_var('entropy_coef', self.agent)
+            self.agent.mt.register_algo_var('entropy', self.agent)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -78,14 +80,16 @@ class Reinforce(Algorithm):
         Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
+        in_dim = self.agent.state_dim
+        out_dim = net_util.get_out_dim(self.agent)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         # init net optimizer and its lr scheduler
+        # steps_per_schedule: frames processed per scheduler.step() call
+        steps_per_schedule = self.training_frequency * self.agent.env.num_envs
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
@@ -98,71 +102,77 @@ class Reinforce(Algorithm):
 
     @lab_api
     def act(self, state):
-        body = self.body
-        action = self.action_policy(state, self, body)
-        return action.cpu().squeeze().numpy()  # squeeze to handle scalar
+        action = self.action_policy(state, self)
+        return self.to_action(action)
 
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batch = self.body.memory.sample()
-        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
+        batch = self.agent.memory.sample()
+        batch = util.to_torch_batch(batch, self.net.device, self.agent.memory.is_episodic)
         return batch
 
     def calc_pdparam_batch(self, batch):
         '''Efficiently forward to get pdparam and by batch for loss computation'''
         states = batch['states']
-        if self.body.env.is_venv:
+        if self.agent.env.is_venv:
             states = math_util.venv_unpack(states)
         pdparam = self.calc_pdparam(states)
         return pdparam
 
     def calc_ret_advs(self, batch):
         '''Calculate plain returns; which is generalized to advantage in ActorCritic'''
-        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        rets = math_util.calc_returns(batch['rewards'], batch['terminateds'], self.gamma)
         if self.center_return:
             rets = math_util.center_mean(rets)
         advs = rets
-        if self.body.env.is_venv:
+        if self.agent.env.is_venv:
             advs = math_util.venv_unpack(advs)
         logger.debug(f'advs: {advs}')
         return advs
 
     def calc_policy_loss(self, batch, pdparams, advs):
         '''Calculate the actor's policy loss'''
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)
         actions = batch['actions']
-        if self.body.env.is_venv:
+        if self.agent.env.is_venv:
             actions = math_util.venv_unpack(actions)
-        log_probs = action_pd.log_prob(actions)
+        log_probs = policy_util.reduce_multi_action(action_pd.log_prob(actions))
+        advs = advs.view(-1)  # Ensure advs is 1D to match log_probs shape
+        # Normalize advantages (like PPO) for more stable gradient updates
+        if len(advs) > 1:
+            advs = math_util.standardize(advs)
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
-            entropy = action_pd.entropy().mean()
-            self.body.mean_entropy = entropy  # update logging variable
-            policy_loss += (-self.body.entropy_coef * entropy)
+            entropy = policy_util.reduce_multi_action(action_pd.entropy()).mean()
+            self.agent.entropy = entropy.detach()  # Update value for logging
+            policy_loss += (-self.agent.entropy_coef * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     @lab_api
     def train(self):
-        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
-            clock.set_batch_size(len(batch))
+            self.agent.env.set_batch_size(len(batch))
             pdparams = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pdparams, advs)
-            self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+            self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+            self.agent.env.tick_opt_step()
+            # Step LR scheduler once per training iteration
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
 
     @lab_api
     def update(self):
-        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        self.agent.explore_var = self.explore_var_scheduler.update(self, self.agent.env)
         if self.entropy_coef_spec is not None:
-            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
-        return self.body.explore_var
+            self.agent.entropy_coef = self.entropy_coef_scheduler.update(self, self.agent.env)
+        return self.agent.explore_var

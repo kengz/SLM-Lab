@@ -1,6 +1,6 @@
 {
   "sil_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -14,16 +14,16 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 50000,
+          "start_step": 100,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.5,
-        "sil_policy_loss_coef": 0.5,
-        "sil_val_loss_coef": 0.5,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_batch_iter": 4,
-        "training_iter": 8
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -40,61 +40,30 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.001
+          "name": "AdamW",
+          "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 0.0006
+          "name": "AdamW",
+          "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 100,
-      "search": "RandomSearch"
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          }
-        }
-      }]
+      "max_trial": 1
     }
   },
   "sil_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -108,15 +77,15 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 50000,
+          "start_step": 100,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_batch_iter": 8,
+        "training_batch_iter": 4,
         "training_iter": 4
       },
       "memory": {
@@ -129,66 +98,35 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
-        "hid_layers_activation": "tanh",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 100,
-      "search": "RandomSearch"
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          }
-        }
-      }]
+      "max_trial": 1
     }
   },
   "sil_rnn_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -202,15 +140,15 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 50000,
+          "start_step": 100,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_batch_iter": 8,
+        "training_batch_iter": 4,
         "training_iter": 4
       },
       "memory": {
@@ -225,68 +163,37 @@
         "shared": true,
         "cell_type": "GRU",
         "fc_hid_layers": [],
-        "hid_layers_activation": "selu",
+        "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad_val": 0.5,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 100,
-      "search": "RandomSearch"
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          }
-        }
-      }]
+      "max_trial": 1
     }
   },
   "sil_rnn_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SIL",
       "algorithm": {
         "name": "SIL",
@@ -300,15 +207,15 @@
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 50000,
+          "start_step": 100,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_batch_iter": 8,
+        "training_batch_iter": 4,
         "training_iter": 4
       },
       "memory": {
@@ -323,64 +230,33 @@
         "shared": false,
         "cell_type": "GRU",
         "fc_hid_layers": [],
-        "hid_layers_activation": "selu",
+        "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad_val": 0.5,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 1e5
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 100,
-      "search": "RandomSearch"
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "training_iter__choice": [1, 4, 8, 16]
-        },
-        "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          }
-        }
-      }]
+      "max_trial": 1
     }
-  },
+  }
 }

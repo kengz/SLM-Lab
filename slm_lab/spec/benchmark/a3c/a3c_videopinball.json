@@ -1,6 +1,6 @@
 {
   "a3c_gae_videopinball": {
-    "agent": [{
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -26,11 +26,31 @@
       "net": {
         "type": "ConvNet",
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -43,40 +63,31 @@
         },
         "actor_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 7e-5
+          "lr": 7e-05
         },
         "critic_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 7e-5
+          "lr": 7e-05
         },
-        "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "VideoPinball-v0",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 850000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "synced",
       "eval_frequency": 10000,
       "log_frequency": 10000,
       "max_trial": 1,
-      "max_session": 1
+      "max_session": 4
     }
   },
-
-    "a3c_nstep_videopinball": {
-    "agent": [{
+  "a3c_nstep_videopinball": {
+    "agent": {
       "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
@@ -102,11 +113,31 @@
       "net": {
         "type": "ConvNet",
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -119,35 +150,27 @@
         },
         "actor_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 7e-5
+          "lr": 7e-05
         },
         "critic_optim_spec": {
           "name": "GlobalAdam",
-          "lr": 7e-5
+          "lr": 7e-05
         },
-        "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "VideoPinball-v0",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 850000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "shared",
       "eval_frequency": 10000,
       "log_frequency": 10000,
       "max_trial": 1,
-      "max_session": 1
+      "max_session": 4
     }
   }
 }

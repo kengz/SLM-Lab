@@ -1,79 +1,169 @@
 {
   "ppo_lunar": {
-    "agent": [{
+    "agent": {
       "name": "PPO",
       "algorithm": {
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
+        "gamma": 0.9914,
+        "lam": 0.9527,
         "clip_eps_spec": {
-          "name": "no_decay",
-          "start_val": 0.20,
-          "end_val": 0.0,
-          "start_step": 10000,
+          "name": "linear_decay",
+          "start_val": 0.236,
+          "end_val": 0.2,
+          "start_step": 0,
           "end_step": 300000
         },
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
+          "start_val": 0.00001,
+          "end_val": 0.00001,
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 1.0,
-        "time_horizon": 128,
+        "val_loss_coef": 1.1395,
+        "clip_val_loss": false,
+        "time_horizon": 512,
         "minibatch_size": 256,
-        "training_epoch": 10
+        "training_epoch": 15
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64, 32],
-        "hid_layers_activation": "relu",
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 0.5,
-        "use_same_optim": true,
+        "normalize": true,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 5e-4,
+          "name": "AdamW",
+          "lr": 0.000565
         },
         "critic_optim_spec": {
-          "name": "Adam",
-          "lr": 5e-4,
+          "name": "AdamW",
+          "lr": 0.00558
         },
-        "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+    },
+    "env": {
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000,
-      "num_envs": 8,
-      "normalize_state": false
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "num_envs": 8
     },
     "meta": {
       "distributed": false,
       "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "eval_frequency": 1024,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 16,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.9, 0.98],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.001, 0.01]
     }
   },
+  "ppo_lunar_continuous": {
+    "agent": {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.9858,
+        "lam": 0.9758,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.128,
+          "end_val": 0.2,
+          "start_step": 0,
+          "end_step": 300000
+        },
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.0000127,
+          "end_val": 0.0000127,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 1.452,
+        "clip_val_loss": false,
+        "time_horizon": 640,
+        "minibatch_size": 128,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [
+          128,
+          64
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "AdamW",
+          "lr": 0.000267
+        },
+        "critic_optim_spec": {
+          "name": "AdamW",
+          "lr": 0.00134
+        },
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "continuous": true,
+      "max_t": null,
+      "max_frame": 300000,
+      "num_envs": 8
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1024,
+      "max_session": 4,
+      "max_trial": 16,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.975, 0.99],
+      "agent.algorithm.lam__uniform": [0.96, 0.98],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0001, 0.0003],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.002]
+    }
+  }
 }

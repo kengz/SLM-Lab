@@ -1,53 +1,28 @@
-# run instructions:
-# build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v4.2.0 .
-# start container: docker run --rm -it kengz/slm_lab:v4.2.0
-# list image: docker images -a
-# push image: docker push kengz/slm_lab
-# prune: docker system prune
+FROM ubuntu:22.04
 
-FROM ubuntu:16.04
+LABEL org.opencontainers.image.source=https://github.com/kengz/SLM-Lab
+LABEL org.opencontainers.image.description="Modular Deep Reinforcement Learning framework in PyTorch"
 
-LABEL maintainer="kengzwl@gmail.com"
-LABEL website="https://github.com/kengz/SLM-Lab"
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PATH="/root/.local/bin:$PATH"
 
-SHELL ["/bin/bash", "-c"]
+# System dependencies for gymnasium (box2d, mujoco, atari)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential ca-certificates curl git swig \
+    python3-dev libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install -y build-essential \
-    curl nano git wget zip libstdc++6 \
-    python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb && \
-    rm -rf /var/lib/apt/lists/*
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-RUN curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b && \
-    rm Miniconda3-latest-Linux-x86_64.sh && \
-    echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bashrc && \
-    . ~/miniconda3/etc/profile.d/conda.sh && \
-    conda --version
+WORKDIR /app
 
-# create and set the working directory
-RUN mkdir -p /root/SLM-Lab
+# Install dependencies first (cache layer)
+# README.md needed for hatchling build metadata
+COPY pyproject.toml uv.lock README.md ./
+RUN uv python install 3.12 && uv sync --frozen
 
-WORKDIR /root/SLM-Lab
-
-# install dependencies, only retrigger on dependency changes
-COPY environment.yml environment.yml
-
-# install Python and Conda dependencies
-RUN . ~/miniconda3/etc/profile.d/conda.sh && \
-    conda create -n lab python=3.7.3 -y && \
-    conda activate lab && \
-    conda env update -f environment.yml && \
-    conda clean -y --all && \
-    rm -rf ~/.cache/pip
-
-# copy file at last to not trigger changes above unnecessarily
+# Copy remaining source
 COPY . .
 
-RUN . ~/miniconda3/etc/profile.d/conda.sh && \
-    conda activate lab && \
-    python setup.py test
-    # pytest --verbose --no-flaky-report test/spec/test_dist_spec.py && \
-    # yarn reset
-
-CMD ["/bin/bash"]
+CMD ["uv", "run", "slm-lab", "--help"]

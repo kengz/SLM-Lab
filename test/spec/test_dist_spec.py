@@ -1,10 +1,7 @@
 from flaky import flaky
-from slm_lab.agent.net import net_util
 from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Trial
-from slm_lab.lib import util
 from slm_lab.spec import spec_util
-import os
 import pydash as ps
 import pytest
 
@@ -22,9 +19,9 @@ def run_trial_test_dist(spec_file, spec_name=False):
     global_nets = trial.init_global_nets()
     # only test first network
     if ps.is_list(global_nets):  # multiagent only test first
-        net = list(global_nets[0].values())[0]
+        list(global_nets[0].values())[0]
     else:
-        net = list(global_nets.values())[0]
+        list(global_nets.values())[0]
     session_metrics_list = trial.parallelize_sessions(global_nets)
     trial_metrics = analysis.analyze_trial(spec, session_metrics_list)
     trial.close()

@@ -1,11 +1,10 @@
-from slm_lab.agent import net, memory
+from slm_lab.agent import memory
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.algorithm.ppo import PPO
 from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
@@ -55,7 +54,7 @@ class SIL(ActorCritic):
         super().__init__(agent, global_nets)
         # create the extra replay memory for SIL
         MemoryClass = getattr(memory, self.memory_spec['sil_replay_name'])
-        self.body.replay_memory = MemoryClass(self.memory_spec, self.body)
+        self.replay_memory = MemoryClass(self.memory_spec, self.agent)
 
     @lab_api
     def init_algorithm_params(self):
@@ -90,20 +89,45 @@ class SIL(ActorCritic):
 
     def sample(self):
         '''Modify the onpolicy sample to also append to replay'''
-        batch = self.body.memory.sample()
-        if self.body.memory.is_episodic:
+        batch = self.agent.memory.sample()
+        if self.agent.memory.is_episodic:
             batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
-        for idx in range(len(batch['dones'])):
-            tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
-            self.body.replay_memory.add_experience(*tuples)
-        batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
+        # Convert lists to numpy arrays if needed (OnPolicyBatchReplay returns numpy arrays)
+        batch = {k: np.array(v) if isinstance(v, list) else v for k, v in batch.items()}
+        # Flatten venv dimension: reshape from (time_horizon, num_envs, ...) to (time_horizon * num_envs, ...)
+        flat_batch = {}
+        for k, v in batch.items():
+            if self.agent.env.is_venv and v.ndim > 1:
+                # Flatten first two dims (time_horizon, num_envs) into one
+                flat_batch[k] = v.reshape(-1, *v.shape[2:]) if v.ndim > 2 else v.reshape(-1)
+            else:
+                flat_batch[k] = v
+        # Map batch keys (plural) to add_experience keys (singular)
+        key_map = {
+            'states': 'state', 'actions': 'action', 'rewards': 'reward',
+            'next_states': 'next_state', 'dones': 'done',
+            'terminateds': 'terminated', 'truncateds': 'truncated',
+        }
+        for idx in range(len(flat_batch['dones'])):
+            # Build kwargs dict from batch data, mapping plural to singular keys
+            kwargs = {key_map.get(k, k): flat_batch[k][idx] for k in flat_batch.keys() if k in key_map}
+            self.replay_memory.add_experience(**kwargs)
+        batch = util.to_torch_batch(batch, self.net.device, self.replay_memory.is_episodic)
         return batch
 
     def replay_sample(self):
         '''Samples a batch from memory'''
-        batch = self.body.replay_memory.sample()
-        batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
+        batch = self.replay_memory.sample()
+        batch = util.to_torch_batch(batch, self.net.device, self.replay_memory.is_episodic)
         return batch
+
+    def calc_pdparam_v_flat(self, batch):
+        '''Like calc_pdparam_v but for flat replay data (no venv_unpack needed)'''
+        states = batch['states']
+        # Note: replay data is already flat (batch_size, state_dim), no venv_unpack needed
+        pdparam = self.calc_pdparam(states)
+        v_pred = self.calc_v(states, use_cache=False)
+        return pdparam, v_pred
 
     def calc_sil_policy_val_loss(self, batch, pdparams):
         '''
@@ -113,23 +137,21 @@ class SIL(ActorCritic):
         This is called on a randomly-sample batch from experience replay
         '''
         v_preds = self.calc_v(batch['states'], use_cache=False)
-        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        rets = math_util.calc_returns(batch['rewards'], batch['terminateds'], self.gamma)
         clipped_advs = torch.clamp(rets - v_preds, min=0.0)
 
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        action_pd = policy_util.init_action_pd(self.agent.ActionPD, pdparams)
+        # Note: replay memory stores flat experiences (not venv-packed), so no venv_unpack needed
         actions = batch['actions']
-        if self.body.env.is_venv:
-            actions = math_util.venv_unpack(actions)
-        log_probs = action_pd.log_prob(actions)
+        log_probs = policy_util.reduce_multi_action(action_pd.log_prob(actions))
 
-        sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs).mean()
+        sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs.detach()).mean()
         sil_val_loss = self.sil_val_loss_coef * clipped_advs.pow(2).mean() / 2
         logger.debug(f'SIL actor policy loss: {sil_policy_loss:g}')
         logger.debug(f'SIL critic value loss: {sil_val_loss:g}')
         return sil_policy_loss, sil_val_loss
 
     def train(self):
-        clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
             super_loss = super().train()
@@ -138,14 +160,15 @@ class SIL(ActorCritic):
             for _ in range(self.training_iter):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_iter):
-                    pdparams, _v_preds = self.calc_pdparam_v(batch)
+                    pdparams, _v_preds = self.calc_pdparam_v_flat(batch)
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                    self.agent.env.tick_opt_step()
                     total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_iter
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

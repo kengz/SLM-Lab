@@ -1,0 +1,32 @@
+type: task
+name: slm-lab
+
+python: 3.12
+
+files:
+  - ..:/workflow
+
+env:
+  - HF_TOKEN
+  - HF_REPO
+  - SPEC_FILE
+  - SPEC_NAME
+  - LAB_MODE
+  - SPEC_VARS  # --set overrides, e.g. "-s env=ALE/Breakout-v5"
+
+commands:
+  - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
+  - cd /workflow && uv sync
+  - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
+
+resources:
+  gpu: 0
+  cpu: 8..
+  memory: 16GB..
+
+spot_policy: on-demand
+max_duration: 4h
+max_price: 0.30
+retry:
+  on_events: [no-capacity]
+  duration: 1h

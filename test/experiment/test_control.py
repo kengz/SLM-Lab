@@ -1,6 +1,4 @@
-from copy import deepcopy
 from flaky import flaky
-from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.spec import spec_util
 import pandas as pd
@@ -25,7 +23,7 @@ def test_trial(test_spec):
 
 
 def test_trial_demo():
-    spec = spec_util.get('demo.json', 'dqn_cartpole')
+    spec = spec_util.get('demo.json', 'ppo_cartpole')
     spec_util.save(spec, unit='experiment')
     spec = spec_util.override_spec(spec, 'test')
     spec_util.tick(spec, 'trial')
@@ -38,10 +36,9 @@ def test_trial_demo():
 def test_demo_performance():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec_util.save(spec, unit='experiment')
-    for env_spec in spec['env']:
-        env_spec['max_frame'] = 2000
+    spec['env']['max_frame'] = 2000
     spec_util.tick(spec, 'trial')
-    trial = Trial(spec)
+    Trial(spec)
     spec_util.tick(spec, 'session')
     session = Session(spec)
     session.run()

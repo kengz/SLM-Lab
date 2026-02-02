@@ -5,9 +5,50 @@ import pandas as pd
 import pytest
 
 
+def make_exp(state, action, reward, next_state, done, terminated=False, truncated=False, error=None):
+    """Create experience dict for add_experience()."""
+    exp = {
+        'state': np.asarray(state),
+        'action': action,
+        'reward': reward,
+        'next_state': np.asarray(next_state),
+        'done': done,
+        'terminated': terminated,
+        'truncated': truncated,
+    }
+    if error is not None:
+        exp['error'] = error
+    return exp
+
+
+# Standard experiences for replay memory tests
+STANDARD_EXPERIENCES = [
+    make_exp([1, 1, 1, 1], 1, 1, [2, 2, 2, 2], False),
+    make_exp([2, 2, 2, 2], 1, 2, [3, 3, 3, 3], False),
+    make_exp([3, 3, 3, 3], 1, 3, [4, 4, 4, 4], False),
+    make_exp([4, 4, 4, 4], 1, 4, [5, 5, 5, 5], False),
+    make_exp([5, 5, 5, 5], 1, 5, [6, 6, 6, 6], False),
+    make_exp([6, 6, 6, 6], 1, 6, [7, 7, 7, 7], False),
+    make_exp([7, 7, 7, 7], 1, 7, [8, 8, 8, 8], False),
+    make_exp([8, 8, 8, 8], 1, 8, [9, 9, 9, 9], True, terminated=True),
+]
+
+# PER experiences with error field
+PER_EXPERIENCES = [
+    make_exp([1, 1, 1, 1], 1, 1, [2, 2, 2, 2], False, error=1000),
+    make_exp([2, 2, 2, 2], 1, 2, [3, 3, 3, 3], False, error=0),
+    make_exp([3, 3, 3, 3], 1, 3, [4, 4, 4, 4], False, error=0),
+    make_exp([4, 4, 4, 4], 1, 4, [5, 5, 5, 5], False, error=0),
+    make_exp([5, 5, 5, 5], 1, 5, [6, 6, 6, 6], False, error=1000),
+    make_exp([6, 6, 6, 6], 1, 6, [7, 7, 7, 7], False, error=0),
+    make_exp([7, 7, 7, 7], 1, 7, [8, 8, 8, 8], False, error=0),
+    make_exp([8, 8, 8, 8], 1, 8, [9, 9, 9, 9], True, terminated=True, error=1000),
+]
+
+
 @pytest.fixture(scope='session')
 def test_spec():
-    spec = spec_util.get('experimental/misc/base.json', 'base_case_openai')
+    spec = spec_util.get('experimental/misc/base.json', 'base_case_gymnasium')
     spec_util.tick(spec, 'trial')
     spec = spec_util.override_spec(spec, 'test')
     return spec
@@ -56,93 +97,37 @@ def test_str():
     return data
 
 
-@pytest.fixture(scope='session', params=[
-    (
-        2,
-        [
-            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 1],
-            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 2],
-            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 3],
-            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 4],
-            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 5],
-            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 6],
-            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 7],
-            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 8],
-        ]
-    ),
-])
+@pytest.fixture(scope='session', params=[(2, STANDARD_EXPERIENCES)])
 def test_memory(request):
-    spec = spec_util.get('experimental/misc/base.json', 'base_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_replay_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory,) + request.param
     return res
 
 
-@pytest.fixture(scope='session', params=[
-    (
-        2,
-        [
-            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 0],
-            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 0],
-            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 0],
-            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 0],
-            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 0],
-            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 0],
-            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 0],
-            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 1],
-        ]
-    ),
-])
+@pytest.fixture(scope='session', params=[(2, STANDARD_EXPERIENCES)])
 def test_on_policy_episodic_memory(request):
-    spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_onpolicy_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory,) + request.param
     return res
 
 
-@pytest.fixture(scope='session', params=[
-    (
-        4,
-        [
-            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 0],
-            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 0],
-            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 0],
-            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 0],
-            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 0],
-            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 0],
-            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 0],
-            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 1],
-        ]
-    ),
-])
+@pytest.fixture(scope='session', params=[(4, STANDARD_EXPERIENCES)])
 def test_on_policy_batch_memory(request):
-    spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_batch_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_onpolicy_batch_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory,) + request.param
     return res
 
 
-@pytest.fixture(scope='session', params=[
-    (
-        4,
-        [
-            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 0, 1000],
-            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 0, 0],
-            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 0, 0],
-            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 0, 0],
-            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 0, 1000],
-            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 0, 0],
-            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 0, 0],
-            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 1, 1000],
-        ]
-    ),
-])
+@pytest.fixture(scope='session', params=[(4, PER_EXPERIENCES)])
 def test_prioritized_replay_memory(request):
     spec = spec_util.get('experimental/misc/base.json', 'base_prioritized_replay_memory')
     spec_util.tick(spec, 'trial')
     agent, env = make_agent_env(spec)
-    res = (agent.body.memory, ) + request.param
+    res = (agent.memory,) + request.param
     return res

@@ -1,6 +1,7 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import util
+import numpy as np
 import pydash as ps
 import torch.nn as nn
 
@@ -87,6 +88,7 @@ class RecurrentNet(Net, nn.Module):
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
+            log_std_init=None,
         ))
         util.set_attr(self, self.net_spec, [
             'cell_type',
@@ -106,9 +108,10 @@ class RecurrentNet(Net, nn.Module):
             'update_frequency',
             'polyak_coef',
             'gpu',
+            'log_std_init',
         ])
-        # restore proper in_dim from env stacked state_dim (stack_len, *raw_state_dim)
-        self.in_dim = in_dim[1:] if len(in_dim) > 2 else in_dim[1]
+        # Extract state_dim from in_dim (int or tuple)
+        self.in_dim = in_dim if isinstance(in_dim, (int, np.integer)) else in_dim[1]
         # fc body: state processing model
         if ps.is_empty(self.fc_hid_layers):
             self.rnn_input_dim = self.in_dim
@@ -124,18 +127,7 @@ class RecurrentNet(Net, nn.Module):
             num_layers=self.rnn_num_layers,
             batch_first=True, bidirectional=self.bidirectional)
 
-        # tails. avoid list for single-tail for compute speed
-        if ps.is_integer(self.out_dim):
-            self.model_tail = net_util.build_fc_model([self.rnn_hidden_size, self.out_dim], self.out_layer_activation)
-        else:
-            if not ps.is_list(self.out_layer_activation):
-                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
-            assert len(self.out_layer_activation) == len(self.out_dim)
-            tails = []
-            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
-                tail = net_util.build_fc_model([self.rnn_hidden_size, out_d], out_activ)
-                tails.append(tail)
-            self.model_tails = nn.ModuleList(tails)
+        self.tails, self.log_std = net_util.build_tails(self.rnn_hidden_size, self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -143,24 +135,24 @@ class RecurrentNet(Net, nn.Module):
         self.train()
 
     def forward(self, x):
-        '''The feedforward step. Input is batch_size x seq_len x state_dim'''
-        # Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs
+        '''Forward pass. Auto-converts single states to sequences for RNN processing'''
         batch_size = x.size(0)
+        
+        # Convert (batch_size, state_dim) to (batch_size, seq_len, state_dim)
+        if x.dim() == 2:
+            x = x.unsqueeze(1).repeat(1, self.seq_len, 1)
+        
+        # Process through fc layers if present
         x = x.view(-1, self.in_dim)
         if hasattr(self, 'fc_model'):
             x = self.fc_model(x)
-        # Restack to batch_size x seq_len x rnn_input_dim
-        x = x.view(-1, self.seq_len, self.rnn_input_dim)
+        x = x.view(batch_size, self.seq_len, self.rnn_input_dim)
+        
+        # RNN forward pass
         if self.cell_type == 'LSTM':
             _output, (h_n, c_n) = self.rnn_model(x)
         else:
             _output, h_n = self.rnn_model(x)
-        hid_x = h_n[-1]  # get final time-layer
-        # return tensor if single tail, else list of tail tensors
-        if hasattr(self, 'model_tails'):
-            outs = []
-            for model_tail in self.model_tails:
-                outs.append(model_tail(hid_x))
-            return outs
-        else:
-            return self.model_tail(hid_x)
+        hid_x = h_n[-1]  # get final hidden state
+        
+        return net_util.forward_tails(hid_x, self.tails, self.log_std)

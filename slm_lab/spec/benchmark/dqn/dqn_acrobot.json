@@ -1,0 +1,154 @@
+{
+  "dqn_epsilon_greedy_acrobot": {
+    "agent": {
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.027,
+          "start_step": 0,
+          "end_step": 20000
+        },
+        "gamma": 0.987,
+        "training_batch_iter": 2,
+        "training_iter": 2,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 64,
+        "max_size": 50000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.00108
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "Acrobot-v1",
+      "max_t": null,
+      "max_frame": 300000,
+      "num_envs": 4
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 12,
+      "log_frequency": 500,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [
+        0.99,
+        0.999
+      ],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [
+        0.05,
+        0.15
+      ],
+      "agent.algorithm.explore_var_spec.end_step__qrandint": [
+        10000,
+        20000,
+        5000
+      ],
+      "agent.net.optim_spec.lr__loguniform": [
+        0.0003,
+        0.001
+      ]
+    }
+  },
+  "dqn_boltzmann_acrobot": {
+    "agent": {
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.084,
+          "start_step": 0,
+          "end_step": 30000
+        },
+        "gamma": 0.985,
+        "training_batch_iter": 2,
+        "training_iter": 2,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 64,
+        "max_size": 50000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0006
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "Acrobot-v1",
+      "max_t": null,
+      "max_frame": 300000,
+      "num_envs": 4
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 500,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 16,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [0.01, 0.1],
+      "agent.net.optim_spec.lr__loguniform": [0.0003, 0.003]
+    }
+  }
+}

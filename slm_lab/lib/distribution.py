@@ -35,19 +35,20 @@ class GumbelSoftmax(distributions.RelaxedOneHotCategorical):
     '''
 
     def sample(self, sample_shape=torch.Size()):
-        '''Gumbel-softmax sampling. Note rsample is inherited from RelaxedOneHotCategorical'''
-        u = torch.empty(self.logits.size(), device=self.logits.device, dtype=self.logits.dtype).uniform_(0, 1)
-        noisy_logits = self.logits - torch.log(-torch.log(u))
+        '''Hard discrete sampling for environment compatibility'''
+        # Use PyTorch's efficient Gumbel noise generation pattern
+        gumbel_noise = -torch.empty_like(self.logits, memory_format=torch.legacy_contiguous_format).exponential_().log()
+        noisy_logits = (self.logits + gumbel_noise) / self.temperature
         return torch.argmax(noisy_logits, dim=-1)
 
     def rsample(self, sample_shape=torch.Size()):
-        '''
-        Gumbel-softmax resampling using the Straight-Through trick.
-        Credit to Ian Temple for bringing this to our attention. To see standalone code of how this works, refer to https://gist.github.com/yzh119/fd2146d2aeb329d067568a493b20172f
-        '''
-        rout = super().rsample(sample_shape)  # differentiable
-        out = F.one_hot(torch.argmax(rout, dim=-1), self.logits.shape[-1]).float()
-        return (out - rout).detach() + rout
+        '''Soft reparametrizable sampling using Straight-Through trick: y_hard - y_soft.detach() + y_soft'''
+        # Get soft sample
+        y_soft = super().rsample(sample_shape)
+        # Get hard sample (one-hot)
+        y_hard = F.one_hot(torch.argmax(y_soft, dim=-1), self.logits.shape[-1]).float()
+        # Apply straight-through: gradients flow through y_soft, but output is y_hard
+        return y_hard - y_soft.detach() + y_soft
 
     def log_prob(self, value):
         '''value is one-hot or relaxed'''

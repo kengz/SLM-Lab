@@ -1,6 +1,5 @@
 from slm_lab.agent.memory.replay import Replay
 from slm_lab.lib import util
-from slm_lab.lib.decorator import lab_api
 import numpy as np
 import random
 
@@ -104,7 +103,7 @@ class PrioritizedReplay(Replay):
     }
     '''
 
-    def __init__(self, memory_spec, body):
+    def __init__(self, memory_spec, agent):
         util.set_attr(self, memory_spec, [
             'alpha',
             'epsilon',
@@ -112,24 +111,33 @@ class PrioritizedReplay(Replay):
             'max_size',
             'use_cer',
         ])
-        super().__init__(memory_spec, body)
+        self.max_size = int(self.max_size)  # convert scientific notation (e.g. 1e6) to int
+        super().__init__(memory_spec, agent)
 
         self.epsilon = np.full((1,), self.epsilon)
         self.alpha = np.full((1,), self.alpha)
         # adds a 'priorities' scalar to the data_keys and call reset again
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'terminateds', 'truncateds', 'priorities']
         self.reset()
 
     def reset(self):
         super().reset()
         self.tree = SumTree(self.max_size)
 
-    def add_experience(self, state, action, reward, next_state, done, error=100000):
+    def add_experience(self, *, state, action, reward, next_state, done, terminated, truncated, error=100000):
         '''
         Implementation for update() to add experience to memory, expanding the memory size if necessary.
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
-        super().add_experience(state, action, reward, next_state, done)
+        super().add_experience(
+            state=state,
+            action=action,
+            reward=reward,
+            next_state=next_state,
+            done=done,
+            terminated=terminated,
+            truncated=truncated
+        )
         priority = self.get_priority(error)
         self.priorities[self.head] = priority
         self.tree.add(priority, self.head)
@@ -141,7 +149,7 @@ class PrioritizedReplay(Replay):
     def sample_idxs(self, batch_size):
         '''Samples batch_size indices from memory in proportional to their priority.'''
         batch_idxs = np.zeros(batch_size)
-        tree_idxs = np.zeros(batch_size, dtype=np.int)
+        tree_idxs = np.zeros(batch_size, dtype=int)
 
         for i in range(batch_size):
             s = random.uniform(0, self.tree.total())
@@ -150,9 +158,15 @@ class PrioritizedReplay(Replay):
             tree_idxs[i] = tree_idx
 
         batch_idxs = np.asarray(batch_idxs).astype(int)
+        if self.use_cer:
+            old_batch_idxs = batch_idxs.copy()
+            batch_idxs = self.apply_cer(batch_idxs)
+            # Mark tree_idxs as -1 for CER indices (to skip priority updates)
+            num_cer = np.sum(batch_idxs != old_batch_idxs)
+            if num_cer > 0:
+                # CER replaces last num_cer indices
+                tree_idxs[-num_cer:] = -1
         self.tree_idxs = tree_idxs
-        if self.use_cer:  # add the latest sample
-            batch_idxs[-1] = self.head
         return batch_idxs
 
     def update_priorities(self, errors):
@@ -165,4 +179,5 @@ class PrioritizedReplay(Replay):
         for idx, p in zip(self.batch_idxs, priorities):
             self.priorities[idx] = p
         for p, i in zip(priorities, self.tree_idxs):
-            self.tree.update(i, p)
+            if i != -1:  # Skip CER indices without valid tree_idx
+                self.tree.update(i, p)

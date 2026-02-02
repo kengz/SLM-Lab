@@ -1,0 +1,123 @@
+[project]
+name = "slm-lab"
+version = "5.0.0"
+description = "Modular Deep Reinforcement Learning framework in PyTorch."
+readme = "README.md"
+requires-python = ">=3.12.0"
+license = {text = "MIT"}
+authors = [
+    {name = "kengz", email = "kengzwl@gmail.com"},
+    {name = "lgraesser"}
+]
+keywords = ["reinforcement-learning", "deep-learning", "pytorch", "rl", "ai", "machine-learning"]
+homepage = "https://github.com/kengz/slm_lab"
+repository = "https://github.com/kengz/slm_lab"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Core dependencies - CLI orchestration, plotting, HF sync (no heavy ML deps)
+dependencies = [
+    "colorlover>=0.3.0",
+    "dstack>=0.18.0",
+    "huggingface-hub>=0.34.4",
+    "kaleido==0.2.0",
+    "loguru>=0.7.3",
+    "pandas>=2.2.3",
+    "pillow>=11.1.0",
+    "plotly>=6.0.1",
+    "pydash>=8.0.5",
+    "pyyaml>=6.0.2",
+    "regex>=2024.11.6",
+    "typer>=0.12.0",
+    "ujson>=5.10.0",
+]
+
+[dependency-groups]
+# ML dependencies for local training - included by default via [tool.uv] default-groups
+ml = [
+    "ale-py==0.11.2",
+    "gputil>=1.4.0",
+    "gymnasium[box2d,classic-control,mujoco]==1.2.0",
+    "lightning-thunder>=0.2.4; platform_system == 'Linux'",
+    "nvidia-cudnn-cu12>=9.10.2.21; platform_system == 'Linux'",
+    "nvidia-cudnn-frontend>=1.14.1; platform_system == 'Linux'",
+    "nvfuser-cu128-torch28>=0.2.31.dev20250901; platform_system == 'Linux'",
+    "opencv-python>=4.11.0.86",
+    "optuna>=4.4.0",
+    "psutil>=7.0.0",
+    "pygame>=2.6.1",
+    "ray[default,tune]>=2.44.0",
+    "tensorboard>=2.19.0",
+    "torch>=2.8.0",
+]
+# Dev dependencies - install with: uv sync --group dev
+dev = [
+    "coverage>=7.6.1",
+    "flaky>=3.5.3",
+    "ipykernel>=6.29.5",
+    "pytest-cov>=2.7.1",
+    "pytest-timeout>=1.3.3",
+    "pytest>=6.0.0",
+    "ruff>=0.8.3",
+    "glances>=4.3.3",
+    "nvidia-ml-py>=13.580.65",
+]
+
+[tool.uv]
+# Include ML deps by default for local training
+# Use `uv sync --no-default-groups` for minimal CLI-only install
+default-groups = ["ml"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128", marker = "platform_system != 'Darwin'"},
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    '--verbose',
+    '--capture=sys',
+    '--log-level=INFO',
+    '--log-cli-level=INFO',
+    '--log-file-level=INFO',
+    '--no-flaky-report',
+    '--timeout=300',
+    '--cov-report=html',
+    '--cov-report=term',
+    '--cov-report=xml',
+    '--cov=slm_lab',
+    '--ignore=test/spec/test_dist_spec.py',
+    'test',
+]
+filterwarnings = "ignore"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["slm_lab"]
+
+[project.scripts]
+slm-lab = "slm_lab.cli:cli"
+slm-retro = "slm_lab.experiment.retro_analysis:app"
+
+[tool.ruff]
+# Ignore pre-existing lint issues in legacy code
+lint.ignore = [
+    "F401",  # unused imports (some are re-exports)
+    "F403",  # star imports in __init__.py
+    "F541",  # f-strings without placeholders
+    "F841",  # unused local variables
+]

@@ -1,54 +1,64 @@
-from collections import deque
+"""Core utilities for SLM-Lab.
+
+This module contains non-ML utilities that work in minimal install mode.
+ML-dependent utilities (torch, numpy, cv2) are in ml_util.py and are
+re-exported here for backward compatibility when ML deps are available.
+"""
 from contextlib import contextmanager
 from datetime import datetime
-from importlib import reload
-from pprint import pformat
+from loguru import logger as loguru_logger
 from slm_lab import ROOT_DIR, EVAL_MODES, TRAIN_MODES
-import cv2
+from slm_lab.lib import logger
+from slm_lab.lib.env_var import lab_mode
 import json
-import numpy as np
-import operator
 import os
 import pandas as pd
-import pickle
 import pydash as ps
 import regex as re
 import subprocess
 import sys
 import time
-import torch
-import torch.multiprocessing as mp
 import ujson
 import yaml
 
-NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 
 
-class LabJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, (np.ndarray, pd.Series)):
-            return obj.tolist()
+def format_metrics(metrics: dict) -> list[str]:
+    """Format metrics dict into clean key:value strings for logging.
+
+    Handles numpy types, NaN values, and applies appropriate precision:
+    - frame: scientific notation (1.00e+07)
+    - total_reward, total_reward_ma: 2 decimal places
+    - other floats: 4 significant figures
+    """
+    items = []
+    for k, v in metrics.items():
+        # Convert numpy types to Python types
+        if hasattr(v, 'item'):
+            v = v.item()
+
+        if str(v).lower() == 'nan':
+            items.append(f'{k}:nan')
+        elif k == 'frame':
+            items.append(f'{k}:{v:.2e}')
+        elif k in ('total_reward', 'total_reward_ma'):
+            items.append(f'{k}:{v:.2f}')
+        elif isinstance(v, float) and not v.is_integer():
+            items.append(f'{k}:{v:.4g}')
+        elif isinstance(v, (int, float)):
+            items.append(f'{k}:{v:g}')
         else:
-            return str(obj)
-
-
-def batch_get(arr, idxs):
-    '''Get multi-idxs from an array depending if it's a python list or np.array'''
-    if isinstance(arr, (list, deque)):
-        return np.array(operator.itemgetter(*idxs)(arr))
-    else:
-        return arr[idxs]
+            items.append(f'{k}:{v}')
+    return items
 
 
 def calc_srs_mean_std(sr_list):
-    '''Given a list of series, calculate their mean and std'''
-    cat_df = pd.DataFrame(dict(enumerate(sr_list)))
+    '''Given a list of series, calculate their mean and std. Truncates to min length to handle mismatched sizes.'''
+    min_len = min(len(sr) for sr in sr_list)
+    truncated = [sr.iloc[:min_len].reset_index(drop=True) for sr in sr_list]
+    cat_df = pd.DataFrame(dict(enumerate(truncated)))
     mean_sr = cat_df.mean(axis=1)
     std_sr = cat_df.std(axis=1)
     return mean_sr, std_sr
@@ -86,40 +96,12 @@ def cast_list(val):
         return [val]
 
 
-def concat_batches(batches):
-    '''
-    Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
-    Also concat any nested epi sub-batches into flat batch
-    {k: arr1} + {k: arr2} = {k: arr1 + arr2}
-    '''
-    # if is nested, then is episodic
-    is_episodic = isinstance(batches[0]['dones'][0], (list, np.ndarray))
-    concat_batch = {}
-    for k in batches[0]:
-        datas = []
-        for batch in batches:
-            data = batch[k]
-            if is_episodic:  # make into plain batch instead of nested
-                data = np.concatenate(data)
-            datas.append(data)
-        concat_batch[k] = np.concatenate(datas)
-    return concat_batch
-
-
 def downcast_float32(df):
     '''Downcast any float64 col to float32 to allow safer pandas comparison'''
     for col in df.columns:
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
-
-
-def epi_done(done):
-    '''
-    General method to check if episode is done for both single and vectorized env
-    Only return True for singleton done since vectorized env does not have a natural episode boundary
-    '''
-    return np.isscalar(done) and done
 
 
 def frame_mod(frame, frequency, num_envs):
@@ -156,18 +138,6 @@ def get_class_name(obj, lower=False):
     return class_name
 
 
-def get_class_attr(obj):
-    '''Get the class attr of an object as dict'''
-    attr_dict = {}
-    for k, v in obj.__dict__.items():
-        if hasattr(v, '__dict__') or ps.is_tuple(v):
-            val = str(v)
-        else:
-            val = v
-        attr_dict[k] = val
-    return attr_dict
-
-
 def get_file_ext(data_path):
     '''get the `.ext` of file.ext'''
     return os.path.splitext(data_path)[-1]
@@ -183,11 +153,10 @@ def get_fn_list(a_cls):
 
 
 def get_git_sha():
-    return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
-
-
-def get_lab_mode():
-    return os.environ.get('lab_mode')
+    try:
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True, cwd=ROOT_DIR).decode().strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return 'unknown'  # git not available (e.g., in minimal/remote env)
 
 
 def get_port():
@@ -196,6 +165,19 @@ def get_port():
     xxx = ps.pad_start(str(os.getpid())[-3:], 3, 0)
     port = int(f'4{xxx}')
     return port
+
+
+def get_predir(spec):
+    """Get the parent directory for experiment data."""
+    spec_name = spec["name"]
+    meta_spec = spec["meta"]
+    predir = f"data/{spec_name}_{meta_spec['experiment_ts']}"
+    return predir
+
+def get_experiment_ts(path):
+    """Extract experiment timestamp from a path like 'data/exp_name_2025_09_26_123456'."""
+    matches = RE_FILE_TS.findall(path)
+    return matches[0] if matches else None
 
 
 def get_prepath(spec, unit='experiment'):
@@ -216,7 +198,7 @@ def get_prepath(spec, unit='experiment'):
 
 
 def get_session_df_path(session_spec, df_mode):
-    '''Method to return standard filepath for session_df (agent.body.train_df/eval_df) for saving and loading'''
+    '''Method to return standard filepath for session_df (agent.mt.train_df/eval_df) for saving and loading'''
     info_prepath = session_spec['meta']['info_prepath']
     return f'{info_prepath}_session_df_{df_mode}.csv'
 
@@ -247,12 +229,12 @@ def insert_folder(prepath, folder):
 
 def in_eval_lab_mode():
     '''Check if lab_mode is one of EVAL_MODES'''
-    return get_lab_mode() in EVAL_MODES
+    return lab_mode() in EVAL_MODES
 
 
 def in_train_lab_mode():
     '''Check if lab_mode is one of TRAIN_MODES'''
-    return get_lab_mode() in TRAIN_MODES
+    return lab_mode() in TRAIN_MODES
 
 
 def is_jupyter():
@@ -291,41 +273,6 @@ def monkey_patch(base_cls, extend_cls):
     ext_fn_list = get_fn_list(extend_cls)
     for fn in ext_fn_list:
         setattr(base_cls, fn, getattr(extend_cls, fn))
-
-
-def parallelize(fn, args, num_cpus=NUM_CPUS):
-    '''
-    Parallelize a method fn, args and return results with order preserved per args.
-    args should be a list of tuples.
-    @returns {list} results Order preserved output from fn.
-    '''
-    pool = mp.Pool(num_cpus, maxtasksperchild=1)
-    results = pool.starmap(fn, args)
-    pool.close()
-    pool.join()
-    return results
-
-
-def prepath_split(prepath):
-    '''
-    Split prepath into useful names. Works with predir (prename will be None)
-    prepath: data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0
-    predir: data/dqn_pong_2018_12_02_082510
-    prefolder: dqn_pong_2018_12_02_082510
-    prename: dqn_pong_t0_s0
-    spec_name: dqn_pong
-    experiment_ts: 2018_12_02_082510
-    '''
-    prepath = prepath.strip('_')
-    tail = prepath.split('data/')[-1]
-    if '/' in tail:  # tail = prefolder/prename
-        prefolder, prename = tail.split('/', 1)
-    else:
-        prefolder, prename = tail, None
-    predir = f'data/{prefolder}'
-    spec_name = RE_FILE_TS.sub('', prefolder).strip('_')
-    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
-    return predir, prefolder, prename, spec_name, experiment_ts
 
 
 def prepath_to_idxs(prepath):
@@ -369,8 +316,6 @@ def read(data_path, **kwargs):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         data = read_as_df(data_path, **kwargs)
-    elif ext == '.pkl':
-        data = read_as_pickle(data_path, **kwargs)
     else:
         data = read_as_plain(data_path, **kwargs)
     return data
@@ -382,11 +327,6 @@ def read_as_df(data_path, **kwargs):
     return data
 
 
-def read_as_pickle(data_path, **kwargs):
-    '''Submethod to read data as pickle'''
-    with open(data_path, 'rb') as f:
-        data = pickle.load(f)
-    return data
 
 
 def read_as_plain(data_path, **kwargs):
@@ -396,29 +336,36 @@ def read_as_plain(data_path, **kwargs):
     if ext == '.json':
         data = ujson.load(open_file, **kwargs)
     elif ext == '.yml':
-        data = yaml.load(open_file, **kwargs)
+        data = yaml.load(open_file, Loader=yaml.FullLoader, **kwargs)
     else:
         data = open_file.read()
     open_file.close()
     return data
 
 
-def self_desc(cls, omit=None):
-    '''Method to get self description, used at init.'''
-    desc_list = [f'{get_class_name(cls)}:']
-    omit_list = ps.compact(cast_list(omit))
-    for k, v in get_class_attr(cls).items():
-        if k in omit_list:
-            continue
-        if k == 'spec':  # spec components are described at their object level; for session, only desc spec.meta
-            desc_v = pformat(v['meta'])
-        elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
-            desc_v = pformat(v)
-        else:
-            desc_v = v
-        desc_list.append(f'- {k} = {desc_v}')
-    desc = '\n'.join(desc_list)
-    return desc
+def log_dict(data: dict, title: str = None):
+    '''Log dict as clean YAML format.'''
+    lines = [f'{title}:'] if title else []
+    for k, v in data.items():
+        if isinstance(v, dict):
+            yaml_str = yaml.dump({k: v}, default_flow_style=False, indent=2, sort_keys=False).rstrip()
+            lines.append(yaml_str)
+        elif v is not None and not ps.reg_exp_js_match(str(v), "/<.+>/"):
+            lines.append(f'{k}: {v}')
+    logger.info('\n'.join(lines))
+
+
+def log_self_desc(cls, omit=None):
+    '''Log self description in YAML-style format.'''
+    try:
+        from slm_lab.lib.ml_util import get_class_attr
+        obj_dict = get_class_attr(cls)
+    except ImportError:
+        # Fallback for minimal install (no torch)
+        obj_dict = {k: str(v) for k, v in cls.__dict__.items() if not k.startswith('_')}
+    if omit:
+        obj_dict = ps.omit(obj_dict, omit)
+    log_dict(obj_dict, get_class_name(cls))
 
 
 def set_attr(obj, attr_dict, keys=None):
@@ -430,43 +377,23 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_cuda_id(spec):
-    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
-    # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
-    # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
-    for agent_spec in spec['agent']:
-        if not agent_spec['net'].get('gpu'):
-            return
-    meta_spec = spec['meta']
-    trial_idx = meta_spec['trial'] or 0
-    session_idx = meta_spec['session'] or 0
-    if meta_spec['distributed'] == 'shared':  # shared hogwild uses only global networks, offset them to idx 0
-        session_idx = 0
-    job_idx = trial_idx * meta_spec['max_session'] + session_idx
-    job_idx += meta_spec['cuda_offset']
-    device_count = torch.cuda.device_count()
-    cuda_id = job_idx % device_count if torch.cuda.is_available() else None
-
-    for agent_spec in spec['agent']:
-        agent_spec['net']['cuda_id'] = cuda_id
-
-
 def set_logger(spec, logger, unit=None):
     '''Set the logger for a lab unit give its spec'''
     os.environ['LOG_PREPATH'] = insert_folder(get_prepath(spec, unit=unit), 'log')
-    reload(logger)  # to set session-specific logger
+    log_filepath = os.path.join(ROOT_DIR, os.environ['LOG_PREPATH'] + '.log')
+    os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
 
+    # Remove existing file handlers (stdout remains)
+    while len(loguru_logger._core.handlers) > 1:
+        loguru_logger.remove(list(loguru_logger._core.handlers.keys())[-1])
 
-def set_random_seed(spec):
-    '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed'''
-    trial = spec['meta']['trial']
-    session = spec['meta']['session']
-    random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
-    torch.cuda.manual_seed_all(random_seed)
-    torch.manual_seed(random_seed)
-    np.random.seed(random_seed)
-    spec['meta']['random_seed'] = random_seed
-    return random_seed
+    loguru_logger.add(
+        log_filepath,
+        format=logger.LOG_FORMAT,
+        level='INFO',
+        backtrace=True,
+        diagnose=True
+    )
 
 
 def _sizeof(obj, seen=None):
@@ -516,43 +443,6 @@ def smart_path(data_path, as_dir=False):
     return os.path.normpath(data_path)
 
 
-def split_minibatch(batch, mb_size):
-    '''Split a batch into minibatches of mb_size or smaller, without replacement'''
-    size = len(batch['rewards'])
-    assert mb_size < size, f'Minibatch size {mb_size} must be < batch size {size}'
-    idxs = np.arange(size)
-    np.random.shuffle(idxs)
-    chunks = int(size / mb_size)
-    nested_idxs = np.array_split(idxs[:chunks * mb_size], chunks)
-    if size % mb_size != 0:  # append leftover from split
-        nested_idxs += [idxs[chunks * mb_size:]]
-    mini_batches = []
-    for minibatch_idxs in nested_idxs:
-        minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
-        mini_batches.append(minibatch)
-    return mini_batches
-
-
-def to_json(d, indent=2):
-    '''Shorthand method for stringify JSON with indent'''
-    return json.dumps(d, indent=indent, cls=LabJsonEncoder)
-
-
-def to_render():
-    return os.environ.get('RENDER', 'false') == 'true' or (get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true')
-
-
-def to_torch_batch(batch, device, is_episodic):
-    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    for k in batch:
-        if is_episodic:  # for episodic format
-            batch[k] = np.concatenate(batch[k])
-        elif ps.is_list(batch[k]):
-            batch[k] = np.array(batch[k])
-        batch[k] = torch.from_numpy(batch[k].astype(np.float32)).to(device)
-    return batch
-
-
 def write(data, data_path):
     '''
     Universal data writing method with smart data parsing
@@ -580,8 +470,6 @@ def write(data, data_path):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         write_as_df(data, data_path)
-    elif ext == '.pkl':
-        write_as_pickle(data, data_path)
     else:
         write_as_plain(data, data_path)
     return data_path
@@ -594,11 +482,6 @@ def write_as_df(data, data_path):
     return data_path
 
 
-def write_as_pickle(data, data_path):
-    '''Submethod to write data as pickle'''
-    with open(data_path, 'wb') as f:
-        pickle.dump(data, f)
-    return data_path
 
 
 def write_as_plain(data, data_path):
@@ -606,7 +489,12 @@ def write_as_plain(data, data_path):
     open_file = open(data_path, 'w')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        json.dump(data, open_file, indent=2, cls=LabJsonEncoder)
+        try:
+            from slm_lab.lib.ml_util import LabJsonEncoder
+            json.dump(data, open_file, indent=2, cls=LabJsonEncoder)
+        except ImportError:
+            # Fallback for minimal install (no numpy)
+            json.dump(data, open_file, indent=2)
     elif ext == '.yml':
         yaml.dump(data, open_file)
     else:
@@ -615,64 +503,30 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-# Atari image preprocessing
-
-
-def to_opencv_image(im):
-    '''Convert to OpenCV image shape h,w,c'''
-    shape = im.shape
-    if len(shape) == 3 and shape[0] < shape[-1]:
-        return im.transpose(1, 2, 0)
-    else:
-        return im
-
-
-def to_pytorch_image(im):
-    '''Convert to PyTorch image shape c,h,w'''
-    shape = im.shape
-    if len(shape) == 3 and shape[-1] < shape[0]:
-        return im.transpose(2, 0, 1)
-    else:
-        return im
-
-
-def grayscale_image(im):
-    return cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
-
-
-def resize_image(im, w_h):
-    return cv2.resize(im, w_h, interpolation=cv2.INTER_AREA)
-
-
-def normalize_image(im):
-    '''Normalizing image by dividing max value 255'''
-    # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
-    return np.divide(im, 255.0)
-
-
-def preprocess_image(im, w_h=(84, 84)):
-    '''
-    Image preprocessing using OpenAI Baselines method: grayscale, resize
-    This resize uses stretching instead of cropping
-    '''
-    im = to_opencv_image(im)
-    im = grayscale_image(im)
-    im = resize_image(im, w_h)
-    im = np.expand_dims(im, 0)
-    return im
-
-
-def debug_image(im):
-    '''
-    Renders an image for debugging; pauses process until key press
-    Handles tensor/numpy and conventions among libraries
-    '''
-    if torch.is_tensor(im):  # if PyTorch tensor, get numpy
-        im = im.cpu().numpy()
-    im = to_opencv_image(im)
-    im = im.astype(np.uint8)  # typecast guard
-    if im.shape[0] == 3:  # RGB image
-        # accommodate from RGB (numpy) to BGR (cv2)
-        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-    cv2.imshow('debug image', im)
-    cv2.waitKey(0)
+# Re-export ML utilities for backward compatibility
+# These are only available when ML dependencies (torch, numpy, cv2) are installed
+try:
+    from slm_lab.lib.ml_util import (
+        NUM_CPUS,
+        LabJsonEncoder,
+        batch_get,
+        concat_batches,
+        debug_image,
+        epi_done,
+        get_class_attr,
+        grayscale_image,
+        normalize_image,
+        parallelize,
+        preprocess_image,
+        resize_image,
+        set_cuda_id,
+        set_random_seed,
+        split_minibatch,
+        to_json,
+        to_opencv_image,
+        to_pytorch_image,
+        to_torch_batch,
+        use_gpu,
+    )
+except ImportError:
+    pass  # ML deps not available (minimal install mode)

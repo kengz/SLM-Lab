@@ -1,9 +1,11 @@
 # System
 .DS_Store
+.gitattributes
 
 # IDEs
 .idea/
 .vscode
+.serena
 
 # Python
 __pycache__/
@@ -24,14 +26,17 @@ coverage.xml
 # NodeJS
 node_modules/
 
-# VizDoom
-*.ini
 
 # Data files
-data/
+data
 model/
+hf_data/
+
 nb.py
 *.html
 *.log
 *.meta
 SLM-Env
+.venv/
+.ruff_cache/
+temp_check/

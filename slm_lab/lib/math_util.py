@@ -59,39 +59,52 @@ def venv_unpack(batch_tensor):
 # Policy Gradient calc
 # advantage functions
 
-def calc_returns(rewards, dones, gamma):
+def calc_returns(rewards, terminateds, gamma):
     '''
     Calculate the simple returns (full rollout) i.e. sum discounted rewards up till termination
+
+    IMPORTANT: Use 'terminateds' not 'dones' for correct return calculation.
+    When truncated (time limit), we should bootstrap from V(next_state), not zero it.
+    Only zero out future returns on true episode termination.
     '''
     T = len(rewards)
     rets = torch.zeros_like(rewards)
     future_ret = torch.tensor(0.0, dtype=rewards.dtype)
-    not_dones = 1 - dones
+    not_terminateds = 1 - terminateds
     for t in reversed(range(T)):
-        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_dones[t]
+        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_terminateds[t]
     return rets
 
 
-def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
+def calc_nstep_returns(rewards, terminateds, next_v_pred, gamma, n):
     '''
     Estimate the advantages using n-step returns. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
     R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
+
+    IMPORTANT: Use 'terminateds' not 'dones' for correct n-step return calculation.
+    When truncated (time limit), we should bootstrap from V(next_state), not zero it.
+    Only zero out future returns on true episode termination.
     '''
     rets = torch.zeros_like(rewards)
     future_ret = next_v_pred
-    not_dones = 1 - dones
+    not_terminateds = 1 - terminateds
     for t in reversed(range(n)):
-        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_dones[t]
+        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_terminateds[t]
     return rets
 
 
-def calc_gaes(rewards, dones, v_preds, gamma, lam):
+def calc_gaes(rewards, terminateds, v_preds, gamma, lam):
     '''
     Estimate the advantages using GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
     v_preds are values predicted for current states, with one last element as the final next_state
     delta is defined as r + gamma * V(s') - V(s) in eqn 10
     GAE is defined in eqn 16
+
+    IMPORTANT: Use 'terminateds' not 'dones' for correct GAE calculation.
+    When truncated (time limit), we should bootstrap from V(next_state), not zero it.
+    Only zero out future returns on true episode termination.
+
     This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
     NOTE any standardization is done outside of this method
     '''
@@ -99,11 +112,11 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     assert T + 1 == len(v_preds), f'T+1: {T+1} v.s. v_preds.shape: {v_preds.shape}'  # v_preds runs into t+1
     gaes = torch.zeros_like(rewards)
     future_gae = torch.tensor(0.0, dtype=rewards.dtype)
-    not_dones = 1 - dones  # to reset at episode boundary by multiplying 0
-    deltas = rewards + gamma * v_preds[1:] * not_dones - v_preds[:-1]
+    not_terminateds = 1 - terminateds  # only reset on true termination, not truncation
+    deltas = rewards + gamma * v_preds[1:] * not_terminateds - v_preds[:-1]
     coef = gamma * lam
     for t in reversed(range(T)):
-        gaes[t] = future_gae = deltas[t] + coef * not_dones[t] * future_gae
+        gaes[t] = future_gae = deltas[t] + coef * not_terminateds[t] * future_gae
     return gaes
 
 

@@ -1,6 +1,6 @@
 {
   "dqn_concat_lunar": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -9,13 +9,13 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.01,
+          "end_val": 0.039,
           "start_step": 0,
           "end_step": 50000
         },
-        "gamma": 0.99,
+        "gamma": 0.982,
         "training_batch_iter": 1,
-        "training_iter": 1,
+        "training_iter": 4,
         "training_frequency": 1,
         "training_start_step": 32
       },
@@ -27,41 +27,46 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 10.0,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1e-3
+          "name": "AdamW",
+          "lr": 0.000724
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 100,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+    },
+    "env": {
+      "name": "LunarLander-v3",
       "max_t": null,
       "max_frame": 300000,
-      "normalize_state": false
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "num_envs": 8
     },
     "meta": {
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch",
+      "max_trial": 12,
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
     },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.explore_var_spec.end_val__uniform": [0.01, 0.05],
+      "agent.net.optim_spec.lr__loguniform": [0.0003, 0.003],
+      "agent.net.update_frequency__qrandint": [50, 150, 25]
+    }
   }
 }

@@ -1,0 +1,24 @@
+# Large data directories
+data/
+hf_data/
+temp_check/
+
+# Build artifacts
+htmlcov/
+coverage.xml
+.venv/
+.cache/
+__pycache__/
+*.pyc
+
+# Tests not needed for remote training
+test/
+
+# Docs (images and large md files)
+docs/plots/
+docs/*.png
+CLAUDE.md
+
+# IDE
+.idea/
+.vscode/

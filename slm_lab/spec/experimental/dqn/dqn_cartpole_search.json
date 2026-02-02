@@ -1,6 +1,6 @@
 {
   "dqn_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -11,7 +11,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 1000,
+          "end_step": 1000
         },
         "gamma": 0.99,
         "training_batch_iter": 8,
@@ -27,31 +27,28 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.01
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 32,
         "polyak_coef": 0.1,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -60,17 +57,28 @@
       "max_trial": 32
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.50, 1.0],
-          "training_iter__randint": [1, 10]
+          "gamma__uniform": [
+            0.5,
+            1.0
+          ],
+          "training_iter__randint": [
+            1,
+            10
+          ]
         },
         "net": {
           "optim_spec": {
-            "lr__choice": [0.0001, 0.001, 0.01, 0.1]
+            "lr__choice": [
+              0.0001,
+              0.001,
+              0.01,
+              0.1
+            ]
           }
         }
-      }]
+      }
     }
   }
 }

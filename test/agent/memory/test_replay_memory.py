@@ -43,15 +43,15 @@ class TestMemory:
         memory.reset()
         experiences = test_memory[2]
         exp = experiences[0]
-        memory.add_experience(*exp)
+        memory.add_experience(**exp)
         assert memory.size == 1
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
-        assert np.array_equal(memory.states[memory.head], exp[0])
-        assert memory.actions[memory.head] == exp[1]
-        assert memory.rewards[memory.head] == exp[2]
-        assert np.array_equal(memory.ns_buffer[0], exp[3])
-        assert memory.dones[memory.head] == exp[4]
+        assert np.array_equal(memory.states[memory.head], exp['state'])
+        assert memory.actions[memory.head] == exp['action']
+        assert memory.rewards[memory.head] == exp['reward']
+        assert np.array_equal(memory.ns_buffer[0], exp['next_state'])
+        assert memory.dones[memory.head] == exp['done']
 
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
@@ -60,7 +60,7 @@ class TestMemory:
         experiences = test_memory[2]
         num_added = 0
         for e in experiences:
-            memory.add_experience(*e)
+            memory.add_experience(**e)
             num_added += 1
             assert memory.size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
@@ -72,13 +72,13 @@ class TestMemory:
         batch_size = test_memory[1]
         experiences = test_memory[2]
         for e in experiences:
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         memory.batch_size = batch_size
         batch = memory.sample()
-        assert batch['states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['states'].shape == (batch_size, memory.agent.state_dim)
         assert batch['actions'].shape == (batch_size,)
         assert batch['rewards'].shape == (batch_size,)
-        assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['next_states'].shape == (batch_size, memory.agent.state_dim)
         assert batch['dones'].shape == (batch_size,)
 
     @flaky(max_runs=10)
@@ -89,7 +89,7 @@ class TestMemory:
         batch_size = test_memory[1]
         experiences = test_memory[2]
         for e in experiences:
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         memory.batch_size = batch_size
         _batch = memory.sample()
         old_idx = deepcopy(memory.batch_idxs).tolist()
@@ -103,7 +103,7 @@ class TestMemory:
         memory = test_memory[0]
         experiences = test_memory[2]
         for e in experiences:
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         idxs = np.arange(memory.size)  # for any self.head
         next_states = sample_next_states(memory.head, memory.max_size, memory.ns_idx_offset, idxs, memory.states, memory.ns_buffer)
         # check self.head actually samples from ns_buffer
@@ -116,7 +116,7 @@ class TestMemory:
         experiences = test_memory[2]
         for i in range(2):
             e = experiences[i]
-            memory.add_experience(*e)
+            memory.add_experience(**e)
         memory.reset()
         assert memory.head == -1
         assert memory.size == 0

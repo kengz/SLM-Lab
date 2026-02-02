@@ -22,8 +22,6 @@
 # NodeJS
 **/node_modules
 
-# VizDoom
-**/*.ini
 
 # Data files
 **/data
@@ -32,3 +30,9 @@
 **/*.html
 **/*.log
 **/*.meta
+
+# Large directories
+hf_data/
+.venv/
+.cache/
+temp_check/

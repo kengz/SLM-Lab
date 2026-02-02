@@ -1,0 +1,8 @@
+# dstack apply -f .dstack/data-volume.yml
+type: volume
+name: data-volume
+
+backend: gcp
+region: us-east1
+
+size: 40GB

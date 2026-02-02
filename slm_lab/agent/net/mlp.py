@@ -38,6 +38,10 @@ class MLPNet(Net, nn.Module):
         "polyak_coef": 0.9,
         "gpu": true
     }
+
+    For continuous actions, you can use state-independent log_std (CleanRL-style) by setting:
+        "log_std_init": 0.0  # initial value for log_std parameter
+    This creates a learnable nn.Parameter for log_std instead of a state-dependent network head.
     '''
 
     def __init__(self, net_spec, in_dim, out_dim):
@@ -55,6 +59,7 @@ class MLPNet(Net, nn.Module):
         update_frequency: how many total timesteps per update
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
+        log_std_init: if set, use state-independent log_std as nn.Parameter initialized to this value (CleanRL-style)
         '''
         nn.Module.__init__(self)
         super().__init__(net_spec, in_dim, out_dim)
@@ -70,6 +75,9 @@ class MLPNet(Net, nn.Module):
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
+            log_std_init=None,  # State-independent log_std (CleanRL-style) if set
+            actor_init_std=None,  # CleanRL uses 0.01 for Atari
+            critic_init_std=None,  # CleanRL uses 1.0 for Atari
         ))
         util.set_attr(self, self.net_spec, [
             'shared',
@@ -85,39 +93,24 @@ class MLPNet(Net, nn.Module):
             'update_frequency',
             'polyak_coef',
             'gpu',
+            'log_std_init',
+            'actor_init_std',
+            'critic_init_std',
         ])
 
         dims = [self.in_dim] + self.hid_layers
         self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
-        # add last layer with no activation
-        # tails. avoid list for single-tail for compute speed
-        if ps.is_integer(self.out_dim):
-            self.model_tail = net_util.build_fc_model([dims[-1], self.out_dim], self.out_layer_activation)
-        else:
-            if not ps.is_list(self.out_layer_activation):
-                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
-            assert len(self.out_layer_activation) == len(self.out_dim)
-            tails = []
-            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
-                tail = net_util.build_fc_model([dims[-1], out_d], out_activ)
-                tails.append(tail)
-            self.model_tails = nn.ModuleList(tails)
+        self.tails, self.log_std = net_util.build_tails(dims[-1], self.out_dim, self.out_layer_activation, self.log_std_init)
 
         net_util.init_layers(self, self.init_fn)
+        net_util.init_tails(self, self.actor_init_std, self.critic_init_std)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)
         self.train()
 
     def forward(self, x):
         '''The feedforward step'''
-        x = self.model(x)
-        if hasattr(self, 'model_tails'):
-            outs = []
-            for model_tail in self.model_tails:
-                outs.append(model_tail(x))
-            return outs
-        else:
-            return self.model_tail(x)
+        return net_util.forward_tails(self.model(x), self.tails, self.log_std)
 
 
 class HydraMLPNet(Net, nn.Module):

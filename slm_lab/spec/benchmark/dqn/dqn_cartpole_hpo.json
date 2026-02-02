@@ -1,0 +1,113 @@
+{
+  "dqn_epsilon_greedy_cartpole_hpo": {
+    "agent": {
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 3000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 2,
+        "training_iter": 2,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 50000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          256
+        ],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.00015
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": null,
+      "max_frame": 200000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 25,
+      "search_scheduler": {
+        "grace_period": 40000,
+        "reduction_factor": 3
+      },
+      "log_frequency": 500
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [
+        0.95,
+        0.999
+      ],
+      "agent.algorithm.training_frequency__choice": [
+        2,
+        4,
+        8
+      ],
+      "agent.memory.batch_size__choice": [
+        32,
+        64,
+        128
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          128
+        ],
+        [
+          256
+        ],
+        [
+          512
+        ],
+        [
+          128,
+          64
+        ],
+        [
+          256,
+          128
+        ]
+      ],
+      "agent.net.optim_spec.lr__loguniform": [
+        5e-05,
+        0.001
+      ],
+      "agent.net.update_frequency__choice": [
+        50,
+        100,
+        200,
+        500
+      ],
+      "agent.net.clip_grad_val__uniform": [
+        0.5,
+        2.0
+      ]
+    }
+  }
+}

@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import deque
-from slm_lab.lib import logger, util
-import numpy as np
-import pydash as ps
+from slm_lab.lib import logger
 
 logger = logger.get_logger(__name__)
 
@@ -10,12 +7,12 @@ logger = logger.get_logger(__name__)
 class Memory(ABC):
     '''Abstract Memory class to define the API methods'''
 
-    def __init__(self, memory_spec, body):
+    def __init__(self, memory_spec, agent):
         '''
-        @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
+        @param {*} agent is the unit that stores its experience in this memory. Each agent has a distinct memory.
         '''
         self.memory_spec = memory_spec
-        self.body = body
+        self.agent = agent
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
 
@@ -25,7 +22,7 @@ class Memory(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state, action, reward, next_state, done, terminated, truncated):
         '''Implement memory update given the full info from the latest timestep. NOTE: guard for np.nan reward and done when individual env resets.'''
         raise NotImplementedError
 

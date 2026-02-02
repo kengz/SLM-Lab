@@ -1,6 +1,6 @@
 {
   "ddqn_per_concat_lunar": {
-    "agent": [{
+    "agent": {
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
@@ -15,7 +15,7 @@
         },
         "gamma": 0.99,
         "training_batch_iter": 1,
-        "training_iter": 1,
+        "training_iter": 4,
         "training_frequency": 1,
         "training_start_step": 32
       },
@@ -25,45 +25,40 @@
         "epsilon": 0.0001,
         "batch_size": 32,
         "max_size": 50000,
-        "use_cer": false,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 128],
+        "hid_layers": [
+          256,
+          128
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 10.0,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 2.5e-4
+          "name": "AdamW",
+          "lr": 0.00025
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 100,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 300000,
-      "normalize_state": false
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch",
-    },
+      "max_trial": 1
+    }
   }
 }

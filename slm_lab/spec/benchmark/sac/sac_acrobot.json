@@ -1,0 +1,65 @@
+{
+  "sac_acrobot": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "Categorical",
+        "action_policy": "default",
+        "gamma": 0.991,
+        "training_iter": 20,
+        "training_frequency": 30,
+        "training_start_step": 1000
+      },
+      "memory": {
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
+        "batch_size": 1024,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256],
+        "hid_layers_activation": "relu",
+        "init_fn": "xavier_uniform_",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "AdamW",
+          "lr": 0.00065
+        },
+        "update_type": "polyak",
+        "polyak_coef": 0.28,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "Acrobot-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 300000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 500,
+      "eval_frequency": 5000,
+      "max_session": 4,
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.training_frequency__qrandint": [20, 50, 10],
+      "agent.net.optim_spec.lr__loguniform": [0.0001, 0.001],
+      "agent.net.polyak_coef__loguniform": [0.05, 0.3]
+    }
+  }
+}

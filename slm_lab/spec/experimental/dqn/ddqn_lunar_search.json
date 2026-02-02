@@ -1,6 +1,6 @@
 {
   "ddqn_concat_lunar": {
-    "agent": [{
+    "agent": {
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
@@ -37,47 +37,52 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 0.9,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+    },
+    "env": {
+      "name": "LunarLander-v3",
       "max_t": null,
-      "max_frame": 300000,
-      "normalize_state": false
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 32,
-      "search": "RandomSearch",
+      "max_trial": 32
     },
     "search": {
-      "agent": [{
+      "agent": {
         "agent": {
-          "training_batch_iter__randint": [1, 5]
+          "training_batch_iter__randint": [
+            1,
+            5
+          ]
         },
         "net": {
-          "update_frequency__choice": [0.8, 0.9, 0.925, 0.95],
+          "update_frequency__choice": [
+            0.8,
+            0.9,
+            0.925,
+            0.95
+          ],
           "optim_spec": {
-            "lr__choice": [0.001, 0.003, 0.005, 0.007, 0.01]
+            "lr__choice": [
+              0.001,
+              0.003,
+              0.005,
+              0.007,
+              0.01
+            ]
           }
-        },
-      }]
+        }
+      }
     }
   }
 }

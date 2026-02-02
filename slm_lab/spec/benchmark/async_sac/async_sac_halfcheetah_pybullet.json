@@ -1,6 +1,6 @@
 {
   "async_sac_halfcheetah": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -17,7 +17,10 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [
+          256,
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 1.0,
@@ -26,24 +29,19 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4
+          "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
+    },
+    "env": {
       "name": "HalfCheetahBulletEnv-v0",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 4e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": "shared",
@@ -54,11 +52,21 @@
       "max_trial": 1
     },
     "search": {
-      "env": [{
-        "num_envs__grid_search": [4, 6, 8, 10]
-      }],
+      "env": {
+        "num_envs__choice": [
+          4,
+          6,
+          8,
+          10
+        ]
+      },
       "meta": {
-        "max_session__grid_search": [4, 6, 8, 10]
+        "max_session__choice": [
+          4,
+          6,
+          8,
+          10
+        ]
       }
     }
   }

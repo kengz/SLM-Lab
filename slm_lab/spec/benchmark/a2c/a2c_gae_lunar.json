@@ -1,6 +1,85 @@
 {
   "a2c_gae_lunar": {
-    "agent": [{
+    "agent": {
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.995,
+        "lam": 0.95,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.00001,
+          "end_val": 0.00001,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "training_frequency": 5
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [128, 128],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.00083
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.00083
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 300000
+        },
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 300000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 5000,
+      "max_session": 4,
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.99, 0.999],
+      "agent.algorithm.lam__uniform": [0.92, 0.98],
+      "agent.algorithm.training_frequency__qrandint": [5, 16, 1],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.000001, 0.0001],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.002],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0003, 0.002]
+    }
+  },
+  "a2c_gae_lunar_continuous": {
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -17,17 +96,17 @@
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 1.0,
-        "training_frequency": 128
+        "val_loss_coef": 0.5,
+        "training_frequency": 64
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64, 32],
-        "hid_layers_activation": "relu",
+        "hid_layers": [128, 128],
+        "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad_val": 0.5,
@@ -37,35 +116,45 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3,
+          "lr": 0.0007
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3,
+          "lr": 0.001
         },
-        "lr_scheduler_spec": null,
-        "gpu": false
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 300000
+        },
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "max_t": null,
-      "max_frame": 300000,
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "continuous": true,
       "num_envs": 8,
-      "normalize_state": false
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_t": null,
+      "max_frame": 300000
     },
     "meta": {
       "distributed": false,
       "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "eval_frequency": 5000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 8,
+      "search_resources": {"cpu": 1, "gpu": 0.125},
+      "search_scheduler": {
+        "grace_period": 50000,
+        "reduction_factor": 3
+      }
+    },
+    "search": {
+      "agent.algorithm.gamma__uniform": [0.98, 0.999],
+      "agent.algorithm.lam__uniform": [0.92, 0.98],
+      "agent.algorithm.training_frequency__qrandint": [32, 128, 16],
+      "agent.algorithm.entropy_coef_spec.start_val__loguniform": [0.005, 0.02],
+      "agent.net.actor_optim_spec.lr__loguniform": [0.0003, 0.003],
+      "agent.net.critic_optim_spec.lr__loguniform": [0.0005, 0.003]
     }
-  },
+  }
 }

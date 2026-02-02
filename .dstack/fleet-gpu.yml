@@ -1,0 +1,10 @@
+type: fleet
+name: slm-lab
+
+# Matches run-gpu-train.yml resources; price set per-run
+nodes: 0..32
+idle_duration: 10m
+
+resources:
+  gpu: 1..
+  memory: 4GB..

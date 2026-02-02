@@ -1,0 +1,63 @@
+{
+  "ddqn_per_mountaincar": {
+    "agent": {
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 50000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 2,
+        "training_iter": 2,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
+        "batch_size": 32,
+        "max_size": 50000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0005
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 500000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 10000,
+      "max_session": 4,
+      "max_trial": 1,
+      "log_frequency": 500
+    }
+  }
+}

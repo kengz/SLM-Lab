@@ -1,6 +1,6 @@
 {
   "vanilla_dqn_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
@@ -11,7 +11,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 1000,
+          "end_step": 1000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -27,64 +27,78 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
           }
         },
         "net": {
           "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      }]
+      }
     }
   },
   "vanilla_dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
@@ -95,7 +109,7 @@
           "start_val": 5.0,
           "end_val": 0.5,
           "start_step": 0,
-          "end_step": 1000,
+          "end_step": 1000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -111,64 +125,78 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 50000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000.0
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
           }
         },
         "net": {
           "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      }]
+      }
     }
   },
   "dqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -179,7 +207,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -195,60 +223,62 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
         },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 100,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 100
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 2,
-      "max_trial": 16,
-      "search": "RandomSearch"
+      "max_trial": 16
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.8, 0.999],
+          "gamma__uniform": [
+            0.8,
+            0.999
+          ]
         },
         "net": {
           "hid_layers__choice": [
-            [32],
-            [64],
-            [64, 32]
-          ],
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              64,
+              32
+            ]
+          ]
         }
-      }]
+      }
     }
   },
   "dqn_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -259,7 +289,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -275,67 +305,81 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
+        "hid_layers": [
+          32
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
         },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 250,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 250
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
           }
         },
         "net": {
           "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      }]
+      }
     }
   },
   "drqn_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DRQN",
       "algorithm": {
         "name": "DQN",
@@ -346,7 +390,7 @@
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -373,60 +417,72 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
         },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 250,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 250
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
           }
         },
         "net": {
           "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      }]
+      }
     }
   },
   "drqn_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "DRQN",
       "algorithm": {
         "name": "DQN",
@@ -437,7 +493,7 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 2000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -464,56 +520,68 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
         },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 250,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [
+              1000,
+              3000,
+              5000,
+              10000
+            ]
           }
         },
         "net": {
           "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
+            [
+              32
+            ],
+            [
+              64
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              64,
+              32
+            ]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": [
+            "sigmoid",
+            "relu",
+            "tanh"
+          ],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [
+              0.0001,
+              0.2
+            ]
           }
         }
-      }]
+      }
     }
-  },
+  }
 }

@@ -1,6 +1,6 @@
 {
   "a2c_gae_qbert": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -21,17 +21,37 @@
         "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
         "shared": true,
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [32, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            32,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [
+          512
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
@@ -43,32 +63,24 @@
         },
         "actor_optim_spec": {
           "name": "RMSprop",
-          "lr": 7e-4,
+          "lr": 0.0007,
           "alpha": 0.99,
-          "eps": 1e-5
+          "eps": 1e-05
         },
         "critic_optim_spec": {
           "name": "RMSprop",
-          "lr": 7e-4,
+          "lr": 0.0007,
           "alpha": 0.99,
-          "eps": 1e-5
+          "eps": 1e-05
         },
-        "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+    },
+    "env": {
+      "name": "ALE/Qbert-v5",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -76,7 +88,7 @@
       "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }

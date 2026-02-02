@@ -1,6 +1,6 @@
 {
   "sarsa_epsilon_greedy_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
@@ -21,7 +21,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -30,18 +32,13 @@
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": null
+        }
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 80000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -51,7 +48,7 @@
     }
   },
   "sarsa_boltzmann_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
@@ -72,7 +69,9 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": 0.5,
         "loss_spec": {
@@ -81,18 +80,13 @@
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.01
-        },
-        "lr_scheduler_spec": null
+        }
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
       "max_frame": 80000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,

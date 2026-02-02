@@ -1,0 +1,248 @@
+{
+  "dqn_cartpole_single": {
+    "agent": {
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 1000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          64
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": null,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "AdamW",
+          "lr": 0.01
+        },
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 1,
+      "max_t": null,
+      "max_frame": 10000.0
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "max_session": 2,
+      "max_trial": 1
+    }
+  },
+  "dqn_cartpole_vector": {
+    "agent": {
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 1000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          64
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": null,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "AdamW",
+          "lr": 0.01
+        },
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 2,
+      "max_t": null,
+      "max_frame": 10000.0
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "max_session": 2,
+      "max_trial": 1
+    }
+  },
+  "dqn_lunar_single": {
+    "agent": {
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 2000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          64
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": null,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "AdamW",
+          "lr": 0.005
+        },
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "num_envs": 1,
+      "max_t": null,
+      "max_frame": 10000.0
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "max_session": 2,
+      "max_trial": 1
+    }
+  },
+  "dqn_lunar_vector": {
+    "agent": {
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 2000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 1,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          64
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": null,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "AdamW",
+          "lr": 0.005
+        },
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "num_envs": 2,
+      "max_t": null,
+      "max_frame": 10000.0
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "max_session": 2,
+      "max_trial": 1
+    }
+  }
+}

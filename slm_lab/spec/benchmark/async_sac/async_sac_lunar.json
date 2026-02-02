@@ -1,6 +1,6 @@
 {
   "async_sac_lunar": {
-    "agent": [{
+    "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
@@ -17,7 +17,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64, 64, 32],
+        "hid_layers": [
+          64,
+          64,
+          32
+        ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -26,42 +30,44 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-3,
+          "lr": 0.001
         },
-        "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.005,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+    },
+    "env": {
+      "name": "LunarLander-v3",
       "max_t": null,
-      "max_frame": 8e5,
-      "num_envs": 8,
-      "normalize_state": false
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 800000.0,
+      "num_envs": 8
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 500,
+      "log_frequency": 1000,
       "eval_frequency": 500,
       "rigorous_eval": 0,
       "max_session": 6,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
-      "env": [{
-        "num_envs__grid_search": [4, 6, 8, 10]
-      }],
+      "env": {
+        "num_envs__choice": [
+          4,
+          6,
+          8,
+          10
+        ]
+      },
       "meta": {
-        "max_session__grid_search": [4, 6, 8, 10]
+        "max_session__choice": [
+          4,
+          6,
+          8,
+          10
+        ]
       }
     }
   }

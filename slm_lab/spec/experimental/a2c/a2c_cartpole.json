@@ -1,6 +1,6 @@
 {
   "a2c_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -15,11 +15,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -27,61 +27,65 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      }]
+      }
     }
   },
   "a2c_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -96,11 +100,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -108,61 +112,65 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      }]
+      }
     }
   },
   "a2c_concat_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -177,11 +185,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -189,63 +197,65 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "frame_op": "concat",
-      "frame_op_len": 4,
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      }]
+      }
     }
   },
   "a2c_rnn_shared_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -260,11 +270,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -281,56 +291,58 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      }]
+      }
     }
   },
   "a2c_rnn_separate_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -345,11 +357,11 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
-          "end_step": 5000,
+          "end_step": 5000
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -366,52 +378,54 @@
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "max_t": null,
-      "max_frame": 500,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 500
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
+      "max_trial": 100
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
+          "gamma__uniform": [
+            0.9,
+            0.99
+          ],
+          "lam__uniform": [
+            0.1,
+            1.0
+          ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [
+              0.0001,
+              0.1
+            ]
           }
         }
-      }]
+      }
     }
   }
 }

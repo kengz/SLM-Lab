@@ -1,0 +1,55 @@
+{
+  "sac_pendulum": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "Normal",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_iter": 4,
+        "training_frequency": 1,
+        "training_start_step": 256
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          256,
+          256
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": "xavier_uniform_",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0003
+        },
+        "update_type": "polyak",
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "Pendulum-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 300000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 500,
+      "eval_frequency": 5000,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  }
+}

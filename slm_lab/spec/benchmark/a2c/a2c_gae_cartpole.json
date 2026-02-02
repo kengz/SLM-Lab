@@ -1,6 +1,6 @@
 {
   "a2c_gae_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
@@ -11,76 +11,83 @@
         "lam": 0.95,
         "num_step_returns": null,
         "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.001,
-          "end_val": 0.001,
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.0,
           "start_step": 0,
-          "end_step": 0
+          "end_step": 200000
         },
         "val_loss_coef": 0.5,
         "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
-        "hid_layers_activation": "selu",
-        "init_fn": null,
+        "hid_layers": [
+          64,
+          64
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
         "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
-        "use_same_optim": true,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "RMSprop",
-          "lr": 5e-3,
-          "alpha": 0.99,
-          "eps": 1e-5
+          "name": "Adam",
+          "lr": 0.001
         },
         "critic_optim_spec": {
-          "name": "RMSprop",
-          "lr": 5e-3,
-          "alpha": 0.99,
-          "eps": 1e-5
+          "name": "Adam",
+          "lr": 0.003
         },
-        "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
       "num_envs": 4,
       "max_t": null,
-      "max_frame": 30000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 200000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 500,
+      "eval_frequency": 1000,
       "log_frequency": 500,
       "max_session": 4,
       "max_trial": 1
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "lam__grid_search": [0.7, 0.8, 0.9, 0.95],
-          "training_frequency__grid_search": [16, 32]
+          "lam__choice": [
+            0.7,
+            0.8,
+            0.9,
+            0.95
+          ],
+          "training_frequency__choice": [
+            16,
+            32
+          ]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__grid_search": [5e-2, 1e-2, 5e-3, 1e-3]
+            "lr__choice": [
+              0.05,
+              0.01,
+              0.005,
+              0.001
+            ]
           }
         }
-      }]
-    },
-  },
+      }
+    }
+  }
 }

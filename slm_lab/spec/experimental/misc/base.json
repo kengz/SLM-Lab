@@ -1,6 +1,6 @@
 {
-  "base_case_unity": {
-    "agent": [{
+  "base_case_gymnasium": {
+    "agent": {
       "name": "BaseDemo",
       "algorithm": {
         "name": "Random"
@@ -9,43 +9,21 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "gridworld",
-      "max_t": 20,
-      "max_frame": 3,
-      "unity": {
-        "gridSize": 6,
-        "numObstacles": 2,
-        "numGoals": 1
-      }
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": 500,
+      "max_frame": 10000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch",
-    },
-    "search": {
-      "agent": [{
-        "memory": {
-          "max_size_choice": [1000, 10000]
-        }
-      }],
-      "env": [{
-        "unity": {
-          "gridSize__grid_search": [6, 9]
-        }
-      }]
+      "max_trial": 1
     }
   },
-  "base_case_openai": {
-    "agent": [{
+  "base_vector_env": {
+    "agent": {
       "name": "BaseDemo",
       "algorithm": {
         "name": "Random"
@@ -54,26 +32,22 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
+      "max_t": 500,
+      "max_frame": 2000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   },
-  "base_memory": {
-    "agent": [{
+  "base_replay_memory": {
+    "agent": {
       "name": "BaseMemory",
       "algorithm": {
         "name": "Random",
@@ -82,30 +56,25 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 5,
+        "max_size": 10000,
         "use_cer": false
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": 10,
-      "max_frame": 1,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": 500,
+      "max_frame": 5000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   },
-  "base_on_policy_memory": {
-    "agent": [{
+  "base_onpolicy_memory": {
+    "agent": {
       "name": "BaseOnPolicyMemory",
       "algorithm": {
         "name": "Random",
@@ -115,89 +84,73 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": 10,
-      "max_frame": 1,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": 500,
+      "max_frame": 5000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   },
-  "base_on_policy_batch_memory": {
-    "agent": [{
+  "base_onpolicy_batch_memory": {
+    "agent": {
       "name": "BaseOnPolicyMemory",
       "algorithm": {
         "name": "Random",
-        "training_frequency": 4
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": 10,
-      "max_frame": 1,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": 500,
+      "max_frame": 5000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   },
   "base_prioritized_replay_memory": {
-    "agent": [{
+    "agent": {
       "name": "BaseMemory",
       "algorithm": {
         "name": "Random"
       },
       "memory": {
         "name": "PrioritizedReplay",
-        "alpha": 1,
-        "epsilon": 0,
+        "alpha": 1.0,
+        "epsilon": 0.0,
         "batch_size": 4,
-        "max_size": 4,
+        "max_size": 10000,
         "use_cer": false
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": 10,
-      "max_frame": 1,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "max_t": 500,
+      "max_frame": 5000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "max_trial": 1
     }
   },
-  "multi_body": {
-    "agent": [{
+  "base_atari_env": {
+    "agent": {
       "name": "BaseDemo",
       "algorithm": {
         "name": "Random"
@@ -206,26 +159,21 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }],
-    "env": [{
-      "name": "3dball",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 12
+    },
+    "env": {
+      "name": "ALE/Pong-v5",
+      "max_t": 10000,
+      "max_frame": 50000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 10000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   },
-  "multi_agent": {
-    "agent": [{
+  "base_continuous_env": {
+    "agent": {
       "name": "BaseDemo",
       "algorithm": {
         "name": "Random"
@@ -234,232 +182,17 @@
         "name": "OnPolicyReplay"
       },
       "net": {}
-    }, {
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "tennis",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 6
+    },
+    "env": {
+      "name": "LunarLander-v3",
+      "max_t": 1000,
+      "max_frame": 10000
     },
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "multi_env": {
-    "agent": [{
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "gridworld",
-      "max_t": 20,
-      "max_frame": 3,
-    }, {
-      "name": "3dball",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "outer",
-      "num": [1, 12]
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "multi_agent_multi_env": {
-    "agent": [{
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }, {
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "tennis",
-      "max_t": 20,
-      "max_frame": 3,
-    }, {
-      "name": "tennis",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "outer",
-      "num": [1, 6]
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "general_outer": {
-    "agent": [{
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }, {
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "gridworld",
-      "max_t": 20,
-      "max_frame": 3,
-    }, {
-      "name": "3dball",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 2
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "general_inner": {
-    "agent": [{
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }, {
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "gridworld",
-      "max_t": 20,
-      "max_frame": 3,
-    }, {
-      "name": "3dball",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "inner",
-      "num": 2
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "general_custom": {
-    "agent": [{
-      "name": "BaseDemo",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {}
-    }],
-    "env": [{
-      "name": "gridworld",
-      "max_t": 20,
-      "max_frame": 3,
-    }, {
-      "name": "3dball",
-      "max_t": 20,
-      "max_frame": 3,
-    }],
-    "body": {
-      "product": "custom",
-      "num": [
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 1, 1],
-        [0, 1, 2],
-        [0, 1, 3],
-        [0, 1, 4],
-        [0, 1, 5],
-        [0, 1, 6],
-        [0, 1, 7],
-        [0, 1, 8],
-        [0, 1, 9],
-        [0, 1, 10],
-        [0, 1, 11]
-      ]
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 1
     }
   }
 }

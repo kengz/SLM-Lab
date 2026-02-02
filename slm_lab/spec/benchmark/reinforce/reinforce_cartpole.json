@@ -1,6 +1,6 @@
 {
   "reinforce_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
@@ -11,56 +11,65 @@
         "gamma": 0.99,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
+          "start_val": 0.001,
+          "end_val": 0.0,
           "start_step": 0,
-          "end_step": 20000,
+          "end_step": 200000
         },
-        "training_frequency": 1
+        "training_frequency": 512
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "selu",
-        "clip_grad_val": null,
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": null
+        }
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 100000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 200000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 2000,
+      "eval_frequency": 500,
       "max_session": 4,
       "max_trial": 1,
+      "log_frequency": 500
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "gamma__grid_search": [0.1, 0.5, 0.7, 0.8, 0.90, 0.99, 0.999]
+          "gamma__choice": [
+            0.1,
+            0.5,
+            0.7,
+            0.8,
+            0.9,
+            0.99,
+            0.999
+          ]
         }
-      }]
+      }
     }
   },
   "reinforce_baseline_cartpole": {
-    "agent": [{
+    "agent": {
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
@@ -74,49 +83,295 @@
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 0,
-          "end_step": 20000,
+          "end_step": 20000
         },
-        "training_frequency": 1
+        "training_frequency": 128
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          64
+        ],
         "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "AdamW",
           "lr": 0.002
-        },
-        "lr_scheduler_spec": null
+        }
       }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
       "max_t": null,
-      "max_frame": 100000,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
+      "max_frame": 150000
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 2000,
+      "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     },
     "search": {
-      "agent": [{
+      "agent": {
         "algorithm": {
-          "center_return__grid_search": [true, false]
+          "center_return__choice": [
+            true,
+            false
+          ]
         }
-      }]
+      }
+    }
+  },
+  "reinforce_cartpole_extended": {
+    "agent": {
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "center_return": true,
+        "explore_var_spec": null,
+        "gamma": 0.96,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.005,
+          "end_val": 0.0,
+          "start_step": 0,
+          "end_step": 250000
+        },
+        "training_frequency": 256
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0017
+        }
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 250000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "reinforce_cartpole_boosted": {
+    "agent": {
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "center_return": true,
+        "explore_var_spec": null,
+        "gamma": 0.965,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.006,
+          "end_val": 0.0,
+          "start_step": 0,
+          "end_step": 150000
+        },
+        "training_frequency": 256
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          256,
+          256
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0015
+        }
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 200000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "reinforce_cartpole_asha_best": {
+    "agent": {
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "center_return": true,
+        "explore_var_spec": null,
+        "gamma": 0.9791,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.000658,
+          "end_val": 0.0,
+          "start_step": 0,
+          "end_step": 200000
+        },
+        "training_frequency": 512
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          128,
+          128
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.00196
+        }
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 200000
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_session": 8,
+      "max_trial": 1
+    }
+  },
+  "reinforce_cartpole_mega_search": {
+    "agent": {
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "center_return": true,
+        "explore_var_spec": null,
+        "gamma": 0.97,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.003,
+          "end_val": 0.0,
+          "start_step": 0,
+          "end_step": 120000
+        },
+        "training_frequency": 256
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          256,
+          256
+        ],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002
+        }
+      }
+    },
+    "env": {
+      "name": "CartPole-v1",
+      "num_envs": 4,
+      "max_t": null,
+      "max_frame": 200000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 2000,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 12
+    },
+    "search": {
+      "agent.algorithm.gamma__choice": [
+        0.96,
+        0.97,
+        0.98
+      ],
+      "agent.net.hid_layers__choice": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          128
+        ],
+        [
+          128,
+          128,
+          128
+        ]
+      ],
+      "agent.net.optim_spec.lr__choice": [
+        0.0015,
+        0.002,
+        0.0025
+      ],
+      "agent.algorithm.entropy_coef_spec.start_val__choice": [
+        0.002,
+        0.003,
+        0.004
+      ]
     }
   }
 }

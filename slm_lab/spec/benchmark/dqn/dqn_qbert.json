@@ -1,6 +1,6 @@
 {
   "dqn_qbert": {
-    "agent": [{
+    "agent": {
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
@@ -28,11 +28,31 @@
       "net": {
         "type": "ConvNet",
         "conv_hid_layers": [
-          [32, 8, 4, 0, 1],
-          [64, 4, 2, 0, 1],
-          [64, 3, 1, 0, 1]
+          [
+            32,
+            8,
+            4,
+            0,
+            1
+          ],
+          [
+            64,
+            4,
+            2,
+            0,
+            1
+          ],
+          [
+            64,
+            3,
+            1,
+            0,
+            1
+          ]
         ],
-        "fc_hid_layers": [256],
+        "fc_hid_layers": [
+          256
+        ],
         "hid_layers_activation": "relu",
         "init_fn": null,
         "batch_norm": false,
@@ -41,27 +61,19 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1e-4,
+          "name": "AdamW",
+          "lr": 0.0001
         },
-        "lr_scheduler_spec": null,
         "update_type": "replace",
         "update_frequency": 1000,
-        "gpu": true
+        "gpu": "auto"
       }
-    }],
-    "env": [{
-      "name": "QbertNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
+    },
+    "env": {
+      "name": "ALE/Qbert-v5",
       "num_envs": 16,
       "max_t": null,
       "max_frame": 4e6
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
     },
     "meta": {
       "distributed": false,
@@ -69,7 +81,7 @@
       "log_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1,
+      "max_trial": 1
     }
   }
 }
