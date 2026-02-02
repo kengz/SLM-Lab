@@ -175,20 +175,18 @@ All algorithms use `terminated` (not `done`) for correct bootstrapping.
 
 ## Benchmarks
 
-All algorithms validated on gymnasium. Full results in `docs/BENCHMARKS.md`.
+All algorithms validated on Gymnasium. Full results in `docs/BENCHMARKS.md`.
 
-| Category | PPO | DQN | SAC |
-|----------|-----|-----|-----|
-| Classic Control | ✅ | ✅ | ✅ |
-| Box2D | ✅ | ✅ | ✅ |
-| MuJoCo (11 envs) | ✅ All | — | ✅ All |
-| Atari | 24 solved (≥95%) | TODO | TODO |
+| Category | REINFORCE | SARSA | DQN | DDQN+PER | A2C | PPO | SAC |
+|----------|-----------|-------|-----|----------|-----|-----|-----|
+| Classic Control | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Box2D | — | — | ✅ | ✅ | ⚠️ | ✅ | ✅ |
+| MuJoCo (11 envs) | — | — | — | — | ⚠️ | ✅ All | ✅ All |
+| Atari (54 games) | — | — | — | — | ✅ | ✅ | — |
 
-Selected scores: CartPole 499/400, Hopper 2914/2500, HalfCheetah 7410/5000, Humanoid 4860/700.
+**Atari benchmarks** use ALE v5 with sticky actions (`repeat_action_probability=0.25`). PPO tested with lambda variants (0.95, 0.85, 0.70) to optimize per-game performance. A2C uses GAE with lambda 0.95.
 
-*Atari benchmarking in progress—running full solve across all algorithms.*
-
-**Note on scores:** Gymnasium environment versions differ from old Gym—some are harder (CartPole-v1 has stricter termination than v0), some have different reward scales (MuJoCo v5 vs roboschool). Targets reference [CleanRL](https://docs.cleanrl.dev/) and [Stable-Baselines3](https://stable-baselines3.readthedocs.io/) gymnasium benchmarks, as well as v4 SLM-Lab results where applicable (Atari, classic control).
+**Note on scores:** Gymnasium environment versions differ from old Gym—some are harder (CartPole-v1 has stricter termination than v0), some have different reward scales (MuJoCo v5 vs roboschool). Targets reference [CleanRL](https://docs.cleanrl.dev/) and [Stable-Baselines3](https://stable-baselines3.readthedocs.io/) gymnasium benchmarks.
 
 ---
 

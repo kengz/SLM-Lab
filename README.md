@@ -1,6 +1,8 @@
 # [SLM Lab](https://www.amazon.com/dp/0135172381) <br> ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/kengz/slm-lab) ![CI](https://github.com/kengz/SLM-Lab/workflows/CI/badge.svg)
 
 <p align="center">
+  <i>Modular Deep Reinforcement Learning framework in PyTorch.</i>
+  <br>
   <i>Companion library of the book <a href="https://www.amazon.com/dp/0135172381">Foundations of Deep Reinforcement Learning</a>.</i>
   <br>
   <a href="https://slm-lab.gitbook.io/slm-lab/">Documentation</a> · <a href="https://github.com/kengz/SLM-Lab/blob/master/docs/BENCHMARKS.md">Benchmark Results</a>
@@ -20,6 +22,44 @@
 | Ant | HalfCheetah | Hopper | Humanoid |
 | ![sac doublependulum](https://user-images.githubusercontent.com/8209263/63994879-07c3c680-caab-11e9-974c-06cdd25bfd68.gif) | ![sac pendulum](https://user-images.githubusercontent.com/8209263/63994880-085c5d00-caab-11e9-850d-049401540e3b.gif) | ![sac reacher](https://user-images.githubusercontent.com/8209263/63994881-098d8a00-caab-11e9-8e19-a3b32d601b10.gif) | ![sac walker](https://user-images.githubusercontent.com/8209263/63994882-0abeb700-caab-11e9-9e19-b59dc5c43393.gif) |
 | Inv.DoublePendulum | InvertedPendulum | Reacher | Walker |
+
+SLM Lab is a software framework for **reinforcement learning** (RL) research and application in PyTorch. RL trains agents to make decisions by learning from trial and error—like teaching a robot to walk or an AI to play games.
+
+## What SLM Lab Offers
+
+| Feature | Description |
+|---------|-------------|
+| **Ready-to-use algorithms** | PPO, SAC, DQN, A2C, REINFORCE—validated on 70+ environments |
+| **Easy configuration** | JSON spec files fully define experiments—no code changes needed |
+| **Reproducibility** | Every run saves its spec + git SHA for exact reproduction |
+| **Automatic analysis** | Training curves, metrics, and TensorBoard logging out of the box |
+| **Cloud integration** | dstack for GPU training, HuggingFace for sharing results |
+
+## Algorithms
+
+| Algorithm | Type | Best For | Validated Environments |
+|-----------|------|----------|------------------------|
+| **REINFORCE** | On-policy | Learning/teaching | Classic |
+| **SARSA** | On-policy | Tabular-like | Classic |
+| **DQN/DDQN+PER** | Off-policy | Discrete actions | Classic, Box2D, Atari |
+| **A2C** | On-policy | Fast iteration | Classic, Box2D, Atari |
+| **PPO** | On-policy | General purpose | Classic, Box2D, MuJoCo (11), Atari (54) |
+| **SAC** | Off-policy | Continuous control | Classic, Box2D, MuJoCo |
+
+See [Benchmark Results](docs/BENCHMARKS.md) for detailed performance data.
+
+## Environments
+
+SLM Lab uses [Gymnasium](https://gymnasium.farama.org/) (the maintained fork of OpenAI Gym):
+
+| Category | Examples | Difficulty | Docs |
+|----------|----------|------------|------|
+| **Classic Control** | CartPole, Pendulum, Acrobot | Easy | [Gymnasium Classic](https://gymnasium.farama.org/environments/classic_control/) |
+| **Box2D** | LunarLander, BipedalWalker | Medium | [Gymnasium Box2D](https://gymnasium.farama.org/environments/box2d/) |
+| **MuJoCo** | Hopper, HalfCheetah, Humanoid | Hard | [Gymnasium MuJoCo](https://gymnasium.farama.org/environments/mujoco/) |
+| **Atari** | Breakout, MsPacman, and 54 more | Varied | [ALE](https://ale.farama.org/environments/) |
+
+Any gymnasium-compatible environment works—just specify its name in the spec.
 
 ## Quick Start
 
@@ -43,14 +83,6 @@ slm-lab run --help                             # options for run command
 # Troubleshoot: if slm-lab not found, use uv run
 uv run slm-lab run
 ```
-
-## Features
-
-- **Algorithms**: DQN, DDQN+PER, A2C, PPO, SAC and variants
-- **Environments**: Gymnasium (Atari, MuJoCo, Box2D)
-- **Networks**: MLP, ConvNet, RNN with flexible architectures
-- **Hyperparameter Search**: ASHA scheduler with Ray Tune
-- **Cloud Training**: dstack integration with auto HuggingFace sync
 
 ## Cloud Training (dstack)
 
@@ -85,3 +117,21 @@ uv run --no-default-groups slm-lab pull spec_name
 uv run --no-default-groups slm-lab plot -f folder1,folder2
 ```
 
+## Citation
+
+If you use SLM Lab in your research, please cite:
+
+```bibtex
+@misc{kenggraesser2017slmlab,
+    author = {Keng, Wah Loon and Graesser, Laura},
+    title = {SLM Lab},
+    year = {2017},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\url{https://github.com/kengz/SLM-Lab}},
+}
+```
+
+## License
+
+MIT
