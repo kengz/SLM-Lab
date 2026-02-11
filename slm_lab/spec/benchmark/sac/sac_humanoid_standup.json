@@ -6,22 +6,22 @@
                 "name": "SoftActorCritic",
                 "action_pdtype": "default",
                 "action_policy": "default",
-                "gamma": 0.99,
+                "gamma": 0.98,
                 "training_frequency": 1,
                 "training_iter": 16,
-                "training_start_step": 1000
+                "training_start_step": 10000
             },
             "memory": {
                 "name": "Replay",
                 "batch_size": 256,
-                "max_size": 1e6,
+                "max_size": 3e5,
                 "use_cer": false
             },
             "net": {
                 "type": "MLPNet",
                 "hid_layers": [
-                    256,
-                    256
+                    400,
+                    300
                 ],
                 "hid_layers_activation": "relu",
                 "init_fn": "orthogonal_",
@@ -31,11 +31,11 @@
                 },
                 "optim_spec": {
                     "name": "Adam",
-                    "lr": 3e-4
+                    "lr": 7.3e-4
                 },
                 "update_type": "polyak",
                 "update_frequency": 1,
-                "polyak_coef": 0.005,
+                "polyak_coef": 0.02,
                 "gpu": "auto"
             }
         },
@@ -43,7 +43,7 @@
             "name": "HumanoidStandup-v5",
             "num_envs": 16,
             "max_t": null,
-            "max_frame": 3e6
+            "max_frame": 1e6
         },
         "meta": {
             "distributed": false,

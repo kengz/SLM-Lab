@@ -1,5 +1,5 @@
 {
-  "sac_walker2d": {
+  "sac_mujoco": {
     "agent": {
       "name": "SoftActorCritic",
       "algorithm": {
@@ -8,8 +8,8 @@
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1,
-        "training_iter": 8,
-        "training_start_step": 10000
+        "training_iter": 4,
+        "training_start_step": 5000
       },
       "memory": {
         "name": "Replay",
@@ -19,10 +19,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          256,
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": null,
@@ -40,10 +37,10 @@
       }
     },
     "env": {
-      "name": "Walker2d-v5",
+      "name": "${env}",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 2000000
+      "max_frame": "${max_frame}"
     },
     "meta": {
       "distributed": false,

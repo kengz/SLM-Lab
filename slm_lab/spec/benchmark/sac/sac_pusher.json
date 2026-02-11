@@ -8,7 +8,7 @@
                 "action_policy": "default",
                 "gamma": 0.99,
                 "training_frequency": 1,
-                "training_iter": 16,
+                "training_iter": 4,
                 "training_start_step": 1000
             },
             "memory": {
@@ -43,7 +43,7 @@
             "name": "Pusher-v5",
             "num_envs": 16,
             "max_t": null,
-            "max_frame": 3e6
+            "max_frame": 1e6
         },
         "meta": {
             "distributed": false,

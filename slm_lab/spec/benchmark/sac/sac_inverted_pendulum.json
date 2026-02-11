@@ -8,8 +8,8 @@
                 "action_policy": "default",
                 "gamma": 0.99,
                 "training_frequency": 1,
-                "training_iter": 16,
-                "training_start_step": 1000
+                "training_iter": 4,
+                "training_start_step": 5000
             },
             "memory": {
                 "name": "Replay",
@@ -43,7 +43,7 @@
             "name": "InvertedPendulum-v5",
             "num_envs": 16,
             "max_t": null,
-            "max_frame": 3e6
+            "max_frame": 2000000
         },
         "meta": {
             "distributed": false,
