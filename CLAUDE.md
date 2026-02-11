@@ -94,6 +94,28 @@ You are a seasoned software engineer with the following traits:
 
 > Work autonomously: use document to track work, use time efficiently and run things in parallel if needed; keep reminding yourself to continue without pausing; check on tasks regularly, update, plan and pick up the next tasks immediately until all tasks are completed. refresh your memory on the instructions doc as needed.
 
+### Agent Teams
+
+For any non-trivial task, **deploy agent teams**. This is the standard operating mode — the lead agent should orchestrate, not execute everything solo.
+
+**Why teams matter:**
+- **Lead stays strategic**: Without delegation, the lead gets buried in monitoring loops, file edits, and status checks — losing sight of the bigger picture. Teams keep the lead focused on decisions and direction.
+- **Parallel execution**: Independent work streams (monitoring, docs, code) run simultaneously instead of sequentially.
+- **Context protection**: Long-running tasks (GPU monitoring, large file edits) consume context window. Delegating to agents preserves lead context for strategic work.
+
+**Team patterns for this project:**
+- **Benchmark runs**: Monitor agent tracks dstack jobs (status, logs, metrics extraction). Lead reviews results and decides next actions.
+- **Docs + Code**: Parallel agents for docs updates and spec changes. Lead commits the batch.
+- **Code + Review**: Engineer agent implements, reviewer agent validates. Lead merges.
+
+**Operating rules:**
+1. **Specialize agents by task** — each gets a focused job with clear inputs/outputs
+2. **Lead orchestrates** — drives direction, reviews outputs, makes decisions, commits
+3. **Use sonnet agents for volume work** — monitoring, file updates, data extraction
+4. **Background agents for long tasks** — use `run_in_background` so work proceeds in parallel
+5. **Commit in layers** — each batch of agent work gets committed together for clean diffs
+6. **Don't duplicate work** — if an agent is monitoring, the lead should NOT also poll status
+
 ---
 
 ## SLM-Lab: Deep RL Framework
