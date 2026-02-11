@@ -134,9 +134,9 @@ def set_random_seed(spec):
 def split_minibatch(batch, mb_size):
     '''Split a batch into minibatches of mb_size or smaller, without replacement'''
     size = len(batch['rewards'])
-    # If minibatch size >= batch size, just return the whole batch
+    # If minibatch size >= batch size, return a shallow copy to avoid mutation
     if mb_size >= size:
-        return [batch]
+        return [{k: v[np.arange(size)] for k, v in batch.items()}]
     idxs = np.arange(size)
     np.random.shuffle(idxs)
     chunks = int(size / mb_size)
