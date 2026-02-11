@@ -48,6 +48,8 @@ class TorchArcNet(Net, nn.Module):
             dict(
                 out_layer_activation=None,
                 init_fn=None,
+                shared=False,
+                hid_layers_activation="relu",
                 clip_grad_val=None,
                 loss_spec={"name": "MSELoss"},
                 optim_spec={"name": "Adam"},
@@ -67,6 +69,8 @@ class TorchArcNet(Net, nn.Module):
             [
                 "out_layer_activation",
                 "init_fn",
+                "shared",
+                "hid_layers_activation",
                 "clip_grad_val",
                 "loss_spec",
                 "optim_spec",
@@ -101,8 +105,7 @@ class TorchArcNet(Net, nn.Module):
             body_out_dim, self.out_dim, self.out_layer_activation, self.log_std_init
         )
 
-        # Skip init_layers for torcharc body (it has its own initialization)
-        # but still init tails for actor/critic heads
+        net_util.init_layers(self, self.init_fn)
         net_util.init_tails(self, self.actor_init_std, self.critic_init_std)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)

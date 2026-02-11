@@ -1,0 +1,127 @@
+# SARSA Classic Control - TorchArcNet specs
+# Covers: CartPole-v1 (epsilon_greedy, boltzmann, final variants)
+
+# -- Shared anchors --
+
+_sarsa_meta: &sarsa_meta
+  distributed: false
+  eval_frequency: 500
+  max_session: 4
+  max_trial: 1
+  log_frequency: 500
+
+_sarsa_algorithm: &sarsa_algorithm
+  name: SARSA
+  action_pdtype: Argmax
+  action_policy: epsilon_greedy
+  gamma: 0.99
+  training_frequency: 32
+
+_sarsa_net: &sarsa_net
+  type: TorchArcNet
+  arc:
+    modules:
+      body:
+        Sequential:
+          - LazyLinear: {out_features: 128}
+          - Tanh:
+    graph:
+      input: x
+      modules:
+        body: [x]
+      output: body
+  hid_layers_activation: tanh
+  clip_grad_val: 0.344
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: RMSprop
+    lr: 0.0087
+
+# -- Specs --
+
+sarsa_epsilon_greedy_cartpole_arc:
+  agent:
+    name: SARSA
+    algorithm:
+      <<: *sarsa_algorithm
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.055
+        start_step: 0
+        end_step: 10000
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *sarsa_net
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 200000
+  meta:
+    <<: *sarsa_meta
+
+sarsa_epsilon_greedy_cartpole_final_arc:
+  agent:
+    name: SARSA
+    algorithm:
+      <<: *sarsa_algorithm
+      gamma: 0.985
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.055
+        start_step: 0
+        end_step: 12000
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *sarsa_net
+      clip_grad_val: 0.35
+      optim_spec:
+        name: RMSprop
+        lr: 0.008
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 200000
+  meta:
+    <<: *sarsa_meta
+    log_frequency: 2000
+    max_trial: 12
+  search:
+    agent.algorithm.gamma__choice: [0.985, 0.99, 0.995]
+    agent.algorithm.explore_var_spec.end_val__choice: [0.055, 0.06]
+    agent.algorithm.explore_var_spec.end_step__choice: [10000, 12000, 15000]
+    agent.net.clip_grad_val__uniform: [0.32, 0.4]
+    agent.net.optim_spec.lr__uniform: [0.0065, 0.0095]
+
+sarsa_boltzmann_cartpole_arc:
+  agent:
+    name: SARSA
+    algorithm:
+      <<: *sarsa_algorithm
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.05
+        start_step: 0
+        end_step: 15000
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *sarsa_net
+      clip_grad_val: 0.35
+      optim_spec:
+        name: RMSprop
+        lr: 0.0087
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 200000
+  meta:
+    <<: *sarsa_meta

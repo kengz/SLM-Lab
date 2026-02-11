@@ -1,0 +1,248 @@
+# PPO Box2D - TorchArcNet specs
+# Covers: LunarLander-v3 (discrete), LunarLander-v3 (continuous), BipedalWalker-v3
+
+# -- Shared anchors --
+
+_ppo_box2d_algorithm: &ppo_box2d_algorithm
+  name: PPO
+  action_pdtype: default
+  action_policy: default
+  explore_var_spec: null
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec:
+    name: no_decay
+    start_val: 0.2
+    end_val: 0.2
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.0
+    end_val: 0.0
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  clip_val_loss: false
+  time_horizon: 512
+  minibatch_size: 256
+  training_epoch: 15
+
+_ppo_box2d_meta: &ppo_box2d_meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 1024
+  max_session: 4
+  max_trial: 16
+  search_scheduler:
+    grace_period: 50000
+    reduction_factor: 3
+
+# -- Specs --
+
+ppo_lunar_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_box2d_algorithm
+      gamma: 0.9914
+      lam: 0.9527
+      clip_eps_spec:
+        name: linear_decay
+        start_val: 0.236
+        end_val: 0.2
+        start_step: 0
+        end_step: 300000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.00001
+        end_val: 0.00001
+        start_step: 0
+        end_step: 0
+      val_loss_coef: 1.1395
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      shared: false
+      arc: &lunar_arc
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 128}
+              - Tanh:
+              - LazyLinear: {out_features: 128}
+              - Tanh:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: tanh
+      init_fn: orthogonal_
+      actor_init_std: 0.01
+      critic_init_std: 1.0
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.000565
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.00558
+      gpu: auto
+  env:
+    name: LunarLander-v3
+    max_t: null
+    max_frame: 300000
+    num_envs: 8
+  meta:
+    <<: *ppo_box2d_meta
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.lam__uniform: [0.9, 0.98]
+    agent.net.actor_optim_spec.lr__loguniform: [0.0001, 0.001]
+    agent.net.critic_optim_spec.lr__loguniform: [0.001, 0.01]
+
+ppo_lunar_continuous_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_box2d_algorithm
+      gamma: 0.9858
+      lam: 0.9758
+      clip_eps_spec:
+        name: linear_decay
+        start_val: 0.128
+        end_val: 0.2
+        start_step: 0
+        end_step: 300000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.0000127
+        end_val: 0.0000127
+        start_step: 0
+        end_step: 0
+      val_loss_coef: 1.452
+      time_horizon: 640
+      minibatch_size: 128
+      training_epoch: 8
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      shared: false
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 128}
+              - ReLU:
+              - LazyLinear: {out_features: 64}
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      actor_init_std: 0.01
+      critic_init_std: 1.0
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.000267
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.00134
+      gpu: auto
+  env:
+    name: LunarLander-v3
+    continuous: true
+    max_t: null
+    max_frame: 300000
+    num_envs: 8
+  meta:
+    <<: *ppo_box2d_meta
+  search:
+    agent.algorithm.gamma__uniform: [0.975, 0.99]
+    agent.algorithm.lam__uniform: [0.96, 0.98]
+    agent.net.actor_optim_spec.lr__loguniform: [0.0001, 0.0003]
+    agent.net.critic_optim_spec.lr__loguniform: [0.0005, 0.002]
+
+ppo_bipedalwalker_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_box2d_algorithm
+      gamma: 0.999
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.18
+        end_val: 0.18
+        start_step: 0
+        end_step: 0
+      time_horizon: 2048
+      minibatch_size: 64
+      training_epoch: 10
+      normalize_v_targets: true
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      shared: false
+      arc: &bipedal_arc
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - Tanh:
+              - LazyLinear: {out_features: 256}
+              - Tanh:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: tanh
+      init_fn: orthogonal_
+      actor_init_std: 0.01
+      critic_init_std: 1.0
+      clip_grad_val: 0.5
+      use_same_optim: true
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: AdamW
+        lr: 0.0003
+      gpu: auto
+  env:
+    name: BipedalWalker-v3
+    num_envs: 32
+    max_t: null
+    max_frame: 1.0e+6
+    normalize_obs: true
+    normalize_reward: true
+  meta:
+    distributed: false
+    log_frequency: 10000
+    eval_frequency: 10000
+    max_session: 4
+    max_trial: 12
+    search_resources:
+      cpu: 1
+      gpu: 0.125
+    search_scheduler:
+      grace_period: 500000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.995, 0.9999]
+    agent.algorithm.lam__uniform: [0.93, 0.97]
+    agent.net.optim_spec.lr__loguniform: [0.0002, 0.0005]

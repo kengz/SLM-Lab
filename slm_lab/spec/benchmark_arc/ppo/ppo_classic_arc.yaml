@@ -1,0 +1,192 @@
+# PPO Classic Control - TorchArcNet specs
+# Covers: CartPole-v1, Acrobot-v1, Pendulum-v1
+
+# -- Shared anchors --
+
+_ppo_classic_meta: &ppo_classic_meta
+  distributed: false
+  log_frequency: 500
+  eval_frequency: 500
+  max_session: 4
+  max_trial: 1
+
+_ppo_classic_net: &ppo_classic_net
+  type: TorchArcNet
+  shared: false
+  arc:
+    modules:
+      body:
+        Sequential:
+          - LazyLinear: {out_features: 64}
+          - Tanh:
+          - LazyLinear: {out_features: 64}
+          - Tanh:
+    graph:
+      input: x
+      modules:
+        body: [x]
+      output: body
+  hid_layers_activation: tanh
+  clip_grad_val: 0.5
+  use_same_optim: false
+  loss_spec:
+    name: MSELoss
+  gpu: auto
+
+_ppo_classic_algorithm: &ppo_classic_algorithm
+  name: PPO
+  action_pdtype: default
+  action_policy: default
+  explore_var_spec: null
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec:
+    name: no_decay
+    start_val: 0.2
+    end_val: 0.2
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.01
+    end_val: 0.01
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  clip_val_loss: false
+  time_horizon: 256
+  minibatch_size: 64
+  training_epoch: 10
+
+# -- Specs --
+
+ppo_cartpole_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_classic_algorithm
+      gamma: 0.9769
+      lam: 0.9112
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.1312
+        end_val: 0.1312
+        start_step: 0
+        end_step: 200000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.0074
+        end_val: 0.0074
+        start_step: 0
+        end_step: 200000
+      val_loss_coef: 0.6049
+      time_horizon: 256
+      minibatch_size: 128
+      training_epoch: 15
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_classic_net
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0005909
+      critic_optim_spec:
+        name: Adam
+        lr: 0.0006352
+  env:
+    name: CartPole-v1
+    max_t: null
+    max_frame: 200000
+    num_envs: 4
+  meta:
+    <<: *ppo_classic_meta
+    eval_frequency: 256
+
+ppo_acrobot_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_classic_algorithm
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_classic_net
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0003
+      critic_optim_spec:
+        name: Adam
+        lr: 0.001
+  env:
+    name: Acrobot-v1
+    max_t: null
+    max_frame: 300000
+    num_envs: 4
+  meta:
+    <<: *ppo_classic_meta
+
+ppo_pendulum_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_classic_algorithm
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.0
+        end_val: 0.0
+        start_step: 0
+        end_step: 0
+      time_horizon: 2048
+      minibatch_size: 64
+      training_epoch: 10
+      normalize_v_targets: true
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      shared: false
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - ReLU:
+              - LazyLinear: {out_features: 256}
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      actor_init_std: 0.01
+      critic_init_std: 1.0
+      clip_grad_val: 0.5
+      use_same_optim: true
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+      gpu: auto
+  env:
+    name: Pendulum-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 300000
+    normalize_obs: false
+    normalize_reward: false
+  meta:
+    <<: *ppo_classic_meta
+    rigorous_eval: 0
+    max_trial: 16
+    search_resources:
+      cpu: 1
+      gpu: 0.125
+    search_scheduler:
+      grace_period: 10000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.95, 0.995]
+    agent.net.optim_spec.lr__loguniform: [1.0e-4, 1.0e-3]

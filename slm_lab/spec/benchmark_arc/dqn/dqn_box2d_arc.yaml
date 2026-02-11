@@ -1,0 +1,180 @@
+# DQN Box2D - TorchArcNet specs
+# Covers: LunarLander-v3 (DQN, DDQN+PER), MountainCar-v0 (DDQN+PER)
+
+# -- Shared anchors --
+
+_dqn_box2d_meta: &dqn_box2d_meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 1000
+  max_session: 4
+  max_trial: 1
+
+_dqn_box2d_net: &dqn_box2d_net
+  type: TorchArcNet
+  arc:
+    modules:
+      body:
+        Sequential:
+          - LazyLinear: {out_features: 256}
+          - ReLU:
+          - LazyLinear: {out_features: 128}
+          - ReLU:
+    graph:
+      input: x
+      modules:
+        body: [x]
+      output: body
+  hid_layers_activation: relu
+  clip_grad_val: 10.0
+  loss_spec:
+    name: SmoothL1Loss
+  optim_spec:
+    name: AdamW
+    lr: 0.000724
+  update_type: replace
+  update_frequency: 100
+  gpu: auto
+
+_dqn_per_replay: &dqn_per_replay
+  name: PrioritizedReplay
+  alpha: 0.6
+  epsilon: 0.0001
+  batch_size: 32
+  max_size: 50000
+  use_cer: false
+
+# -- LunarLander specs --
+
+dqn_concat_lunar_arc:
+  agent:
+    name: DQN
+    algorithm:
+      name: DQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.039
+        start_step: 0
+        end_step: 50000
+      gamma: 0.982
+      training_batch_iter: 1
+      training_iter: 4
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      name: Replay
+      batch_size: 32
+      max_size: 50000
+      use_cer: false
+    net:
+      <<: *dqn_box2d_net
+  env:
+    name: LunarLander-v3
+    max_t: null
+    max_frame: 300000
+    num_envs: 8
+  meta:
+    <<: *dqn_box2d_meta
+    max_trial: 12
+    search_scheduler:
+      grace_period: 50000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.explore_var_spec.end_val__uniform: [0.01, 0.05]
+    agent.net.optim_spec.lr__loguniform: [0.0003, 0.003]
+    agent.net.update_frequency__qrandint: [50, 150, 25]
+
+ddqn_per_concat_lunar_arc:
+  agent:
+    name: DoubleDQN
+    algorithm:
+      name: DoubleDQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.01
+        start_step: 0
+        end_step: 50000
+      gamma: 0.99
+      training_batch_iter: 1
+      training_iter: 4
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      <<: *dqn_per_replay
+    net:
+      <<: *dqn_box2d_net
+      optim_spec:
+        name: AdamW
+        lr: 0.00025
+  env:
+    name: LunarLander-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta:
+    <<: *dqn_box2d_meta
+
+# -- MountainCar DDQN+PER --
+
+ddqn_per_mountaincar_arc:
+  agent:
+    name: DoubleDQN
+    algorithm:
+      name: DoubleDQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.01
+        start_step: 0
+        end_step: 50000
+      gamma: 0.99
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 4
+      training_start_step: 32
+    memory:
+      <<: *dqn_per_replay
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 128}
+              - ReLU:
+              - LazyLinear: {out_features: 128}
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: relu
+      clip_grad_val: 1.0
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: Adam
+        lr: 0.0005
+      update_type: replace
+      update_frequency: 100
+      gpu: auto
+  env:
+    name: MountainCar-v0
+    max_t: null
+    max_frame: 500000
+  meta:
+    distributed: false
+    eval_frequency: 10000
+    max_session: 4
+    max_trial: 1
+    log_frequency: 500

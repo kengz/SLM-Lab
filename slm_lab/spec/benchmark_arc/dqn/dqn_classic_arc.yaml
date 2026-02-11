@@ -1,0 +1,428 @@
+# DQN Classic Control - TorchArcNet specs
+# Covers: CartPole-v1 (VanillaDQN, DQN, DDQN+PER), Acrobot-v1, MountainCar-v0
+
+# -- Shared anchors --
+
+_dqn_classic_meta: &dqn_classic_meta
+  distributed: false
+  eval_frequency: 500
+  max_session: 4
+  max_trial: 1
+  log_frequency: 500
+
+_dqn_net_128x2_relu: &dqn_net_128x2_relu
+  type: TorchArcNet
+  arc:
+    modules:
+      body:
+        Sequential:
+          - LazyLinear: {out_features: 128}
+          - ReLU:
+          - LazyLinear: {out_features: 128}
+          - ReLU:
+    graph:
+      input: x
+      modules:
+        body: [x]
+      output: body
+  hid_layers_activation: relu
+  clip_grad_val: 1.0
+  loss_spec:
+    name: SmoothL1Loss
+  optim_spec:
+    name: Adam
+    lr: 0.0005
+  update_type: replace
+  update_frequency: 100
+  gpu: auto
+
+_dqn_replay: &dqn_replay
+  name: Replay
+  batch_size: 64
+  max_size: 50000
+  use_cer: true
+
+_dqn_per_replay: &dqn_per_replay
+  name: PrioritizedReplay
+  alpha: 0.6
+  epsilon: 0.0001
+  batch_size: 32
+  max_size: 50000
+  use_cer: false
+
+# -- CartPole specs --
+
+vanilla_dqn_boltzmann_cartpole_arc:
+  agent:
+    name: VanillaDQN
+    algorithm:
+      name: VanillaDQN
+      action_pdtype: Categorical
+      action_policy: boltzmann
+      explore_var_spec:
+        name: linear_decay
+        start_val: 5.0
+        end_val: 0.5
+        start_step: 0
+        end_step: 4000
+      gamma: 0.99
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      name: Replay
+      batch_size: 32
+      max_size: 10000
+      use_cer: false
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 64}
+              - SELU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      clip_grad_val: 0.5
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: AdamW
+        lr: 0.01
+      gpu: auto
+  env:
+    name: CartPole-v1
+    max_t: null
+    max_frame: 30000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+
+dqn_boltzmann_cartpole_arc:
+  agent:
+    name: DQN
+    algorithm:
+      name: DQN
+      action_pdtype: Categorical
+      action_policy: boltzmann
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.08
+        start_step: 0
+        end_step: 12000
+      gamma: 0.995
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      <<: *dqn_replay
+      batch_size: 64
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SELU:
+              - LazyLinear: {out_features: 128}
+              - SELU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      clip_grad_val: 0.55
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: AdamW
+        lr: 0.0003
+      update_type: replace
+      update_frequency: 75
+      gpu: auto
+  env:
+    name: CartPole-v1
+    max_t: null
+    max_frame: 200000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+    log_frequency: 500
+    eval_frequency: 1000
+    max_trial: 16
+    search_scheduler:
+      grace_period: 20000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.95, 0.999]
+    agent.algorithm.explore_var_spec.end_val__uniform: [0.02, 0.15]
+    agent.net.optim_spec.lr__loguniform: [0.0001, 0.003]
+    agent.net.update_frequency__qrandint: [50, 150, 25]
+
+ddqn_per_boltzmann_cartpole_arc:
+  agent:
+    name: DoubleDQN
+    algorithm:
+      name: DoubleDQN
+      action_pdtype: Categorical
+      action_policy: boltzmann
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.08
+        start_step: 0
+        end_step: 12000
+      gamma: 0.995
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      <<: *dqn_per_replay
+      batch_size: 64
+      use_cer: true
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SELU:
+              - LazyLinear: {out_features: 128}
+              - SELU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      clip_grad_val: 0.55
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: AdamW
+        lr: 0.0003
+      update_type: replace
+      update_frequency: 75
+      gpu: auto
+  env:
+    name: CartPole-v1
+    max_t: null
+    max_frame: 200000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+    log_frequency: 500
+    eval_frequency: 1000
+
+dqn_epsilon_greedy_cartpole_arc:
+  agent:
+    name: DQN
+    algorithm:
+      name: DQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.1
+        start_step: 0
+        end_step: 3000
+      gamma: 0.99
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      name: Replay
+      batch_size: 32
+      max_size: 50000
+      use_cer: true
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SELU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      clip_grad_val: 0.5
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: AdamW
+        lr: 0.0003
+      update_type: replace
+      update_frequency: 100
+      gpu: auto
+  env:
+    name: CartPole-v1
+    max_t: null
+    max_frame: 200000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+    eval_frequency: 1000
+
+# -- Acrobot specs --
+
+dqn_epsilon_greedy_acrobot_arc:
+  agent:
+    name: DQN
+    algorithm:
+      name: DQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.027
+        start_step: 0
+        end_step: 20000
+      gamma: 0.987
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      <<: *dqn_replay
+    net:
+      <<: *dqn_net_128x2_relu
+      optim_spec:
+        name: Adam
+        lr: 0.00108
+  env:
+    name: Acrobot-v1
+    max_t: null
+    max_frame: 300000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+    max_trial: 12
+    search_scheduler:
+      grace_period: 50000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.99, 0.999]
+    agent.algorithm.explore_var_spec.end_val__uniform: [0.05, 0.15]
+    agent.algorithm.explore_var_spec.end_step__qrandint: [10000, 20000, 5000]
+    agent.net.optim_spec.lr__loguniform: [0.0003, 0.001]
+
+dqn_boltzmann_acrobot_arc:
+  agent:
+    name: DQN
+    algorithm:
+      name: DQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.084
+        start_step: 0
+        end_step: 30000
+      gamma: 0.985
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      <<: *dqn_replay
+    net:
+      <<: *dqn_net_128x2_relu
+      optim_spec:
+        name: Adam
+        lr: 0.0006
+  env:
+    name: Acrobot-v1
+    max_t: null
+    max_frame: 300000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+    max_trial: 16
+    search_scheduler:
+      grace_period: 50000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.explore_var_spec.end_val__uniform: [0.01, 0.1]
+    agent.net.optim_spec.lr__loguniform: [0.0003, 0.003]
+
+ddqn_per_acrobot_arc:
+  agent:
+    name: DoubleDQN
+    algorithm:
+      name: DoubleDQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.01
+        start_step: 0
+        end_step: 10000
+      gamma: 0.99
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 1
+      training_start_step: 32
+    memory:
+      <<: *dqn_per_replay
+    net:
+      <<: *dqn_net_128x2_relu
+  env:
+    name: Acrobot-v1
+    max_t: null
+    max_frame: 300000
+    num_envs: 4
+  meta:
+    <<: *dqn_classic_meta
+
+# -- MountainCar specs --
+
+dqn_mountaincar_arc:
+  agent:
+    name: DQN
+    algorithm:
+      name: DQN
+      action_pdtype: Argmax
+      action_policy: epsilon_greedy
+      explore_var_spec:
+        name: linear_decay
+        start_val: 1.0
+        end_val: 0.01
+        start_step: 0
+        end_step: 50000
+      gamma: 0.99
+      training_batch_iter: 2
+      training_iter: 2
+      training_frequency: 4
+      training_start_step: 32
+    memory:
+      name: Replay
+      batch_size: 32
+      max_size: 50000
+      use_cer: true
+    net:
+      <<: *dqn_net_128x2_relu
+  env:
+    name: MountainCar-v0
+    max_t: null
+    max_frame: 500000
+  meta:
+    <<: *dqn_classic_meta
+    eval_frequency: 10000

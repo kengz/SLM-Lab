@@ -1,0 +1,142 @@
+# SAC Box2D using TorchArcNet
+# Covers: LunarLander-v3 (discrete), LunarLanderContinuous-v3, BipedalWalker-v3
+
+# --- Shared anchors ---
+
+_arc_body: &arc_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_sac_net: &sac_net
+  type: TorchArcNet
+  arc: *arc_body
+  hid_layers_activation: relu
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.0003
+  update_type: polyak
+  polyak_coef: 0.005
+  gpu: auto
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 100000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 5000
+  max_session: 4
+  max_trial: 1
+
+# --- Specs ---
+
+sac_lunar_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_start_step: 1000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: LunarLander-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta: *meta
+
+sac_lunar_continuous_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: Normal
+      action_policy: default
+      gamma: 0.994
+      training_iter: 4
+      training_frequency: 1
+      training_start_step: 256
+    memory:
+      <<: *memory
+      max_size: 1000000
+    net:
+      <<: *sac_net
+      optim_spec:
+        name: Adam
+        lr: 1.17e-4
+  env:
+    name: LunarLanderContinuous-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta: *meta
+
+sac_bipedalwalker_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 20
+      training_iter: 20
+      training_start_step: 1000
+    memory:
+      name: Replay
+      batch_size: 512
+      max_size: 1000000
+      use_cer: true
+    net:
+      <<: *sac_net
+      init_fn: orthogonal_
+      clip_grad_val: 1.0
+      optim_spec:
+        name: AdamW
+        lr: 0.0003
+      update_frequency: 1
+  env:
+    name: BipedalWalker-v3
+    num_envs: 16
+    max_t: null
+    max_frame: 1000000
+  meta:
+    distributed: false
+    log_frequency: 10000
+    eval_frequency: 10000
+    rigorous_eval: 0
+    max_session: 4
+    max_trial: 12
+    search_resources:
+      cpu: 1
+      gpu: 0.125
+    search_scheduler:
+      grace_period: 100000
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.training_start_step__qrandint: [500, 2000, 500]
+    agent.net.optim_spec.lr__loguniform: [0.0001, 0.001]
+    agent.net.polyak_coef__loguniform: [0.001, 0.02]
