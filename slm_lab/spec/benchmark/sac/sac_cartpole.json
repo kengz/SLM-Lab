@@ -7,23 +7,18 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 30,
-        "training_frequency": 50,
+        "training_frequency": 1,
         "training_start_step": 1000
       },
       "memory": {
-        "name": "PrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.0001,
-        "batch_size": 3072,
-        "max_size": 1000000,
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 100000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          256
-        ],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
         "clip_grad_val": null,
@@ -31,11 +26,11 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "AdamW",
+          "name": "Adam",
           "lr": 0.0003
         },
         "update_type": "polyak",
-        "polyak_coef": 0.27,
+        "polyak_coef": 0.005,
         "gpu": "auto"
       }
     },
@@ -50,32 +45,7 @@
       "log_frequency": 500,
       "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 10
-    },
-    "search": {
-      "agent.memory.batch_size__qrandint": [
-        1024,
-        4096,
-        1024
-      ],
-      "agent.algorithm.training_iter__qrandint": [
-        10,
-        30,
-        10
-      ],
-      "agent.algorithm.training_frequency__qrandint": [
-        10,
-        40,
-        10
-      ],
-      "agent.net.polyak_coef__loguniform": [
-        0.005,
-        0.5
-      ],
-      "agent.net.hid_layers_activation__choice": [
-        "tanh",
-        "relu"
-      ]
+      "max_trial": 1
     }
   }
 }

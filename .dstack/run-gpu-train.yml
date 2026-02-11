@@ -21,7 +21,7 @@ commands:
 
 resources:
   gpu: 1..
-  memory: 20GB..
+  memory: 48GB..
 
 spot_policy: on-demand
 max_duration: 6h
