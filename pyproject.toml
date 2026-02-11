@@ -1,6 +1,6 @@
 [project]
 name = "slm-lab"
-version = "5.0.0"
+version = "5.0.1"
 description = "Modular Deep Reinforcement Learning framework in PyTorch."
 readme = "README.md"
 requires-python = ">=3.12.0"
