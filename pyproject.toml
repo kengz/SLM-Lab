@@ -55,6 +55,7 @@ ml = [
     "ray[default,tune]>=2.44.0",
     "tensorboard>=2.19.0",
     "torch>=2.8.0",
+    "torcharc>=1.0.0",
 ]
 # Dev dependencies - install with: uv sync --group dev
 dev = [
@@ -73,6 +74,13 @@ dev = [
 # Include ML deps by default for local training
 # Use `uv sync --no-default-groups` for minimal CLI-only install
 default-groups = ["ml"]
+# Restrict resolution to platforms we actually use (macOS dev + Linux training)
+environments = [
+    "sys_platform == 'darwin'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+# Override dstack's pydantic<2 pin - dstack uses pydantic-duality which supports both v1 and v2
+override-dependencies = ["pydantic>=2.10.4"]
 
 [[tool.uv.index]]
 name = "pytorch-cu128"

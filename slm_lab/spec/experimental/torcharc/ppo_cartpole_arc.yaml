@@ -1,0 +1,73 @@
+# PPO CartPole using TorchArcNet - demonstrates torcharc network specification
+# The 'arc' block defines the body/feature extractor using torcharc YAML format.
+# Output heads are added automatically by SLM-Lab based on action space.
+
+ppo_cartpole_arc:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.9769
+      lam: 0.9112
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.1312
+        end_val: 0.1312
+        start_step: 0
+        end_step: 200000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.0074
+        end_val: 0.0074
+        start_step: 0
+        end_step: 200000
+      val_loss_coef: 0.6049
+      clip_val_loss: false
+      time_horizon: 256
+      minibatch_size: 128
+      training_epoch: 15
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear:
+                  out_features: 64
+              - Tanh:
+              - LazyLinear:
+                  out_features: 64
+              - Tanh:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      shared: false
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0005909
+      critic_optim_spec:
+        name: Adam
+        lr: 0.0006352
+      gpu: auto
+  env:
+    name: CartPole-v1
+    max_t: null
+    max_frame: 200000
+    num_envs: 4
+  meta:
+    distributed: false
+    log_frequency: 500
+    eval_frequency: 256
+    max_session: 4
+    max_trial: 1
