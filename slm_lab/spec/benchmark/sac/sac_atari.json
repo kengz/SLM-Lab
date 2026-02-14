@@ -7,9 +7,9 @@
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_start_step": 10000,
+        "training_start_step": 1000,
         "training_frequency": 4,
-        "training_iter": 1
+        "training_iter": 3
       },
       "memory": {
         "name": "Replay",
@@ -44,7 +44,7 @@
       "name": "${env}",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e7,
+      "max_frame": 2e6,
       "life_loss_info": true
     },
     "meta": {
