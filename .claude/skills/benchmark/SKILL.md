@@ -3,159 +3,115 @@ name: slm-lab-benchmark
 description: Run SLM-Lab deep RL benchmarks, monitor dstack jobs, extract results, and update BENCHMARKS.md. Use when asked to run benchmarks, check run status, extract scores, update benchmark tables, or generate plots.
 ---
 
-# SLM-Lab Benchmark Workflow
+# SLM-Lab Benchmark Skill
 
 ## Critical Rules
 
-1. **NEVER push to remote** without explicit user permission - commit locally only
-2. **ONLY train runs** in BENCHMARKS.md - NEVER use search results (search folders = UNACCEPTABLE)
-3. **Respect Settings line** for each env (max_frame, num_envs, etc.) - see [BENCHMARKS.md](docs/BENCHMARKS.md)
-4. **Use `${max_frame}` variable** in specs - never hardcode max_frame values
-5. **Verify HF links work** before updating table
-6. **Runs must complete in <6h**
+1. **NEVER push to remote** without explicit user permission
+2. **ONLY train runs** in BENCHMARKS.md — never search results
+3. **Respect Settings line** for each env (max_frame, num_envs, etc.)
+4. **Use `${max_frame}` variable** in specs — never hardcode
+5. **Runs must complete in <6h** (dstack max_duration)
 
-## Benchmark Contribution Workflow
-
-### 1. Audit Spec Settings
-
-**Before Running**: Ensure spec matches the **Settings** line in BENCHMARKS.md for each env.
-
-Example Settings line: `max_frame 3e5 | num_envs 4 | max_session 4 | log_frequency 500`
-
-**After Pulling**: Verify downloaded `spec.json` matches these rules before using data.
-
-### 2. Run Benchmark & Commit Specs
+## Run → Score → Record
 
 ```bash
-# Remote (GPU) - auto-syncs to HuggingFace
-source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME train -n NAME
+# Launch
+source .env && uv run slm-lab run-remote --gpu \
+  -s env=ALE/Pong-v5 SPEC_FILE SPEC_NAME train -n NAME
 
-# With variable substitution (MuJoCo/Atari)
-source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=MAX_FRAME \
-  SPEC_FILE SPEC_NAME train -n NAME
-
-# Local (Classic Control only)
-slm-lab run SPEC_FILE SPEC_NAME train
-```
-
-**Always commit the spec file** used for the run. Ensure BENCHMARKS.md has entry with correct SPEC_FILE and SPEC_NAME.
-
-### 3. Monitor Status
-
-**Monitor autonomously** - use sleep to check in periodically until completion:
-```bash
-sleep 900 && dstack ps                 # wait 15min then check
-```
-
-```bash
+# Monitor
 dstack ps                              # running jobs
-dstack ps -a | head -20                # recent jobs (done/failed)
-dstack logs NAME                       # view logs
-dstack logs NAME | grep "trial_metrics" # extract final score
-dstack stop NAME -y                    # terminate run
+dstack logs NAME | grep "trial_metrics" # extract score at completion
+
+# Score = total_reward_ma from trial_metrics line
+# trial_metrics: frame:1.00e+07 | total_reward_ma:816.18 | ...
 ```
 
-### 4. Record Scores & Plots
+## Data Lifecycle
 
-**Score**: At end of run, extract `total_reward_ma` from logs (`trial_metrics`):
+Data flows through three stages: **pull → plot → graduate**. Keep local data until graduation is complete.
+
 ```
-trial_metrics: frame:1.00e+07 | total_reward_ma:816.18 | strength:570.4 | ...
+Remote GPU run → auto-uploads to benchmark-dev (HF)
+                      ↓
+               Pull to local data/
+                      ↓
+               Generate plots (docs/plots/)
+                      ↓
+               Update BENCHMARKS.md (scores, links)
+                      ↓
+               Graduate to public benchmark (HF)
+                      ↓
+               Update links: benchmark-dev → benchmark
+                      ↓
+               Upload docs/ to public benchmark (HF)
 ```
 
-**Link**: Add HuggingFace folder link to table:
-- Format: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
+### Pull Data
 
-**Pull Data Efficiently** (avoid rate limiting):
 ```bash
-# DON'T use slm-lab pull for bulk downloads - will get rate limited
-# Instead, pull specific folders directly from HF:
-
-# Get folder name from run logs
-dstack logs NAME | grep "SLM-Lab: Running"
-# Output shows: data/FOLDER_NAME/...
-
-# Pull only the folder you need
+# Pull full dataset (fast, single request — avoids rate limits)
 source .env && uv run hf download SLM-Lab/benchmark-dev \
-  --include "data/FOLDER_NAME/*" --local-dir hf_data --repo-type dataset
+  --local-dir data/benchmark-dev --repo-type dataset
+
+# KEEP this data — needed for plots AND graduation upload later
+# Never rm -rf data/benchmark-dev/ until graduation is complete
 ```
 
-**Plot**:
-```bash
-# Verify scores in trial_metrics.json match logs
-# Ensure all runs share same max_frame
+### Generate Plots
 
-# Generate plot using ONLY folders from table
-slm-lab plot -t "ENV_NAME" -f folder1,folder2,folder3
+```bash
+# Find folders for a game (need a2c + ppo + sac for comparison)
+ls data/benchmark-dev/data/ | grep -i pong
+
+# Generate comparison plot
+uv run slm-lab plot -t "Pong" \
+  -f data/benchmark-dev/data/a2c_folder,data/benchmark-dev/data/ppo_folder,data/benchmark-dev/data/sac_folder
 ```
 
-**Status legend**: ✅ Solved | ⚠️ Close (>80%) | ❌ Failed
+### Update BENCHMARKS.md
 
-### 5. Commit Changes
+- Add score in results table
+- Add HF link: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
+- Status: ✅ Solved | ⚠️ Close (>80%) | ❌ Failed
 
-```bash
-git add docs/BENCHMARKS.md slm_lab/spec/benchmark/...
-git commit -m "docs: update ENV benchmark (SCORE)"
-# NEVER push without explicit permission
-```
+### Graduate to Public HF
 
-## Publishing to Public Dataset
-
-During development, runs upload to `SLM-Lab/benchmark-dev` (noisy, iterative). When benchmarks are finalized, publish clean results to the public `SLM-Lab/benchmark` dataset.
-
-### Strategy: `hf_data/` IS the Manifest
-
-The `hf_data/data/` directory defines what gets uploaded. Same process works for any subset (Phase 1-3, Atari, single env).
-
-### Upload Workflow
-
-HF dataset mirrors repo structure: `README.md`, `docs/`, `data/`
+When benchmarks are finalized, publish from `benchmark-dev` → `benchmark`:
 
 ```bash
-# 1. Clear hf_data/ before upload cycle
-rm -rf hf_data/
+# Upload data (from local copy — already pulled above)
+source .env && uv run hf upload SLM-Lab/benchmark \
+  data/benchmark-dev/data data --repo-type dataset
 
-# 2. Pull only folders you want from benchmark-dev
-source .env && uv run hf download SLM-Lab/benchmark-dev \
-  --include "data/ppo_cartpole_2026*/*" "data/sac_lunar*/*" \
-  --local-dir hf_data --repo-type dataset
+# Update BENCHMARKS.md links: benchmark-dev → benchmark
+# (find-replace in docs/BENCHMARKS.md)
 
-# 3. Upload README to public repo
-source .env && uv run hf upload SLM-Lab/benchmark README.md README.md --repo-type dataset
-
-# 4. Upload data to public repo
-source .env && uv run hf upload SLM-Lab/benchmark hf_data/data data --repo-type dataset
-
-# 5. Update BENCHMARKS.md links: benchmark-dev -> benchmark
-#    (data now exists on public repo, so links will work)
-
-# 6. Upload docs (with updated links)
+# Upload docs (with updated links) and README
 source .env && uv run hf upload SLM-Lab/benchmark docs docs --repo-type dataset
+source .env && uv run hf upload SLM-Lab/benchmark README.md README.md --repo-type dataset
 ```
 
-### Two-Repo Strategy
-
-| Repo | Purpose | Links in BENCHMARKS.md |
-|------|---------|------------------------|
-| `SLM-Lab/benchmark-dev` | Development iterations, noisy | During active work |
-| `SLM-Lab/benchmark` | Public, finalized results | After publishing |
+| Repo | Purpose |
+|------|---------|
+| `SLM-Lab/benchmark-dev` | Development — noisy, iterative |
+| `SLM-Lab/benchmark` | Public — finalized, validated |
 
 ## Hyperparameter Search
 
-Only when algorithm fails to reach target. Use search to find hyperparams, then run final `train` for benchmark.
+Only when algorithm fails to reach target:
 
 ```bash
-source .env && slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME
+source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAME
 ```
 
-**Search budget**: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims).
-
-**After search**: Update spec with best hyperparams, run `train` mode, use that result in BENCHMARKS.md.
+Budget: ~3-4 trials per dimension. After search: update spec with best params, run `train`, use that result.
 
 ## Troubleshooting
 
-- **Run interrupted**: Expected with spot instances - relaunch with same command, increment run name (e.g. rv2 → rv3)
-- **Low GPU usage** (<50%): CPU bottleneck or config issue, not training problem
-- **Score below target**: Check hyperparams match spec, try search mode
-- **HF link 404**: Run didn't complete or upload failed, rerun
-
-For full details, see [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+- **Run interrupted**: Relaunch, increment name suffix (e.g., pong3 → pong4)
+- **Low GPU usage** (<50%): CPU bottleneck or config issue
+- **HF rate limit**: Download full dataset, not selective `--include` patterns
+- **HF link 404**: Run didn't complete or upload failed — rerun
+- **.env inline comments**: Break dstack env vars — put comments on separate lines
