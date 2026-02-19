@@ -1,0 +1,110 @@
+# CrossQ MuJoCo using TorchArcNet with BatchNorm critics
+# Bhatt et al., ICLR 2024: "CrossQ: Batch Normalization in Deep RL"
+
+_crossq_critic: &crossq_critic
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 2048
+        - LazyBatchNorm1d: {}
+        - ReLU: {}
+        - LazyLinear:
+            out_features: 2048
+        - LazyBatchNorm1d: {}
+        - ReLU: {}
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_crossq_net: &crossq_net
+  type: TorchArcNet
+  arc: *crossq_critic
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: 1.0
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3e-4
+  gpu: auto
+  # No update_type/polyak_coef — CrossQ has no target networks
+
+_crossq_algorithm: &crossq_algorithm
+  name: CrossQ
+  action_pdtype: default
+  action_policy: default
+  gamma: 0.99
+  training_frequency: 1
+  training_iter: 1  # UTD=1 — CrossQ's key advantage
+  training_start_step: 10000
+
+_crossq_agent: &crossq_agent
+  name: CrossQ
+  algorithm: *crossq_algorithm
+  memory:
+    name: Replay
+    batch_size: 256
+    max_size: 1000000
+    use_cer: false
+  net:
+    type: MLPNet
+    hid_layers: [256, 256]
+    hid_layers_activation: relu
+    out_layer_activation: null
+    init_fn: orthogonal_
+    clip_grad_val: 1.0
+    loss_spec:
+      name: MSELoss
+    optim_spec:
+      name: Adam
+      lr: 3e-4
+    lr_scheduler_spec: null
+    gpu: auto
+  critic_net: *crossq_net
+
+_crossq_meta: &crossq_meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  max_session: 4
+  max_trial: 1
+
+crossq_halfcheetah_arc:
+  agent: *crossq_agent
+  env:
+    name: HalfCheetah-v5
+    num_envs: 4
+    max_t: null
+    max_frame: 4000000
+  meta: *crossq_meta
+
+crossq_humanoid_arc:
+  agent: *crossq_agent
+  env:
+    name: Humanoid-v5
+    num_envs: 4
+    max_t: null
+    max_frame: 2000000
+  meta: *crossq_meta
+
+crossq_hopper_arc:
+  agent: *crossq_agent
+  env:
+    name: Hopper-v5
+    num_envs: 4
+    max_t: null
+    max_frame: 3000000
+  meta: *crossq_meta
+
+crossq_ant_arc:
+  agent: *crossq_agent
+  env:
+    name: Ant-v5
+    num_envs: 4
+    max_t: null
+    max_frame: 4000000
+  meta: *crossq_meta
