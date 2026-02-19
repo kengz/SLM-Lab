@@ -29,7 +29,7 @@ _crossq_net: &crossq_net
     name: MSELoss
   optim_spec:
     name: Adam
-    lr: 3e-4
+    lr: 3.0e-4
   gpu: auto
   # No update_type/polyak_coef — CrossQ has no target networks
 
@@ -61,7 +61,7 @@ _crossq_agent: &crossq_agent
       name: MSELoss
     optim_spec:
       name: Adam
-      lr: 3e-4
+      lr: 3.0e-4
     lr_scheduler_spec: null
     gpu: auto
   critic_net: *crossq_net
