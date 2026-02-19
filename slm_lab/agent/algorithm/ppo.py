@@ -289,7 +289,7 @@ class PPO(ActorCritic):
                 for k, v in batch.items():
                     if k not in ("advs", "v_targets", "old_v_preds"):
                         batch[k] = math_util.venv_unpack(v)
-            total_loss = torch.tensor(0.0, device=self.net.device)
+            total_loss = 0.0
             for _ in range(self.training_epoch):
                 minibatches = util.split_minibatch(batch, self.minibatch_size)
                 for minibatch in minibatches:
@@ -336,7 +336,7 @@ class PPO(ActorCritic):
                         self.agent.env.tick_opt_step()
                         self.agent.env.tick_opt_step()
                         loss = policy_loss + val_loss
-                    total_loss += loss
+                    total_loss += loss.item()
             # Step LR scheduler once per training iteration (per batch of collected experience)
             # This ensures proper LR decay matching CleanRL's approach
             if self.lr_scheduler is not None:
@@ -353,7 +353,7 @@ class PPO(ActorCritic):
             logger.debug(
                 f"Trained {self.name} at epi: {self.agent.env.get('epi')}, frame: {self.agent.env.get('frame')}, t: {self.agent.env.get('t')}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}"
             )
-            return loss.item()
+            return loss
         else:
             return np.nan
 

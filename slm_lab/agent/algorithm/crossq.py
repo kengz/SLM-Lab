@@ -116,8 +116,8 @@ class CrossQ(SoftActorCritic):
         The cross batch norm forward handles BN statistics sharing.
         """
         if self.agent.is_discrete:
-            next_probs = action_pd.probs
             next_log_probs = torch.nn.functional.log_softmax(action_pd.logits, dim=-1)
+            next_probs = next_log_probs.exp()
             next_q1_all = self.q1_net(next_states)
             next_q2_all = self.q2_net(next_states)
             avg_q = (next_q1_all + next_q2_all) / 2
@@ -175,10 +175,10 @@ class CrossQ(SoftActorCritic):
 
                     # V(s') from cross forward Q_next (detached — no gradient into targets)
                     with torch.no_grad():
-                        next_probs = next_action_pd.probs
                         next_log_probs = torch.nn.functional.log_softmax(
                             next_action_pd.logits, dim=-1
                         )
+                        next_probs = next_log_probs.exp()
                         avg_q_next = (q1_next.detach() + q2_next.detach()) / 2
                         v_next = (
                             next_probs * (avg_q_next - self.alpha * next_log_probs)

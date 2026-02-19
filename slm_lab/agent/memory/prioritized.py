@@ -1,7 +1,6 @@
 from slm_lab.agent.memory.replay import Replay
 from slm_lab.lib import util
 import numpy as np
-import random
 
 
 class SumTree:
@@ -30,24 +29,22 @@ class SumTree:
         self.indices = np.zeros(capacity)  # Stores the indices of the experiences
 
     def _propagate(self, idx, change):
-        parent = (idx - 1) // 2
-
-        self.tree[parent] += change
-
-        if parent != 0:
-            self._propagate(parent, change)
+        while idx != 0:
+            idx = (idx - 1) // 2
+            self.tree[idx] += change
 
     def _retrieve(self, idx, s):
-        left = 2 * idx + 1
-        right = left + 1
-
-        if left >= len(self.tree):
-            return idx
-
-        if s <= self.tree[left]:
-            return self._retrieve(left, s)
-        else:
-            return self._retrieve(right, s - self.tree[left])
+        tree = self.tree
+        tree_len = len(tree)
+        while True:
+            left = 2 * idx + 1
+            if left >= tree_len:
+                return idx
+            if s <= tree[left]:
+                idx = left
+            else:
+                s -= tree[left]
+                idx = left + 1
 
     def total(self):
         return self.tree[0]
@@ -148,16 +145,15 @@ class PrioritizedReplay(Replay):
 
     def sample_idxs(self, batch_size):
         '''Samples batch_size indices from memory in proportional to their priority.'''
-        batch_idxs = np.zeros(batch_size)
-        tree_idxs = np.zeros(batch_size, dtype=int)
+        batch_idxs = np.empty(batch_size, dtype=int)
+        tree_idxs = np.empty(batch_size, dtype=int)
+        total = self.tree.total()
 
+        samples = np.random.uniform(0, total, size=batch_size)
         for i in range(batch_size):
-            s = random.uniform(0, self.tree.total())
-            (tree_idx, p, idx) = self.tree.get(s)
-            batch_idxs[i] = idx
+            tree_idx, p, idx = self.tree.get(samples[i])
+            batch_idxs[i] = int(idx)
             tree_idxs[i] = tree_idx
-
-        batch_idxs = np.asarray(batch_idxs).astype(int)
         if self.use_cer:
             old_batch_idxs = batch_idxs.copy()
             batch_idxs = self.apply_cer(batch_idxs)

@@ -11,6 +11,8 @@ from slm_lab.lib.decorator import lab_api
 
 logger = logger.get_logger(__name__)
 
+_LOG2 = np.log(2)  # constant for squash correction
+
 
 class SoftActorCritic(ActorCritic):
     """
@@ -57,6 +59,8 @@ class SoftActorCritic(ActorCritic):
         self.action_policy = getattr(policy_util, self.action_policy)
         self._train_step = 0  # counter for policy delay
         self._entropy_ema = None  # running entropy for SD-SAC penalty
+        self._cached_entropy = None  # cached from policy loss for alpha loss
+        self._is_per = "Prioritized" in util.get_class_name(self.agent.memory)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -147,7 +151,7 @@ class SoftActorCritic(ActorCritic):
             )  # Sum across action dimensions
             # Numerically stable squash correction: log(1 - tanh^2(x)) = 2*(log(2) - x - softplus(-2x))
             squash_correction = (
-                2 * (np.log(2) - raw_actions - F.softplus(-2 * raw_actions))
+                2 * (_LOG2 - raw_actions - F.softplus(-2 * raw_actions))
             ).sum(-1)
             log_probs = raw_log_probs - squash_correction
             actions = torch.tanh(raw_actions)
@@ -177,8 +181,8 @@ class SoftActorCritic(ActorCritic):
         Continuous: V(s') = min(Q1,Q2) - α·log(π) where a ~ π
         """
         if self.agent.is_discrete:
-            next_probs = action_pd.probs
             next_log_probs = F.log_softmax(action_pd.logits, dim=-1)
+            next_probs = next_log_probs.exp()
             next_q1_all = self.target_q1_net(next_states)
             next_q2_all = self.target_q2_net(next_states)
             avg_q = (
@@ -204,15 +208,18 @@ class SoftActorCritic(ActorCritic):
 
     def calc_policy_loss_discrete(self, states, action_pd, q1_all, q2_all):
         """J_π = E[Σ_a π(a|s)[α·log(π) - avg(Q1,Q2)]] + entropy_penalty (SD-SAC)"""
-        action_probs = action_pd.probs
         action_log_probs = F.log_softmax(action_pd.logits, dim=-1)
+        action_probs = action_log_probs.exp()
         with torch.no_grad():
             avg_q_all = (q1_all + q2_all) / 2  # SD-SAC: avg instead of min for discrete
         policy_loss = (
-            (action_probs * (self.alpha.detach() * action_log_probs - avg_q_all))
+            (action_probs * (self.alpha * action_log_probs - avg_q_all))
             .sum(dim=1)
             .mean()
         )
+        # Cache entropy for alpha loss to avoid recomputing probs/log_probs
+        with torch.no_grad():
+            self._cached_entropy = -(action_probs * action_log_probs).sum(dim=-1).mean()
         # SD-SAC entropy penalty: beta * 0.5 * (H_old - H_new)^2
         if self.entropy_penalty_coef > 0:
             entropy = -(action_probs * action_log_probs).sum(dim=-1).mean()
@@ -247,10 +254,8 @@ class SoftActorCritic(ActorCritic):
 
     def calc_alpha_loss_discrete(self, action_pd):
         """J_α = -α * (H_target - H) — matches continuous SAC sign convention"""
-        action_probs = action_pd.probs
-        action_log_probs = F.log_softmax(action_pd.logits, dim=-1)
-        with torch.no_grad():
-            entropy_current = -(action_probs * action_log_probs).sum(dim=-1).mean()
+        # Reuse cached entropy from policy loss to avoid recomputing probs/log_probs
+        entropy_current = self._cached_entropy
         # Sign must match continuous: when H > H_target, alpha decreases
         return -(self.log_alpha.exp() * (self.target_entropy - entropy_current))
 
@@ -273,7 +278,7 @@ class SoftActorCritic(ActorCritic):
         return fn(action_pd)
 
     def try_update_per(self, q_preds, q_targets):
-        if "Prioritized" not in util.get_class_name(self.agent.memory):
+        if not self._is_per:
             return
         with torch.no_grad():
             errors = (q_preds - q_targets).abs().cpu().numpy()
@@ -304,11 +309,12 @@ class SoftActorCritic(ActorCritic):
 
                 # Apply symlog compression to Q-values if enabled
                 if self.symlog:
+                    symlog_targets = math_util.symlog(q_targets)
                     q1_loss = self.net.loss_fn(
-                        math_util.symlog(q1_preds), math_util.symlog(q_targets)
+                        math_util.symlog(q1_preds), symlog_targets
                     )
                     q2_loss = self.net.loss_fn(
-                        math_util.symlog(q2_preds), math_util.symlog(q_targets)
+                        math_util.symlog(q2_preds), symlog_targets
                     )
                 else:
                     q1_loss = self.net.loss_fn(q1_preds, q_targets)

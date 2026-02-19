@@ -92,8 +92,8 @@ def cast_df(val):
 
 
 def cast_list(val):
-    """missing pydash method to cast value as list"""
-    if ps.is_list(val):
+    """Cast value as list if not already"""
+    if isinstance(val, list):
         return val
     else:
         return [val]
@@ -116,17 +116,17 @@ def frame_mod(frame, frequency, num_envs):
 
 
 def flatten_dict(obj, delim="."):
-    """Missing pydash method to flatten dict"""
+    """Flatten a nested dict with delimited keys"""
     nobj = {}
     for key, val in obj.items():
-        if ps.is_dict(val) and not ps.is_empty(val):
+        if isinstance(val, dict) and val:
             strip = flatten_dict(val, delim)
             for k, v in strip.items():
                 nobj[key + delim + k] = v
-        elif ps.is_list(val) and not ps.is_empty(val) and ps.is_dict(val[0]):
+        elif isinstance(val, list) and val and isinstance(val[0], dict):
             for idx, v in enumerate(val):
                 nobj[key + delim + str(idx)] = v
-                if ps.is_object(v):
+                if isinstance(v, dict):
                     nobj = flatten_dict(nobj, delim)
         else:
             nobj[key] = val
@@ -362,7 +362,7 @@ def log_dict(data: dict, title: str = None):
                 {k: v}, default_flow_style=False, indent=2, sort_keys=False
             ).rstrip()
             lines.append(yaml_str)
-        elif v is not None and not ps.reg_exp_js_match(str(v), "/<.+>/"):
+        elif v is not None and not (isinstance(v, str) and v.startswith("<") and v.endswith(">")):
             lines.append(f"{k}: {v}")
     logger.info("\n".join(lines))
 
@@ -377,14 +377,16 @@ def log_self_desc(cls, omit=None):
         # Fallback for minimal install (no torch)
         obj_dict = {k: str(v) for k, v in cls.__dict__.items() if not k.startswith("_")}
     if omit:
-        obj_dict = ps.omit(obj_dict, omit)
+        obj_dict = {k: v for k, v in obj_dict.items() if k not in omit}
     log_dict(obj_dict, get_class_name(cls))
 
 
 def set_attr(obj, attr_dict, keys=None):
     """Set attribute of an object from a dict"""
+    if attr_dict is None:
+        return obj
     if keys is not None:
-        attr_dict = ps.pick(attr_dict, keys)
+        attr_dict = {k: attr_dict[k] for k in keys if k in attr_dict}
     for attr, val in attr_dict.items():
         setattr(obj, attr, val)
     return obj

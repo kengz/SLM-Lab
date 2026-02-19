@@ -88,7 +88,7 @@ def test_no_fc():
     no_fc_net_spec['fc_hid_layers'] = []
     net = RecurrentNet(no_fc_net_spec, in_dim, out_dim)
     assert isinstance(net, nn.Module)
-    assert not hasattr(net, 'fc_model')
+    assert net.fc_model is None
     assert hasattr(net, 'rnn_model')
     assert hasattr(net, 'tails')
     assert not isinstance(net.tails, nn.ModuleList)

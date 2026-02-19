@@ -65,8 +65,8 @@ def get_activation_fn(activation):
 def get_loss_fn(cls, loss_spec):
     """Helper to parse loss param and construct loss_fn for net"""
     LossClass = getattr(nn, get_nn_name(loss_spec["name"]))
-    loss_spec = ps.omit(loss_spec, "name")
-    loss_fn = LossClass(**loss_spec)
+    loss_kwargs = {k: v for k, v in loss_spec.items() if k != "name"}
+    loss_fn = LossClass(**loss_kwargs)
     return loss_fn
 
 
@@ -80,7 +80,7 @@ def get_lr_scheduler(optim, lr_scheduler_spec, steps_per_schedule=1):
             For PPO: training_frequency * num_envs (e.g., 128 * 8 = 1024)
             This converts frame-based specs to update-based scheduling.
     """
-    if ps.is_empty(lr_scheduler_spec):
+    if not lr_scheduler_spec:
         lr_scheduler = NoOpLRScheduler(optim)
     elif lr_scheduler_spec["name"] == "LinearToZero":
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, "LambdaLR")
@@ -92,19 +92,19 @@ def get_lr_scheduler(optim, lr_scheduler_spec, steps_per_schedule=1):
         )
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec["name"])
-        lr_scheduler_spec = ps.omit(lr_scheduler_spec, "name")
-        lr_scheduler = LRSchedulerClass(optim, **lr_scheduler_spec)
+        sched_kwargs = {k: v for k, v in lr_scheduler_spec.items() if k != "name"}
+        lr_scheduler = LRSchedulerClass(optim, **sched_kwargs)
     return lr_scheduler
 
 
 def get_optim(net, optim_spec):
     """Helper to parse optim param and construct optim for net"""
     OptimClass = getattr(torch.optim, optim_spec["name"])
-    optim_spec = ps.omit(optim_spec, "name")
+    optim_kwargs = {k: v for k, v in optim_spec.items() if k != "name"}
     if torch.is_tensor(net):  # for non-net tensor variable
-        optim = OptimClass([net], **optim_spec)
+        optim = OptimClass([net], **optim_kwargs)
     else:
-        optim = OptimClass(net.parameters(), **optim_spec)
+        optim = OptimClass(net.parameters(), **optim_kwargs)
     return optim
 
 
@@ -305,11 +305,10 @@ def polyak_update(src_net, tar_net, old_ratio=0.5):
     """
     Polyak weight update to update a target tar_net, retain old weights by its ratio, i.e.
     target <- old_ratio * source + (1 - old_ratio) * target
+    Uses in-place lerp_ to avoid allocating intermediate tensors.
     """
     for src_param, tar_param in zip(src_net.parameters(), tar_net.parameters()):
-        tar_param.data.copy_(
-            old_ratio * src_param.data + (1.0 - old_ratio) * tar_param.data
-        )
+        tar_param.data.lerp_(src_param.data, old_ratio)
 
 
 def update_target_net(src_net, tar_net, frame, num_envs):
@@ -323,10 +322,9 @@ def update_target_net(src_net, tar_net, frame, num_envs):
     @param frame: Current training frame for frequency gating
     @param num_envs: Number of parallel environments (for frame_mod calculation)
     """
-    from slm_lab.lib import util
-
     if src_net.update_type == "replace":
-        if util.frame_mod(frame, src_net.update_frequency, num_envs):
+        remainder = num_envs or 1
+        if frame % src_net.update_frequency < remainder:
             copy(src_net, tar_net)
     elif src_net.update_type == "polyak":
         polyak_update(src_net, tar_net, src_net.polyak_coef)
@@ -513,5 +511,6 @@ def build_tails(tail_in_dim, out_dim, out_layer_activation, log_std_init=None):
 def forward_tails(x, tails, log_std=None):
     """Forward pass through tails, handling log_std expansion if present."""
     if log_std is not None:
-        return [tails(x), log_std.expand_as(tails(x))]
+        out = tails(x)
+        return [out, log_std.expand_as(out)]
     return [t(x) for t in tails] if isinstance(tails, nn.ModuleList) else tails(x)

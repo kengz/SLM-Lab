@@ -5,7 +5,6 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
@@ -32,15 +31,16 @@ class ReturnNormalizer:
         self._warmup = 1000  # Number of samples before trusting variance
 
     def update(self, values: torch.Tensor) -> None:
-        """Update running statistics with new values (batched Welford's)"""
-        values_np = values.detach().cpu().numpy().flatten()
-        for v in values_np:
-            self.count += 1
-            delta = v - self.mean
-            self.mean += delta / self.count
-            delta2 = v - self.mean
-            self.m2 += delta * delta2
-        # Update variance after enough samples
+        """Update running statistics with new values (Chan's parallel merge)"""
+        batch = values.detach().flatten()
+        batch_count = len(batch)
+        batch_mean = batch.mean().item()
+        batch_var = batch.var(correction=0).item() if batch_count > 1 else 0.0
+        delta = batch_mean - self.mean
+        total = self.count + batch_count
+        self.mean = self.mean + delta * batch_count / max(total, 1)
+        self.m2 += batch_var * batch_count + delta**2 * self.count * batch_count / max(total, 1)
+        self.count = total
         if self.count > 1:
             self.var = self.m2 / self.count
 
@@ -265,7 +265,7 @@ class ActorCritic(Reinforce):
         """
         out = super().calc_pdparam(x, net=net)
         if self.shared:
-            assert ps.is_list(out), "Shared output should be a list [pdparam, v]"
+            assert isinstance(out, list), "Shared output should be a list [pdparam, v]"
             if len(out) == 2:  # single policy
                 pdparam = out[0]
             else:  # multiple-task policies, still assumes 1 value

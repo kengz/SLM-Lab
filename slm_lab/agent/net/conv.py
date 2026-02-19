@@ -121,11 +121,11 @@ class ConvNet(Net, nn.Module):
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
         self.conv_out_dim = self.get_conv_output_size()
 
-        # fc body
+        # fc body (set default for forward() None-check instead of hasattr)
+        self.fc_model = None
         if ps.is_empty(self.fc_hid_layers):
             tail_in_dim = self.conv_out_dim
         else:
-            # fc body from flattened conv
             self.fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
             tail_in_dim = self.fc_hid_layers[-1]
 
@@ -169,7 +169,7 @@ class ConvNet(Net, nn.Module):
             x = x / 255.0
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)
-        if hasattr(self, 'fc_model'):
+        if self.fc_model is not None:
             x = self.fc_model(x)
         return net_util.forward_tails(x, self.tails, self.log_std)
 
@@ -264,6 +264,7 @@ class DuelingConvNet(ConvNet):
 
         # fc body
         if ps.is_empty(self.fc_hid_layers):
+            self.fc_model = None
             tail_in_dim = self.conv_out_dim
         else:
             # fc layer from flattened conv
@@ -286,7 +287,7 @@ class DuelingConvNet(ConvNet):
             x = x / 255.0
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
-        if hasattr(self, 'fc_model'):
+        if self.fc_model is not None:
             x = self.fc_model(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
