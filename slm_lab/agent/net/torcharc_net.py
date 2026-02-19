@@ -117,6 +117,8 @@ class TorchArcNet(Net, nn.Module):
 
     def _get_body_out_dim(self):
         """Compute body output dimension via dummy forward pass."""
+        # Use eval mode for dummy pass — BatchNorm requires batch_size > 1 in train mode
+        self.body.eval()
         with torch.no_grad():
             if isinstance(self.in_dim, (int, np.integer)):
                 dummy = torch.ones(1, self.in_dim, device=self.device)
