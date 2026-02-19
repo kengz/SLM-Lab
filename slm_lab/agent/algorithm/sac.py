@@ -6,7 +6,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 
 logger = logger.get_logger(__name__)
@@ -31,6 +31,7 @@ class SoftActorCritic(ActorCritic):
                 training_start_step=max(1000, self.agent.memory.batch_size),
                 policy_delay=1,  # update actor every N critic updates (1 = every step, 2 = TD3-style)
                 entropy_penalty_coef=0.0,  # SD-SAC entropy penalty coefficient (0 = disabled)
+                symlog=False,  # Symlog Q-value compression (DreamerV3)
             ),
         )
         util.set_attr(
@@ -45,6 +46,7 @@ class SoftActorCritic(ActorCritic):
                 "training_start_step",
                 "policy_delay",
                 "entropy_penalty_coef",
+                "symlog",
             ],
         )
         if self.agent.is_discrete:
@@ -300,7 +302,17 @@ class SoftActorCritic(ActorCritic):
                 q1_preds, q1_all = self.calc_q(states, actions, self.q1_net)
                 q2_preds, q2_all = self.calc_q(states, actions, self.q2_net)
 
-                q1_loss = self.net.loss_fn(q1_preds, q_targets)
+                # Apply symlog compression to Q-values if enabled
+                if self.symlog:
+                    q1_loss = self.net.loss_fn(
+                        math_util.symlog(q1_preds), math_util.symlog(q_targets)
+                    )
+                    q2_loss = self.net.loss_fn(
+                        math_util.symlog(q2_preds), math_util.symlog(q_targets)
+                    )
+                else:
+                    q1_loss = self.net.loss_fn(q1_preds, q_targets)
+                    q2_loss = self.net.loss_fn(q2_preds, q_targets)
                 self.q1_net.train_step(
                     q1_loss,
                     self.q1_optim,
@@ -308,7 +320,6 @@ class SoftActorCritic(ActorCritic):
                     global_net=self.global_q1_net,
                 )
 
-                q2_loss = self.net.loss_fn(q2_preds, q_targets)
                 self.q2_net.train_step(
                     q2_loss,
                     self.q2_optim,

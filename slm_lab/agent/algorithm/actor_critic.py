@@ -58,8 +58,28 @@ class ReturnNormalizer:
         return values * std
 
 
+class PercentileNormalizer:
+    """EMA-tracked 5th/95th percentile advantage normalization. DreamerV3.
+    Alternative to ReturnNormalizer; selected via spec key normalize_advantages."""
+
+    def __init__(self, decay=0.99):
+        self.perc5 = 0.0
+        self.perc95 = 0.0
+        self.decay = decay
+
+    def update(self, values):
+        p5 = torch.quantile(values, 0.05)
+        p95 = torch.quantile(values, 0.95)
+        self.perc5 = self.decay * self.perc5 + (1 - self.decay) * p5.item()
+        self.perc95 = self.decay * self.perc95 + (1 - self.decay) * p95.item()
+
+    def normalize(self, values):
+        scale = max(1.0, self.perc95 - self.perc5)
+        return values / scale
+
+
 class ActorCritic(Reinforce):
-    '''
+    """
     Implementation of single threaded Advantage Actor Critic
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
@@ -115,43 +135,52 @@ class ActorCritic(Reinforce):
         "type": "MLPNet",
         "shared": true,
         ...
-    '''
+    """
 
     @lab_api
     def init_algorithm_params(self):
-        '''Initialize other algorithm parameters'''
+        """Initialize other algorithm parameters"""
         # set default
-        util.set_attr(self, dict(
-            action_pdtype='default',
-            action_policy='default',
-            explore_var_spec=None,
-            entropy_coef_spec=None,
-            policy_loss_coef=1.0,
-            val_loss_coef=1.0,
-            normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
-        ))
-        util.set_attr(self, self.algorithm_spec, [
-            'action_pdtype',
-            'action_policy',
-            # theoretically, AC does not have policy update; but in this implementation we have such option
-            'explore_var_spec',
-            'gamma',  # the discount factor
-            'lam',
-            'num_step_returns',
-            'entropy_coef_spec',
-            'policy_loss_coef',
-            'val_loss_coef',
-            'training_frequency',
-            'normalize_v_targets',
-        ])
+        util.set_attr(
+            self,
+            dict(
+                action_pdtype="default",
+                action_policy="default",
+                explore_var_spec=None,
+                entropy_coef_spec=None,
+                policy_loss_coef=1.0,
+                val_loss_coef=1.0,
+                normalize_v_targets=False,  # Normalize value targets to prevent gradient explosion
+            ),
+        )
+        util.set_attr(
+            self,
+            self.algorithm_spec,
+            [
+                "action_pdtype",
+                "action_policy",
+                # theoretically, AC does not have policy update; but in this implementation we have such option
+                "explore_var_spec",
+                "gamma",  # the discount factor
+                "lam",
+                "num_step_returns",
+                "entropy_coef_spec",
+                "policy_loss_coef",
+                "val_loss_coef",
+                "training_frequency",
+                "normalize_v_targets",
+            ],
+        )
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.agent.explore_var = self.explore_var_scheduler.start_val
         if self.entropy_coef_spec is not None:
-            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.entropy_coef_scheduler = policy_util.VarScheduler(
+                self.entropy_coef_spec
+            )
             self.agent.entropy_coef = self.entropy_coef_scheduler.start_val
-            self.agent.mt.register_algo_var('entropy_coef', self.agent)
+            self.agent.mt.register_algo_var("entropy_coef", self.agent)
         # Initialize return normalizer for value target scaling (VecNormalize-style)
         if self.normalize_v_targets:
             self.return_normalizer = ReturnNormalizer()
@@ -169,7 +198,7 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def init_nets(self, global_nets=None):
-        '''
+        """
         Initialize the neural networks used to learn the actor and critic from the spec
         Below we automatically select an appropriate net based on two different conditions
         1. If the action space is discrete or continuous action
@@ -182,53 +211,61 @@ class ActorCritic(Reinforce):
         3. If the network type is feedforward, convolutional, or recurrent
             - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
             - Recurrent networks take n states as input and use gymnasium's FrameStackObservation wrapper for sequence handling
-        '''
-        assert 'shared' in self.net_spec, 'Specify "shared" for ActorCritic network in net_spec'
-        self.shared = self.net_spec['shared']
+        """
+        assert "shared" in self.net_spec, (
+            'Specify "shared" for ActorCritic network in net_spec'
+        )
+        self.shared = self.net_spec["shared"]
 
         # create actor/critic specific specs
         actor_net_spec = self.net_spec.copy()
         critic_net_spec = self.net_spec.copy()
         for k in self.net_spec:
-            if 'actor_' in k:
-                actor_net_spec[k.replace('actor_', '')] = actor_net_spec.pop(k)
+            if "actor_" in k:
+                actor_net_spec[k.replace("actor_", "")] = actor_net_spec.pop(k)
                 critic_net_spec.pop(k)
-            if 'critic_' in k:
-                critic_net_spec[k.replace('critic_', '')] = critic_net_spec.pop(k)
+            if "critic_" in k:
+                critic_net_spec[k.replace("critic_", "")] = critic_net_spec.pop(k)
                 actor_net_spec.pop(k)
-        if critic_net_spec['use_same_optim']:
+        if critic_net_spec["use_same_optim"]:
             critic_net_spec = actor_net_spec
 
         in_dim = self.agent.state_dim
         out_dim = net_util.get_out_dim(self.agent, add_critic=self.shared)
         # main actor network, may contain out_dim self.shared == True
-        NetClass = getattr(net, actor_net_spec['type'])
+        NetClass = getattr(net, actor_net_spec["type"])
         self.net = NetClass(actor_net_spec, in_dim, out_dim)
-        self.net_names = ['net']
+        self.net_names = ["net"]
         if not self.shared:  # add separate network for critic
             critic_out_dim = 1
-            CriticNetClass = getattr(net, critic_net_spec['type'])
+            CriticNetClass = getattr(net, critic_net_spec["type"])
             self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-            self.net_names.append('critic_net')
+            self.net_names.append("critic_net")
         # init net optimizer and its lr scheduler
         # steps_per_schedule: frames processed per scheduler.step() call
         steps_per_schedule = self.training_frequency * self.agent.env.num_envs
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec, steps_per_schedule)
+        self.lr_scheduler = net_util.get_lr_scheduler(
+            self.optim, self.net.lr_scheduler_spec, steps_per_schedule
+        )
         if not self.shared:
-            self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
-            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec, steps_per_schedule)
+            self.critic_optim = net_util.get_optim(
+                self.critic_net, self.critic_net.optim_spec
+            )
+            self.critic_lr_scheduler = net_util.get_lr_scheduler(
+                self.critic_optim, self.critic_net.lr_scheduler_spec, steps_per_schedule
+            )
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, net=None):
-        '''
+        """
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
-        '''
+        """
         out = super().calc_pdparam(x, net=net)
         if self.shared:
-            assert ps.is_list(out), 'Shared output should be a list [pdparam, v]'
+            assert ps.is_list(out), "Shared output should be a list [pdparam, v]"
             if len(out) == 2:  # single policy
                 pdparam = out[0]
             else:  # multiple-task policies, still assumes 1 value
@@ -239,9 +276,9 @@ class ActorCritic(Reinforce):
         return pdparam
 
     def calc_v(self, x, net=None, use_cache=True):
-        '''
+        """
         Forward-pass to calculate the predicted state-value from critic_net.
-        '''
+        """
         if self.shared:  # output: policy, value
             if use_cache:  # uses cache from calc_pdparam to prevent double-pass
                 v_pred = self.v_pred
@@ -254,34 +291,38 @@ class ActorCritic(Reinforce):
         return v_pred
 
     def calc_pdparam_v(self, batch):
-        '''Efficiently forward to get pdparam and v by batch for loss computation'''
-        states = batch['states']
+        """Efficiently forward to get pdparam and v by batch for loss computation"""
+        states = batch["states"]
         if self.agent.env.is_venv:
             states = math_util.venv_unpack(states)
         pdparam = self.calc_pdparam(states)
-        v_pred = self.calc_v(states)  # uses self.v_pred from calc_pdparam if self.shared
+        v_pred = self.calc_v(
+            states
+        )  # uses self.v_pred from calc_pdparam if self.shared
         return pdparam, v_pred
 
     def calc_ret_advs_v_targets(self, batch, v_preds):
-        '''Calculate plain returns, and advs = rets - v_preds, v_targets = rets'''
+        """Calculate plain returns, and advs = rets - v_preds, v_targets = rets"""
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.agent.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.agent.env.num_envs)
-        rets = math_util.calc_returns(batch['rewards'], batch['terminateds'], self.gamma)
+        rets = math_util.calc_returns(
+            batch["rewards"], batch["terminateds"], self.gamma
+        )
         advs = rets - v_preds
         v_targets = rets
         if self.agent.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)
-        logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
+        logger.debug(f"advs: {advs}\nv_targets: {v_targets}")
         return advs, v_targets
 
     def calc_nstep_advs_v_targets(self, batch, v_preds):
-        '''
+        """
         Calculate N-step returns, and advs = nstep_rets - v_preds, v_targets = nstep_rets
         See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
-        '''
-        next_states = batch['next_states'][-1]
+        """
+        next_states = batch["next_states"][-1]
         if not self.agent.env.is_venv:
             next_states = next_states.unsqueeze(dim=0)
         with torch.no_grad():
@@ -289,21 +330,27 @@ class ActorCritic(Reinforce):
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.agent.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.agent.env.num_envs)
-        nstep_rets = math_util.calc_nstep_returns(batch['rewards'], batch['terminateds'], next_v_pred, self.gamma, self.num_step_returns)
+        nstep_rets = math_util.calc_nstep_returns(
+            batch["rewards"],
+            batch["terminateds"],
+            next_v_pred,
+            self.gamma,
+            self.num_step_returns,
+        )
         advs = nstep_rets - v_preds
         v_targets = nstep_rets
         if self.agent.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)
-        logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
+        logger.debug(f"advs: {advs}\nv_targets: {v_targets}")
         return advs, v_targets
 
     def calc_gae_advs_v_targets(self, batch, v_preds):
-        '''
+        """
         Calculate GAE, and advs = GAE, v_targets = advs + v_preds
         See GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
-        '''
-        next_states = batch['next_states'][-1]
+        """
+        next_states = batch["next_states"][-1]
         if not self.agent.env.is_venv:
             next_states = next_states.unsqueeze(dim=0)
         with torch.no_grad():
@@ -313,28 +360,30 @@ class ActorCritic(Reinforce):
             v_preds = math_util.venv_pack(v_preds, self.agent.env.num_envs)
             next_v_pred = next_v_pred.unsqueeze(dim=0)
         v_preds_all = torch.cat((v_preds, next_v_pred), dim=0)
-        advs = math_util.calc_gaes(batch['rewards'], batch['terminateds'], v_preds_all, self.gamma, self.lam)
+        advs = math_util.calc_gaes(
+            batch["rewards"], batch["terminateds"], v_preds_all, self.gamma, self.lam
+        )
         v_targets = advs + v_preds
         # NOTE: Advantage normalization moved to per-minibatch in training loop (like SB3)
         if self.agent.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)
-        logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
+        logger.debug(f"advs: {advs}\nv_targets: {v_targets}")
         return advs, v_targets
 
     def calc_policy_loss(self, batch, pdparams, advs):
-        '''Calculate the actor's policy loss'''
+        """Calculate the actor's policy loss"""
         return super().calc_policy_loss(batch, pdparams, advs)
 
     def calc_val_loss(self, v_preds, v_targets):
-        '''Calculate the critic's value loss.
+        """Calculate the critic's value loss.
 
         If normalize_v_targets is enabled with return_normalizer, uses running statistics
         to normalize targets consistently across training (like SB3's VecNormalize).
         This enables the critic to learn values in a stable range regardless of
         the environment's actual return scale.
-        '''
-        assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
+        """
+        assert v_preds.shape == v_targets.shape, f"{v_preds.shape} != {v_targets.shape}"
 
         if self.return_normalizer is not None:
             # Update running statistics with new targets
@@ -343,7 +392,9 @@ class ActorCritic(Reinforce):
             v_targets_norm = self.return_normalizer.normalize(v_targets)
             # Normalize predictions using same statistics
             v_preds_norm = self.return_normalizer.normalize(v_preds)
-            val_loss = self.val_loss_coef * self.net.loss_fn(v_preds_norm, v_targets_norm)
+            val_loss = self.val_loss_coef * self.net.loss_fn(
+                v_preds_norm, v_targets_norm
+            )
         elif self.normalize_v_targets:
             # Fallback: batch normalization (less stable but prevents explosion)
             v_max = v_targets.abs().max() * 2 + 1e-8
@@ -351,15 +402,17 @@ class ActorCritic(Reinforce):
             v_std = v_targets.std() + 1e-8
             v_preds_norm = v_preds_clipped / v_std
             v_targets_norm = v_targets / v_std
-            val_loss = self.val_loss_coef * self.net.loss_fn(v_preds_norm, v_targets_norm)
+            val_loss = self.val_loss_coef * self.net.loss_fn(
+                v_preds_norm, v_targets_norm
+            )
         else:
             val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
 
-        logger.debug(f'Critic value loss: {val_loss:g}')
+        logger.debug(f"Critic value loss: {val_loss:g}")
         return val_loss
 
     def train(self):
-        '''Train actor critic by computing the loss in batch efficiently'''
+        """Train actor critic by computing the loss in batch efficiently"""
         if self.to_train == 1:
             batch = self.sample()
             self.agent.env.set_batch_size(len(batch))
@@ -369,22 +422,40 @@ class ActorCritic(Reinforce):
             val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
             if self.shared:  # shared network
                 loss = policy_loss + val_loss
-                self.net.train_step(loss, self.optim, self.lr_scheduler, global_net=self.global_net)
+                self.net.train_step(
+                    loss, self.optim, self.lr_scheduler, global_net=self.global_net
+                )
                 self.agent.env.tick_opt_step()
             else:
-                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, global_net=self.global_net)
-                self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, global_net=self.global_critic_net)
+                self.net.train_step(
+                    policy_loss,
+                    self.optim,
+                    self.lr_scheduler,
+                    global_net=self.global_net,
+                )
+                self.critic_net.train_step(
+                    val_loss,
+                    self.critic_optim,
+                    self.critic_lr_scheduler,
+                    global_net=self.global_critic_net,
+                )
                 self.agent.env.tick_opt_step()
                 self.agent.env.tick_opt_step()
                 loss = policy_loss + val_loss
             # Step LR scheduler once per training iteration
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
-            if not self.shared and hasattr(self, 'critic_lr_scheduler') and self.critic_lr_scheduler is not None:
+            if (
+                not self.shared
+                and hasattr(self, "critic_lr_scheduler")
+                and self.critic_lr_scheduler is not None
+            ):
                 self.critic_lr_scheduler.step()
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {self.agent.env.get("epi")}, frame: {self.agent.env.get("frame")}, t: {self.agent.env.get("t")}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}')
+            logger.debug(
+                f"Trained {self.name} at epi: {self.agent.env.get('epi')}, frame: {self.agent.env.get('frame')}, t: {self.agent.env.get('t')}, total_reward so far: {self.agent.env.total_reward}, loss: {loss:g}"
+            )
             return loss.item()
         else:
             return np.nan
@@ -393,5 +464,7 @@ class ActorCritic(Reinforce):
     def update(self):
         self.agent.explore_var = self.explore_var_scheduler.update(self, self.agent.env)
         if self.entropy_coef_spec is not None:
-            self.agent.entropy_coef = self.entropy_coef_scheduler.update(self, self.agent.env)
+            self.agent.entropy_coef = self.entropy_coef_scheduler.update(
+                self, self.agent.env
+            )
         return self.agent.explore_var

@@ -8,7 +8,7 @@ import torch.nn as nn
 
 
 class MLPNet(Net, nn.Module):
-    '''
+    """
     Class for generating arbitrary sized feedforward neural network
     If more than 1 output tensors, will create a self.model_tails instead of making last layer part of self.model
 
@@ -42,10 +42,10 @@ class MLPNet(Net, nn.Module):
     For continuous actions, you can use state-independent log_std (CleanRL-style) by setting:
         "log_std_init": 0.0  # initial value for log_std parameter
     This creates a learnable nn.Parameter for log_std instead of a state-dependent network head.
-    '''
+    """
 
     def __init__(self, net_spec, in_dim, out_dim):
-        '''
+        """
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
         hid_layers_activation: activation function for the hidden layers
@@ -60,47 +60,65 @@ class MLPNet(Net, nn.Module):
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         log_std_init: if set, use state-independent log_std as nn.Parameter initialized to this value (CleanRL-style)
-        '''
+        """
         nn.Module.__init__(self)
         super().__init__(net_spec, in_dim, out_dim)
         # set default
-        util.set_attr(self, dict(
-            out_layer_activation=None,
-            init_fn=None,
-            clip_grad_val=None,
-            loss_spec={'name': 'MSELoss'},
-            optim_spec={'name': 'Adam'},
-            lr_scheduler_spec=None,
-            update_type='replace',
-            update_frequency=1,
-            polyak_coef=0.0,
-            gpu=False,
-            log_std_init=None,  # State-independent log_std (CleanRL-style) if set
-            actor_init_std=None,  # CleanRL uses 0.01 for Atari
-            critic_init_std=None,  # CleanRL uses 1.0 for Atari
-        ))
-        util.set_attr(self, self.net_spec, [
-            'shared',
-            'hid_layers',
-            'hid_layers_activation',
-            'out_layer_activation',
-            'init_fn',
-            'clip_grad_val',
-            'loss_spec',
-            'optim_spec',
-            'lr_scheduler_spec',
-            'update_type',
-            'update_frequency',
-            'polyak_coef',
-            'gpu',
-            'log_std_init',
-            'actor_init_std',
-            'critic_init_std',
-        ])
+        util.set_attr(
+            self,
+            dict(
+                out_layer_activation=None,
+                init_fn=None,
+                clip_grad_val=None,
+                loss_spec={"name": "MSELoss"},
+                optim_spec={"name": "Adam"},
+                lr_scheduler_spec=None,
+                update_type="replace",
+                update_frequency=1,
+                polyak_coef=0.0,
+                gpu=False,
+                log_std_init=None,  # State-independent log_std (CleanRL-style) if set
+                actor_init_std=None,  # CleanRL uses 0.01 for Atari
+                critic_init_std=None,  # CleanRL uses 1.0 for Atari
+                layer_norm=False,  # LayerNorm after each hidden layer (BRO, NeurIPS 2024)
+                batch_norm=False,  # BatchNorm1d after each hidden layer (CrossQ, ICLR 2024)
+            ),
+        )
+        util.set_attr(
+            self,
+            self.net_spec,
+            [
+                "shared",
+                "hid_layers",
+                "hid_layers_activation",
+                "out_layer_activation",
+                "init_fn",
+                "clip_grad_val",
+                "loss_spec",
+                "optim_spec",
+                "lr_scheduler_spec",
+                "update_type",
+                "update_frequency",
+                "polyak_coef",
+                "gpu",
+                "log_std_init",
+                "actor_init_std",
+                "critic_init_std",
+                "layer_norm",
+                "batch_norm",
+            ],
+        )
 
         dims = [self.in_dim] + self.hid_layers
-        self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
-        self.tails, self.log_std = net_util.build_tails(dims[-1], self.out_dim, self.out_layer_activation, self.log_std_init)
+        self.model = net_util.build_fc_model(
+            dims,
+            self.hid_layers_activation,
+            layer_norm=self.layer_norm,
+            batch_norm=self.batch_norm,
+        )
+        self.tails, self.log_std = net_util.build_tails(
+            dims[-1], self.out_dim, self.out_layer_activation, self.log_std_init
+        )
 
         net_util.init_layers(self, self.init_fn)
         net_util.init_tails(self, self.actor_init_std, self.critic_init_std)
@@ -109,12 +127,12 @@ class MLPNet(Net, nn.Module):
         self.train()
 
     def forward(self, x):
-        '''The feedforward step'''
+        """The feedforward step"""
         return net_util.forward_tails(self.model(x), self.tails, self.log_std)
 
 
 class HydraMLPNet(Net, nn.Module):
-    '''
+    """
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
 
     e.g. net_spec
@@ -147,10 +165,10 @@ class HydraMLPNet(Net, nn.Module):
         "polyak_coef": 0.9,
         "gpu": true
     }
-    '''
+    """
 
     def __init__(self, net_spec, in_dim, out_dim):
-        '''
+        """
         Multi state processing heads, single shared body, and multi action tails.
         There is one state and action head per body/environment
         Example:
@@ -172,39 +190,48 @@ class HydraMLPNet(Net, nn.Module):
         |______________|  |______________|
                 |                |
            env 1 action      env 2 action
-        '''
+        """
         nn.Module.__init__(self)
         super().__init__(net_spec, in_dim, out_dim)
         # set default
-        util.set_attr(self, dict(
-            out_layer_activation=None,
-            init_fn=None,
-            clip_grad_val=None,
-            loss_spec={'name': 'MSELoss'},
-            optim_spec={'name': 'Adam'},
-            lr_scheduler_spec=None,
-            update_type='replace',
-            update_frequency=1,
-            polyak_coef=0.0,
-            gpu=False,
-        ))
-        util.set_attr(self, self.net_spec, [
-            'hid_layers',
-            'hid_layers_activation',
-            'out_layer_activation',
-            'init_fn',
-            'clip_grad_val',
-            'loss_spec',
-            'optim_spec',
-            'lr_scheduler_spec',
-            'update_type',
-            'update_frequency',
-            'polyak_coef',
-            'gpu',
-        ])
-        assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPNet'
-        assert isinstance(self.in_dim, list), 'Hydra network needs in_dim as list'
-        assert isinstance(self.out_dim, list), 'Hydra network needs out_dim as list'
+        util.set_attr(
+            self,
+            dict(
+                out_layer_activation=None,
+                init_fn=None,
+                clip_grad_val=None,
+                loss_spec={"name": "MSELoss"},
+                optim_spec={"name": "Adam"},
+                lr_scheduler_spec=None,
+                update_type="replace",
+                update_frequency=1,
+                polyak_coef=0.0,
+                gpu=False,
+            ),
+        )
+        util.set_attr(
+            self,
+            self.net_spec,
+            [
+                "hid_layers",
+                "hid_layers_activation",
+                "out_layer_activation",
+                "init_fn",
+                "clip_grad_val",
+                "loss_spec",
+                "optim_spec",
+                "lr_scheduler_spec",
+                "update_type",
+                "update_frequency",
+                "polyak_coef",
+                "gpu",
+            ],
+        )
+        assert len(self.hid_layers) == 3, (
+            "Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPNet"
+        )
+        assert isinstance(self.in_dim, list), "Hydra network needs in_dim as list"
+        assert isinstance(self.out_dim, list), "Hydra network needs out_dim as list"
         self.head_hid_layers = self.hid_layers[0]
         self.body_hid_layers = self.hid_layers[1]
         self.tail_hid_layers = self.hid_layers[2]
@@ -214,10 +241,14 @@ class HydraMLPNet(Net, nn.Module):
             self.tail_hid_layers = self.tail_hid_layers * len(self.out_dim)
 
         self.model_heads = self.build_model_heads(in_dim)
-        heads_out_dim = np.sum([head_hid_layers[-1] for head_hid_layers in self.head_hid_layers])
+        heads_out_dim = np.sum(
+            [head_hid_layers[-1] for head_hid_layers in self.head_hid_layers]
+        )
         dims = [heads_out_dim] + self.body_hid_layers
         self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
-        self.model_tails = self.build_model_tails(self.out_dim, self.out_layer_activation)
+        self.model_tails = self.build_model_tails(
+            self.out_dim, self.out_layer_activation
+        )
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -225,8 +256,10 @@ class HydraMLPNet(Net, nn.Module):
         self.train()
 
     def build_model_heads(self, in_dim):
-        '''Build each model_head. These are stored as Sequential models in model_heads'''
-        assert len(self.head_hid_layers) == len(in_dim), 'Hydra head hid_params inconsistent with number in dims'
+        """Build each model_head. These are stored as Sequential models in model_heads"""
+        assert len(self.head_hid_layers) == len(in_dim), (
+            "Hydra head hid_params inconsistent with number in dims"
+        )
         model_heads = nn.ModuleList()
         for in_d, hid_layers in zip(in_dim, self.head_hid_layers):
             dims = [in_d] + hid_layers
@@ -235,17 +268,23 @@ class HydraMLPNet(Net, nn.Module):
         return model_heads
 
     def build_model_tails(self, out_dim, out_layer_activation):
-        '''Build each model_tail. These are stored as Sequential models in model_tails'''
+        """Build each model_tail. These are stored as Sequential models in model_tails"""
         if not ps.is_list(out_layer_activation):
             out_layer_activation = [out_layer_activation] * len(out_dim)
         model_tails = nn.ModuleList()
         if ps.is_empty(self.tail_hid_layers):
             for out_d, out_activ in zip(out_dim, out_layer_activation):
-                tail = net_util.build_fc_model([self.body_hid_layers[-1], out_d], out_activ)
+                tail = net_util.build_fc_model(
+                    [self.body_hid_layers[-1], out_d], out_activ
+                )
                 model_tails.append(tail)
         else:
-            assert len(self.tail_hid_layers) == len(out_dim), 'Hydra tail hid_params inconsistent with number out dims'
-            for out_d, out_activ, hid_layers in zip(out_dim, out_layer_activation, self.tail_hid_layers):
+            assert len(self.tail_hid_layers) == len(out_dim), (
+                "Hydra tail hid_params inconsistent with number out dims"
+            )
+            for out_d, out_activ, hid_layers in zip(
+                out_dim, out_layer_activation, self.tail_hid_layers
+            ):
                 dims = hid_layers
                 model_tail = net_util.build_fc_model(dims, self.hid_layers_activation)
                 tail_out = net_util.build_fc_model([dims[-1], out_d], out_activ)
@@ -254,7 +293,7 @@ class HydraMLPNet(Net, nn.Module):
         return model_tails
 
     def forward(self, xs):
-        '''The feedforward step'''
+        """The feedforward step"""
         head_xs = []
         for model_head, x in zip(self.model_heads, xs):
             head_xs.append(model_head(x))
@@ -267,7 +306,7 @@ class HydraMLPNet(Net, nn.Module):
 
 
 class DuelingMLPNet(MLPNet):
-    '''
+    """
     Class for generating arbitrary sized feedforward neural network, with dueling heads. Intended for Q-Learning algorithms only.
     Implementation based on "Dueling Network Architectures for Deep Reinforcement Learning" http://proceedings.mlr.press/v48/wangf16.pdf
 
@@ -296,37 +335,44 @@ class DuelingMLPNet(MLPNet):
         "polyak_coef": 0.9,
         "gpu": true
     }
-    '''
+    """
 
     def __init__(self, net_spec, in_dim, out_dim):
         nn.Module.__init__(self)
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
-        util.set_attr(self, dict(
-            init_fn=None,
-            clip_grad_val=None,
-            loss_spec={'name': 'MSELoss'},
-            optim_spec={'name': 'Adam'},
-            lr_scheduler_spec=None,
-            update_type='replace',
-            update_frequency=1,
-            polyak_coef=0.0,
-            gpu=False,
-        ))
-        util.set_attr(self, self.net_spec, [
-            'shared',
-            'hid_layers',
-            'hid_layers_activation',
-            'init_fn',
-            'clip_grad_val',
-            'loss_spec',
-            'optim_spec',
-            'lr_scheduler_spec',
-            'update_type',
-            'update_frequency',
-            'polyak_coef',
-            'gpu',
-        ])
+        util.set_attr(
+            self,
+            dict(
+                init_fn=None,
+                clip_grad_val=None,
+                loss_spec={"name": "MSELoss"},
+                optim_spec={"name": "Adam"},
+                lr_scheduler_spec=None,
+                update_type="replace",
+                update_frequency=1,
+                polyak_coef=0.0,
+                gpu=False,
+            ),
+        )
+        util.set_attr(
+            self,
+            self.net_spec,
+            [
+                "shared",
+                "hid_layers",
+                "hid_layers_activation",
+                "init_fn",
+                "clip_grad_val",
+                "loss_spec",
+                "optim_spec",
+                "lr_scheduler_spec",
+                "update_type",
+                "update_frequency",
+                "polyak_coef",
+                "gpu",
+            ],
+        )
 
         # Guard against inappropriate algorithms and environments
         # Build model body
@@ -341,7 +387,7 @@ class DuelingMLPNet(MLPNet):
         self.to(self.device)
 
     def forward(self, x):
-        '''The feedforward step'''
+        """The feedforward step"""
         x = self.model_body(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
