@@ -1,0 +1,86 @@
+# SAC + CrossQ Humanoid verification (showcase — CrossQ should win with proper BN)
+
+_sac_base_meta: &sac_base_meta
+  distributed: false
+  log_frequency: 5000
+  eval_frequency: 5000
+  max_session: 4
+  max_trial: 1
+
+_sac_base_net: &sac_base_net
+  type: MLPNet
+  hid_layers: [400, 300]
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.00073
+  update_type: polyak
+  update_frequency: 1
+  polyak_coef: 0.02
+  gpu: auto
+
+# 1. SAC baseline
+sac_humanoid_baseline:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.98
+      training_frequency: 1
+      training_iter: 1
+      training_start_step: 5000
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 200000
+      use_cer: false
+    net: *sac_base_net
+  env:
+    name: Humanoid-v5
+    num_envs: 4
+    max_t: null
+    max_frame: 200000
+  meta: *sac_base_meta
+
+# 2. CrossQ on Humanoid — with BatchNorm critics, paper hparams
+crossq_humanoid:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.98
+      training_frequency: 1
+      training_iter: 1
+      training_start_step: 5000
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 200000
+      use_cer: false
+    net:
+      type: MLPNet
+      hid_layers: [256, 256]
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      clip_grad_val: 1.0
+      batch_norm: true
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: Adam
+        lr: 0.0001
+      gpu: auto
+  env:
+    name: Humanoid-v5
+    num_envs: 4
+    max_t: null
+    max_frame: 200000
+  meta: *sac_base_meta

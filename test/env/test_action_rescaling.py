@@ -1,4 +1,5 @@
 """Tests for automatic action rescaling wrapper."""
+
 import numpy as np
 import pytest
 

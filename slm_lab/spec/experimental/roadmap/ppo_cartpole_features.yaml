@@ -1,0 +1,113 @@
+# PPO CartPole feature ablation specs (quick smoke test)
+
+_ppo_base_algorithm: &ppo_base_algorithm
+  name: PPO
+  action_pdtype: default
+  action_policy: default
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec:
+    name: no_decay
+    start_val: 0.2
+    end_val: 0.2
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.01
+    end_val: 0.01
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  time_horizon: 128
+  minibatch_size: 64
+  training_epoch: 4
+
+_ppo_base_net: &ppo_base_net
+  type: MLPNet
+  shared: false
+  hid_layers: [64, 64]
+  hid_layers_activation: tanh
+  clip_grad_val: 0.5
+  use_same_optim: true
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.0003
+  gpu: auto
+
+_ppo_base_meta: &ppo_base_meta
+  distributed: false
+  log_frequency: 500
+  eval_frequency: 500
+  max_session: 4
+  max_trial: 1
+
+# 1. Baseline
+ppo_cartpole_baseline:
+  agent:
+    name: PPO
+    algorithm: *ppo_base_algorithm
+    memory:
+      name: OnPolicyBatchReplay
+    net: *ppo_base_net
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 100000
+  meta: *ppo_base_meta
+
+# 2. With layer_norm
+ppo_cartpole_layernorm:
+  agent:
+    name: PPO
+    algorithm: *ppo_base_algorithm
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_base_net
+      layer_norm: true
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 100000
+  meta: *ppo_base_meta
+
+# 3. With percentile normalization
+ppo_cartpole_percentile:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_base_algorithm
+      normalize_advantages: percentile
+    memory:
+      name: OnPolicyBatchReplay
+    net: *ppo_base_net
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 100000
+  meta: *ppo_base_meta
+
+# 4. v2 stack (layer_norm + percentile)
+ppo_cartpole_v2:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_base_algorithm
+      normalize_advantages: percentile
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_base_net
+      layer_norm: true
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 100000
+  meta: *ppo_base_meta

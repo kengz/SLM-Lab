@@ -1,0 +1,76 @@
+# CrossQ Pendulum verification (continuous actions)
+
+_pendulum_meta: &pendulum_meta
+  distributed: false
+  log_frequency: 500
+  eval_frequency: 500
+  max_session: 1
+  max_trial: 1
+
+_pendulum_net: &pendulum_net
+  type: MLPNet
+  hid_layers: [64, 64]
+  hid_layers_activation: relu
+  init_fn: xavier_uniform_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.001
+  gpu: auto
+
+# 1. SAC baseline on Pendulum
+sac_pendulum_baseline:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_start_step: 500
+    memory:
+      name: Replay
+      batch_size: 64
+      max_size: 50000
+      use_cer: false
+    net:
+      <<: *pendulum_net
+      update_type: polyak
+      polyak_coef: 0.005
+      log_std_init: 0.0
+  env:
+    name: Pendulum-v1
+    num_envs: 1
+    max_t: null
+    max_frame: 50000
+  meta: *pendulum_meta
+
+# 2. CrossQ on Pendulum (continuous)
+crossq_pendulum:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 1
+      training_start_step: 500
+    memory:
+      name: Replay
+      batch_size: 64
+      max_size: 50000
+      use_cer: false
+    net:
+      <<: *pendulum_net
+      log_std_init: 0.0
+  env:
+    name: Pendulum-v1
+    num_envs: 1
+    max_t: null
+    max_frame: 50000
+  meta: *pendulum_meta
