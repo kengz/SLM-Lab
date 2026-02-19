@@ -20,12 +20,14 @@ commands:
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
 resources:
-  gpu: 1..
-  memory: 48GB..
+  gpu:
+    name: [RTX3090]
+    count: 1
+  memory: 32GB..
 
-spot_policy: on-demand
+spot_policy: auto
 max_duration: 6h
-max_price: 0.25
+max_price: 0.50
 retry:
   on_events: [no-capacity]
   duration: 1h

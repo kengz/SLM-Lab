@@ -1,0 +1,77 @@
+# A2C Atari - TorchArcNet specs
+# ConvNet body: LazyConv2d(32,8,4) + ReLU + LazyConv2d(64,4,2) + ReLU + LazyConv2d(64,3,1) + ReLU + Flatten + LazyLinear(512) + ReLU
+
+a2c_gae_atari_arc:
+  agent:
+    name: A2C
+    algorithm:
+      name: ActorCritic
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      num_step_returns: null
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 0
+      val_loss_coef: 0.5
+      training_frequency: 32
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      shared: true
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyConv2d: {out_channels: 32, kernel_size: 8, stride: 4}
+              - ReLU:
+              - LazyConv2d: {out_channels: 64, kernel_size: 4, stride: 2}
+              - ReLU:
+              - LazyConv2d: {out_channels: 64, kernel_size: 3, stride: 1}
+              - ReLU:
+              - Flatten:
+              - LazyLinear: {out_features: 512}
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      actor_init_std: 0.01
+      critic_init_std: 1.0
+      batch_norm: false
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: RMSprop
+        lr: 7.0e-4
+        alpha: 0.99
+        eps: 1.0e-5
+      critic_optim_spec:
+        name: RMSprop
+        lr: 7.0e-4
+        alpha: 0.99
+        eps: 1.0e-5
+      normalize: true
+      gpu: auto
+  env:
+    name: "${env}"
+    num_envs: 16
+    max_frame: 1.0e+7
+    life_loss_info: true
+  meta:
+    distributed: false
+    eval_frequency: 10000
+    log_frequency: 10000
+    max_session: 4
+    max_trial: 1

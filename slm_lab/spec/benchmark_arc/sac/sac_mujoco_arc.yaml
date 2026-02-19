@@ -1,0 +1,339 @@
+# SAC MuJoCo using TorchArcNet
+# Env-dependent hyperparams: training_iter, gamma, lr, polyak_coef, hidden layers, buffer size
+# Base config uses standard SAC defaults; each env overrides its tuned params.
+
+# --- Shared anchors ---
+
+_arc_body_256: &arc_body_256
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_arc_body_400_300: &arc_body_400_300
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 400
+        - ReLU:
+        - LazyLinear:
+            out_features: 300
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_sac_net: &sac_net
+  type: TorchArcNet
+  arc: *arc_body_256
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.0003
+  update_type: polyak
+  update_frequency: 1
+  polyak_coef: 0.005
+  gpu: auto
+
+_sac_algorithm: &sac_algorithm
+  name: SoftActorCritic
+  action_pdtype: default
+  action_policy: default
+  gamma: 0.99
+  training_frequency: 1
+  training_iter: 4
+  training_start_step: 5000
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 1000000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 1
+
+# --- Generic MuJoCo spec (with env/max_frame substitution) ---
+
+sac_mujoco_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm: *sac_algorithm
+    memory: *memory
+    net: *sac_net
+  env:
+    name: ${env}
+    num_envs: 16
+    max_t: null
+    max_frame: ${max_frame}
+  meta: *meta
+
+# --- Easy envs: training_iter=4, standard params ---
+
+sac_halfcheetah_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      training_iter: 2
+      training_start_step: 5000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: HalfCheetah-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 4000000
+  meta: *meta
+
+sac_inverted_pendulum_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm: *sac_algorithm
+    memory: *memory
+    net: *sac_net
+  env:
+    name: InvertedPendulum-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+sac_inverted_double_pendulum_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      training_start_step: 1000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: InvertedDoublePendulum-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+sac_swimmer_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      gamma: 0.9999
+      training_iter: 4
+      training_start_step: 1000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Swimmer-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+sac_reacher_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      training_iter: 4
+      training_start_step: 1000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Reacher-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 1000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+sac_pusher_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      training_iter: 4
+      training_start_step: 1000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Pusher-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 1000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+# --- Hard envs: iter=4, 3M frames (data>gradients: 75% compute, +16-71% score, 2x faster) ---
+
+sac_hopper_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      training_start_step: 10000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Hopper-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta: *meta
+
+sac_walker2d_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      training_start_step: 10000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Walker2d-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta: *meta
+
+# --- SB3-param envs: gamma=0.98, lr=7.3e-4, polyak=0.02, [400,300], buffer=300K, iter=16 ---
+
+sac_ant_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      gamma: 0.98
+      training_iter: 4
+      training_start_step: 10000
+    memory:
+      <<: *memory
+      max_size: 300000
+    net:
+      <<: *sac_net
+      arc: *arc_body_400_300
+      optim_spec:
+        name: Adam
+        lr: 7.3e-4
+      polyak_coef: 0.02
+  env:
+    name: Ant-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta: *meta
+
+sac_humanoid_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      gamma: 0.98
+      training_iter: 16
+      training_start_step: 10000
+    memory:
+      <<: *memory
+      max_size: 300000
+    net:
+      <<: *sac_net
+      arc: *arc_body_400_300
+      optim_spec:
+        name: Adam
+        lr: 7.3e-4
+      polyak_coef: 0.02
+  env:
+    name: Humanoid-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 1000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+# --- Experiment: freq=4 test (same iter, 4x less training, 2x more data, ~4h) ---
+
+sac_humanoid_freq4_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      gamma: 0.98
+      training_frequency: 4
+      training_iter: 8
+      training_start_step: 10000
+    memory:
+      <<: *memory
+      max_size: 300000
+    net:
+      <<: *sac_net
+      arc: *arc_body_400_300
+      optim_spec:
+        name: Adam
+        lr: 7.3e-4
+      polyak_coef: 0.02
+  env:
+    name: Humanoid-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 4000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+sac_humanoid_standup_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *sac_algorithm
+      gamma: 0.98
+      training_iter: 16
+      training_start_step: 10000
+    memory:
+      <<: *memory
+      max_size: 300000
+    net:
+      <<: *sac_net
+      arc: *arc_body_400_300
+      optim_spec:
+        name: Adam
+        lr: 7.3e-4
+      polyak_coef: 0.02
+  env:
+    name: HumanoidStandup-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 1000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000

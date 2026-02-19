@@ -1,0 +1,180 @@
+# SAC MuJoCo experimental specs using TorchArcNet
+# Testing: fewer gradients + more data for better speed/perf tradeoff
+# Same analysis as SAC Atari experiments (compute budget optimization)
+#
+# Compute budget formula: total_grads = (max_frame / (num_envs * freq)) * iter
+# Current Hopper/Walker: iter=8, 2M frames → 1M grads, ~118fps, ~4.7h
+# Current easy envs: iter=4, 2M frames → 500K grads, ~200fps, ~2.8h
+
+# --- Shared anchors ---
+
+_arc_body_256: &arc_body_256
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_sac_net: &sac_net
+  type: TorchArcNet
+  arc: *arc_body_256
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.0003
+  update_type: polyak
+  update_frequency: 1
+  polyak_coef: 0.005
+  gpu: auto
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 1000000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 1
+
+# ============================================================
+# HOPPER EXPERIMENTS
+# Current best: iter=8, 2M frames → 1M grads, ~118fps, ~4.7h, score 1510
+# Hypothesis: more data, fewer grads → same or better score, faster
+# ============================================================
+
+# Config A: iter=4, 4M frames → 1M grads (same budget), ~200fps, ~5.6h
+# Same total gradients, 2x more data, slightly longer but faster FPS
+sac_hopper_4m_i4_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 4
+      training_start_step: 10000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Hopper-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 4000000
+  meta: *meta
+
+# Config B: iter=4, 3M frames → 750K grads (25% fewer), ~200fps, ~4.2h
+# Fewer gradients but more data than current. Faster wall time.
+sac_hopper_3m_i4_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 4
+      training_start_step: 10000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Hopper-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta: *meta
+
+# ============================================================
+# WALKER2D EXPERIMENTS
+# Current best: iter=8, 2M frames → 1M grads, ~104fps, ~5.3h, score 2288
+# Same hypothesis as Hopper
+# ============================================================
+
+# Config A: iter=4, 4M frames → 1M grads (same budget), ~200fps, ~5.6h
+sac_walker2d_4m_i4_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 4
+      training_start_step: 10000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Walker2d-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 4000000
+  meta: *meta
+
+# Config B: iter=4, 3M frames → 750K grads (25% fewer), ~200fps, ~4.2h
+sac_walker2d_3m_i4_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 4
+      training_start_step: 10000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: Walker2d-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta: *meta
+
+# ============================================================
+# HALFCHEETAH EXPERIMENT
+# Current: iter=4, 2M frames → 500K grads, ~200fps, ~2.8h, score 7255
+# Test: can iter=2 with 4M frames match it faster?
+# ============================================================
+
+# iter=2, 4M frames → 500K grads (same budget), ~350fps est, ~3.2h
+sac_halfcheetah_4m_i2_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 2
+      training_start_step: 5000
+    memory: *memory
+    net: *sac_net
+  env:
+    name: HalfCheetah-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 4000000
+  meta: *meta

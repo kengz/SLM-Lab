@@ -1,0 +1,79 @@
+# SAC Atari using TorchArcNet - ConvNet-equivalent architecture
+# Conv layers: 32@8x8s4, 64@4x4s2, 64@3x3s1 -> Flatten -> FC 512
+# SAC creates 5 nets from the same net_spec (actor, q1, target_q1, q2, target_q2).
+# The 'arc' block defines the body; tails are auto-added per out_dim.
+
+sac_atari_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_start_step: 10000
+      training_frequency: 4
+      training_iter: 1
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 200000
+      use_cer: false
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyConv2d:
+                  out_channels: 32
+                  kernel_size: 8
+                  stride: 4
+              - ReLU:
+              - LazyConv2d:
+                  out_channels: 64
+                  kernel_size: 4
+                  stride: 2
+              - ReLU:
+              - LazyConv2d:
+                  out_channels: 64
+                  kernel_size: 3
+                  stride: 1
+              - ReLU:
+              - Flatten:
+              - LazyLinear:
+                  out_features: 512
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      shared: false
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: AdamW
+        lr: 0.0003
+        eps: 0.0001
+      update_type: polyak
+      update_frequency: 1
+      polyak_coef: 0.005
+      normalize: true
+      gpu: auto
+  env:
+    name: ${env}
+    num_envs: 16
+    max_t: null
+    max_frame: 1e7
+    life_loss_info: true
+  meta:
+    distributed: false
+    eval_frequency: 10000
+    log_frequency: 10000
+    max_session: 4
+    max_trial: 1

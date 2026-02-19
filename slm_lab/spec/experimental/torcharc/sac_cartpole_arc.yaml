@@ -1,0 +1,56 @@
+# SAC CartPole using TorchArcNet - demonstrates torcharc network specification
+# SAC creates 5 nets from the same net_spec (actor, q1, target_q1, q2, target_q2).
+# The 'arc' block defines the body; tails are auto-added per out_dim.
+
+sac_cartpole_arc:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_start_step: 1000
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 100000
+      use_cer: false
+    net:
+      type: TorchArcNet
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear:
+                  out_features: 256
+              - ReLU:
+              - LazyLinear:
+                  out_features: 256
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      clip_grad_val: null
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: Adam
+        lr: 0.0003
+      update_type: polyak
+      polyak_coef: 0.005
+      gpu: auto
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 200000
+  meta:
+    distributed: false
+    log_frequency: 500
+    eval_frequency: 500
+    max_session: 4
+    max_trial: 1
