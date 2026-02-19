@@ -192,8 +192,9 @@ def plot(
         if color is None:
             palette[i] = default_palette[i % len(default_palette)]
 
-    # Generate output filename from title
-    safe_title = final_title.replace(' ', '_').replace('(', '').replace(')', '')
+    # Generate output filename from title (strips ALE/ prefix for Atari env names)
+    filename_title = Path(final_title).name  # ALE/Pong-v5 → Pong-v5
+    safe_title = filename_title.replace(' ', '_').replace('(', '').replace(')', '')
     graph_prepath = str(output_path / safe_title)
 
     viz.plot_multi_trial(

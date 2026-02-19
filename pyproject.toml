@@ -1,6 +1,6 @@
 [project]
 name = "slm-lab"
-version = "5.0.2"
+version = "5.1.0"
 description = "Modular Deep Reinforcement Learning framework in PyTorch."
 readme = "README.md"
 requires-python = ">=3.12.0"
@@ -24,7 +24,6 @@ classifiers = [
 # Core dependencies - CLI orchestration, plotting, HF sync (no heavy ML deps)
 dependencies = [
     "colorlover>=0.3.0",
-    "dstack>=0.18.0",
     "huggingface-hub>=0.34.4",
     "kaleido==0.2.0",
     "loguru>=0.7.3",
@@ -55,6 +54,7 @@ ml = [
     "ray[default,tune]>=2.44.0",
     "tensorboard>=2.19.0",
     "torch>=2.8.0",
+    "torcharc>=1.0.0",
 ]
 # Dev dependencies - install with: uv sync --group dev
 dev = [
@@ -73,6 +73,11 @@ dev = [
 # Include ML deps by default for local training
 # Use `uv sync --no-default-groups` for minimal CLI-only install
 default-groups = ["ml"]
+# Restrict resolution to platforms we actually use (macOS dev + Linux training)
+environments = [
+    "sys_platform == 'darwin'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
 
 [[tool.uv.index]]
 name = "pytorch-cu128"

@@ -8,7 +8,7 @@
   <a href="https://slm-lab.gitbook.io/slm-lab/">Documentation</a> · <a href="https://github.com/kengz/SLM-Lab/blob/master/docs/BENCHMARKS.md">Benchmark Results</a>
 </p>
 
->**NOTE:** v5.0 updates to Gymnasium, `uv` tooling, and modern dependencies with ARM support - see [CHANGELOG.md](CHANGELOG.md).
+>**NOTE:** v5.0 updates to Gymnasium, `uv` tooling, and modern dependencies with ARM support - see [CHANGELOG.md](docs/CHANGELOG.md).
 >
 >Book readers: `git checkout v4.1.1` for *Foundations of Deep Reinforcement Learning* code.
 
@@ -111,7 +111,8 @@ Config options in `.dstack/`: `run-gpu-train.yml`, `run-gpu-search.yml`, `run-cp
 For a lightweight box that only dispatches dstack runs, syncs results, and generates plots (no local ML training):
 
 ```bash
-uv sync --no-default-groups
+uv sync --no-default-groups  # skip ML deps (torch, gymnasium, etc.)
+uv tool install dstack
 uv run --no-default-groups slm-lab run-remote spec.json spec_name train
 uv run --no-default-groups slm-lab pull spec_name
 uv run --no-default-groups slm-lab plot -f folder1,folder2

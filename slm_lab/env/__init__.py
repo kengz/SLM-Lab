@@ -39,6 +39,7 @@ Clock = ClockWrapper  # Backward compatibility alias
 # Register ALE environments on import
 try:
     import ale_py
+
     os.environ.setdefault("ALE_PY_SILENCE", "1")
     gym.register_envs(ale_py)
 except ImportError:
@@ -47,21 +48,32 @@ except ImportError:
 logger = logger.get_logger(__name__)
 
 # Keys handled by make_env, not passed to gym.make
-RESERVED_KEYS = {"name", "num_envs", "max_t", "max_frame", "normalize_obs", "normalize_reward", "clip_obs", "clip_reward"}
+RESERVED_KEYS = {
+    "name",
+    "num_envs",
+    "max_t",
+    "max_frame",
+    "normalize_obs",
+    "normalize_reward",
+    "clip_obs",
+    "clip_reward",
+}
 
 
 def _needs_action_rescaling(env: gym.Env) -> bool:
     """Check if action space needs rescaling to [-1, 1]."""
-    action_space = getattr(env, 'single_action_space', env.action_space)
+    action_space = getattr(env, "single_action_space", env.action_space)
     if not isinstance(action_space, spaces.Box):
         return False
     return not (
-        np.allclose(action_space.low, -1.0, atol=1e-6) and
-        np.allclose(action_space.high, 1.0, atol=1e-6)
+        np.allclose(action_space.low, -1.0, atol=1e-6)
+        and np.allclose(action_space.high, 1.0, atol=1e-6)
     )
 
 
-def _get_vectorization_mode(name: str, num_envs: int, is_rendering: bool = False) -> str:
+def _get_vectorization_mode(
+    name: str, num_envs: int, is_rendering: bool = False
+) -> str:
     """Select vectorization mode based on environment type."""
     entry_point = gym.envs.registry[name].entry_point.lower()
 
@@ -98,7 +110,9 @@ def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
     # State dimension
     obs_space = env.observation_space
     if isinstance(obs_space, spaces.Box):
-        env.state_dim = obs_space.shape[0] if len(obs_space.shape) == 1 else obs_space.shape
+        env.state_dim = (
+            obs_space.shape[0] if len(obs_space.shape) == 1 else obs_space.shape
+        )
     else:
         env.state_dim = getattr(obs_space, "n", obs_space.shape)
 
@@ -109,7 +123,11 @@ def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
         env.is_discrete = True
         env.is_multi = False
     elif isinstance(action_space, spaces.Box):
-        env.action_dim = action_space.shape[0] if len(action_space.shape) == 1 else action_space.shape
+        env.action_dim = (
+            action_space.shape[0]
+            if len(action_space.shape) == 1
+            else action_space.shape
+        )
         env.is_discrete = False
         env.is_multi = len(action_space.shape) > 1 or action_space.shape[0] > 1
     elif isinstance(action_space, spaces.MultiDiscrete):
@@ -124,7 +142,9 @@ def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
         raise NotImplementedError(f"Action space {type(action_space)} not supported")
 
     # Timing config
-    env.max_t = env_spec.get("max_t") or getattr(env.spec, "max_episode_steps", None) or 108000
+    env.max_t = (
+        env_spec.get("max_t") or getattr(env.spec, "max_episode_steps", None) or 108000
+    )
     if spec["meta"]["distributed"] is not False:
         env.max_frame = int(env.max_frame / spec["meta"]["max_session"])
     env.done = False
@@ -153,20 +173,48 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     gamma = spec.get("agent", {}).get("algorithm", {}).get("gamma", 0.99)
 
     if num_envs > 1:
-        env = _make_vector_env(name, num_envs, is_atari, render_mode, make_kwargs,
-                               normalize_obs, normalize_reward, clip_obs, clip_reward, gamma)
+        env = _make_vector_env(
+            name,
+            num_envs,
+            is_atari,
+            render_mode,
+            make_kwargs,
+            normalize_obs,
+            normalize_reward,
+            clip_obs,
+            clip_reward,
+            gamma,
+        )
     else:
-        env = _make_single_env(name, is_atari, render_mode, make_kwargs,
-                               normalize_obs, normalize_reward, clip_obs, clip_reward, gamma)
+        env = _make_single_env(
+            name,
+            is_atari,
+            render_mode,
+            make_kwargs,
+            normalize_obs,
+            normalize_reward,
+            clip_obs,
+            clip_reward,
+            gamma,
+        )
 
     _set_env_attributes(env, spec)
     ClockWrapperClass = VectorClockWrapper if env.is_venv else ClockWrapper
     return ClockWrapperClass(env, env.max_frame)
 
 
-def _make_vector_env(name: str, num_envs: int, is_atari: bool, render_mode: str | None,
-                     make_kwargs: dict, normalize_obs: bool, normalize_reward: bool,
-                     clip_obs: float | None, clip_reward: float | None, gamma: float) -> gym.Env:
+def _make_vector_env(
+    name: str,
+    num_envs: int,
+    is_atari: bool,
+    render_mode: str | None,
+    make_kwargs: dict,
+    normalize_obs: bool,
+    normalize_reward: bool,
+    clip_obs: float | None,
+    clip_reward: float | None,
+    gamma: float,
+) -> gym.Env:
     """Create vector environment."""
     is_rendering = bool(render_mode)
     vectorization_mode = _get_vectorization_mode(name, num_envs, is_rendering)
@@ -182,21 +230,32 @@ def _make_vector_env(name: str, num_envs: int, is_atari: bool, render_mode: str 
             make_kwargs.pop("life_loss_info", None)
             make_kwargs.pop("reward_clipping", None)
             make_kwargs["render_mode"] = "rgb_array"
+
             def preprocess(env):
                 return FrameStackObservation(
-                    AtariPreprocessing(env, frame_skip=1), stack_size=4, padding_type="zero"
+                    AtariPreprocessing(env, frame_skip=1, scale_obs=False),
+                    stack_size=4,
+                    padding_type="zero",
                 )
+
             per_env_wrappers = [preprocess]
             logger.info(f"Atari sync: {num_envs} envs with preprocessing wrappers")
     else:
         make_kwargs["render_mode"] = "rgb_array" if render_mode else None
 
-    env = gym.make_vec(name, num_envs=num_envs, vectorization_mode=vectorization_mode,
-                       wrappers=per_env_wrappers, **make_kwargs)
+    env = gym.make_vec(
+        name,
+        num_envs=num_envs,
+        vectorization_mode=vectorization_mode,
+        wrappers=per_env_wrappers,
+        **make_kwargs,
+    )
 
     if _needs_action_rescaling(env):
         action_space = env.single_action_space
-        logger.info(f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
+        logger.info(
+            f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]"
+        )
         env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
 
     env = VectorRecordEpisodeStatistics(env)
@@ -215,7 +274,9 @@ def _make_vector_env(name: str, num_envs: int, is_atari: bool, render_mode: str 
         if isinstance(clip_reward, (int, float)):
             env = VectorClipReward(env, min_reward=-clip_reward, max_reward=clip_reward)
         else:
-            env = VectorClipReward(env, min_reward=clip_reward[0], max_reward=clip_reward[1])
+            env = VectorClipReward(
+                env, min_reward=clip_reward[0], max_reward=clip_reward[1]
+            )
 
     if render_mode:
         env = VectorRenderAll(env)
@@ -223,9 +284,17 @@ def _make_vector_env(name: str, num_envs: int, is_atari: bool, render_mode: str 
     return env
 
 
-def _make_single_env(name: str, is_atari: bool, render_mode: str | None,
-                     make_kwargs: dict, normalize_obs: bool, normalize_reward: bool,
-                     clip_obs: float | None, clip_reward: float | None, gamma: float) -> gym.Env:
+def _make_single_env(
+    name: str,
+    is_atari: bool,
+    render_mode: str | None,
+    make_kwargs: dict,
+    normalize_obs: bool,
+    normalize_reward: bool,
+    clip_obs: float | None,
+    clip_reward: float | None,
+    gamma: float,
+) -> gym.Env:
     """Create single environment."""
     if is_atari:
         make_kwargs.pop("life_loss_info", None)
@@ -234,15 +303,19 @@ def _make_single_env(name: str, is_atari: bool, render_mode: str | None,
     make_kwargs["render_mode"] = render_mode
     env = gym.make(name, **make_kwargs)
 
-    # Match AtariVectorEnv preprocessing
+    # Match AtariVectorEnv preprocessing (uint8, network handles /255 normalization)
     if is_atari:
         env = FrameStackObservation(
-            AtariPreprocessing(env, frame_skip=1), stack_size=4, padding_type="zero"
+            AtariPreprocessing(env, frame_skip=1, scale_obs=False),
+            stack_size=4,
+            padding_type="zero",
         )
 
     if _needs_action_rescaling(env):
         action_space = env.action_space
-        logger.info(f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]")
+        logger.info(
+            f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]"
+        )
         env = RescaleAction(env, min_action=-1.0, max_action=1.0)
 
     env = TrackReward(env)

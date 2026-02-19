@@ -124,11 +124,8 @@ class TestRunRemote:
 
         call_args = mock_run.call_args
         cmd = call_args[0][0]
-        assert cmd[0] == "uv"
-        assert cmd[1] == "run"
-        assert cmd[2] == "--no-default-groups"  # minimal install mode
-        assert cmd[3] == "dstack"
-        assert cmd[4] == "apply"
+        assert cmd[0] == "dstack"
+        assert cmd[1] == "apply"
         assert "-y" in cmd
         assert "--detach" in cmd
 

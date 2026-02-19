@@ -152,8 +152,8 @@ class Replay(Memory):
         """Implementation for update() to add experience to memory, expanding the memory size if necessary"""
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        # Use uint8 for image observations (ndim >= 3) to save memory; float16 for vectors
-        state_dtype = np.uint8 if state.ndim >= 3 else np.float16
+        # Preserve dtype: uint8 images stay uint8 (memory efficient); everything else float16
+        state_dtype = np.uint8 if state.dtype == np.uint8 else np.float16
         self.states[self.head] = state.astype(state_dtype)
         self.actions[self.head] = action
         self.rewards[self.head] = reward

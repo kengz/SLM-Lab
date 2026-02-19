@@ -1,0 +1,155 @@
+# PPO Atari - TorchArcNet specs
+# Covers: ppo_atari (lam95), ppo_atari_lam85, ppo_atari_lam70, ppo_atari_nosticky
+
+# -- Shared anchors --
+
+_ppo_atari_arc: &ppo_atari_arc
+  modules:
+    body:
+      Sequential:
+        - LazyConv2d: {out_channels: 32, kernel_size: 8, stride: 4, padding: 0}
+        - ReLU:
+        - LazyConv2d: {out_channels: 64, kernel_size: 4, stride: 2, padding: 0}
+        - ReLU:
+        - LazyConv2d: {out_channels: 64, kernel_size: 3, stride: 1, padding: 0}
+        - ReLU:
+        - Flatten:
+        - LazyLinear: {out_features: 512}
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_ppo_atari_net: &ppo_atari_net
+  type: TorchArcNet
+  shared: true
+  arc: *ppo_atari_arc
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  actor_init_std: 0.01
+  critic_init_std: 1.0
+  clip_grad_val: 0.5
+  use_same_optim: true
+  loss_spec:
+    name: MSELoss
+  optim_spec: &atari_optim
+    name: AdamW
+    lr: 2.5e-4
+    eps: 1.0e-5
+  lr_scheduler_spec: &atari_lr_scheduler
+    name: LinearToZero
+    frame: 1.0e+7
+  normalize: true
+  gpu: auto
+
+_ppo_atari_algorithm: &ppo_atari_algorithm
+  name: PPO
+  action_pdtype: default
+  action_policy: default
+  explore_var_spec: null
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec: &atari_clip
+    name: no_decay
+    start_val: 0.1
+    end_val: 0.1
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec: &atari_entropy
+    name: no_decay
+    start_val: 0.01
+    end_val: 0.01
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  time_horizon: 128
+  minibatch_size: 256
+  training_epoch: 4
+  clip_vloss: true
+
+_ppo_atari_env: &ppo_atari_env
+  name: "${env}"
+  num_envs: 16
+  max_frame: 1.0e+7
+  life_loss_info: true
+
+_ppo_atari_meta: &ppo_atari_meta
+  distributed: false
+  eval_frequency: 10000
+  log_frequency: 10000
+  max_session: 4
+  max_trial: 1
+
+# -- Specs --
+
+ppo_atari_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_atari_algorithm
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_atari_net
+  env:
+    <<: *ppo_atari_env
+  meta:
+    <<: *ppo_atari_meta
+    max_trial: 16
+    search_resources:
+      cpu: 2
+      gpu: 0.25
+    search_scheduler:
+      grace_period: 500000
+      reduction_factor: 3
+  search:
+    agent.algorithm.lam__uniform: [0.7, 0.98]
+    agent.algorithm.entropy_coef_spec.start_val__loguniform: [0.005, 0.03]
+    agent.net.optim_spec.lr__loguniform: [1.0e-4, 5.0e-4]
+
+ppo_atari_lam85_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_atari_algorithm
+      lam: 0.85
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_atari_net
+  env:
+    <<: *ppo_atari_env
+  meta:
+    <<: *ppo_atari_meta
+
+ppo_atari_lam70_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_atari_algorithm
+      lam: 0.70
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_atari_net
+  env:
+    <<: *ppo_atari_env
+  meta:
+    <<: *ppo_atari_meta
+
+ppo_atari_nosticky_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_atari_algorithm
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_atari_net
+  env:
+    <<: *ppo_atari_env
+    repeat_action_probability: 0.0
+  meta:
+    <<: *ppo_atari_meta

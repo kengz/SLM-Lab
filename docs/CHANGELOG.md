@@ -1,3 +1,14 @@
+# SLM-Lab v5.1.0
+
+TorchArc YAML benchmarks replace original hardcoded network architectures across all benchmark categories.
+
+- **TorchArc integration**: All algorithms (REINFORCE, SARSA, DQN, DDQN+PER, A2C, PPO, SAC) now use TorchArc YAML-defined networks instead of hardcoded PyTorch modules
+- **Full benchmark validation**: Classic Control, Box2D, MuJoCo (11 envs), and Atari (54 games) re-benchmarked with TorchArc — results match or exceed original scores
+- **SAC Atari**: New SAC Atari benchmarks (48 games) with discrete action support
+- **Pre-commit hooks**: Conventional commit message validation via `.githooks/commit-msg`
+
+---
+
 # SLM-Lab v5.0.0
 
 Modernization release for the current RL ecosystem. Updates SLM-Lab from OpenAI Gym to Gymnasium, adds correct handling of episode termination (the `terminated`/`truncated` fix), and migrates to modern Python tooling.

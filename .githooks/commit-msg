@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Validate conventional commit format: type: message | type(scope): message
+
+commit_msg_file="$1"
+commit_msg=$(head -1 "$commit_msg_file")
+
+# Skip merge commits and fixup/squash
+if echo "$commit_msg" | grep -qE '^(Merge |fixup! |squash! )'; then
+    exit 0
+fi
+
+# Validate format
+if ! echo "$commit_msg" | grep -qE '^(feat|fix|docs|chore|refactor|test|perf|ci|style|build)(\(.+\))?: .+'; then
+    echo "ERROR: Invalid commit message format."
+    echo ""
+    echo "  Expected: type: message"
+    echo "  Example:  feat: add user authentication"
+    echo "  Example:  fix(parser): handle empty input"
+    echo ""
+    echo "  Allowed types: feat fix docs chore refactor test perf ci style build"
+    exit 1
+fi

@@ -66,7 +66,9 @@ Apply these six principles to every decision.
 1. **Give enough context in spawn prompts** - teammates don't inherit conversation history, only CLAUDE.md and project context
 2. **Size tasks appropriately** - self-contained units with clear deliverables, ~5-6 per teammate
 3. **Avoid file conflicts** - each teammate owns different files
-4. **Use sonnet for volume work** - reserve opus for strategic decisions
+
+> Work autonomously: run things in parallel, continue without pausing, pick up the next task immediately. For long-running tasks, use `sleep N` to actively wait and check in — do NOT delegate to background processes. Stay engaged in the conversation.
+
 
 ## Documentation
 
@@ -192,7 +194,8 @@ uv run ruff format
 For a small box that only dispatches dstack runs and syncs results (no local ML training):
 
 ```bash
-uv sync --no-default-groups
+uv sync --no-default-groups  # skip ML deps (torch, gymnasium, etc.)
+uv tool install dstack
 uv run --no-default-groups slm-lab run-remote spec.json spec_name train
 uv run --no-default-groups slm-lab pull spec_name
 uv run --no-default-groups slm-lab plot -f folder1,folder2
@@ -236,11 +239,17 @@ dstack stop <run-name> -y  # terminate
 
 **`docs/BENCHMARKS.md`** is the single source of truth. See the `/benchmark` skill for operational details (commands, data lifecycle, graduation).
 
-**Pattern**: Launch → Monitor → Extract score → Pull data → Plot → Update table → Commit
+**Per-run intake (MANDATORY — every completed run must go through ALL steps):**
+1. Extract score (`dstack logs NAME | grep trial_metrics`)
+2. Find HF folder name (query HuggingFace API)
+3. Update table with score AND HF link
+4. Pull HF data locally (`hf download`)
+5. Generate plot (`uv run slm-lab plot`)
+6. Commit score + link + plot together
 
-**Autonomous execution**: Fill GPU capacity (~30 concurrent runs), check status regularly, extract immediately on completion, iterate on failures. Never idle.
+A table row is NOT complete until it has: **score, HF link, and plot**. See `/benchmark` skill for commands.
 
-**Data lifecycle**: Pull full HF dataset to `data/benchmark-dev/` once — keep it for plots AND graduation. Never delete until graduation to public repo is complete.
+**Autonomous execution**: Max 10 concurrent runs. Use `sleep 300 && dstack ps` to actively wait. Never delegate monitoring to background scripts. Never idle.
 
 ### Hyperparameter Search
 
@@ -261,6 +270,6 @@ Prefer continuous distributions (`__uniform`, `__loguniform`) over `__choice`. S
 
 ## SLM-Lab Documentation
 
-- **Changelog**: Document major changes in `CHANGELOG.md`
+- **Changelog**: Document major changes in `docs/CHANGELOG.md`
 - **Benchmarks**: `docs/BENCHMARKS.md` — results tables, targets, reproducibility
 - **Specs**: Document rationale in commit messages when updating specs

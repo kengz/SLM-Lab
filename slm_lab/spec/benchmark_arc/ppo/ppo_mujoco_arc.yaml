@@ -1,0 +1,393 @@
+# PPO MuJoCo - TorchArcNet specs
+# Covers: generic mujoco, longhorizon, ant, hopper, swimmer,
+#   inverted_pendulum, inverted_double_pendulum, pusher, mountaincar
+
+# -- Shared anchors --
+
+_ppo_mujoco_arc: &ppo_mujoco_arc
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_ppo_mujoco_net: &ppo_mujoco_net
+  type: TorchArcNet
+  shared: false
+  arc: *ppo_mujoco_arc
+  hid_layers_activation: tanh
+  init_fn: orthogonal_
+  actor_init_std: 0.01
+  critic_init_std: 1.0
+  clip_grad_val: 0.5
+  use_same_optim: true
+  log_std_init: 0.0
+  loss_spec:
+    name: MSELoss
+  optim_spec: &mujoco_optim
+    name: AdamW
+    lr: 3.0e-4
+  gpu: auto
+
+_ppo_mujoco_algorithm: &ppo_mujoco_algorithm
+  name: PPO
+  action_pdtype: default
+  action_policy: default
+  explore_var_spec: null
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec: &clip_02
+    name: no_decay
+    start_val: 0.2
+    end_val: 0.2
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec: &entropy_0
+    name: no_decay
+    start_val: 0.0
+    end_val: 0.0
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  time_horizon: 2048
+  minibatch_size: 64
+  training_epoch: 10
+  normalize_v_targets: true
+
+_ppo_mujoco_env: &ppo_mujoco_env
+  name: "${env}"
+  num_envs: 16
+  max_t: null
+  max_frame: "${max_frame}"
+  normalize_obs: true
+  normalize_reward: true
+
+_ppo_mujoco_meta: &ppo_mujoco_meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 1
+
+_ppo_mujoco_search_meta: &ppo_mujoco_search_meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 1000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 16
+  search_resources:
+    cpu: 1
+    gpu: 0.125
+  search_scheduler:
+    grace_period: 2.0e+5
+    reduction_factor: 3
+
+# -- Generic specs (use with -s env=X -s max_frame=Y) --
+
+ppo_mujoco_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+  env:
+    <<: *ppo_mujoco_env
+  meta:
+    <<: *ppo_mujoco_meta
+
+ppo_mujoco_longhorizon_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.997
+      lam: 0.97
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.001
+        end_val: 0.001
+        start_step: 0
+        end_step: 0
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      optim_spec:
+        name: AdamW
+        lr: 2.0e-4
+  env:
+    <<: *ppo_mujoco_env
+  meta:
+    <<: *ppo_mujoco_meta
+
+# -- Per-environment specs --
+
+ppo_ant_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.988
+      lam: 0.928
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      optim_spec:
+        name: AdamW
+        lr: 1.5e-4
+  env:
+    <<: *ppo_mujoco_env
+    name: Ant-v5
+    max_frame: "${max_frame}"
+  meta:
+    <<: *ppo_mujoco_search_meta
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.lam__uniform: [0.92, 0.98]
+    agent.net.optim_spec.lr__loguniform: [1.0e-4, 5.0e-4]
+
+ppo_hopper_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.991
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.005
+        end_val: 0.005
+        start_step: 0
+        end_step: 0
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      lr_scheduler_spec:
+        name: LinearToZero
+        frame: "${max_frame}"
+  env:
+    <<: *ppo_mujoco_env
+    name: Hopper-v5
+    max_frame: "${max_frame}"
+  meta:
+    <<: *ppo_mujoco_search_meta
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.lam__uniform: [0.9, 0.98]
+    agent.net.optim_spec.lr__loguniform: [1.0e-4, 1.0e-3]
+
+ppo_swimmer_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.997
+      lam: 0.968
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.025
+        end_val: 0.025
+        start_step: 0
+        end_step: 0
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      optim_spec:
+        name: AdamW
+        lr: 2.2e-4
+  env:
+    <<: *ppo_mujoco_env
+    name: Swimmer-v5
+    max_frame: "${max_frame}"
+  meta:
+    <<: *ppo_mujoco_search_meta
+    search_scheduler:
+      grace_period: 1.0e+5
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.lam__uniform: [0.9, 0.98]
+    agent.net.optim_spec.lr__loguniform: [1.0e-4, 1.0e-3]
+
+ppo_inverted_pendulum_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.999
+      lam: 0.9
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.4
+        end_val: 0.4
+        start_step: 0
+        end_step: 0
+      val_loss_coef: 0.2
+      time_horizon: 32
+      minibatch_size: 32
+      training_epoch: 5
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      optim_spec:
+        name: AdamW
+        lr: 5.7e-4
+      lr_scheduler_spec:
+        name: LinearToZero
+        frame: "${max_frame}"
+  env:
+    <<: *ppo_mujoco_env
+    name: InvertedPendulum-v5
+    max_frame: "${max_frame}"
+  meta:
+    <<: *ppo_mujoco_search_meta
+    search_scheduler:
+      grace_period: 1.0e+5
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.98, 0.999]
+    agent.algorithm.lam__uniform: [0.88, 0.95]
+    agent.net.optim_spec.lr__loguniform: [3.0e-4, 8.0e-4]
+
+ppo_inverted_double_pendulum_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.98
+      lam: 0.8
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.4
+        end_val: 0.4
+        start_step: 0
+        end_step: 0
+      val_loss_coef: 0.7
+      time_horizon: 128
+      minibatch_size: 128
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      optim_spec:
+        name: AdamW
+        lr: 1.55e-4
+      lr_scheduler_spec:
+        name: LinearToZero
+        frame: "${max_frame}"
+  env:
+    <<: *ppo_mujoco_env
+    name: InvertedDoublePendulum-v5
+    max_frame: "${max_frame}"
+  meta:
+    <<: *ppo_mujoco_search_meta
+    search_scheduler:
+      grace_period: 1.0e+5
+      reduction_factor: 3
+  search:
+    agent.algorithm.gamma__uniform: [0.96, 0.99]
+    agent.algorithm.lam__uniform: [0.7, 0.9]
+    agent.net.optim_spec.lr__loguniform: [1.0e-4, 5.0e-4]
+
+ppo_pusher_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      gamma: 0.982
+      lam: 0.927
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      <<: *ppo_mujoco_net
+      optim_spec:
+        name: AdamW
+        lr: 1.5e-4
+  env:
+    <<: *ppo_mujoco_env
+    name: Pusher-v5
+    max_frame: "${max_frame}"
+  meta:
+    <<: *ppo_mujoco_meta
+
+ppo_mountaincar_arc:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *ppo_mujoco_algorithm
+      lam: 0.98
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 500000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.0
+        end_val: 0.0
+        start_step: 0
+        end_step: 500000
+      clip_val_loss: false
+      time_horizon: 32
+      minibatch_size: 256
+      normalize_v_targets: false
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: TorchArcNet
+      shared: false
+      arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - ReLU:
+              - LazyLinear: {out_features: 256}
+              - ReLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      actor_init_std: 0.01
+      critic_init_std: 1.0
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0001
+      critic_optim_spec:
+        name: Adam
+        lr: 0.0001
+      gpu: auto
+  env:
+    name: MountainCar-v0
+    max_t: null
+    max_frame: 1000000
+    num_envs: 16
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 10000
+    max_session: 4
+    max_trial: 1
