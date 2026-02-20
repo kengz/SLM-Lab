@@ -1,3 +1,25 @@
+# SLM-Lab v5.2.0
+
+Training path performance optimization. **+15% SAC throughput on GPU**, verified with no score regression.
+
+**What changed (18 files):**
+- `polyak_update`: in-place `lerp_()` replaces 3-op manual arithmetic
+- `SAC`: single `log_softmax→exp` replaces dual softmax+log_softmax; cached entropy between policy/alpha loss; cached `_is_per` and `_LOG2`
+- `to_torch_batch`: uint8/float16 sent directly to GPU then `.float()` — avoids 4x CPU float32 intermediate (matters for Atari 84x84x4)
+- `SumTree`: iterative propagation/retrieval replaces recursion; vectorized sampling
+- `forward_tails`: cached output (was called twice per step)
+- `VectorFullGameStatistics`: `deque(maxlen=N)` + `np.flatnonzero` replaces list+pop(0)+loop
+- `pydash→builtins`: `isinstance` over `ps.is_list/is_dict`, dict comprehensions over `ps.pick/ps.omit` in hot paths
+- `PPO`: `total_loss` as plain float prevents computation graph leak across epochs
+- Minor: `hasattr→is not None` in conv/recurrent forward, cached `_is_dev`, `no_decay` early exit in VarScheduler
+
+**Measured gains (normalized, same hardware A/B on RTX 3090):**
+- SAC MuJoCo: +15-17% fps
+- SAC Atari: +14% fps
+- PPO: ~0% (env-bound; most optimizations target SAC's training-heavy inner loop — PPO doesn't use polyak, replay buffer, twin Q, or entropy tuning)
+
+---
+
 # SLM-Lab v5.1.0
 
 TorchArc YAML benchmarks replace original hardcoded network architectures across all benchmark categories.

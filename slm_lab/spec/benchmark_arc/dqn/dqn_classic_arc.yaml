@@ -421,6 +421,7 @@ dqn_mountaincar_arc:
       <<: *dqn_net_128x2_relu
   env:
     name: MountainCar-v0
+    num_envs: 4
     max_t: null
     max_frame: 500000
   meta:

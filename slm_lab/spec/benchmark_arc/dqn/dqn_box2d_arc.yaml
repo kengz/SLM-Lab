@@ -170,6 +170,7 @@ ddqn_per_mountaincar_arc:
       gpu: auto
   env:
     name: MountainCar-v0
+    num_envs: 4
     max_t: null
     max_frame: 500000
   meta:
