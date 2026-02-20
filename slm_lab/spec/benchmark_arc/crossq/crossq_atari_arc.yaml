@@ -20,8 +20,16 @@ crossq_atari_arc:
       use_cer: false
     net:
       type: ConvNet
+      shared: false
+      conv_hid_layers:
+        - [32, 8, 4, 0, 1]
+        - [64, 4, 2, 0, 1]
+        - [64, 3, 1, 0, 1]
+      fc_hid_layers: [512]
       hid_layers_activation: relu
       init_fn: orthogonal_
+      normalize: true
+      batch_norm: false
       clip_grad_val: 0.5
       use_same_optim: false
       loss_spec:
@@ -30,7 +38,6 @@ crossq_atari_arc:
         name: AdamW
         lr: 3.0e-4
         eps: 1.0e-4
-      normalize: true
       gpu: auto
   env:
     name: ${env}
