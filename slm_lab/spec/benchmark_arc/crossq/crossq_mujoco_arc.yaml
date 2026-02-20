@@ -1,5 +1,5 @@
-# CrossQ MuJoCo using TorchArcNet with BatchNorm critics
-# Bhatt et al., ICLR 2024: "CrossQ: Batch Normalization in Deep RL"
+# CrossQ MuJoCo with BatchNorm critics
+# No target networks — stable at high UTD. Matches SAC env settings + frame budgets.
 
 _crossq_critic: &crossq_critic
   modules:
@@ -39,8 +39,8 @@ _crossq_algorithm: &crossq_algorithm
   action_policy: default
   gamma: 0.99
   training_frequency: 1
-  training_iter: 1  # UTD=1 — CrossQ's key advantage
   training_start_step: 5000
+  # training_iter omitted — inherits SAC default (=num_envs for UTD=1)
 
 _crossq_agent: &crossq_agent
   name: CrossQ

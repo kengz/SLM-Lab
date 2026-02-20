@@ -1,6 +1,6 @@
 # CrossQ Atari
-# Same as SAC Atari but: CrossQ algorithm, training_iter=1, no target networks.
-# ConvNet body: Nature CNN [32,64,64] + 512fc, normalize=true for uint8→float on GPU.
+# Matches SAC Atari settings. No target networks — stable at any UTD.
+# ConvNet needs dense gradients (iter=3), same as SAC. normalize=true for uint8→float on GPU.
 
 crossq_atari_arc:
   agent:
@@ -12,7 +12,7 @@ crossq_atari_arc:
       gamma: 0.99
       training_start_step: 1000
       training_frequency: 4
-      training_iter: 1
+      training_iter: 3
     memory:
       name: Replay
       batch_size: 256

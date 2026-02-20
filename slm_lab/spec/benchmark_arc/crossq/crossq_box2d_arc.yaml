@@ -1,5 +1,5 @@
 # CrossQ Box2D
-# Matches SAC Box2D settings with CrossQ: training_iter=1, no target networks.
+# Matches SAC Box2D settings. No target networks — stable at any UTD.
 
 _crossq_net: &crossq_net
   type: MLPNet
@@ -36,7 +36,6 @@ crossq_lunar_arc:
       action_policy: default
       gamma: 0.99
       training_frequency: 1
-      training_iter: 1
       training_start_step: 1000
     memory: *memory
     net: *crossq_net
@@ -56,7 +55,6 @@ crossq_lunar_continuous_arc:
       action_policy: default
       gamma: 0.99
       training_frequency: 1
-      training_iter: 1
       training_start_step: 256
     memory: *memory
     net: *crossq_net
