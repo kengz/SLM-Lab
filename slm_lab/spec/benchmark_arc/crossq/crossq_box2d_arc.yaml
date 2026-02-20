@@ -1,0 +1,68 @@
+# CrossQ Box2D
+# Matches SAC Box2D settings with CrossQ: training_iter=1, no target networks.
+
+_crossq_net: &crossq_net
+  type: MLPNet
+  hid_layers: [256, 256]
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  gpu: auto
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 100000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 5000
+  max_session: 4
+  max_trial: 1
+
+crossq_lunar_arc:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 1
+      training_start_step: 1000
+    memory: *memory
+    net: *crossq_net
+  env:
+    name: LunarLander-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta: *meta
+
+crossq_lunar_continuous_arc:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: Normal
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 1
+      training_start_step: 256
+    memory: *memory
+    net: *crossq_net
+  env:
+    name: LunarLanderContinuous-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta: *meta
