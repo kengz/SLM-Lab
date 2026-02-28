@@ -43,24 +43,6 @@ _actor_ln: &actor_ln
       body: [x]
     output: body
 
-# --- Actor with WeightNorm: smoother optimization without activation normalization ---
-
-_actor_wn: &actor_wn
-  modules:
-    body:
-      Sequential:
-        - LazyWeightNormLinear:
-            out_features: 256
-        - ReLU:
-        - LazyWeightNormLinear:
-            out_features: 256
-        - ReLU:
-  graph:
-    input: x
-    modules:
-      body: [x]
-    output: body
-
 # --- Critics: width scales with env difficulty ---
 
 # [256,256]+BRN for easy envs (SAC iter<=2, sqrt(2)~1.4 -> stay at 256)
@@ -240,39 +222,17 @@ crossq_mujoco:
     max_frame: ${max_frame}
   meta: *meta
 
-# --- Easy envs: [256,256] critics (SAC iter<=2) ---
-
-crossq_halfcheetah:
-  agent: *agent
-  env:
-    name: HalfCheetah-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 4000000
-  meta: *meta
+# --- Easy envs: [256,256] critics, plain actor ---
 
 crossq_inverted_pendulum:
-  agent: *agent
+  agent:
+    <<: *agent
+    critic_net: *critic_net_512
   env:
     name: InvertedPendulum-v5
     num_envs: 16
     max_t: null
-    max_frame: 5000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_inverted_double_pendulum:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      log_alpha_max: 2.0
-  env:
-    name: InvertedDoublePendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
+    max_frame: 7000000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -314,7 +274,21 @@ crossq_pusher:
     <<: *meta
     eval_frequency: 1000
 
-# --- Hard envs: [512,512] critics (SAC iter=4, sqrt(4)=2 -> 512) ---
+# --- Hard envs: [512,512] critics, LN actor, extended frames ---
+
+crossq_halfcheetah:
+  agent:
+    <<: *agent
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_512
+  env:
+    name: HalfCheetah-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 7500000
+  meta: *meta
 
 crossq_hopper:
   agent:
@@ -336,12 +310,15 @@ crossq_walker2d:
     algorithm:
       <<: *algorithm
       training_start_step: 10000
+    net:
+      <<: *net
+      arc: *actor_ln
     critic_net: *critic_net_512
   env:
     name: Walker2d-v5
     num_envs: 16
     max_t: null
-    max_frame: 3000000
+    max_frame: 7000000
   meta: *meta
 
 crossq_ant:
@@ -350,41 +327,55 @@ crossq_ant:
     algorithm:
       <<: *algorithm
       training_start_step: 10000
+    net:
+      <<: *net
+      arc: *actor_ln
     critic_net: *critic_net_512
   env:
     name: Ant-v5
     num_envs: 16
     max_t: null
-    max_frame: 3000000
+    max_frame: 6000000
   meta: *meta
 
-# --- Very hard envs: [1024,1024] critics (SAC iter=16, sqrt(16)=4 -> 1024) ---
+crossq_inverted_double_pendulum:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_iter: 2
+      training_start_step: 5000
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_1024
+  env:
+    name: InvertedDoublePendulum-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3500000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+# --- Very hard envs: [1024,1024] critics, LN actor, iter=2 ---
 
 crossq_humanoid:
   agent:
     <<: *agent
     algorithm:
       <<: *algorithm
-      gamma: 0.98
-      training_iter: 4
+      training_iter: 2
       training_start_step: 10000
     net:
       <<: *net
-      optim_spec:
-        name: Adam
-        lr: 7.3e-4
-        betas: [0.5, 0.999]
-    critic_net:
-      <<: *critic_net_1024
-      optim_spec:
-        name: Adam
-        lr: 7.3e-4
-        betas: [0.5, 0.999]
+      arc: *actor_ln
+    critic_net: *critic_net_1024
   env:
     name: Humanoid-v5
     num_envs: 16
     max_t: null
-    max_frame: 3000000
+    max_frame: 3500000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -394,469 +385,6 @@ crossq_humanoid_standup:
     <<: *agent
     algorithm:
       <<: *algorithm
-      training_start_step: 10000
-    critic_net: *critic_net_1024
-  env:
-    name: HumanoidStandup-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 1000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-# --- LayerNorm actor experiments ---
-
-crossq_hopper_ln:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Hopper-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta: *meta
-
-crossq_swimmer_ln:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      gamma: 0.9999
-    net:
-      <<: *net
-      arc: *actor_ln
-  env:
-    name: Swimmer-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_humanoid_ln:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_1024
-  env:
-    name: Humanoid-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_walker2d_ln:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Walker2d-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta: *meta
-
-crossq_halfcheetah_ln:
-  agent:
-    <<: *agent
-    net:
-      <<: *net
-      arc: *actor_ln
-  env:
-    name: HalfCheetah-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta: *meta
-
-crossq_ant_ln:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Ant-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta: *meta
-
-crossq_inverted_pendulum_ln:
-  agent:
-    <<: *agent
-    net:
-      <<: *net
-      arc: *actor_ln
-  env:
-    name: InvertedPendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_inverted_double_pendulum_ln:
-  agent:
-    <<: *agent
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: InvertedDoublePendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-# --- Extended-frame LN specs for hardest envs (maximize 3h wall-clock budget) ---
-
-crossq_walker2d_ln_7m:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Walker2d-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7000000
-  meta: *meta
-
-crossq_hopper_ln_7m:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Hopper-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 6000000
-  meta: *meta
-
-crossq_ant_ln_7m:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Ant-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 6000000
-  meta: *meta
-
-crossq_halfcheetah_ln_7m:
-  agent:
-    <<: *agent
-    net:
-      <<: *net
-      arc: *actor_ln
-  env:
-    name: HalfCheetah-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 6000000
-  meta: *meta
-
-crossq_walker2d_ln_i2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Walker2d-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3500000
-  meta: *meta
-
-crossq_inverted_double_pendulum_ln_7m:
-  agent:
-    <<: *agent
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: InvertedDoublePendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-# --- iter=2 specs for hardest envs (double gradient density) ---
-
-crossq_humanoid_ln_i2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_1024
-  env:
-    name: Humanoid-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3500000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_inverted_double_pendulum_ln_i2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: InvertedDoublePendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3500000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-# --- WeightNorm actor experiments ---
-
-crossq_hopper_wn:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_wn
-    critic_net: *critic_net_512
-  env:
-    name: Hopper-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 6000000
-  meta: *meta
-
-crossq_walker2d_wn:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_wn
-    critic_net: *critic_net_512
-  env:
-    name: Walker2d-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7000000
-  meta: *meta
-
-crossq_humanoid_wn:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_wn
-    critic_net: *critic_net_1024
-  env:
-    name: Humanoid-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_swimmer_wn:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      gamma: 0.9999
-    net:
-      <<: *net
-      arc: *actor_wn
-  env:
-    name: Swimmer-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 6000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-# --- Wave 7: Next improvement runs ---
-
-crossq_humanoid_standup_ln_i2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_1024
-  env:
-    name: HumanoidStandup-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3500000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_halfcheetah_ln_8m:
-  agent:
-    <<: *agent
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: HalfCheetah-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7500000
-  meta: *meta
-
-crossq_hopper_i2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 10000
-    critic_net: *critic_net_512
-  env:
-    name: Hopper-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3500000
-  meta: *meta
-
-crossq_inverted_pendulum_7m:
-  agent: *agent
-  env:
-    name: InvertedPendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 7000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-# --- v2 improvement specs: best config per env from experiments ---
-
-crossq_hopper_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 10000
-    critic_net: *critic_net_512
-  env:
-    name: Hopper-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta: *meta
-
-crossq_humanoid_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_1024
-  env:
-    name: Humanoid-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 4000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_humanoid_standup_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
       training_iter: 2
       training_start_step: 10000
     net:
@@ -871,72 +399,3 @@ crossq_humanoid_standup_v2:
   meta:
     <<: *meta
     eval_frequency: 1000
-
-crossq_inverted_double_pendulum_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_iter: 2
-      training_start_step: 5000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: InvertedDoublePendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 2000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_inverted_pendulum_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 5000
-  env:
-    name: InvertedPendulum-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_swimmer_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      gamma: 0.9999
-      training_iter: 2
-      training_start_step: 5000
-  env:
-    name: Swimmer-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 3000000
-  meta:
-    <<: *meta
-    eval_frequency: 1000
-
-crossq_walker2d_v2:
-  agent:
-    <<: *agent
-    algorithm:
-      <<: *algorithm
-      training_start_step: 10000
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net_512
-  env:
-    name: Walker2d-v5
-    num_envs: 16
-    max_t: null
-    max_frame: 4000000
-  meta: *meta

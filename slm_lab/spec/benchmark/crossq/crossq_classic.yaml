@@ -17,26 +17,6 @@ _actor: &actor
       body: [x]
     output: body
 
-_actor_ln: &actor_ln
-  modules:
-    body:
-      Sequential:
-        - LazyLinear:
-            out_features: 256
-        - LayerNorm:
-            normalized_shape: [256]
-        - ReLU:
-        - LazyLinear:
-            out_features: 256
-        - LayerNorm:
-            normalized_shape: [256]
-        - ReLU:
-  graph:
-    input: x
-    modules:
-      body: [x]
-    output: body
-
 _critic_brn: &critic_brn
   modules:
     body:
@@ -166,29 +146,3 @@ crossq_pendulum:
   meta:
     <<: *meta
     eval_frequency: 5000
-
-# --- LayerNorm actor experiments ---
-
-crossq_cartpole_ln:
-  agent:
-    name: CrossQ
-    algorithm:
-      name: CrossQ
-      action_pdtype: Categorical
-      action_policy: default
-      gamma: 0.99
-      training_frequency: 1
-      training_start_step: 1000
-      policy_delay: 3
-      log_alpha_max: 2.0
-    memory: *memory
-    net:
-      <<: *net
-      arc: *actor_ln
-    critic_net: *critic_net
-  env:
-    name: CartPole-v1
-    num_envs: 4
-    max_t: null
-    max_frame: 300000
-  meta: *meta

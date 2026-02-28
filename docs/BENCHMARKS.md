@@ -278,7 +278,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 2138.28 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_ant_arc | [ppo_ant_arc_ant_2026_02_12_190644](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_ant_arc_ant_2026_02_12_190644) |
 | SAC | ✅ | 4942.91 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_ant_arc | [sac_ant_arc_2026_02_11_225529](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_ant_arc_2026_02_11_225529) |
-| CrossQ | ✅ | 5108.47 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_ant_ln_7m | [crossq_ant_ln_7m_2026_02_22_015136](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_ant_ln_7m_2026_02_22_015136) |
+| CrossQ | ✅ | 5108.47 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_ant | [crossq_ant_ln_7m_2026_02_22_015136](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_ant_ln_7m_2026_02_22_015136) |
 
 ![Ant-v5](plots/Ant-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -292,7 +292,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 6240.68 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_mujoco_arc | [ppo_mujoco_arc_halfcheetah_2026_02_12_195553](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_mujoco_arc_halfcheetah_2026_02_12_195553) |
 | SAC | ✅ | 9815.16 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_halfcheetah_arc | [sac_halfcheetah_4m_i2_arc_2026_02_14_185522](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_halfcheetah_4m_i2_arc_2026_02_14_185522) |
-| CrossQ | ✅ | 9969.18 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_halfcheetah_ln_8m | [crossq_halfcheetah_ln_8m_2026_02_22_111117](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_halfcheetah_ln_8m_2026_02_22_111117) |
+| CrossQ | ✅ | 9969.18 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_halfcheetah | [crossq_halfcheetah_ln_8m_2026_02_22_111117](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_halfcheetah_ln_8m_2026_02_22_111117) |
 
 ![HalfCheetah-v5](plots/HalfCheetah-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -320,7 +320,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 2661.26 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_mujoco_arc | [ppo_mujoco_arc_humanoid_2026_02_12_185439](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_mujoco_arc_humanoid_2026_02_12_185439) |
 | SAC | ✅ | 1989.65 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_humanoid_arc | [sac_humanoid_arc_2026_02_12_020016](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_humanoid_arc_2026_02_12_020016) |
-| CrossQ | ✅ | 1850.44 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_humanoid_ln_i2 | [crossq_humanoid_ln_i2_2026_02_22_014755](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_humanoid_ln_i2_2026_02_22_014755) |
+| CrossQ | ✅ | 1850.44 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_humanoid | [crossq_humanoid_ln_i2_2026_02_22_014755](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_humanoid_ln_i2_2026_02_22_014755) |
 
 ![Humanoid-v5](plots/Humanoid-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -334,7 +334,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 150104.59 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_mujoco_arc | [ppo_mujoco_arc_humanoidstandup_2026_02_12_115050](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_mujoco_arc_humanoidstandup_2026_02_12_115050) |
 | SAC | ✅ | 137357.00 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_humanoid_standup_arc | [sac_humanoid_standup_arc_2026_02_12_225150](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_humanoid_standup_arc_2026_02_12_225150) |
-| CrossQ | ✅ | 154162.28 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_humanoid_standup_v2 | [crossq_humanoid_standup_v2_2026_02_22_155517](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_humanoid_standup_v2_2026_02_22_155517) |
+| CrossQ | ✅ | 154162.28 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_humanoid_standup | [crossq_humanoid_standup_v2_2026_02_22_155517](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_humanoid_standup_v2_2026_02_22_155517) |
 
 ![HumanoidStandup-v5](plots/HumanoidStandup-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -348,7 +348,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 8383.76 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_inverted_double_pendulum_arc | [ppo_inverted_double_pendulum_arc_inverteddoublependulum_2026_02_12_225231](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_inverted_double_pendulum_arc_inverteddoublependulum_2026_02_12_225231) |
 | SAC | ✅ | 9032.67 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_inverted_double_pendulum_arc | [sac_inverted_double_pendulum_arc_2026_02_12_025206](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_inverted_double_pendulum_arc_2026_02_12_025206) |
-| CrossQ | ⚠️ | 8255.82 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_inverted_double_pendulum_v2 | [crossq_inverted_double_pendulum_v2_2026_02_22_155616](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_inverted_double_pendulum_v2_2026_02_22_155616) |
+| CrossQ | ⚠️ | 8255.82 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_inverted_double_pendulum | [crossq_inverted_double_pendulum_v2_2026_02_22_155616](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_inverted_double_pendulum_v2_2026_02_22_155616) |
 
 ![InvertedDoublePendulum-v5](plots/InvertedDoublePendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -418,7 +418,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 4378.62 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_mujoco_arc | [ppo_mujoco_arc_walker2d_2026_02_12_190312](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_mujoco_arc_walker2d_2026_02_12_190312) |
 | SAC | ⚠️ | 3123.66 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_walker2d_arc | [sac_walker2d_3m_i4_arc_2026_02_14_185550](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_walker2d_3m_i4_arc_2026_02_14_185550) |
-| CrossQ | ✅ | 4277.15 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_walker2d_ln_7m | [crossq_walker2d_ln_7m_2026_02_22_014846](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_walker2d_ln_7m_2026_02_22_014846) |
+| CrossQ | ✅ | 4277.15 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_walker2d | [crossq_walker2d_ln_7m_2026_02_22_014846](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_walker2d_ln_7m_2026_02_22_014846) |
 
 ![Walker2d-v5](plots/Walker2d-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
