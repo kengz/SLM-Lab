@@ -5,13 +5,24 @@ import torch
 
 # general math methods
 
+
+def symlog(x):
+    """Symmetric logarithmic compression. DreamerV3 (Hafner et al., 2023)."""
+    return torch.sign(x) * torch.log1p(torch.abs(x))
+
+
+def symexp(x):
+    """Inverse of symlog."""
+    return torch.sign(x) * (torch.exp(torch.abs(x)) - 1)
+
+
 def center_mean(v):
-    '''Center an array by its mean'''
+    """Center an array by its mean"""
     return v - v.mean()
 
 
 def normalize(v):
-    '''Method to normalize a rank-1 np array'''
+    """Method to normalize a rank-1 np array"""
     v_min = v.min()
     v_max = v.max()
     v_range = v_max - v_min
@@ -21,19 +32,19 @@ def normalize(v):
 
 
 def standardize(v):
-    '''Method to standardize a rank-1 np array'''
-    assert len(v) > 1, 'Cannot standardize vector of size 1'
+    """Method to standardize a rank-1 np array"""
+    assert len(v) > 1, "Cannot standardize vector of size 1"
     v_std = (v - v.mean()) / (v.std() + 1e-08)
     return v_std
 
 
 def to_one_hot(data, max_val):
-    '''Convert an int list of data into one-hot vectors'''
+    """Convert an int list of data into one-hot vectors"""
     return np.eye(max_val)[np.array(data)]
 
 
 def venv_pack(batch_tensor, num_envs):
-    '''Apply the reverse of venv_unpack to pack a batch tensor from (b*num_envs, *shape) to (b, num_envs, *shape)'''
+    """Apply the reverse of venv_unpack to pack a batch tensor from (b*num_envs, *shape) to (b, num_envs, *shape)"""
     shape = list(batch_tensor.shape)
     if len(shape) < 2:  # scalar data (b, num_envs,)
         return batch_tensor.view(-1, num_envs)
@@ -43,11 +54,11 @@ def venv_pack(batch_tensor, num_envs):
 
 
 def venv_unpack(batch_tensor):
-    '''
+    """
     Unpack a sampled vec env batch tensor
     e.g. for a state with original shape (4, ), vec env should return vec state with shape (num_envs, 4) to store in memory
     When sampled with batch_size b, we should get shape (b, num_envs, 4). But we need to unpack the num_envs dimension to get (b * num_envs, 4) for passing to a network. This method does that.
-    '''
+    """
     shape = list(batch_tensor.shape)
     if len(shape) < 3:  # scalar data (b, num_envs,)
         return batch_tensor.view(-1)
@@ -59,14 +70,15 @@ def venv_unpack(batch_tensor):
 # Policy Gradient calc
 # advantage functions
 
+
 def calc_returns(rewards, terminateds, gamma):
-    '''
+    """
     Calculate the simple returns (full rollout) i.e. sum discounted rewards up till termination
 
     IMPORTANT: Use 'terminateds' not 'dones' for correct return calculation.
     When truncated (time limit), we should bootstrap from V(next_state), not zero it.
     Only zero out future returns on true episode termination.
-    '''
+    """
     T = len(rewards)
     rets = torch.zeros_like(rewards)
     future_ret = torch.tensor(0.0, dtype=rewards.dtype)
@@ -77,7 +89,7 @@ def calc_returns(rewards, terminateds, gamma):
 
 
 def calc_nstep_returns(rewards, terminateds, next_v_pred, gamma, n):
-    '''
+    """
     Estimate the advantages using n-step returns. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
     R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
@@ -85,7 +97,7 @@ def calc_nstep_returns(rewards, terminateds, next_v_pred, gamma, n):
     IMPORTANT: Use 'terminateds' not 'dones' for correct n-step return calculation.
     When truncated (time limit), we should bootstrap from V(next_state), not zero it.
     Only zero out future returns on true episode termination.
-    '''
+    """
     rets = torch.zeros_like(rewards)
     future_ret = next_v_pred
     not_terminateds = 1 - terminateds
@@ -95,7 +107,7 @@ def calc_nstep_returns(rewards, terminateds, next_v_pred, gamma, n):
 
 
 def calc_gaes(rewards, terminateds, v_preds, gamma, lam):
-    '''
+    """
     Estimate the advantages using GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
     v_preds are values predicted for current states, with one last element as the final next_state
     delta is defined as r + gamma * V(s') - V(s) in eqn 10
@@ -107,9 +119,11 @@ def calc_gaes(rewards, terminateds, v_preds, gamma, lam):
 
     This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
     NOTE any standardization is done outside of this method
-    '''
+    """
     T = len(rewards)
-    assert T + 1 == len(v_preds), f'T+1: {T+1} v.s. v_preds.shape: {v_preds.shape}'  # v_preds runs into t+1
+    assert T + 1 == len(v_preds), (
+        f"T+1: {T + 1} v.s. v_preds.shape: {v_preds.shape}"
+    )  # v_preds runs into t+1
     gaes = torch.zeros_like(rewards)
     future_gae = torch.tensor(0.0, dtype=rewards.dtype)
     not_terminateds = 1 - terminateds  # only reset on true termination, not truncation
@@ -127,13 +141,14 @@ def calc_q_value_logits(state_value, raw_advantages):
 
 # generic variable decay methods
 
+
 def no_decay(start_val, end_val, start_step, end_step, step):
-    '''dummy method for API consistency'''
+    """dummy method for API consistency"""
     return start_val
 
 
 def linear_decay(start_val, end_val, start_step, end_step, step):
-    '''Simple linear decay with annealing'''
+    """Simple linear decay with annealing"""
     if step < start_step:
         return start_val
     slope = (end_val - start_val) / (end_step - start_step)
@@ -141,8 +156,10 @@ def linear_decay(start_val, end_val, start_step, end_step, step):
     return val
 
 
-def rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, frequency=20.):
-    '''Compounding rate decay that anneals in 20 decay iterations until end_step'''
+def rate_decay(
+    start_val, end_val, start_step, end_step, step, decay_rate=0.9, frequency=20.0
+):
+    """Compounding rate decay that anneals in 20 decay iterations until end_step"""
     if step < start_step:
         return start_val
     if step >= end_step:
@@ -153,13 +170,13 @@ def rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, f
     return val
 
 
-def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.):
-    '''
+def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.0):
+    """
     Linearly decaying sinusoid that decays in roughly 10 iterations until explore_anneal_epi
     Plot the equation below to see the pattern
     suppose sinusoidal decay, start_val = 1, end_val = 0.2, stop after 60 unscaled x steps
     then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
-    '''
+    """
     if step < start_step:
         return start_val
     if step >= end_step:

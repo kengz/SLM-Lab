@@ -114,6 +114,7 @@ class RecurrentNet(Net, nn.Module):
         self.in_dim = in_dim if isinstance(in_dim, (int, np.integer)) else in_dim[1]
         # fc body: state processing model
         if ps.is_empty(self.fc_hid_layers):
+            self.fc_model = None
             self.rnn_input_dim = self.in_dim
         else:
             fc_dims = [self.in_dim] + self.fc_hid_layers
@@ -144,7 +145,7 @@ class RecurrentNet(Net, nn.Module):
         
         # Process through fc layers if present
         x = x.view(-1, self.in_dim)
-        if hasattr(self, 'fc_model'):
+        if self.fc_model is not None:
             x = self.fc_model(x)
         x = x.view(batch_size, self.seq_len, self.rnn_input_dim)
         

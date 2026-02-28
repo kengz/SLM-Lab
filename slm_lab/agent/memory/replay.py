@@ -154,10 +154,10 @@ class Replay(Memory):
         self.head = (self.head + 1) % self.max_size
         # Preserve dtype: uint8 images stay uint8 (memory efficient); everything else float16
         state_dtype = np.uint8 if state.dtype == np.uint8 else np.float16
-        self.states[self.head] = state.astype(state_dtype)
+        self.states[self.head] = state if state.dtype == state_dtype else state.astype(state_dtype)
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.ns_buffer.append(next_state.astype(state_dtype))
+        self.ns_buffer.append(next_state if next_state.dtype == state_dtype else next_state.astype(state_dtype))
         self.dones[self.head] = done
         self.terminateds[self.head] = terminated
         self.truncateds[self.head] = truncated

@@ -177,6 +177,7 @@ class MetricsTracker:
             self.eval_df = self.train_df
 
         self.metrics = {}  # store scalar metrics for Ray Tune reporting
+        self._is_dev = lab_mode() == "dev"  # cache for hot-path check
 
     def register_algo_var(self, var_name: str, source_obj: object) -> None:
         """Register a variable for logging. Expects source_obj to have an attribute named var_name."""
@@ -191,7 +192,7 @@ class MetricsTracker:
         done: bool,
     ) -> None:
         """Interface update method for tracker at agent.update()"""
-        if lab_mode() == "dev":  # log tensorboard only on dev mode
+        if self._is_dev:  # log tensorboard only on dev mode
             self.track_tensorboard(action)
 
     def __str__(self) -> str:
@@ -278,7 +279,7 @@ class MetricsTracker:
             return np.nan
         lrs = []
         for attr, obj in self.agent.algorithm.__dict__.items():
-            if attr.endswith("lr_scheduler"):
+            if attr.endswith("lr_scheduler") and obj is not None:
                 lr = obj.get_last_lr()
                 if hasattr(lr, "cpu"):
                     lr = lr.cpu().item()
@@ -346,7 +347,7 @@ class MetricsTracker:
 
         logger.info("\n".join(lines))
         if (
-            lab_mode() == "dev" and df_mode == "train"
+            self._is_dev and df_mode == "train"
         ):  # log tensorboard only on dev mode and train df data
             self.log_tensorboard()
 
