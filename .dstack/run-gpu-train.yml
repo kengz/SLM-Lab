@@ -3,8 +3,8 @@ name: slm-lab
 
 python: 3.12
 
-files:
-  - ..:/workflow
+repos:
+  - "..:/workflow"
 
 env:
   - HF_TOKEN
@@ -21,7 +21,7 @@ commands:
 
 resources:
   gpu:
-    name: [RTX3090]
+    memory: 20GB..
     count: 1
   memory: 32GB..
 
