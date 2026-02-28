@@ -6,10 +6,12 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 
 logger = logger.get_logger(__name__)
+
+_LOG2 = np.log(2)  # constant for squash correction
 
 
 class SoftActorCritic(ActorCritic):
@@ -31,6 +33,13 @@ class SoftActorCritic(ActorCritic):
                 training_start_step=max(1000, self.agent.memory.batch_size),
                 policy_delay=1,  # update actor every N critic updates (1 = every step, 2 = TD3-style)
                 entropy_penalty_coef=0.0,  # SD-SAC entropy penalty coefficient (0 = disabled)
+                symlog=False,  # Symlog Q-value compression (DreamerV3)
+                log_alpha_min=-5.0,  # alpha clamp lower bound (exp(-5) ≈ 0.007)
+                log_alpha_max=2.0,  # alpha clamp upper bound (exp(2) ≈ 7.4)
+                alpha_lr=None,  # separate lr for alpha optimizer (None = use actor lr)
+                fixed_alpha=None,  # Fixed alpha (no auto-tuning). Float or None. SAC-BBF uses 0.02.
+                alpha_anneal_frames=0,  # Linearly anneal alpha to 0 over this many frames (0 = no anneal)
+                spectral_norm=False,  # Spectral norm on penultimate critic Linear (Gogianu et al. 2021)
             ),
         )
         util.set_attr(
@@ -45,6 +54,13 @@ class SoftActorCritic(ActorCritic):
                 "training_start_step",
                 "policy_delay",
                 "entropy_penalty_coef",
+                "symlog",
+                "log_alpha_min",
+                "log_alpha_max",
+                "alpha_lr",
+                "fixed_alpha",
+                "alpha_anneal_frames",
+                "spectral_norm",
             ],
         )
         if self.agent.is_discrete:
@@ -55,6 +71,8 @@ class SoftActorCritic(ActorCritic):
         self.action_policy = getattr(policy_util, self.action_policy)
         self._train_step = 0  # counter for policy delay
         self._entropy_ema = None  # running entropy for SD-SAC penalty
+        self._cached_entropy = None  # cached from policy loss for alpha loss
+        self._is_per = "Prioritized" in util.get_class_name(self.agent.memory)
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -81,6 +99,9 @@ class SoftActorCritic(ActorCritic):
 
         self.q1_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
         self.target_q1_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
+        if self.spectral_norm:
+            net_util.apply_spectral_norm_penultimate(self.q1_net)
+            net_util.apply_spectral_norm_penultimate(self.target_q1_net)
         net_util.copy(self.q1_net, self.target_q1_net)
         self.q1_optim = net_util.get_optim(self.q1_net, self.q1_net.optim_spec)
         self.q1_lr_scheduler = net_util.get_lr_scheduler(
@@ -89,6 +110,9 @@ class SoftActorCritic(ActorCritic):
 
         self.q2_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
         self.target_q2_net = NetClass(self.net_spec, q_in_dim, q_out_dim)
+        if self.spectral_norm:
+            net_util.apply_spectral_norm_penultimate(self.q2_net)
+            net_util.apply_spectral_norm_penultimate(self.target_q2_net)
         net_util.copy(self.q2_net, self.target_q2_net)
         self.q2_optim = net_util.get_optim(self.q2_net, self.q2_net.optim_spec)
         self.q2_lr_scheduler = net_util.get_lr_scheduler(
@@ -97,28 +121,7 @@ class SoftActorCritic(ActorCritic):
 
         self.net_names = ["net", "q1_net", "target_q1_net", "q2_net", "target_q2_net"]
 
-        # Automatic entropy temperature tuning
-        # Use 'auto' (default) or specify explicit target_entropy value
-        target_entropy_config = self.algorithm_spec.get("target_entropy", "auto")
-        if target_entropy_config == "auto":
-            # Discrete: H_target = 0.6 * log(|A|) — lower than Christodoulou 2019's 0.98
-            # to allow meaningful exploitation. 0.98 is too close to max entropy.
-            # Continuous: H_target = -dim(A) per Haarnoja 2018
-            if self.agent.is_discrete:
-                self.target_entropy = 0.6 * np.log(self.agent.action_dim)
-            else:
-                action_dim = np.prod(self.agent.action_space.shape)
-                self.target_entropy = -action_dim
-        else:
-            self.target_entropy = float(target_entropy_config)
-
-        self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
-        self.alpha = self.log_alpha.detach().exp()
-        self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
-        self.alpha_lr_scheduler = net_util.get_lr_scheduler(
-            self.alpha_optim, self.net.lr_scheduler_spec, steps_per_schedule
-        )
-        self.agent.mt.register_algo_var("alpha", self)
+        self._init_entropy_tuning(steps_per_schedule)
 
         net_util.set_global_nets(self, global_nets)
         self.end_init_nets()
@@ -145,7 +148,7 @@ class SoftActorCritic(ActorCritic):
             )  # Sum across action dimensions
             # Numerically stable squash correction: log(1 - tanh^2(x)) = 2*(log(2) - x - softplus(-2x))
             squash_correction = (
-                2 * (np.log(2) - raw_actions - F.softplus(-2 * raw_actions))
+                2 * (_LOG2 - raw_actions - F.softplus(-2 * raw_actions))
             ).sum(-1)
             log_probs = raw_log_probs - squash_correction
             actions = torch.tanh(raw_actions)
@@ -175,8 +178,8 @@ class SoftActorCritic(ActorCritic):
         Continuous: V(s') = min(Q1,Q2) - α·log(π) where a ~ π
         """
         if self.agent.is_discrete:
-            next_probs = action_pd.probs
             next_log_probs = F.log_softmax(action_pd.logits, dim=-1)
+            next_probs = next_log_probs.exp()
             next_q1_all = self.target_q1_net(next_states)
             next_q2_all = self.target_q2_net(next_states)
             avg_q = (
@@ -202,15 +205,18 @@ class SoftActorCritic(ActorCritic):
 
     def calc_policy_loss_discrete(self, states, action_pd, q1_all, q2_all):
         """J_π = E[Σ_a π(a|s)[α·log(π) - avg(Q1,Q2)]] + entropy_penalty (SD-SAC)"""
-        action_probs = action_pd.probs
         action_log_probs = F.log_softmax(action_pd.logits, dim=-1)
+        action_probs = action_log_probs.exp()
         with torch.no_grad():
             avg_q_all = (q1_all + q2_all) / 2  # SD-SAC: avg instead of min for discrete
         policy_loss = (
-            (action_probs * (self.alpha.detach() * action_log_probs - avg_q_all))
+            (action_probs * (self.alpha * action_log_probs - avg_q_all))
             .sum(dim=1)
             .mean()
         )
+        # Cache entropy for alpha loss to avoid recomputing probs/log_probs
+        with torch.no_grad():
+            self._cached_entropy = -(action_probs * action_log_probs).sum(dim=-1).mean()
         # SD-SAC entropy penalty: beta * 0.5 * (H_old - H_new)^2
         if self.entropy_penalty_coef > 0:
             entropy = -(action_probs * action_log_probs).sum(dim=-1).mean()
@@ -245,10 +251,8 @@ class SoftActorCritic(ActorCritic):
 
     def calc_alpha_loss_discrete(self, action_pd):
         """J_α = -α * (H_target - H) — matches continuous SAC sign convention"""
-        action_probs = action_pd.probs
-        action_log_probs = F.log_softmax(action_pd.logits, dim=-1)
-        with torch.no_grad():
-            entropy_current = -(action_probs * action_log_probs).sum(dim=-1).mean()
+        # Reuse cached entropy from policy loss to avoid recomputing probs/log_probs
+        entropy_current = self._cached_entropy
         # Sign must match continuous: when H > H_target, alpha decreases
         return -(self.log_alpha.exp() * (self.target_entropy - entropy_current))
 
@@ -271,7 +275,7 @@ class SoftActorCritic(ActorCritic):
         return fn(action_pd)
 
     def try_update_per(self, q_preds, q_targets):
-        if "Prioritized" not in util.get_class_name(self.agent.memory):
+        if not self._is_per:
             return
         with torch.no_grad():
             errors = (q_preds - q_targets).abs().cpu().numpy()
@@ -283,11 +287,83 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim.step()
         # Clamp log_alpha to prevent runaway growth in truncation-only envs (e.g. Acrobot)
         with torch.no_grad():
-            self.log_alpha.clamp_(-5.0, 2.0)  # alpha in [~0.007, ~7.4]
+            self.log_alpha.clamp_(self.log_alpha_min, self.log_alpha_max)
         self.alpha = self.log_alpha.detach().exp()
+
+    def _init_entropy_tuning(self, steps_per_schedule):
+        """Initialize entropy temperature (alpha). Shared by SAC and CrossQ.
+
+        Supports two modes:
+        - Auto-tuning (default): learnable log_alpha with optimizer
+        - Fixed alpha: constant alpha, optionally annealed to 0 over alpha_anneal_frames
+        """
+        if self.fixed_alpha is not None:
+            # Fixed alpha mode (SAC-BBF approach): no auto-tuning
+            self._fixed_alpha_start = float(self.fixed_alpha)
+            self.alpha = torch.tensor(self._fixed_alpha_start, device=self.net.device)
+            self.log_alpha = torch.tensor(np.log(self._fixed_alpha_start), device=self.net.device)
+            self.alpha_optim = None
+            self.alpha_lr_scheduler = None
+            self.target_entropy = None
+            self._entropy_anneal_frames = 0
+            self.agent.mt.register_algo_var("alpha", self)
+            return
+
+        # Auto-tuning mode
+        target_entropy_config = self.algorithm_spec.get("target_entropy", "auto")
+        if target_entropy_config == "auto":
+            if self.agent.is_discrete:
+                log_action_dim = np.log(self.agent.action_dim)
+                ea = self.algorithm_spec.get("entropy_anneal", {})
+                start_ratio = ea.get("start_ratio", 0.6)
+                end_ratio = ea.get("end_ratio", start_ratio)
+                self._entropy_anneal_frames = ea.get("frames", 0)
+                self.target_entropy = start_ratio * log_action_dim
+                self._target_entropy_start = start_ratio * log_action_dim
+                self._target_entropy_end = end_ratio * log_action_dim
+            else:
+                action_dim = np.prod(self.agent.action_space.shape)
+                self.target_entropy = -action_dim
+                self._entropy_anneal_frames = 0
+        else:
+            self.target_entropy = float(target_entropy_config)
+            self._entropy_anneal_frames = 0
+
+        self.log_alpha = torch.zeros(1, requires_grad=True, device=self.net.device)
+        self.alpha = self.log_alpha.detach().exp()
+        alpha_optim_spec = dict(self.net.optim_spec)
+        if self.alpha_lr is not None:
+            alpha_optim_spec["lr"] = self.alpha_lr
+        self.alpha_optim = net_util.get_optim(self.log_alpha, alpha_optim_spec)
+        self.alpha_lr_scheduler = net_util.get_lr_scheduler(
+            self.alpha_optim, self.net.lr_scheduler_spec, steps_per_schedule
+        )
+        self.agent.mt.register_algo_var("alpha", self)
+
+    def _anneal_target_entropy(self):
+        """Linearly anneal target_entropy for discrete actions."""
+        if self._entropy_anneal_frames <= 0:
+            return
+        frame = self.agent.env.get("frame")
+        t = min(frame / self._entropy_anneal_frames, 1.0)
+        self.target_entropy = self._target_entropy_start + t * (
+            self._target_entropy_end - self._target_entropy_start
+        )
+
+    def _anneal_alpha(self):
+        """Linearly anneal fixed alpha to 0 over alpha_anneal_frames."""
+        if self.fixed_alpha is None or self.alpha_anneal_frames <= 0:
+            return
+        frame = self.agent.env.get("frame")
+        t = min(frame / self.alpha_anneal_frames, 1.0)
+        self.alpha = torch.tensor(
+            self._fixed_alpha_start * (1.0 - t), device=self.net.device
+        )
 
     def train(self):
         if self.to_train == 1:
+            self._anneal_target_entropy()
+            self._anneal_alpha()
             for _ in range(self.training_iter):
                 batch = self.sample()
                 self.agent.env.set_batch_size(len(batch))
@@ -300,7 +376,18 @@ class SoftActorCritic(ActorCritic):
                 q1_preds, q1_all = self.calc_q(states, actions, self.q1_net)
                 q2_preds, q2_all = self.calc_q(states, actions, self.q2_net)
 
-                q1_loss = self.net.loss_fn(q1_preds, q_targets)
+                # Apply symlog compression to Q-values if enabled
+                if self.symlog:
+                    symlog_targets = math_util.symlog(q_targets)
+                    q1_loss = self.net.loss_fn(
+                        math_util.symlog(q1_preds), symlog_targets
+                    )
+                    q2_loss = self.net.loss_fn(
+                        math_util.symlog(q2_preds), symlog_targets
+                    )
+                else:
+                    q1_loss = self.net.loss_fn(q1_preds, q_targets)
+                    q2_loss = self.net.loss_fn(q2_preds, q_targets)
                 self.q1_net.train_step(
                     q1_loss,
                     self.q1_optim,
@@ -308,7 +395,6 @@ class SoftActorCritic(ActorCritic):
                     global_net=self.global_q1_net,
                 )
 
-                q2_loss = self.net.loss_fn(q2_preds, q_targets)
                 self.q2_net.train_step(
                     q2_loss,
                     self.q2_optim,
@@ -334,10 +420,13 @@ class SoftActorCritic(ActorCritic):
                         global_net=self.global_net,
                     )
 
-                    alpha_loss = self.calc_alpha_loss(action_pd)
-                    self.train_alpha(alpha_loss)
+                    # Alpha update: skip when using fixed alpha
+                    if self.fixed_alpha is None:
+                        alpha_loss = self.calc_alpha_loss(action_pd)
+                        self.train_alpha(alpha_loss)
+                        loss = loss + alpha_loss
 
-                    loss = loss + policy_loss + alpha_loss
+                    loss = loss + policy_loss
                     # update target networks only when policy is updated
                     self.update_nets()
 
