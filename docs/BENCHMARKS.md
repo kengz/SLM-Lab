@@ -169,7 +169,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | A2C | ❌ | -820.74 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_pendulum_arc | [a2c_gae_pendulum_arc_2026_02_11_162217](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_pendulum_arc_2026_02_11_162217) |
 | PPO | ✅ | -174.87 | [slm_lab/spec/benchmark_arc/ppo/ppo_classic_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_classic_arc.yaml) | ppo_pendulum_arc | [ppo_pendulum_arc_2026_02_11_162156](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_pendulum_arc_2026_02_11_162156) |
 | SAC | ✅ | -150.97 | [slm_lab/spec/benchmark_arc/sac/sac_classic_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_classic_arc.yaml) | sac_pendulum_arc | [sac_pendulum_arc_2026_02_11_162240](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_pendulum_arc_2026_02_11_162240) |
-| CrossQ | ✅ | -163.52 | [slm_lab/spec/benchmark/crossq/crossq_classic.yaml](../slm_lab/spec/benchmark/crossq/crossq_classic.yaml) | crossq_pendulum | [crossq_pendulum_2026_02_21_123841](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_pendulum_2026_02_21_123841) |
+| CrossQ | ✅ | -145.66 | [slm_lab/spec/benchmark/crossq/crossq_classic.yaml](../slm_lab/spec/benchmark/crossq/crossq_classic.yaml) | crossq_pendulum | [crossq_pendulum_2026_02_28_130648](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_pendulum_2026_02_28_130648) |
 
 ![Pendulum-v1](plots/Pendulum-v1_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -188,7 +188,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | A2C | ❌ | 27.38 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_lunar_arc | [a2c_gae_lunar_arc_2026_02_11_224304](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_lunar_arc_2026_02_11_224304) |
 | PPO | ⚠️ | 183.30 | [slm_lab/spec/benchmark_arc/ppo/ppo_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_box2d_arc.yaml) | ppo_lunar_arc | [ppo_lunar_arc_2026_02_11_201303](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_lunar_arc_2026_02_11_201303) |
 | SAC | ⚠️ | 106.17 | [slm_lab/spec/benchmark_arc/sac/sac_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_box2d_arc.yaml) | sac_lunar_arc | [sac_lunar_arc_2026_02_11_201417](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_lunar_arc_2026_02_11_201417) |
-| CrossQ | ❌ | 136.25 | [slm_lab/spec/benchmark/crossq/crossq_box2d.yaml](../slm_lab/spec/benchmark/crossq/crossq_box2d.yaml) | crossq_lunar | [crossq_lunar_2026_02_21_123730](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_lunar_2026_02_21_123730) |
+| CrossQ | ❌ | 139.21 | [slm_lab/spec/benchmark/crossq/crossq_box2d.yaml](../slm_lab/spec/benchmark/crossq/crossq_box2d.yaml) | crossq_lunar | [crossq_lunar_2026_02_28_130733](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_lunar_2026_02_28_130733) |
 
 ![LunarLander-v3](plots/LunarLander-v3_multi_trial_graph_mean_returns_ma_vs_frames.png)
 

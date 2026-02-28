@@ -26,7 +26,7 @@ resources:
   memory: 32GB..
 
 spot_policy: auto
-max_duration: 6h
+max_duration: 8h
 max_price: 0.50
 retry:
   on_events: [no-capacity]

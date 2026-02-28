@@ -6,6 +6,45 @@ Operational tracker for CrossQ benchmark runs. Updated by agent team.
 
 ## Run Status
 
+### Wave 9 — Clean Spec Relaunch (RUNNING)
+
+All specs cleaned to canonical names. Suffixed specs removed. Configs upgraded with best-known settings.
+
+**Phase 1 (Classic) — from old commit, configs unchanged:**
+
+| Run Name | Env | Spec Name | Status | Config |
+|----------|-----|-----------|--------|--------|
+| crossq-cartpole-v | CartPole-v1 | crossq_cartpole | running | [256]+BRN, 200K |
+| crossq-acrobot-v | Acrobot-v1 | crossq_acrobot | running | [256]+BRN, 300K |
+| crossq-pendulum-v | Pendulum-v1 | crossq_pendulum | running | [256]+BRN, iter=4, 300K |
+
+**Phase 2 (Box2D) — from old commit, configs unchanged:**
+
+| Run Name | Env | Spec Name | Status | Config |
+|----------|-----|-----------|--------|--------|
+| crossq-lunar-v | LunarLander-v3 | crossq_lunar | running | [256]+BRN, 300K |
+| crossq-lunar-cont-v | LunarLanderCont-v3 | crossq_lunar_continuous | running | [256]+BRN, iter=4, 300K |
+
+**Phase 3 (MuJoCo) — NEW commit, upgraded configs:**
+
+| Run Name | Env | Spec Name | Status | Config |
+|----------|-----|-----------|--------|--------|
+| crossq-halfcheetah-v | HalfCheetah-v5 | crossq_halfcheetah | submitted | LN actor, [512]+BRN, 7.5M |
+| crossq-hopper-v2 | Hopper-v5 | crossq_hopper | submitted | plain actor, [512]+BRN, start=10K, 6M |
+| crossq-walker2d-v | Walker2d-v5 | crossq_walker2d | submitted | LN actor, [512]+BRN, start=10K, 7M |
+| crossq-ant-v | Ant-v5 | crossq_ant | submitted | LN actor, [512]+BRN, start=10K, 6M |
+| crossq-humanoid-v | Humanoid-v5 | crossq_humanoid | submitted | LN actor, [1024]+BRN, iter=2, start=10K, 3.5M |
+| crossq-humstandup-v | HumanoidStandup-v5 | crossq_humanoid_standup | submitted | LN actor, [1024]+BRN, iter=2, start=10K, 2M |
+| crossq-invpend-v2 | InvertedPendulum-v5 | crossq_inverted_pendulum | submitted | plain actor, [512]+BRN, 7M |
+| crossq-invdoubpend-v | InvertedDoublePendulum-v5 | crossq_inverted_double_pendulum | submitted | LN actor, [1024]+BRN, iter=2, 3.5M |
+| crossq-swimmer-v2 | Swimmer-v5 | crossq_swimmer | submitted | plain actor, [256]+BRN, gamma=0.9999, 6M |
+| crossq-reacher-v2 | Reacher-v5 | crossq_reacher | submitted | plain actor, [256]+BRN, 2M |
+| crossq-pusher-v2 | Pusher-v5 | crossq_pusher | submitted | plain actor, [256]+BRN, 2M |
+
+**Intake workflow**: When runs complete, use `slm-lab pull SPEC_NAME` to download data. Spec names are clean canonical — HF folder will be `crossq_halfcheetah_2026_02_28_...` etc.
+
+---
+
 ### Wave 0 — Improvement Runs (COMPLETED, intake deferred)
 
 | Run Name | Env | Score (MA) | Old Score | Status | Spec Name | Intake |
