@@ -1,0 +1,84 @@
+# SAC + CrossQ CartPole verification (quick smoke test)
+
+_sac_base_meta: &sac_base_meta
+  distributed: false
+  log_frequency: 500
+  eval_frequency: 500
+  max_session: 4
+  max_trial: 1
+
+_sac_base_net: &sac_base_net
+  type: MLPNet
+  hid_layers: [64, 64]
+  hid_layers_activation: relu
+  init_fn: xavier_uniform_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 0.0003
+  update_type: polyak
+  polyak_coef: 0.005
+  gpu: auto
+
+# 1. SAC baseline
+sac_cartpole_baseline:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_start_step: 500
+    memory:
+      name: Replay
+      batch_size: 64
+      max_size: 50000
+      use_cer: false
+    net: *sac_base_net
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 100000
+  meta: *sac_base_meta
+
+# 2. CrossQ on CartPole (discrete) — with BatchNorm critics
+crossq_cartpole:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_iter: 1
+      training_start_step: 1000
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 50000
+      use_cer: false
+    net:
+      type: MLPNet
+      hid_layers: [256, 256]
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      clip_grad_val: 1.0
+      batch_norm: true
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: Adam
+        lr: 0.0001
+      gpu: auto
+  env:
+    name: CartPole-v1
+    num_envs: 4
+    max_t: null
+    max_frame: 100000
+  meta: *sac_base_meta

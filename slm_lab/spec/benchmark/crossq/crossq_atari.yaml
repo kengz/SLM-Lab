@@ -1,0 +1,132 @@
+# CrossQ Atari — SAC without target networks + Batch Renormalization in critics
+# v14: iter=1 + slow alpha_lr=3e-5 for stability. v12 iter=1 had ~320fps but Pong/Breakout/Seaquest
+#     diverged due to fast alpha dynamics. Slow alpha_lr (from v9c) prevents divergence without
+#     needing extra gradient steps. Keeps v12 speed advantage over SAC.
+
+# Actor ConvNet: no batch normalization
+_conv_actor: &conv_actor
+  modules:
+    body:
+      Sequential:
+        - LazyConv2d:
+            out_channels: 32
+            kernel_size: 8
+            stride: 4
+        - ReLU:
+        - LazyConv2d:
+            out_channels: 64
+            kernel_size: 4
+            stride: 2
+        - ReLU:
+        - LazyConv2d:
+            out_channels: 64
+            kernel_size: 3
+            stride: 1
+        - ReLU:
+        - Flatten:
+        - LazyLinear:
+            out_features: 512
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# Critic ConvNet: wider FC (1024) + BRN to compensate for UTD=1 (fewer gradient steps)
+_conv_critic: &conv_critic
+  modules:
+    body:
+      Sequential:
+        - LazyConv2d:
+            out_channels: 32
+            kernel_size: 8
+            stride: 4
+        - ReLU:
+        - LazyConv2d:
+            out_channels: 64
+            kernel_size: 4
+            stride: 2
+        - ReLU:
+        - LazyConv2d:
+            out_channels: 64
+            kernel_size: 3
+            stride: 1
+        - ReLU:
+        - Flatten:
+        - LazyLinear:
+            out_features: 1024
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 5000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+crossq_atari:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_start_step: 1000
+      training_frequency: 4
+      training_iter: 1
+      policy_delay: 3
+      alpha_lr: 3.0e-5
+      log_alpha_max: 1.0
+      symlog: false
+      spectral_norm: false
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 200000
+      use_cer: false
+    net:
+      type: TorchArcNet
+      arc: *conv_actor
+      shared: false
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: Adam
+        lr: 1.0e-3
+      normalize: true
+      gpu: auto
+    critic_net:
+      type: TorchArcNet
+      arc: *conv_critic
+      shared: false
+      hid_layers_activation: relu
+      init_fn: orthogonal_
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: SmoothL1Loss
+      optim_spec:
+        name: Adam
+        lr: 1.0e-3
+      normalize: true
+      gpu: auto
+  env:
+    name: ${env}
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+    life_loss_info: true
+  meta:
+    distributed: false
+    eval_frequency: 10000
+    log_frequency: 10000
+    max_session: 4
+    max_trial: 1
