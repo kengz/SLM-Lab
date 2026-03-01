@@ -247,7 +247,7 @@ crossq_swimmer:
     name: Swimmer-v5
     num_envs: 16
     max_t: null
-    max_frame: 2000000
+    max_frame: 5000000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -335,7 +335,7 @@ crossq_ant:
     name: Ant-v5
     num_envs: 16
     max_t: null
-    max_frame: 2000000
+    max_frame: 3000000
   meta: *meta
 
 crossq_inverted_double_pendulum:
@@ -375,7 +375,7 @@ crossq_humanoid:
     name: Humanoid-v5
     num_envs: 16
     max_t: null
-    max_frame: 1000000
+    max_frame: 2000000
   meta:
     <<: *meta
     eval_frequency: 1000
