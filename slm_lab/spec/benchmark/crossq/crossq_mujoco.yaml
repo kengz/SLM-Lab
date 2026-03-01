@@ -348,7 +348,7 @@ crossq_inverted_double_pendulum:
     net:
       <<: *net
       arc: *actor_ln
-    critic_net: *critic_net_1024
+    critic_net: *critic_net_512
   env:
     name: InvertedDoublePendulum-v5
     num_envs: 16
@@ -375,7 +375,7 @@ crossq_humanoid:
     name: Humanoid-v5
     num_envs: 16
     max_t: null
-    max_frame: 3500000
+    max_frame: 4000000
   meta:
     <<: *meta
     eval_frequency: 1000
