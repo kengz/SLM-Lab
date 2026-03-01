@@ -26,14 +26,14 @@ _critic_brn: &critic_brn
         - LazyBatchRenorm1d:
             momentum: 0.01
             eps: 0.001
-            warmup_steps: 5000
+            warmup_steps: 2000
         - ReLU:
         - LazyLinear:
             out_features: 256
         - LazyBatchRenorm1d:
             momentum: 0.01
             eps: 0.001
-            warmup_steps: 5000
+            warmup_steps: 2000
         - ReLU:
   graph:
     input: x
@@ -87,7 +87,7 @@ crossq_cartpole:
       action_policy: default
       gamma: 0.99
       training_frequency: 1
-      training_iter: 2
+      training_iter: 4
       training_start_step: 1000
       policy_delay: 3
       log_alpha_max: 2.0
