@@ -87,6 +87,7 @@ crossq_cartpole:
       action_policy: default
       gamma: 0.99
       training_frequency: 1
+      training_iter: 2
       training_start_step: 1000
       policy_delay: 3
       log_alpha_max: 2.0
@@ -97,7 +98,7 @@ crossq_cartpole:
     name: CartPole-v1
     num_envs: 4
     max_t: null
-    max_frame: 300000
+    max_frame: 200000
   meta: *meta
 
 crossq_acrobot:
