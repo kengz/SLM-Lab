@@ -97,7 +97,7 @@ crossq_cartpole:
     name: CartPole-v1
     num_envs: 4
     max_t: null
-    max_frame: 200000
+    max_frame: 300000
   meta: *meta
 
 crossq_acrobot:

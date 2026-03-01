@@ -365,7 +365,7 @@ crossq_humanoid:
     <<: *agent
     algorithm:
       <<: *algorithm
-      training_iter: 2
+      training_iter: 4
       training_start_step: 10000
     net:
       <<: *net
