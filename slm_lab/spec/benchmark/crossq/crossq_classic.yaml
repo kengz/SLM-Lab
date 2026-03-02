@@ -88,9 +88,9 @@ crossq_cartpole:
       gamma: 0.99
       training_frequency: 1
       training_iter: 4
-      training_start_step: 1000
+      training_start_step: 5000
       policy_delay: 3
-      log_alpha_max: 2.0
+      log_alpha_max: 1.0
     memory: *memory
     net: *net
     critic_net: *critic_net
