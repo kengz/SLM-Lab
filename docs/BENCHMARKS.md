@@ -107,12 +107,12 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 ## Progress
 
-| Phase | Category | Envs | REINFORCE | SARSA | DQN | DDQN+PER | A2C | PPO | SAC | Overall |
-|-------|----------|------|-----------|-------|-----|----------|-----|-----|-----|---------|
-| 1 | Classic Control | 3 | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ | Done |
-| 2 | Box2D | 2 | N/A | N/A | ⚠️ | ✅ | ❌ | ⚠️ | ⚠️ | Done |
-| 3 | MuJoCo | 11 | N/A | N/A | N/A | N/A | N/A | ⚠️ | ⚠️ | Done |
-| 4 | Atari | 57 | N/A | N/A | N/A | Skip | Done | Done | Done | Done |
+| Phase | Category | Envs | REINFORCE | SARSA | DQN | DDQN+PER | A2C | PPO | SAC | CrossQ | Overall |
+|-------|----------|------|-----------|-------|-----|----------|-----|-----|-----|--------|---------|
+| 1 | Classic Control | 3 | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ | ⚠️ | Done |
+| 2 | Box2D | 2 | N/A | N/A | ⚠️ | ✅ | ❌ | ⚠️ | ⚠️ | ⚠️ | Done |
+| 3 | MuJoCo | 11 | N/A | N/A | N/A | N/A | N/A | ⚠️ | ⚠️ | ⚠️ | Done |
+| 4 | Atari | 57 | N/A | N/A | N/A | Skip | Done | Done | Done | ❌ | Done |
 
 **Legend**: ✅ Solved | ⚠️ Close (>80%) | 📊 Acceptable | ❌ Failed | 🔄 In progress/Pending | Skip Not started | N/A Not applicable
 
@@ -213,13 +213,14 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 **Settings**: max_frame 4e6-10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
-**Algorithms**: PPO and SAC. Network: MLP [256,256], orthogonal init. PPO uses tanh activation; SAC uses relu.
+**Algorithms**: PPO, SAC, and CrossQ. Network: MLP [256,256], orthogonal init. PPO uses tanh activation; SAC and CrossQ use relu. CrossQ uses Batch Renormalization in critics (no target networks).
 
-**Note on SAC frame budgets**: SAC uses higher update-to-data ratios (more gradient updates per step), making it more sample-efficient but slower per frame than PPO. SAC benchmarks use 1-4M frames (vs PPO's 4-10M) to fit within practical GPU wall-time limits (~6h). Scores may still be improving at cutoff.
+**Note on SAC/CrossQ frame budgets**: SAC uses higher update-to-data ratios (more gradient updates per step), making it more sample-efficient but slower per frame than PPO. SAC benchmarks use 1-4M frames (vs PPO's 4-10M) to fit within practical GPU wall-time limits (~6h). CrossQ uses UTD=1 (like PPO) but eliminates target network overhead, achieving ~700 fps — its frame budgets (3-7.5M) reflect this speed advantage. Scores may still be improving at cutoff.
 
 **Spec Files** (one file per algorithm, all envs via YAML anchors):
 - **PPO**: [ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml)
 - **SAC**: [sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml)
+- **CrossQ**: [crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml)
 
 **Spec Variants**: Each file has a base config (shared via YAML anchors) with per-env overrides:
 
@@ -230,6 +231,8 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | ppo_{env}_arc | Ant, Hopper, Swimmer, IP, IDP | Per-env tuned (gamma, lam, lr) |
 | sac_mujoco_arc | (generic, use with -s flags) | Base: gamma=0.99, iter=4, lr=3e-4, [256,256] |
 | sac_{env}_arc | All 11 envs | Per-env tuned (iter, gamma, lr, net size) |
+| crossq_mujoco | (generic base) | Base: gamma=0.99, iter=1, lr=1e-3, policy_delay=3 |
+| crossq_{env} | All 11 envs | Per-env tuned (critic width, actor LN, iter) |
 
 **Reproduce**: Copy `SPEC_NAME` and `MAX_FRAME` from the table below.
 
@@ -241,32 +244,47 @@ source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=MAX_FRAME \
 # SAC: env and max_frame are hardcoded per spec — no -s flags needed
 source .env && slm-lab run-remote --gpu \
   slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml SPEC_NAME train -n NAME
+
+# CrossQ: env and max_frame are hardcoded per spec — no -s flags needed
+source .env && slm-lab run-remote --gpu \
+  slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml SPEC_NAME train -n NAME
 ```
 
 | ENV | SPEC_NAME | MAX_FRAME |
 |-----|-----------|-----------|
 | Ant-v5 | ppo_ant_arc | 10e6 |
 | | sac_ant_arc | 2e6 |
+| | crossq_ant | 6e6 |
 | HalfCheetah-v5 | ppo_mujoco_arc | 10e6 |
 | | sac_halfcheetah_arc | 4e6 |
+| | crossq_halfcheetah | 7.5e6 |
 | Hopper-v5 | ppo_hopper_arc | 4e6 |
 | | sac_hopper_arc | 3e6 |
+| | crossq_hopper | 3e6 |
 | Humanoid-v5 | ppo_mujoco_arc | 10e6 |
 | | sac_humanoid_arc | 1e6 |
+| | crossq_humanoid | 3.5e6 |
 | HumanoidStandup-v5 | ppo_mujoco_arc | 4e6 |
 | | sac_humanoid_standup_arc | 1e6 |
+| | crossq_humanoid_standup | 3.5e6 |
 | InvertedDoublePendulum-v5 | ppo_inverted_double_pendulum_arc | 10e6 |
 | | sac_inverted_double_pendulum_arc | 2e6 |
+| | crossq_inverted_double_pendulum | 3e6 |
 | InvertedPendulum-v5 | ppo_inverted_pendulum_arc | 4e6 |
 | | sac_inverted_pendulum_arc | 2e6 |
+| | crossq_inverted_pendulum | 3e6 |
 | Pusher-v5 | ppo_mujoco_longhorizon_arc | 4e6 |
 | | sac_pusher_arc | 1e6 |
+| | crossq_pusher | 1e6 |
 | Reacher-v5 | ppo_mujoco_longhorizon_arc | 4e6 |
 | | sac_reacher_arc | 1e6 |
+| | crossq_reacher | 1e6 |
 | Swimmer-v5 | ppo_swimmer_arc | 4e6 |
 | | sac_swimmer_arc | 2e6 |
+| | crossq_swimmer | 2e6 |
 | Walker2d-v5 | ppo_mujoco_arc | 10e6 |
 | | sac_walker2d_arc | 3e6 |
+| | crossq_walker2d | 7e6 |
 
 #### 3.1 Ant-v5
 
@@ -306,7 +324,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ⚠️ | 1653.74 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_hopper_arc | [ppo_hopper_arc_hopper_2026_02_12_222206](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_hopper_arc_hopper_2026_02_12_222206) |
 | SAC | ⚠️ | 1416.52 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_hopper_arc | [sac_hopper_3m_i4_arc_2026_02_14_185434](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_hopper_3m_i4_arc_2026_02_14_185434) |
-| CrossQ | ⚠️ | 1402.93 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_hopper | [crossq_hopper_2026_02_28_184352](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_hopper_2026_02_28_184352) |
+| CrossQ | ⚠️ | 1168.53 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_hopper | [crossq_hopper_2026_02_21_101148](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_hopper_2026_02_21_101148) |
 
 ![Hopper-v5](plots/Hopper-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -437,6 +455,7 @@ source .env && slm-lab run-remote --gpu \
 - **A2C**: [a2c_atari_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_atari_arc.yaml) - RMSprop (lr=7e-4), training_frequency=32
 - **PPO**: [ppo_atari_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_atari_arc.yaml) - AdamW (lr=2.5e-4), minibatch=256, horizon=128, epochs=4, max_frame=10e6
 - **SAC**: [sac_atari_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_atari_arc.yaml) - Categorical SAC, AdamW (lr=3e-4), training_iter=3, training_frequency=4, max_frame=2e6
+- **CrossQ**: [crossq_atari.yaml](../slm_lab/spec/benchmark/crossq/crossq_atari.yaml) - Categorical CrossQ, AdamW (lr=1e-3), training_iter=3, training_frequency=4, max_frame=2e6 (experimental — limited results on 6 games)
 
 **PPO Lambda Variants** (table shows best result per game):
 
@@ -459,6 +478,10 @@ source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=1e7 \
 # SAC (2M frames - off-policy, more sample-efficient but slower per frame)
 source .env && slm-lab run-remote --gpu -s env=ENV \
   slm_lab/spec/benchmark_arc/sac/sac_atari_arc.yaml sac_atari_arc train -n NAME
+
+# CrossQ (2M frames - experimental, limited games tested)
+source .env && slm-lab run-remote --gpu -s env=ENV \
+  slm_lab/spec/benchmark/crossq/crossq_atari.yaml crossq_atari train -n NAME
 ```
 
 > **Note**: HF Data links marked "-" indicate runs completed but not yet uploaded to HuggingFace. Scores are extracted from local trial_metrics.
@@ -571,7 +594,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/MsPacman-v5 | 2330.74 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_mspacman_2026_02_14_102435](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_mspacman_2026_02_14_102435) |
 | | 1336.96 | sac_atari_arc | [sac_atari_arc_mspacman_2026_02_17_221523](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_mspacman_2026_02_17_221523) |
 | | 2110 | a2c_gae_atari_arc | [a2c_gae_atari_mspacman_2026_02_01_001100](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_mspacman_2026_02_01_001100) |
-| | ❌ 356.80 | crossq_atari | [crossq_atari_mspacman_v12](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/commit/24eea7c366534f3ca5e933aa90c876adc59b62a4) |
+| | ❌ 356.80 | crossq_atari | [crossq_atari_mspacman_v12](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_mspacman_v12) |
 | ALE/NameThisGame-v5 | 6879.23 | ppo_atari_arc | [ppo_atari_arc_namethisgame_2026_02_14_103319](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_namethisgame_2026_02_14_103319) |
 | | 3992.71 | sac_atari_arc | [sac_atari_arc_namethisgame_2026_02_17_220905](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_namethisgame_2026_02_17_220905) |
 | | 5412 | a2c_gae_atari_arc | [a2c_gae_atari_namethisgame_2026_02_01_132733](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_namethisgame_2026_02_01_132733) |
@@ -581,7 +604,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/Pong-v5 | 16.69 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_pong_2026_02_14_103722](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_pong_2026_02_14_103722) |
 | | 10.89 | sac_atari_arc | [sac_atari_arc_pong_2026_02_17_160429](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_pong_2026_02_17_160429) |
 | | 10.17 | a2c_gae_atari_arc | [a2c_gae_atari_pong_2026_01_31_213635](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_pong_2026_01_31_213635) |
-| | ❌ -20.48 | crossq_atari | [crossq_atari_pong_v14](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/commit/c35aa98b4f78ca48bad767cf092cf3a278b7908a) |
+| | ❌ -20.48 | crossq_atari | [crossq_atari_pong_v14](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_pong_v14) |
 | ALE/Pooyan-v5 | 5308.66 | ppo_atari_lam70_arc | [ppo_atari_lam70_arc_pooyan_2026_02_14_114730](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam70_arc_pooyan_2026_02_14_114730) |
 | | 2530.78 | sac_atari_arc | [sac_atari_arc_pooyan_2026_02_17_220346](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_pooyan_2026_02_17_220346) |
 | | 2997 | a2c_gae_atari_arc | [a2c_gae_atari_pooyan_2026_02_01_132748](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_pooyan_2026_02_01_132748) |
