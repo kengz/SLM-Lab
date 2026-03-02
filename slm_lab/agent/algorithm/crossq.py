@@ -94,26 +94,6 @@ class CrossQ(SoftActorCritic):
         q_current, q_next = q_all.chunk(2, dim=0)
         return q_current, q_next
 
-    def calc_v_next(self, next_states, action_pd):
-        """Value function V(s') using actual Q-networks (no target networks).
-
-        CrossQ uses the same critics for both current and next state evaluation.
-        The cross batch norm forward handles BN statistics sharing.
-        """
-        if self.agent.is_discrete:
-            next_log_probs = torch.nn.functional.log_softmax(action_pd.logits, dim=-1)
-            next_probs = next_log_probs.exp()
-            next_q1_all = self.q1_net(next_states)
-            next_q2_all = self.q2_net(next_states)
-            avg_q = (next_q1_all + next_q2_all) / 2
-            return (next_probs * (avg_q - self.alpha * next_log_probs)).sum(dim=-1)
-        else:
-            next_log_probs, next_actions = self.calc_log_prob_action(action_pd)
-            next_q1, _ = self.calc_q_cont(next_states, next_actions, self.q1_net)
-            next_q2, _ = self.calc_q_cont(next_states, next_actions, self.q2_net)
-            min_q = torch.min(next_q1, next_q2)
-            return min_q - self.alpha * next_log_probs
-
     def train(self):
         """Override SAC's train to use cross batch norm forward pass.
 

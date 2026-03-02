@@ -14,6 +14,7 @@ from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.perf import log_perf_setup, optimize
+from slm_lab.lib.torch_profiler import torch_profiler_context
 from slm_lab.spec import spec_util
 
 
@@ -107,26 +108,29 @@ class Session:
         state, info = self.env.reset()
         is_venv = self.env.is_venv
 
-        while self.env.get() < self.env.max_frame:
-            action = self.agent.act(state)  # Agent.act() already uses torch.no_grad()
-            next_state, reward, terminated, truncated, info = self.env.step(action)
+        with torch_profiler_context() as prof_step:
+            while self.env.get() < self.env.max_frame:
+                action = self.agent.act(state)  # Agent.act() already uses torch.no_grad()
+                next_state, reward, terminated, truncated, info = self.env.step(action)
 
-            done = terminated | truncated  # numpy bitwise-or, same as logical_or for bool arrays
-            self.agent.update(
-                state=state,
-                action=action,
-                reward=reward,
-                next_state=next_state,
-                done=done,
-                terminated=terminated,
-                truncated=truncated
-            )
-            self.try_ckpt(self.agent, self.env)
+                done = terminated | truncated  # numpy bitwise-or, same as logical_or for bool arrays
+                self.agent.update(
+                    state=state,
+                    action=action,
+                    reward=reward,
+                    next_state=next_state,
+                    done=done,
+                    terminated=terminated,
+                    truncated=truncated
+                )
+                self.try_ckpt(self.agent, self.env)
 
-            if not is_venv and done:
-                state, info = self.env.reset()
-            else:
-                state = next_state
+                if not is_venv and done:
+                    state, info = self.env.reset()
+                else:
+                    state = next_state
+
+                prof_step()
 
     def close(self):
         """Close session and clean up. Save agent, close env."""

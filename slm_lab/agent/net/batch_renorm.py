@@ -149,8 +149,8 @@ class LazyBatchRenorm1d(LazyModuleMixin, BatchRenorm1d):
                 self.num_features = num_features
                 self.weight.materialize((num_features,))
                 self.bias.materialize((num_features,))
-                self.running_mean = torch.zeros(num_features, device=input.device)
-                self.running_var = torch.ones(num_features, device=input.device)
+                self.register_buffer("running_mean", torch.zeros(num_features, device=input.device))
+                self.register_buffer("running_var", torch.ones(num_features, device=input.device))
                 self.reset_parameters()
 
 
