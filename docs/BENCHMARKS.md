@@ -245,10 +245,9 @@ source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=MAX_FRAME \
 source .env && slm-lab run-remote --gpu \
   slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml SPEC_NAME train -n NAME
 
-# CrossQ: env is hardcoded per spec; some runs override max_frame via -s flag
+# CrossQ: env and max_frame are hardcoded per spec — no -s flags needed
 source .env && slm-lab run-remote --gpu \
   slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml SPEC_NAME train -n NAME
-# If MAX_FRAME in table differs from spec default, add: -s max_frame=MAX_FRAME
 ```
 
 | ENV | SPEC_NAME | MAX_FRAME |
@@ -375,15 +374,13 @@ source .env && slm-lab run-remote --gpu \
 
 **Docs**: [InvertedPendulum](https://gymnasium.farama.org/environments/mujoco/inverted_pendulum/) | State: Box(4) | Action: Box(1) | Target reward MA ~1000
 
-**Settings**: max_frame 4e6 | num_envs 16 | max_session 4 | log_frequency 1e4
+**Settings**: max_frame 10e6 | num_envs 16 | max_session 4 | log_frequency 1e4
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Data |
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 949.94 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_inverted_pendulum_arc | [ppo_inverted_pendulum_arc_invertedpendulum_2026_02_12_062037](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_inverted_pendulum_arc_invertedpendulum_2026_02_12_062037) |
 | SAC | ✅ | 928.43 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_inverted_pendulum_arc | [sac_inverted_pendulum_arc_2026_02_12_225503](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_inverted_pendulum_arc_2026_02_12_225503) |
 | CrossQ | ⚠️ | 877.83 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_inverted_pendulum | [crossq_inverted_pendulum_2026_02_28_184348](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_inverted_pendulum_2026_02_28_184348) |
-
-> **Note**: CrossQ run used 7M frames (exceeds env settings of 4M). Plot extends beyond other algorithms' x-axis range.
 
 ![InvertedPendulum-v5](plots/InvertedPendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 

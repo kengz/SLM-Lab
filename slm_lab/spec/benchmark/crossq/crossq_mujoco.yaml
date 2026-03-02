@@ -232,7 +232,7 @@ crossq_inverted_pendulum:
     name: InvertedPendulum-v5
     num_envs: 16
     max_t: null
-    max_frame: 2000000
+    max_frame: 7000000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -247,7 +247,7 @@ crossq_swimmer:
     name: Swimmer-v5
     num_envs: 16
     max_t: null
-    max_frame: 5000000
+    max_frame: 3000000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -258,7 +258,7 @@ crossq_reacher:
     name: Reacher-v5
     num_envs: 16
     max_t: null
-    max_frame: 1000000
+    max_frame: 2000000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -269,7 +269,7 @@ crossq_pusher:
     name: Pusher-v5
     num_envs: 16
     max_t: null
-    max_frame: 1000000
+    max_frame: 2000000
   meta:
     <<: *meta
     eval_frequency: 1000
@@ -318,7 +318,7 @@ crossq_walker2d:
     name: Walker2d-v5
     num_envs: 16
     max_t: null
-    max_frame: 3000000
+    max_frame: 7000000
   meta: *meta
 
 crossq_ant:
@@ -395,7 +395,7 @@ crossq_humanoid_standup:
     name: HumanoidStandup-v5
     num_envs: 16
     max_t: null
-    max_frame: 1000000
+    max_frame: 2000000
   meta:
     <<: *meta
     eval_frequency: 1000
