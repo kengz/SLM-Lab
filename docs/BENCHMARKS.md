@@ -594,7 +594,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/MsPacman-v5 | 2330.74 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_mspacman_2026_02_14_102435](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_mspacman_2026_02_14_102435) |
 | | 1336.96 | sac_atari_arc | [sac_atari_arc_mspacman_2026_02_17_221523](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_mspacman_2026_02_17_221523) |
 | | 2110 | a2c_gae_atari_arc | [a2c_gae_atari_mspacman_2026_02_01_001100](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_mspacman_2026_02_01_001100) |
-| | ❌ 356.80 | crossq_atari | [crossq_atari_mspacman_v12](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_mspacman_v12) |
+| | ❌ 327.79 | crossq_atari | [crossq_atari_mspacman_2026_02_23_171317](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_mspacman_2026_02_23_171317) |
 | ALE/NameThisGame-v5 | 6879.23 | ppo_atari_arc | [ppo_atari_arc_namethisgame_2026_02_14_103319](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_namethisgame_2026_02_14_103319) |
 | | 3992.71 | sac_atari_arc | [sac_atari_arc_namethisgame_2026_02_17_220905](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_namethisgame_2026_02_17_220905) |
 | | 5412 | a2c_gae_atari_arc | [a2c_gae_atari_namethisgame_2026_02_01_132733](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_namethisgame_2026_02_01_132733) |
@@ -604,7 +604,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/Pong-v5 | 16.69 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_pong_2026_02_14_103722](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_pong_2026_02_14_103722) |
 | | 10.89 | sac_atari_arc | [sac_atari_arc_pong_2026_02_17_160429](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_pong_2026_02_17_160429) |
 | | 10.17 | a2c_gae_atari_arc | [a2c_gae_atari_pong_2026_01_31_213635](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_pong_2026_01_31_213635) |
-| | ❌ -20.48 | crossq_atari | [crossq_atari_pong_v14](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_pong_v14) |
+| | ❌ -20.59 | crossq_atari | [crossq_atari_pong_2026_02_23_171158](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_pong_2026_02_23_171158) |
 | ALE/Pooyan-v5 | 5308.66 | ppo_atari_lam70_arc | [ppo_atari_lam70_arc_pooyan_2026_02_14_114730](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam70_arc_pooyan_2026_02_14_114730) |
 | | 2530.78 | sac_atari_arc | [sac_atari_arc_pooyan_2026_02_17_220346](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_pooyan_2026_02_17_220346) |
 | | 2997 | a2c_gae_atari_arc | [a2c_gae_atari_pooyan_2026_02_01_132748](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_pooyan_2026_02_01_132748) |
