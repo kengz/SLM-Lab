@@ -245,43 +245,44 @@ source .env && slm-lab run-remote --gpu -s env=ENV -s max_frame=MAX_FRAME \
 source .env && slm-lab run-remote --gpu \
   slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml SPEC_NAME train -n NAME
 
-# CrossQ: env and max_frame are hardcoded per spec — no -s flags needed
+# CrossQ: env is hardcoded per spec; some runs override max_frame via -s flag
 source .env && slm-lab run-remote --gpu \
   slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml SPEC_NAME train -n NAME
+# If MAX_FRAME in table differs from spec default, add: -s max_frame=MAX_FRAME
 ```
 
 | ENV | SPEC_NAME | MAX_FRAME |
 |-----|-----------|-----------|
 | Ant-v5 | ppo_ant_arc | 10e6 |
 | | sac_ant_arc | 2e6 |
-| | crossq_ant | 6e6 |
+| | crossq_ant | 3e6 |
 | HalfCheetah-v5 | ppo_mujoco_arc | 10e6 |
 | | sac_halfcheetah_arc | 4e6 |
-| | crossq_halfcheetah | 7.5e6 |
+| | crossq_halfcheetah | 4e6 |
 | Hopper-v5 | ppo_hopper_arc | 4e6 |
 | | sac_hopper_arc | 3e6 |
 | | crossq_hopper | 3e6 |
 | Humanoid-v5 | ppo_mujoco_arc | 10e6 |
 | | sac_humanoid_arc | 1e6 |
-| | crossq_humanoid | 3.5e6 |
+| | crossq_humanoid | 2e6 |
 | HumanoidStandup-v5 | ppo_mujoco_arc | 4e6 |
 | | sac_humanoid_standup_arc | 1e6 |
-| | crossq_humanoid_standup | 3.5e6 |
+| | crossq_humanoid_standup | 2e6 |
 | InvertedDoublePendulum-v5 | ppo_inverted_double_pendulum_arc | 10e6 |
 | | sac_inverted_double_pendulum_arc | 2e6 |
-| | crossq_inverted_double_pendulum | 3e6 |
+| | crossq_inverted_double_pendulum | 2e6 |
 | InvertedPendulum-v5 | ppo_inverted_pendulum_arc | 4e6 |
 | | sac_inverted_pendulum_arc | 2e6 |
-| | crossq_inverted_pendulum | 3e6 |
+| | crossq_inverted_pendulum | 7e6 |
 | Pusher-v5 | ppo_mujoco_longhorizon_arc | 4e6 |
 | | sac_pusher_arc | 1e6 |
-| | crossq_pusher | 1e6 |
+| | crossq_pusher | 2e6 |
 | Reacher-v5 | ppo_mujoco_longhorizon_arc | 4e6 |
 | | sac_reacher_arc | 1e6 |
-| | crossq_reacher | 1e6 |
+| | crossq_reacher | 2e6 |
 | Swimmer-v5 | ppo_swimmer_arc | 4e6 |
 | | sac_swimmer_arc | 2e6 |
-| | crossq_swimmer | 2e6 |
+| | crossq_swimmer | 3e6 |
 | Walker2d-v5 | ppo_mujoco_arc | 10e6 |
 | | sac_walker2d_arc | 3e6 |
 | | crossq_walker2d | 7e6 |
@@ -381,6 +382,8 @@ source .env && slm-lab run-remote --gpu \
 | PPO | ✅ | 949.94 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_inverted_pendulum_arc | [ppo_inverted_pendulum_arc_invertedpendulum_2026_02_12_062037](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_inverted_pendulum_arc_invertedpendulum_2026_02_12_062037) |
 | SAC | ✅ | 928.43 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_inverted_pendulum_arc | [sac_inverted_pendulum_arc_2026_02_12_225503](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_inverted_pendulum_arc_2026_02_12_225503) |
 | CrossQ | ⚠️ | 877.83 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_inverted_pendulum | [crossq_inverted_pendulum_2026_02_28_184348](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_inverted_pendulum_2026_02_28_184348) |
+
+> **Note**: CrossQ run used 7M frames (exceeds env settings of 4M). Plot extends beyond other algorithms' x-axis range.
 
 ![InvertedPendulum-v5](plots/InvertedPendulum-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
