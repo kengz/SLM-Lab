@@ -157,7 +157,6 @@ def to_json(d, indent=2):
 
 def to_torch_batch(batch, device, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    use_pinned = torch.cuda.is_available() and 'cuda' in str(device)
     for k in batch:
         if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])
@@ -166,14 +165,11 @@ def to_torch_batch(batch, device, is_episodic):
         arr = batch[k]
         if not arr.flags['C_CONTIGUOUS']:
             arr = np.ascontiguousarray(arr)
-        t = torch.from_numpy(arr)
-        if use_pinned:
-            t = t.pin_memory()
         if arr.dtype == np.float32:
-            batch[k] = t.to(device, non_blocking=True)
+            batch[k] = torch.from_numpy(arr).to(device, non_blocking=True)
         else:
             # For uint8/float16: send to device, cast to float32 on GPU
-            batch[k] = t.to(device, non_blocking=True).float()
+            batch[k] = torch.from_numpy(arr).to(device, non_blocking=True).float()
     return batch
 
 
