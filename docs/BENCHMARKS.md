@@ -137,7 +137,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | A2C | ✅ | 496.68 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_cartpole_arc | [a2c_gae_cartpole_arc_2026_02_11_142531](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_cartpole_arc_2026_02_11_142531) |
 | PPO | ✅ | 498.94 | [slm_lab/spec/benchmark_arc/ppo/ppo_classic_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_classic_arc.yaml) | ppo_cartpole_arc | [ppo_cartpole_arc_2026_02_11_144029](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_cartpole_arc_2026_02_11_144029) |
 | SAC | ✅ | 406.09 | [slm_lab/spec/benchmark_arc/sac/sac_classic_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_classic_arc.yaml) | sac_cartpole_arc | [sac_cartpole_arc_2026_02_11_144155](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_cartpole_arc_2026_02_11_144155) |
-| CrossQ | ⚠️ | 324.10 | [slm_lab/spec/benchmark/crossq/crossq_classic.yaml](../slm_lab/spec/benchmark/crossq/crossq_classic.yaml) | crossq_cartpole | [crossq_cartpole_2026_03_02_100434](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_cartpole_2026_03_02_100434) |
+| CrossQ | ⚠️ | 334.59 | [slm_lab/spec/benchmark/crossq/crossq_classic.yaml](../slm_lab/spec/benchmark/crossq/crossq_classic.yaml) | crossq_cartpole | [crossq_cartpole_2026_03_02_100434](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_cartpole_2026_03_02_100434) |
 
 ![CartPole-v1](plots/CartPole-v1_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -338,7 +338,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 2661.26 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_mujoco_arc | [ppo_mujoco_arc_humanoid_2026_02_12_185439](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_mujoco_arc_humanoid_2026_02_12_185439) |
 | SAC | ✅ | 1989.65 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_humanoid_arc | [sac_humanoid_arc_2026_02_12_020016](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_humanoid_arc_2026_02_12_020016) |
-| CrossQ | ✅ | 1102.00 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_humanoid | [crossq_humanoid_2026_03_01_165208](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_humanoid_2026_03_01_165208) |
+| CrossQ | ✅ | 1755.29 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_humanoid | [crossq_humanoid_2026_03_01_165208](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_humanoid_2026_03_01_165208) |
 
 ![Humanoid-v5](plots/Humanoid-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -422,7 +422,7 @@ source .env && slm-lab run-remote --gpu \
 |-----------|--------|-----|-----------|-----------|---------|
 | PPO | ✅ | 282.44 | [slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_mujoco_arc.yaml) | ppo_swimmer_arc | [ppo_swimmer_arc_swimmer_2026_02_12_100445](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_swimmer_arc_swimmer_2026_02_12_100445) |
 | SAC | ✅ | 301.34 | [slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_mujoco_arc.yaml) | sac_swimmer_arc | [sac_swimmer_arc_2026_02_12_054349](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_swimmer_arc_2026_02_12_054349) |
-| CrossQ | ✅ | 221.12 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_swimmer | [crossq_swimmer_2026_02_21_134711](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_swimmer_2026_02_21_134711) |
+| CrossQ | ✅ | 221.12 | [slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml](../slm_lab/spec/benchmark/crossq/crossq_mujoco.yaml) | crossq_swimmer | [crossq_swimmer_2026_02_21_184204](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_swimmer_2026_02_21_184204) |
 
 ![Swimmer-v5](plots/Swimmer-v5_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
