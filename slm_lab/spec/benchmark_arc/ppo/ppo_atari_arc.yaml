@@ -40,7 +40,7 @@ _ppo_atari_net: &ppo_atari_net
     eps: 1.0e-5
   lr_scheduler_spec: &atari_lr_scheduler
     name: LinearToZero
-    frame: "${max_frame}"
+    frame: 1.0e+7
   normalize: true
   gpu: auto
 
@@ -72,7 +72,7 @@ _ppo_atari_algorithm: &ppo_atari_algorithm
 _ppo_atari_env: &ppo_atari_env
   name: "${env}"
   num_envs: 16
-  max_frame: "${max_frame}"
+  max_frame: 1.0e+7
   life_loss_info: true
 
 _ppo_atari_meta: &ppo_atari_meta
