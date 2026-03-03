@@ -48,7 +48,7 @@ class TestSetVariables:
     def test_numeric_variable_substitution(self):
         spec_str = '{"env": {"max_frame": "${max_frame}"}}'
         result, _ = set_variables(spec_str, ["max_frame=3e6"])
-        assert '"max_frame": 3e6' in result  # unquoted number
+        assert '"max_frame": 3000000' in result  # canonical integer form for YAML compat
 
     def test_variable_with_equals_in_value(self):
         spec_str = '{"meta": {"note": "${note}"}}'
