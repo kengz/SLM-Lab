@@ -160,12 +160,16 @@ def to_torch_batch(batch, device, is_episodic):
     for k in batch:
         if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])
-        elif ps.is_list(batch[k]):
+        elif isinstance(batch[k], list):
             batch[k] = np.array(batch[k])
-        # Optimize tensor creation - direct device placement avoids intermediate CPU tensor
-        if batch[k].dtype != np.float32:
-            batch[k] = batch[k].astype(np.float32)
-        batch[k] = torch.from_numpy(batch[k]).to(device, non_blocking=True)
+        arr = batch[k]
+        if not arr.flags['C_CONTIGUOUS']:
+            arr = np.ascontiguousarray(arr)
+        if arr.dtype == np.float32:
+            batch[k] = torch.from_numpy(arr).to(device, non_blocking=True)
+        else:
+            # For uint8/float16: send to device, cast to float32 on GPU
+            batch[k] = torch.from_numpy(arr).to(device, non_blocking=True).float()
     return batch
 
 

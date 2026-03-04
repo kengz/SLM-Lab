@@ -57,14 +57,10 @@ def get_action_pd_cls(action_pdtype, action_type):
 
 def guard_tensor(state, agent):
     '''Guard-cast tensor before being input to network'''
-    # Modern gymnasium handles frame stacking efficiently, no LazyFrames needed
     if not isinstance(state, np.ndarray):
-        state = np.array(state, dtype=np.float32)
-    elif state.dtype != np.float32:
-        state = state.astype(np.float32)
-    state = torch.from_numpy(state)
+        state = np.asarray(state)
+    state = torch.from_numpy(np.ascontiguousarray(state))
     if not agent.env.is_venv:
-        # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
     return state
 
@@ -83,7 +79,7 @@ def calc_pdparam(state, algorithm):
     '''
     if not torch.is_tensor(state):  # dont need to cast from numpy
         state = guard_tensor(state, algorithm.agent)
-        state = state.to(algorithm.net.device)
+        state = state.to(algorithm.net.device, non_blocking=True).float()
     pdparam = algorithm.calc_pdparam(state)
     return pdparam
 
@@ -208,9 +204,8 @@ class VarScheduler:
 
     def update(self, algorithm, clock):
         '''Get an updated value for var'''
-        if (util.in_eval_lab_mode()) or self._updater_name == 'no_decay':
+        if self._updater_name == 'no_decay' or util.in_eval_lab_mode():
             return self.end_val
-        # Handle both old Clock objects and new ClockWrapper environments
-        step = clock.get() if hasattr(clock, 'get') else clock.get('frame')
+        step = clock.get()
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val

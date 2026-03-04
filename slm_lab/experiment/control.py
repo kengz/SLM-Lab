@@ -4,7 +4,6 @@ from copy import deepcopy
 
 import gymnasium as gym
 import numpy as np
-import pydash as ps
 import torch
 import torch.multiprocessing as mp
 
@@ -15,6 +14,7 @@ from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.perf import log_perf_setup, optimize
+from slm_lab.lib.torch_profiler import torch_profiler_context
 from slm_lab.spec import spec_util
 
 
@@ -51,7 +51,8 @@ class Session:
         self.perf_setup = optimize()
 
         self.agent, self.env = make_agent_env(self.spec, global_nets)
-        if ps.get(self.spec, "meta.rigorous_eval"):
+        self._rigorous_eval = self.spec.get("meta", {}).get("rigorous_eval", False)
+        if self._rigorous_eval:
             with util.ctx_lab_mode("eval"):
                 self.eval_env = make_env(self.spec)
         else:
@@ -95,7 +96,7 @@ class Session:
                 if self.index == 0:
                     analysis.analyze_trial(self.spec)
 
-        if ps.get(self.spec, "meta.rigorous_eval") and self.to_ckpt(env, "eval"):
+        if self._rigorous_eval and self.to_ckpt(env, "eval"):
             logger.info("Running eval ckpt")
             analysis.gen_avg_return(agent, self.eval_env)
             mt.ckpt(self.eval_env, "eval")
@@ -105,28 +106,31 @@ class Session:
     def run_rl(self):
         """Run the main RL loop until clock.max_frame"""
         state, info = self.env.reset()
+        is_venv = self.env.is_venv
 
-        while self.env.get() < self.env.max_frame:
-            with torch.no_grad():
-                action = self.agent.act(state)
-            next_state, reward, terminated, truncated, info = self.env.step(action)
+        with torch_profiler_context() as prof_step:
+            while self.env.get() < self.env.max_frame:
+                action = self.agent.act(state)  # Agent.act() already uses torch.no_grad()
+                next_state, reward, terminated, truncated, info = self.env.step(action)
 
-            done = np.logical_or(terminated, truncated)
-            self.agent.update(
-                state=state,
-                action=action,
-                reward=reward,
-                next_state=next_state,
-                done=done,
-                terminated=terminated,
-                truncated=truncated
-            )
-            self.try_ckpt(self.agent, self.env)
+                done = terminated | truncated  # numpy bitwise-or, same as logical_or for bool arrays
+                self.agent.update(
+                    state=state,
+                    action=action,
+                    reward=reward,
+                    next_state=next_state,
+                    done=done,
+                    terminated=terminated,
+                    truncated=truncated
+                )
+                self.try_ckpt(self.agent, self.env)
 
-            if util.epi_done(done):
-                state, info = self.env.reset()
-            else:
-                state = next_state
+                if not is_venv and done:
+                    state, info = self.env.reset()
+                else:
+                    state = next_state
+
+                prof_step()
 
     def close(self):
         """Close session and clean up. Save agent, close env."""

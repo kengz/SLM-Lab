@@ -1,0 +1,126 @@
+# CrossQ Box2D — SAC without target networks + Batch Renormalization in critics
+# Plain [256,256] actor, [256,256]+BRN critics, lr=3e-4
+
+_actor: &actor
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_critic_brn: &critic_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 5000
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 5000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_net: &net
+  type: TorchArcNet
+  arc: *actor
+  hid_layers_activation: relu
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  gpu: auto
+
+_critic_net: &critic_net
+  type: TorchArcNet
+  arc: *critic_brn
+  hid_layers_activation: relu
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  gpu: auto
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 100000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 5000
+  max_session: 4
+  max_trial: 1
+
+crossq_lunar:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: Categorical
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 1
+      training_start_step: 1000
+      policy_delay: 3
+      log_alpha_max: 2.0
+    memory: *memory
+    net: *net
+    critic_net: *critic_net
+  env:
+    name: LunarLander-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta: *meta
+
+crossq_lunar_continuous:
+  agent:
+    name: CrossQ
+    algorithm:
+      name: CrossQ
+      action_pdtype: Normal
+      action_policy: default
+      gamma: 0.994
+      training_iter: 4
+      training_frequency: 1
+      training_start_step: 256
+      policy_delay: 3
+      log_alpha_max: 0.5
+    memory:
+      <<: *memory
+      max_size: 1000000
+    net: *net
+    critic_net: *critic_net
+  env:
+    name: LunarLanderContinuous-v3
+    num_envs: 8
+    max_t: null
+    max_frame: 300000
+  meta: *meta

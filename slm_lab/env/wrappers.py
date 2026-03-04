@@ -2,13 +2,10 @@
 
 import math
 import time
-from typing import Any
-
+from collections import deque
 import gymnasium as gym
 import numpy as np
 import pandas as pd
-import pydash as ps
-
 from slm_lab.lib import util
 
 
@@ -55,8 +52,9 @@ class ClockMixin:
     def load(self, train_df: pd.DataFrame):
         """Load clock state from training dataframe."""
         last_row = train_df.iloc[-1]
-        last_clock_vals = ps.pick(last_row, *["epi", "t", "wall_t", "opt_step", "frame"])
-        util.set_attr(self, last_clock_vals)
+        for key in ("epi", "t", "wall_t", "opt_step", "frame"):
+            if key in last_row.index:
+                setattr(self, key, last_row[key])
         self.start_wall_t -= self.wall_t
 
     def get(self, unit: str = "frame") -> int:
@@ -180,43 +178,38 @@ class VectorFullGameStatistics(gym.vector.VectorWrapper):
     def __init__(self, env: gym.vector.VectorEnv, buffer_length: int = 100):
         super().__init__(env)
         self.buffer_length = buffer_length
-        self.return_queue = []  # Full-game returns
+        self.return_queue = deque(maxlen=buffer_length)  # Full-game returns
         self._ongoing_returns = np.zeros(self.num_envs, dtype=np.float64)
         self._prev_lives = None
+        self._zero_lives = np.zeros(self.num_envs)  # pre-allocate fallback
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
         self._ongoing_returns.fill(0.0)
-        self._prev_lives = info.get("lives", np.zeros(self.num_envs))
+        self._prev_lives = info.get("lives", self._zero_lives)
         return obs, info
 
     def step(self, actions):
         obs, rewards, terminated, truncated, info = self.env.step(actions)
 
-        # Accumulate raw rewards (note: rewards here are already clipped for training)
-        # We use the clipped rewards since AtariVectorEnv doesn't expose raw rewards easily
         self._ongoing_returns += rewards
 
-        lives = info.get("lives", np.zeros(self.num_envs))
+        lives = info.get("lives", self._zero_lives)
 
-        # Check for true game-over (lives dropped to 0)
-        # Only record when we transition TO 0 lives (not when already at 0)
+        # Check for true game-over (lives dropped to 0) — vectorized
         if self._prev_lives is not None:
             game_over = (lives == 0) & (self._prev_lives > 0)
-            for i in range(self.num_envs):
-                if game_over[i]:
-                    self.return_queue.append(self._ongoing_returns[i])
-                    if len(self.return_queue) > self.buffer_length:
-                        self.return_queue.pop(0)
-                    self._ongoing_returns[i] = 0.0
-
-        # Also reset on truncation (time limit)
-        for i in range(self.num_envs):
-            if truncated[i] and not terminated[i]:
+            done_idxs = np.flatnonzero(game_over)
+            for i in done_idxs:
                 self.return_queue.append(self._ongoing_returns[i])
-                if len(self.return_queue) > self.buffer_length:
-                    self.return_queue.pop(0)
-                self._ongoing_returns[i] = 0.0
+            self._ongoing_returns[done_idxs] = 0.0
+
+        # Also reset on truncation (time limit) — vectorized
+        trunc_only = truncated & ~terminated
+        trunc_idxs = np.flatnonzero(trunc_only)
+        for i in trunc_idxs:
+            self.return_queue.append(self._ongoing_returns[i])
+        self._ongoing_returns[trunc_idxs] = 0.0
 
         self._prev_lives = lives.copy()
         return obs, rewards, terminated, truncated, info

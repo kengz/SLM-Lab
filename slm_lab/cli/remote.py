@@ -23,6 +23,9 @@ def run_remote(
     gpu: bool = typer.Option(
         False, "--gpu", help="Use GPU hardware (default: CPU)"
     ),
+    profile: bool = typer.Option(
+        False, "--profile", help="Enable performance profiling (forces dev mode)"
+    ),
 ):
     """
     Launch experiment on dstack with auto HF upload.
@@ -41,6 +44,10 @@ def run_remote(
         slm-lab run-remote spec.json ppo_pong train --gpu         # GPU train (for image envs)
         slm-lab run-remote spec.json ppo_pong search --gpu        # GPU search (for image envs)
     """
+    # Force dev mode when profiling (matching local behavior)
+    if profile and mode != "dev":
+        mode = "dev"
+
     run_name = name or spec_name.replace("_", "-")
 
     # Auto-select config file based on hardware type and mode
@@ -55,10 +62,15 @@ def run_remote(
     env["SPEC_NAME"] = spec_name
     env["LAB_MODE"] = mode
     env["SPEC_VARS"] = " ".join(f"-s {item}" for item in sets) if sets else ""
+    env["PROFILE"] = "true" if profile else ""
+    env.setdefault("PROF_SKIP", "500")
+    env.setdefault("PROF_ACTIVE", "20")
 
     logger.info(f"Launching: {run_name} ({config_file})")
     logger.info(f"  {spec_file} / {spec_name} / {mode}")
     logger.info(f"  Pull: slm-lab pull {spec_name}")
+    if profile:
+        logger.info("  Profiling: enabled (traces will be collected)")
 
     result = subprocess.run(cmd, env=env)
     if result.returncode != 0:

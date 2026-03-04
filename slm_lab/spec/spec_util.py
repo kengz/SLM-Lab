@@ -145,16 +145,36 @@ def set_variables(spec_str: str, sets: list[str] | None) -> tuple[str, str | Non
     env_short = None
     for item in sets:
         k, v = item.split("=", 1)
-        # For numeric values, replace quoted "${var}" with unquoted value
+        # For numeric values, replace quoted "${var}" with the canonical numeric string.
+        # YAML doesn't recognize bare scientific notation like "4e6" — must use int or float form.
         try:
-            float(v)
-            spec_str = spec_str.replace(f'"${{{k}}}"', v)
+            num = float(v)
+            canonical = str(int(num)) if num == int(num) else str(num)
+            spec_str = spec_str.replace(f'"${{{k}}}"', canonical)
+            spec_str = spec_str.replace(f"${{{k}}}", canonical)
         except ValueError:
-            pass
-        spec_str = spec_str.replace(f"${{{k}}}", v)
+            spec_str = spec_str.replace(f"${{{k}}}", v)
         if k == "env":
             env_short = v.split("/")[-1].split("-")[0].lower()
     return spec_str, env_short
+
+
+VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
+
+
+def _find_unsubstituted_vars(obj, path: str = "") -> list[str]:
+    """Recursively find unsubstituted ${var} placeholders in a parsed spec dict."""
+    found = []
+    if isinstance(obj, str):
+        for match in VAR_PATTERN.finditer(obj):
+            found.append(f"{path}: ${{{match.group(1)}}}")
+    elif isinstance(obj, dict):
+        for k, v in obj.items():
+            found.extend(_find_unsubstituted_vars(v, f"{path}.{k}" if path else k))
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            found.extend(_find_unsubstituted_vars(v, f"{path}[{i}]"))
+    return found
 
 
 def get(spec_file, spec_name, experiment_ts=None, sets: list[str] | None = None):
@@ -189,6 +209,16 @@ def get(spec_file, spec_name, experiment_ts=None, sets: list[str] | None = None)
         f"spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ',')}"
     )
     spec = spec_dict[spec_name]
+
+    # Fail fast on unsubstituted ${var} placeholders
+    unsubstituted = _find_unsubstituted_vars(spec)
+    if unsubstituted:
+        vars_str = "\n  ".join(unsubstituted)
+        raise ValueError(
+            f"Unsubstituted variables in spec '{spec_name}':\n  {vars_str}\n"
+            f"Pass them via -s, e.g.: slm-lab run -s max_frame=4e6 ..."
+        )
+
     # fill-in info at runtime
     spec["name"] = spec_name
     if env_short:

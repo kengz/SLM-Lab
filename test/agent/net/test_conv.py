@@ -68,7 +68,7 @@ def test_no_fc():
     net = ConvNet(no_fc_net_spec, in_dim, out_dim)
     assert isinstance(net, nn.Module)
     assert hasattr(net, 'conv_model')
-    assert not hasattr(net, 'fc_model')
+    assert net.fc_model is None
     assert hasattr(net, 'tails')
     assert not isinstance(net.tails, nn.ModuleList)
 

@@ -1,0 +1,401 @@
+# CrossQ MuJoCo — SAC without target networks + Batch Renormalization in critics
+# Plain [256,256] actor (no BN), critic width scales with env difficulty
+# UTD=1 (training_iter=1) — the key CrossQ advantage over SAC
+# Critic width formula: W = 256 * sqrt(SAC_training_iter)
+
+# --- Actor: plain MLP, no batch normalization ---
+
+_actor: &actor
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# --- Actor with LayerNorm: for harder envs ---
+
+_actor_ln: &actor_ln
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - LayerNorm:
+            normalized_shape: [256]
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - LayerNorm:
+            normalized_shape: [256]
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# --- Critics: width scales with env difficulty ---
+
+# [256,256]+BRN for easy envs (SAC iter<=2, sqrt(2)~1.4 -> stay at 256)
+_critic_256_brn: &critic_256_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 100000
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 100000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# [512,512]+BRN for hard envs (SAC iter=4, sqrt(4)=2 -> 256*2=512)
+_critic_512_brn: &critic_512_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 512
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 100000
+        - ReLU:
+        - LazyLinear:
+            out_features: 512
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 100000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# [1024,1024]+BRN for very hard envs (SAC iter=16, sqrt(16)=4 -> 256*4=1024)
+_critic_1024_brn: &critic_1024_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 1024
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 100000
+        - ReLU:
+        - LazyLinear:
+            out_features: 1024
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 100000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# --- Net specs ---
+
+_net: &net
+  type: TorchArcNet
+  arc: *actor
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_critic_net_256: &critic_net_256
+  type: TorchArcNet
+  arc: *critic_256_brn
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_critic_net_512: &critic_net_512
+  type: TorchArcNet
+  arc: *critic_512_brn
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_critic_net_1024: &critic_net_1024
+  type: TorchArcNet
+  arc: *critic_1024_brn
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+# --- Algorithm and memory ---
+
+_algorithm: &algorithm
+  name: CrossQ
+  action_pdtype: default
+  action_policy: default
+  gamma: 0.99
+  training_frequency: 1
+  training_iter: 1
+  training_start_step: 5000
+  policy_delay: 3
+  log_alpha_max: 0.5
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 1000000
+  use_cer: false
+
+_agent: &agent
+  name: CrossQ
+  algorithm: *algorithm
+  memory: *memory
+  net: *net
+  critic_net: *critic_net_256
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  max_session: 4
+  max_trial: 1
+
+# --- Generic spec (use with -s env=X -s max_frame=Y) ---
+
+crossq_mujoco:
+  agent: *agent
+  env:
+    name: ${env}
+    num_envs: 16
+    max_t: null
+    max_frame: ${max_frame}
+  meta: *meta
+
+# --- Easy envs: [256,256] critics, plain actor ---
+
+crossq_inverted_pendulum:
+  agent:
+    <<: *agent
+    critic_net: *critic_net_512
+  env:
+    name: InvertedPendulum-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 7000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+crossq_swimmer:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      gamma: 0.9999
+  env:
+    name: Swimmer-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+crossq_reacher:
+  agent: *agent
+  env:
+    name: Reacher-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+crossq_pusher:
+  agent: *agent
+  env:
+    name: Pusher-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+# --- Hard envs: [512,512] critics, LN actor ---
+
+crossq_halfcheetah:
+  agent:
+    <<: *agent
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_512
+  env:
+    name: HalfCheetah-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 4000000
+  meta: *meta
+
+crossq_hopper:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_start_step: 10000
+    critic_net: *critic_net_512
+  env:
+    name: Hopper-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta: *meta
+
+crossq_walker2d:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_start_step: 10000
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_512
+  env:
+    name: Walker2d-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 7000000
+  meta: *meta
+
+crossq_ant:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_start_step: 10000
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_512
+  env:
+    name: Ant-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 3000000
+  meta: *meta
+
+crossq_inverted_double_pendulum:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_iter: 2
+      training_start_step: 5000
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_512
+  env:
+    name: InvertedDoublePendulum-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+# --- Very hard envs: [1024,1024] critics, LN actor, iter=2 ---
+
+crossq_humanoid:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_iter: 4
+      training_start_step: 10000
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_1024
+  env:
+    name: Humanoid-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000
+
+crossq_humanoid_standup:
+  agent:
+    <<: *agent
+    algorithm:
+      <<: *algorithm
+      training_iter: 2
+      training_start_step: 10000
+    net:
+      <<: *net
+      arc: *actor_ln
+    critic_net: *critic_net_1024
+  env:
+    name: HumanoidStandup-v5
+    num_envs: 16
+    max_t: null
+    max_frame: 2000000
+  meta:
+    <<: *meta
+    eval_frequency: 1000

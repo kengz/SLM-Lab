@@ -24,12 +24,34 @@ When a run completes (`dstack ps` shows `exited (0)`):
 2. **Find HF folder name**: `dstack logs NAME 2>&1 | grep "Uploading data/"` → extract folder name from the upload log line
 3. **Update table score** in BENCHMARKS.md
 4. **Update table HF link**: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
-5. **Pull HF data locally**: `source .env && hf download SLM-Lab/benchmark-dev --local-dir data/benchmark-dev --repo-type dataset --include "data/FOLDER/*"`
-6. **Generate plot**: `uv run slm-lab plot -t "EnvName" -f data/benchmark-dev/data/FOLDER1,data/benchmark-dev/data/FOLDER2`
+5. **Pull HF data locally**: `source .env && huggingface-cli download SLM-Lab/benchmark-dev --local-dir data/benchmark-dev --repo-type dataset --include "data/FOLDER/*"`
+6. **Generate plot**: List ALL data folders for that env (`ls data/benchmark-dev/data/ | grep -i envname`), then generate with ONLY the folders matching BENCHMARKS.md entries:
+   ```bash
+   uv run slm-lab plot -t "EnvName" -d data/benchmark-dev/data -f FOLDER1,FOLDER2,...
+   ```
+   NOTE: `-d` sets the base data dir, `-f` takes folder names (NOT full paths).
+   If some folders are in `data/` (local runs) and some in `data/benchmark-dev/data/`, use `data/` as base (it has the `info/` subfolder needed for metrics).
 7. **Verify plot exists** in `docs/plots/`
 8. **Commit** score + link + plot together
 
 A row in BENCHMARKS.md is NOT complete until it has: score, HF link, and plot.
+
+## Per-Run Graduation Checklist
+
+**After intake, graduate each finalized run to public HF benchmark:**
+
+1. **Upload folder to public HF**:
+   ```bash
+   source .env && huggingface-cli upload SLM-Lab/benchmark data/benchmark-dev/data/FOLDER data/FOLDER --repo-type dataset
+   ```
+2. **Update BENCHMARKS.md link**: Change `SLM-Lab/benchmark-dev` → `SLM-Lab/benchmark` for that entry
+3. **Upload docs/ to public HF** (updated plots + BENCHMARKS.md):
+   ```bash
+   source .env && huggingface-cli upload SLM-Lab/benchmark docs docs --repo-type dataset
+   source .env && huggingface-cli upload SLM-Lab/benchmark README.md README.md --repo-type dataset
+   ```
+4. **Commit** link update
+5. **Push** to origin
 
 ## Launch
 
@@ -75,26 +97,28 @@ source .env && hf download SLM-Lab/benchmark-dev \
 ### Generate Plots
 
 ```bash
-# Find folders for a game
+# Find folders for a game (check both local data/ and benchmark-dev)
+ls data/ | grep -i pong
 ls data/benchmark-dev/data/ | grep -i pong
 
-# Generate comparison plot (include all algorithms available)
-uv run slm-lab plot -t "Pong" \
-  -f data/benchmark-dev/data/ppo_folder,data/benchmark-dev/data/sac_folder
+# Generate comparison plot — use -d for base dir, -f for folder names only
+# Use data/ as base (has info/ subfolder with trial_metrics)
+uv run slm-lab plot -t "Pong-v5" -f ppo_pong_folder,sac_pong_folder,crossq_pong_folder
 ```
 
 ### Graduate to Public HF
 
-When benchmarks are finalized, publish from `benchmark-dev` → `benchmark`:
+When a run is finalized, graduate individually from `benchmark-dev` → `benchmark`:
 
 ```bash
-source .env && hf upload SLM-Lab/benchmark \
-  data/benchmark-dev/data data --repo-type dataset
+# Upload individual folder
+source .env && huggingface-cli upload SLM-Lab/benchmark \
+  data/benchmark-dev/data/FOLDER data/FOLDER --repo-type dataset
 
-# Update BENCHMARKS.md links: benchmark-dev → benchmark
-# Upload docs and README
-source .env && hf upload SLM-Lab/benchmark docs docs --repo-type dataset
-source .env && hf upload SLM-Lab/benchmark README.md README.md --repo-type dataset
+# Update BENCHMARKS.md link for that entry: benchmark-dev → benchmark
+# Then upload docs/ (includes updated plots + BENCHMARKS.md)
+source .env && huggingface-cli upload SLM-Lab/benchmark docs docs --repo-type dataset
+source .env && huggingface-cli upload SLM-Lab/benchmark README.md README.md --repo-type dataset
 ```
 
 | Repo | Purpose |

@@ -3,8 +3,8 @@ name: slm-lab
 
 python: 3.12
 
-files:
-  - ..:/workflow
+repos:
+  - "..:/workflow"
 
 env:
   - HF_TOKEN
@@ -13,6 +13,9 @@ env:
   - SPEC_NAME
   - LAB_MODE
   - SPEC_VARS  # --set overrides, e.g. "-s env=ALE/Breakout-v5"
+  - PROFILE
+  - PROF_SKIP
+  - PROF_ACTIVE
 
 commands:
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
@@ -21,12 +24,12 @@ commands:
 
 resources:
   gpu:
-    name: [RTX3090]
+    memory: 20GB..
     count: 1
   memory: 32GB..
 
 spot_policy: auto
-max_duration: 6h
+max_duration: 8h
 max_price: 0.50
 retry:
   on_events: [no-capacity]

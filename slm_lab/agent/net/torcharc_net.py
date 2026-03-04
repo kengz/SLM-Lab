@@ -3,6 +3,8 @@ import torcharc
 import torch
 import torch.nn as nn
 
+import slm_lab.agent.net.batch_renorm  # noqa: F401 — registers BatchRenorm1d in torch.nn for TorchArc
+import slm_lab.agent.net.weight_norm  # noqa: F401 — registers WeightNormLinear in torch.nn for TorchArc
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import util
@@ -117,6 +119,8 @@ class TorchArcNet(Net, nn.Module):
 
     def _get_body_out_dim(self):
         """Compute body output dimension via dummy forward pass."""
+        # Use eval mode for dummy pass — BatchNorm requires batch_size > 1 in train mode
+        self.body.eval()
         with torch.no_grad():
             if isinstance(self.in_dim, (int, np.integer)):
                 dummy = torch.ones(1, self.in_dim, device=self.device)
