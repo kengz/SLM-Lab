@@ -29,7 +29,7 @@ SLM Lab is a software framework for **reinforcement learning** (RL) research and
 
 | Feature | Description |
 |---------|-------------|
-| **Ready-to-use algorithms** | PPO, SAC, DQN, A2C, REINFORCE—validated on 70+ environments |
+| **Ready-to-use algorithms** | PPO, SAC, CrossQ, DQN, A2C, REINFORCE—validated on 70+ environments |
 | **Easy configuration** | JSON spec files fully define experiments—no code changes needed |
 | **Reproducibility** | Every run saves its spec + git SHA for exact reproduction |
 | **Automatic analysis** | Training curves, metrics, and TensorBoard logging out of the box |
@@ -45,6 +45,7 @@ SLM Lab is a software framework for **reinforcement learning** (RL) research and
 | **A2C** | On-policy | Fast iteration | Classic, Box2D, Atari |
 | **PPO** | On-policy | General purpose | Classic, Box2D, MuJoCo (11), Atari (54) |
 | **SAC** | Off-policy | Continuous control | Classic, Box2D, MuJoCo |
+| **CrossQ** | Off-policy | Sample-efficient control | Classic, Box2D, MuJoCo |
 
 See [Benchmark Results](docs/BENCHMARKS.md) for detailed performance data.
 
