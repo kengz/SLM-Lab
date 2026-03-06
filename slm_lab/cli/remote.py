@@ -23,6 +23,9 @@ def run_remote(
     gpu: bool = typer.Option(
         False, "--gpu", help="Use GPU hardware (default: CPU)"
     ),
+    playground: bool = typer.Option(
+        False, "--playground", help="MuJoCo Playground env (installs JAX/playground deps)"
+    ),
     profile: bool = typer.Option(
         False, "--profile", help="Enable performance profiling (forces dev mode)"
     ),
@@ -54,7 +57,10 @@ def run_remote(
     # Only "search" mode uses search config; everything else uses train config
     hw = "gpu" if gpu else "cpu"
     config_mode = "search" if mode == "search" else "train"
-    config_file = f".dstack/run-{hw}-{config_mode}.yml"
+    if playground:
+        config_file = ".dstack/run-gpu-playground.yml"
+    else:
+        config_file = f".dstack/run-{hw}-{config_mode}.yml"
 
     cmd = ["dstack", "apply", "-f", config_file, "-y", "--detach", "--name", run_name]
     env = os.environ.copy()
