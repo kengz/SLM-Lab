@@ -75,6 +75,38 @@ _meta: &meta
   max_session: 4
   max_trial: 1
 
+# --- DR128: 128 envs, train every 4 env steps (Raffin-style UTD≈0.008) ---
+# training_frequency = 4 * 128 = 512
+# UTD = 4 / 512 ≈ 0.008  (Raffin 2025 recommends UTD≈0.03; DR128 is ~4x lower)
+# Theoretical fps: ~140 * (128*4)/(16*1) ≈ 4,480fps. Realistic: 1,500-4,000fps.
+# Balanced: 10M frames ≈ 1-2h. Good starting point before pushing to DR256/DR512.
+# training_start_step = 20000 (156 env steps, fast warm-up for 128 envs)
+
+sac_playground_arc_dr128:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 512
+      training_iter: 4
+      training_start_step: 20000
+    memory:
+      name: Replay
+      batch_size: 2048
+      max_size: 2000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 128
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
 # --- DR256: 256 envs, train every 16 env steps ---
 # training_frequency = 16 * 256 = 4096 (transitions between training calls)
 # UTD = 4 / 4096 ≈ 0.001

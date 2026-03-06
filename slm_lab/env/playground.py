@@ -84,11 +84,13 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         self._state = None
 
     def _to_output(self, x: jax.Array):
-        """Convert JAX array to output format. DLPack zero-copy when device is set."""
+        """Convert JAX array to output format. DLPack zero-copy when JAX+PyTorch both on GPU."""
         if self._device is not None:
             import torch
 
-            return torch.from_dlpack(jax.dlpack.to_dlpack(x))
+            t = torch.from_dlpack(jax.dlpack.to_dlpack(x))
+            # If JAX is on CPU but device is cuda, move explicitly (CPU->GPU copy)
+            return t if t.is_cuda else t.to(self._device)
         return np.asarray(x).astype(np.float32)
 
     def _get_obs(self, state):

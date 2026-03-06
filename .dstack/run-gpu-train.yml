@@ -22,7 +22,7 @@ env:
 commands:
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
   - cd /workflow && uv sync
-  - if [ -n "$PLAYGROUND" ]; then cd /workflow && uv sync --group playground; fi
+  - if [ -n "$PLAYGROUND" ]; then cd /workflow && uv sync --group playground && uv pip install "jax[cuda12]"; fi
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
 resources:
