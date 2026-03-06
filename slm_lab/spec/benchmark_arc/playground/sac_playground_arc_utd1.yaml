@@ -1,7 +1,8 @@
-# SAC Playground UTD=1.0 for hard DM Control envs (AcrobotSwingup, HopperHop)
-# UTD = training_iter / (training_frequency * num_envs) = 4 / (1 * 4) = 1.0
-# Fewer envs → higher UTD, faster sim → fits within 4h budget at 2M frames
-# Usage: uv run slm-lab ... -s env=playground/AcrobotSwingup -s max_frame=2000000
+# SAC Playground UTD=1.0 for hard DM Control envs (AcrobotSwingup, CartpoleSwingup)
+# UTD = training_iter / max(training_frequency, num_envs) = 4 / max(1, 4) = 1.0
+# ~60fps on A4500. 6h max_duration wall → use max_frame=1000000 (1M fits in 6h).
+# DO NOT use max_frame=2000000 — takes 9h, will hit dstack 6h wall at ~1.3M frames.
+# Usage: uv run slm-lab ... -s env=playground/AcrobotSwingup -s max_frame=1000000
 
 # --- Shared anchors ---
 
