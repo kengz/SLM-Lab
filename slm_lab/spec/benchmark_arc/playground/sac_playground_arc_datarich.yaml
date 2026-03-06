@@ -1,0 +1,139 @@
+# SAC Playground Data-Rich: exploit MJX's free JAX simulation by decoupling data collection from training
+#
+# HYPOTHESIS: JAX/MJX sim is near-free on GPU. PyTorch training is the bottleneck.
+# Solution: scale num_envs massively, increase training_frequency so training fires less often.
+# fps ∝ num_envs * (env_steps_between_training_calls) / training_time_per_call
+#
+# KEY: training_frequency is in units of individual transitions stored in the buffer.
+# With num_envs=N and env_steps_per_train=K, set training_frequency = K * N.
+#
+# UTD = training_iter / training_frequency (very low UTD is intentional)
+# Literature: Raffin (2025) ICLR blogpost: UTD≈0.03 optimal for 1024 parallel envs.
+#             MuJoCo Playground paper: UTD<0.02 with batch_size=4096 for >1000 envs.
+#
+# Config DR256: 256 envs, train every 16 env steps → training_frequency=4096
+#   UTD = 4/4096 ≈ 0.001  (vs 0.25 baseline)
+#   Theoretical fps: ~140 * (256*16)/(16*1) ≈ 35,840fps (sim-bound upper limit)
+#   Realistic estimate: 2,000-8,000fps (PyTorch training overhead amortized)
+#
+# Config DR512: 512 envs, train every 32 env steps → training_frequency=16384
+#   UTD = 8/16384 ≈ 0.0005 (extremely low)
+#   Theoretical fps: ~140 * (512*32)/(16*1) ≈ 71,680fps
+#   Realistic estimate: 5,000-15,000fps
+#
+# Batch size scaling: batch_size should scale with sqrt(num_envs) per Large Batch RL literature.
+#   Baseline: batch=256, envs=16. DR256: batch=4096 (16x), DR512: batch=8192 (32x).
+#   This stabilizes Q-learning with highly correlated large-batch transitions.
+#
+# TRADEOFF: Very low UTD may hurt sample efficiency (fewer gradient updates per transition).
+# This is acceptable if JAX sim is fast enough that we reach same wall-clock quality.
+# The Raffin (2025) results show RR≈0.03 works for locomotion with 1024 envs.
+#
+# Usage:
+#   uv run slm-lab run-remote --gpu --playground \
+#     -s env=playground/CartpoleBalance -s max_frame=2000000 \
+#     slm_lab/spec/benchmark_arc/playground/sac_playground_arc_datarich.yaml \
+#     sac_playground_arc_dr256 train -n pg-sac-dr256-cartpole
+
+# --- Shared anchors ---
+
+_arc_body_256: &arc_body_256
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_sac_net: &sac_net
+  type: TorchArcNet
+  arc: *arc_body_256
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  update_type: polyak
+  update_frequency: 1
+  polyak_coef: 0.005
+  gpu: auto
+
+_meta: &meta
+  distributed: false
+  log_frequency: 50000
+  eval_frequency: 50000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 1
+
+# --- DR256: 256 envs, train every 16 env steps ---
+# training_frequency = 16 * 256 = 4096 (transitions between training calls)
+# UTD = 4 / 4096 ≈ 0.001
+# batch_size = 4096 (16x baseline, matches env-step frequency for 1:1 batch/step ratio)
+# training_start_step = 50000 (buffer needs diverse data before training; 50K transitions ≈ 195 env steps)
+
+sac_playground_arc_dr256:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 4096
+      training_iter: 4
+      training_start_step: 50000
+    memory:
+      name: Replay
+      batch_size: 4096
+      max_size: 2000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 256
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
+# --- DR512: 512 envs, train every 32 env steps ---
+# training_frequency = 32 * 512 = 16384 (transitions between training calls)
+# UTD = 8 / 16384 ≈ 0.0005
+# batch_size = 8192 (32x baseline)
+# training_start_step = 100000 (buffer needs more diverse data with 512 envs)
+# Higher training_iter (8 vs 4) compensates for very infrequent training calls.
+
+sac_playground_arc_dr512:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 16384
+      training_iter: 8
+      training_start_step: 100000
+    memory:
+      name: Replay
+      batch_size: 8192
+      max_size: 2000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 512
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
