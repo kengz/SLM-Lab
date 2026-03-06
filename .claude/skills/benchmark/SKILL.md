@@ -25,13 +25,16 @@ When a run completes (`dstack ps` shows `exited (0)`):
 3. **Update table score** in BENCHMARKS.md
 4. **Update table HF link**: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
 5. **Pull HF data locally**: `source .env && huggingface-cli download SLM-Lab/benchmark-dev --local-dir data/benchmark-dev --repo-type dataset --include "data/FOLDER/*"`
-6. **Generate plot**: List ALL data folders for that env (`ls data/benchmark-dev/data/ | grep -i envname`), then generate with ONLY the folders matching BENCHMARKS.md entries:
+6. **Generate plot** (MANDATORY — do NOT skip):
    ```bash
    uv run slm-lab plot -t "EnvName" -d data/benchmark-dev/data -f FOLDER1,FOLDER2,...
    ```
    NOTE: `-d` sets the base data dir, `-f` takes folder names (NOT full paths).
    If some folders are in `data/` (local runs) and some in `data/benchmark-dev/data/`, use `data/` as base (it has the `info/` subfolder needed for metrics).
-7. **Verify plot exists** in `docs/plots/`
+7. **Show plot to user** (MANDATORY — teammates must message team-lead with the plot path; team-lead must read+display it):
+   - Find plot: `ls docs/plots/ | grep -i envname`
+   - Read the image file using the Read tool so the plot is visible in the conversation
+   - Report to team-lead: "Plot ready: docs/plots/FILENAME.png" — team-lead must then Read the image
 8. **Commit** score + link + plot together
 
 A row in BENCHMARKS.md is NOT complete until it has: score, HF link, and plot.
