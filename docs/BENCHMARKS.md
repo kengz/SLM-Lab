@@ -798,7 +798,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/FingerTurnHard | - | - | - |
 | playground/FishSwim | - | - | - |
 | playground/HopperHop | - | - | - |
-| playground/HopperStand | - | - | - |
+| playground/HopperStand | - | 277.46 | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
 | playground/HumanoidRun | - | - | - |
 | playground/HumanoidStand | - | - | - |
 | playground/PendulumSwingup | 35.74 | - | [ppo_playground_arc_pendulumswingup_2026_03_06_094355](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) |
