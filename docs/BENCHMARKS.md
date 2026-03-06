@@ -787,7 +787,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/CartpoleBalance | 709.15 | - | [ppo_playground_arc_cartpolebalance_2026_03_06_094302](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalance_2026_03_06_094302) |
 | playground/CheetahRun | - | 112.59 | [sac_playground_arc_cheetahrun_2026_03_06_094013](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cheetahrun_2026_03_06_094013) |
 | playground/HumanoidWalk | - | - | - |
-| playground/AcrobotSwingup | - | - | - |
+| playground/AcrobotSwingup | - | 3.46 | [sac_playground_arc_fast_acrobotswingup_2026_03_06_111158](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_acrobotswingup_2026_03_06_111158) |
 | playground/BallInCup | - | - | - |
 | playground/CartpoleBalanceSparse | - | - | - |
 | playground/CartpoleSwingup | - | 193.71 | [sac_playground_arc_fast_cartpoleswingup_2026_03_06_111101](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_cartpoleswingup_2026_03_06_111101) |
