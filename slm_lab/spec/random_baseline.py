@@ -86,6 +86,8 @@ def gen_random_baseline(env_name, num_eval=NUM_EVAL):
 
 def get_random_baseline(env_name):
     '''Get a single random baseline for env; if does not exist in file, generate live and update the file'''
+    if env_name.startswith('playground/'):
+        return None  # JAX/MJX envs not gym-registered; skip baseline generation
     random_baseline = util.read(FILEPATH)
     if env_name in random_baseline:
         baseline = random_baseline[env_name]
