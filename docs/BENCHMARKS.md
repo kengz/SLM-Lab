@@ -808,7 +808,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/SwimmerSwimmer6 | - | - | - |
 | playground/WalkerRun | - | - | - |
 | playground/WalkerStand | - | 934.20 | [sac_playground_arc_fast_walkerstand_2026_03_06_114303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_06_114303) |
-| playground/WalkerWalk | - | 883.86 | [sac_playground_arc_fast_walkerwalk_2026_03_06_114337](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerwalk_2026_03_06_114337) |
+| playground/WalkerWalk | 73.21 | 883.86 | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerwalk_2026_03_06_134336) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerwalk_2026_03_06_114337) |
 
 #### Locomotion Robots (19 envs)
 
