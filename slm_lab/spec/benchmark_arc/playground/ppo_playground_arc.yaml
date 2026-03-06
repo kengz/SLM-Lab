@@ -81,5 +81,4 @@ ppo_playground_arc:
     num_envs: 16
     max_t: null
     max_frame: "${max_frame}"
-    device: cuda
   meta: *meta
