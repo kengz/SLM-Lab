@@ -17,7 +17,7 @@ env:
   - PROF_SKIP
   - PROF_ACTIVE
   - PLAYGROUND
-  - XLA_PYTHON_CLIENT_PREALLOCATE: "false"
+  - XLA_PYTHON_CLIENT_PREALLOCATE=false
 
 commands:
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
