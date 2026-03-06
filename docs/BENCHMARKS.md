@@ -784,7 +784,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 | Environment | PPO | SAC | HF Data |
 |-------------|-----|-----|---------|
-| playground/CartpoleBalance | 213.5 | - | [ppo_playground_cartpole_2026_03_06_064424](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpole_2026_03_06_064424) |
+| playground/CartpoleBalance | 709.15 | - | [ppo_playground_arc_cartpolebalance_2026_03_06_094302](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalance_2026_03_06_094302) |
 | playground/CheetahRun | - | 186.5 | [sac_playground_cheetah_2026_03_06_064434](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_cheetah_2026_03_06_064434) |
 | playground/HumanoidWalk | - | - | - |
 | playground/AcrobotSwingup | - | - | - |
