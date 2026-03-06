@@ -771,7 +771,11 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Algorithm Specs**: PPO [64,64] tanh and SAC [256,256] relu with TorchArc. Tiered frame budgets: simple envs 500K, medium 1M, hard 2-5M frames.
 
-**Settings**: max_frame varies | num_envs 16 | max_session 4 | device cuda
+**Hardware**: RunPod RTX A4500 (20GB) / A5000 (24GB) — JAX+PyTorch both on GPU, DLPack zero-copy
+
+**Settings**: max_frame varies | max_session 4 | device cuda
+
+**FPS Reference**: PPO (256 envs) ~2000fps | SAC-baseline (16 envs) ~140fps | SAC-fast (64 envs) ~300–470fps | SAC-UTD1 (4 envs) ~60fps | SAC-DR128 (128 envs) ~3500fps
 
 **Running**:
 ```bash
@@ -782,70 +786,70 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 #### DM Control Suite (25 envs)
 
-| Environment | PPO | SAC | HF Data |
-|-------------|-----|-----|---------|
-| playground/CartpoleBalance | 918.12 | - | [ppo_playground_arc_cartpolebalance_2026_03_06_153756](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalance_2026_03_06_153756) |
-| playground/CheetahRun | 53.61 | 112.59 | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cheetahrun_2026_03_06_134309) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cheetahrun_2026_03_06_094013) |
-| playground/HumanoidWalk | - | - | - |
-| playground/AcrobotSwingup | - | 3.46 | [sac_playground_arc_fast_acrobotswingup_2026_03_06_111158](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_acrobotswingup_2026_03_06_111158) |
-| playground/BallInCup | - | - | - |
-| playground/CartpoleBalanceSparse | - | - | - |
-| playground/CartpoleSwingup | - | 371.40 | [sac_playground_arc_cartpoleswingup_2026_03_06_130653](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cartpoleswingup_2026_03_06_130653) |
-| playground/CartpoleSwingupSparse | - | - | - |
-| playground/CheetahRunBackwards | - | - | - |
-| playground/FingerSpin | - | 327.57 | [sac_playground_arc_fingerspin_2026_03_06_150750](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerspin_2026_03_06_150750) |
-| playground/FingerTurnEasy | - | 408.73 | [sac_playground_arc_fingerturneasy_2026_03_06_134326](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerturneasy_2026_03_06_134326) |
-| playground/FingerTurnHard | - | - | - |
-| playground/FishSwim | - | - | - |
-| playground/HopperHop | - | - | - |
-| playground/HopperStand | - | 277.46 | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
-| playground/HumanoidRun | - | - | - |
-| playground/HumanoidStand | - | - | - |
-| playground/PendulumSwingup | 35.74 | 0.00 | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_pendulumswingup_2026_03_06_150813) |
-| playground/PointMass | 493.79 | - | [ppo_playground_arc_pointmass_2026_03_06_105141](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pointmass_2026_03_06_105141) |
-| playground/ReacherEasy | 285.63 | - | [ppo_playground_arc_reachereasy_2026_03_06_102444](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_reachereasy_2026_03_06_102444) |
-| playground/ReacherHard | - | - | - |
-| playground/SwimmerSwimmer6 | - | - | - |
-| playground/WalkerRun | - | - | - |
-| playground/WalkerStand | - | 934.20 | [sac_playground_arc_fast_walkerstand_2026_03_06_114303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_06_114303) |
-| playground/WalkerWalk | 73.21 | 883.86 | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerwalk_2026_03_06_134336) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerwalk_2026_03_06_114337) |
+| Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
+|-------------|-----|-----|-------------|-----|--------|------------|---------|
+| playground/CartpoleBalance | 918.12 | - | ~995 | ~2000 (PPO/256e) | 2M | ~0.3h | [ppo_playground_arc_cartpolebalance_2026_03_06_153756](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalance_2026_03_06_153756) |
+| playground/CheetahRun | 53.61 | 112.59 | ~839 | ~2000(PPO) / ~140(SAC) | 2M | ~0.3h / ~4h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cheetahrun_2026_03_06_134309) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cheetahrun_2026_03_06_094013) |
+| playground/HumanoidWalk | - | - | ~281 | - | - | - | - |
+| playground/AcrobotSwingup | - | 3.46 | ~63 | ~140 (SAC/16e) | 2M | ~4h | [sac_playground_arc_fast_acrobotswingup_2026_03_06_111158](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_acrobotswingup_2026_03_06_111158) |
+| playground/BallInCup | - | - | ~944 | - | - | - | - |
+| playground/CartpoleBalanceSparse | - | - | ~992 | - | - | - | - |
+| playground/CartpoleSwingup | - | 371.40 | ~868 | ~60 (SAC-UTD1/4e) | 1M | ~4.6h | [sac_playground_arc_cartpoleswingup_2026_03_06_130653](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cartpoleswingup_2026_03_06_130653) |
+| playground/CartpoleSwingupSparse | - | - | ~630 | - | - | - | - |
+| playground/CheetahRunBackwards | - | - | ~600 | - | - | - | - |
+| playground/FingerSpin | - | 327.57 | ~742 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerspin_2026_03_06_150750](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerspin_2026_03_06_150750) |
+| playground/FingerTurnEasy | - | 408.73 | ~709 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerturneasy_2026_03_06_134326](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerturneasy_2026_03_06_134326) |
+| playground/FingerTurnHard | - | - | ~249 | - | - | - | - |
+| playground/FishSwim | - | - | ~136 | - | - | - | - |
+| playground/HopperHop | - | - | ~295 | - | - | - | - |
+| playground/HopperStand | - | 277.46 | ~645 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
+| playground/HumanoidRun | - | - | ~11 | - | - | - | - |
+| playground/HumanoidStand | - | - | ~514 | - | - | - | - |
+| playground/PendulumSwingup | 35.74 | 0.00 | ~959 | ~2000(PPO) / ~350(SAC) | 1M | ~0.1h / ~0.8h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_pendulumswingup_2026_03_06_150813) |
+| playground/PointMass | 493.79 | - | ~988 | ~2000 (PPO/256e) | 500K | ~0.1h | [ppo_playground_arc_pointmass_2026_03_06_105141](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pointmass_2026_03_06_105141) |
+| playground/ReacherEasy | 285.63 | - | ~945 | ~2000 (PPO/256e) | 500K | ~0.1h | [ppo_playground_arc_reachereasy_2026_03_06_102444](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_reachereasy_2026_03_06_102444) |
+| playground/ReacherHard | - | - | ~225 | - | - | - | - |
+| playground/SwimmerSwimmer6 | - | - | ~300 | - | - | - | - |
+| playground/WalkerRun | - | - | ~678 | - | - | - | - |
+| playground/WalkerStand | - | 934.20 | ~983 | ~345 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_walkerstand_2026_03_06_114303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_06_114303) |
+| playground/WalkerWalk | 73.21 | 883.86 | ~902 | ~2000(PPO) / ~345(SAC) | 2M / 1M | ~0.3h / ~0.8h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerwalk_2026_03_06_134336) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerwalk_2026_03_06_114337) |
 
 #### Locomotion Robots (19 envs)
 
-| Environment | PPO | SAC | HF Data |
-|-------------|-----|-----|---------|
-| playground/BarkourJoystick | - | - | - |
-| playground/G1JoystickFlatTerrain | - | - | - |
-| playground/G1JoystickRoughTerrain | - | - | - |
-| playground/G1Walking | - | - | - |
-| playground/Go1JoystickFlatTerrain | - | - | - |
-| playground/Go1JoystickRoughTerrain | - | - | - |
-| playground/Go2JoystickFlatTerrain | - | - | - |
-| playground/Go2JoystickRoughTerrain | - | - | - |
-| playground/H1JoystickFlatTerrain | - | - | - |
-| playground/H1JoystickRoughTerrain | - | - | - |
-| playground/H1Walking | - | - | - |
-| playground/Op3JoystickFlatTerrain | - | - | - |
-| playground/Panda | - | - | - |
-| playground/SpotJoystickFlatTerrain | - | - | - |
-| playground/SpotJoystickRoughTerrain | - | - | - |
-| playground/T1Walking | - | - | - |
-| playground/Unitree_A1JoystickFlatTerrain | - | - | - |
-| playground/Unitree_A1JoystickRoughTerrain | - | - | - |
-| playground/Unitree_H1JoystickFlatTerrain | - | - | - |
+| Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
+|-------------|-----|-----|-------------|-----|--------|------------|---------|
+| playground/BarkourJoystick | - | - | N/A | - | - | - | - |
+| playground/G1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/G1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| playground/G1Walking | - | - | N/A | - | - | - | - |
+| playground/Go1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/Go1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| playground/Go2JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/Go2JoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| playground/H1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/H1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| playground/H1Walking | - | - | N/A | - | - | - | - |
+| playground/Op3JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/Panda | - | - | N/A | - | - | - | - |
+| playground/SpotJoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/SpotJoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| playground/T1Walking | - | - | N/A | - | - | - | - |
+| playground/Unitree_A1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/Unitree_A1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| playground/Unitree_H1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
 
 #### Manipulation (10 envs)
 
-| Environment | PPO | SAC | HF Data |
-|-------------|-----|-----|---------|
-| playground/AlohaTransferCube | - | - | - |
-| playground/LeapHandGraspAndPlace | - | - | - |
-| playground/LeapHandPinch | - | - | - |
-| playground/LeapHandRotate | - | - | - |
-| playground/PandaPickAndPlace | - | - | - |
-| playground/PandaPushT | - | - | - |
-| playground/PandaRearrangeObjects | - | - | - |
-| playground/PandaRobosuite | - | - | - |
-| playground/PandaThrowAndCatch | - | - | - |
-| playground/UCBerkeley_HumanoidPickAndPlace | - | - | - |
+| Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
+|-------------|-----|-----|-------------|-----|--------|------------|---------|
+| playground/AlohaTransferCube | - | - | N/A | - | - | - | - |
+| playground/LeapHandGraspAndPlace | - | - | N/A | - | - | - | - |
+| playground/LeapHandPinch | - | - | N/A | - | - | - | - |
+| playground/LeapHandRotate | - | - | N/A | - | - | - | - |
+| playground/PandaPickAndPlace | - | - | N/A | - | - | - | - |
+| playground/PandaPushT | - | - | N/A | - | - | - | - |
+| playground/PandaRearrangeObjects | - | - | N/A | - | - | - | - |
+| playground/PandaRobosuite | - | - | N/A | - | - | - | - |
+| playground/PandaThrowAndCatch | - | - | N/A | - | - | - | - |
+| playground/UCBerkeley_HumanoidPickAndPlace | - | - | N/A | - | - | - | - |
 
