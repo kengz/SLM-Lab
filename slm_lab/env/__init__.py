@@ -182,6 +182,7 @@ def _make_playground_env(
     # Strip "playground/" prefix to get the env name for the registry
     pg_env_name = name.removeprefix("playground/")
     env = PlaygroundVecEnv(pg_env_name, num_envs, device=device)
+    logger.info(f"Playground: JAX→PyTorch via {'DLPack zero-copy (GPU)' if device else 'numpy (CPU)'}")
 
     if _needs_action_rescaling(env):
         action_space = env.single_action_space
@@ -244,7 +245,14 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     clip_reward = env_spec.get("clip_reward", 10.0 if normalize_reward else None)
     gamma = spec.get("agent", {}).get("algorithm", {}).get("gamma", 0.99)
 
+    device = env_spec.get("device")
+    if is_playground and (device is None or device == "auto"):
+        import torch
+
+        device = "cuda" if torch.cuda.is_available() else None
+
     if is_playground:
+        logger.info(f"Playground device: {'GPU (cuda) — DLPack zero-copy' if device else 'CPU (no CUDA)'}")
         env = _make_playground_env(
             name,
             num_envs,
@@ -253,7 +261,7 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
             clip_obs,
             clip_reward,
             gamma,
-            device=env_spec.get("device"),
+            device=device,
             render_mode=render_mode,
         )
     elif num_envs > 1:

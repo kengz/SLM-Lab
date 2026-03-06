@@ -71,5 +71,4 @@ sac_playground_arc:
     max_t: null
     max_frame: "${max_frame}"
     normalize_obs: true
-    device: cuda
   meta: *meta
