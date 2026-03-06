@@ -793,7 +793,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/CartpoleSwingup | - | 371.40 | [sac_playground_arc_cartpoleswingup_2026_03_06_130653](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cartpoleswingup_2026_03_06_130653) |
 | playground/CartpoleSwingupSparse | - | - | - |
 | playground/CheetahRunBackwards | - | - | - |
-| playground/FingerSpin | - | 251.38 | [sac_playground_arc_fast_fingerspin_2026_03_06_111620](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_fingerspin_2026_03_06_111620) |
+| playground/FingerSpin | - | 327.57 | [sac_playground_arc_fingerspin_2026_03_06_150750](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerspin_2026_03_06_150750) |
 | playground/FingerTurnEasy | - | - | - |
 | playground/FingerTurnHard | - | - | - |
 | playground/FishSwim | - | - | - |
@@ -801,7 +801,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/HopperStand | - | 277.46 | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
 | playground/HumanoidRun | - | - | - |
 | playground/HumanoidStand | - | - | - |
-| playground/PendulumSwingup | 35.74 | - | [ppo_playground_arc_pendulumswingup_2026_03_06_094355](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) |
+| playground/PendulumSwingup | 35.74 | 0.00 | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_pendulumswingup_2026_03_06_150813) |
 | playground/PointMass | 493.79 | - | [ppo_playground_arc_pointmass_2026_03_06_105141](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pointmass_2026_03_06_105141) |
 | playground/ReacherEasy | 285.63 | - | [ppo_playground_arc_reachereasy_2026_03_06_102444](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_reachereasy_2026_03_06_102444) |
 | playground/ReacherHard | - | - | - |
