@@ -57,10 +57,7 @@ def run_remote(
     # Only "search" mode uses search config; everything else uses train config
     hw = "gpu" if gpu else "cpu"
     config_mode = "search" if mode == "search" else "train"
-    if playground:
-        config_file = ".dstack/run-gpu-playground.yml"
-    else:
-        config_file = f".dstack/run-{hw}-{config_mode}.yml"
+    config_file = f".dstack/run-{hw}-{config_mode}.yml"
 
     cmd = ["dstack", "apply", "-f", config_file, "-y", "--detach", "--name", run_name]
     env = os.environ.copy()
@@ -68,6 +65,7 @@ def run_remote(
     env["SPEC_NAME"] = spec_name
     env["LAB_MODE"] = mode
     env["SPEC_VARS"] = " ".join(f"-s {item}" for item in sets) if sets else ""
+    env["PLAYGROUND"] = "true" if playground else ""
     env["PROFILE"] = "true" if profile else ""
     env.setdefault("PROF_SKIP", "500")
     env.setdefault("PROF_ACTIVE", "20")

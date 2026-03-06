@@ -113,6 +113,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | 2 | Box2D | 2 | N/A | N/A | ⚠️ | ✅ | ❌ | ⚠️ | ⚠️ | ⚠️ | Done |
 | 3 | MuJoCo | 11 | N/A | N/A | N/A | N/A | N/A | ⚠️ | ⚠️ | ⚠️ | Done |
 | 4 | Atari | 57 | N/A | N/A | N/A | Skip | Done | Done | Done | ❌ | Done |
+| 5 | Playground | 54 | N/A | N/A | N/A | N/A | N/A | 🔄 | 🔄 | N/A | In progress |
 
 **Legend**: ✅ Solved | ⚠️ Close (>80%) | 📊 Acceptable | ❌ Failed | 🔄 In progress/Pending | Skip Not started | N/A Not applicable
 
@@ -764,87 +765,87 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 ### Phase 5: MuJoCo Playground (JAX/MJX GPU-Accelerated)
 
-**Docs**: [MuJoCo Playground](https://playground.mujoco.org/) | State/Action: Continuous | Backend: JAX/MJX (GPU-native, 100-1000x faster than CPU MuJoCo)
+**Environment**: 54 GPU-accelerated environments (JAX/MJX backend) — DM Control Suite (25), Locomotion Robots (19), Manipulation (10).
 
-**Settings**: max_frame 0.1M-5M (varies by env difficulty) | num_envs 16 | max_session 4 | log_frequency 10000
+**Install**: `uv sync --group playground`
 
-**Environment**: 54 GPU-accelerated envs across DM Control (25), Locomotion robots (19), and Manipulation (10). Install: `uv sync --group playground`.
+**Algorithm Specs**: PPO [64,64] tanh and SAC [256,256] relu with TorchArc. Tiered frame budgets: simple envs 500K, medium 1M, hard 2-5M frames.
 
-**Algorithm Specs**: SAC [256,256] MLP with relu. Tiered frame budgets based on task difficulty (classic: 500K, manipulation: 1M, locomotion: 2-5M, humanoid: 2M).
+**Settings**: max_frame varies | num_envs 16 | max_session 4 | device cuda
 
-**Running Playground benchmarks** (requires `--playground` flag for JAX deps):
+**Running**:
 ```bash
-source .env && slm-lab run-remote --playground slm_lab/spec/benchmark/playground/ppo_playground.json sac_playground_cheetah train -n sac-pg-cheetah
+source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max_frame=500000 slm_lab/spec/benchmark_arc/playground/ppo_playground_arc.yaml ppo_playground_arc train -n pg-cartpole
 ```
 
-**Status**: 🔄 Initial validation runs in progress (CheetahRun, HumanoidWalk, CartpoleBalance)
+**Status**: 🔄 Benchmark runs in progress
 
 #### DM Control Suite (25 envs)
 
-| Environment | SAC | Spec | HF Data |
-|-------------|-----|------|---------|
-| playground/CartpoleBalance | - | [ppo_playground.json](../slm_lab/spec/benchmark/playground/ppo_playground.json) | - |
-| playground/CheetahRun | - | [ppo_playground.json](../slm_lab/spec/benchmark/playground/ppo_playground.json) | - |
-| playground/HumanoidWalk | - | [ppo_playground.json](../slm_lab/spec/benchmark/playground/ppo_playground.json) | - |
-| playground/AcrobotSwingup | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/BallInCup | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/CartpoleBalanceSparse | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/CartpoleSwingup | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/CartpoleSwingupSparse | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/CheetahRunBackwards | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/FingerSpin | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/FingerTurnEasy | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/FingerTurnHard | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/FishSwim | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/HopperHop | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/HopperStand | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/HumanoidRun | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/HumanoidStand | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/PendulumSwingup | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/PointMassEasy | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/ReacherEasy | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/ReacherHard | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/SwimmerSwimmer6 | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/WalkerRun | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/WalkerStand | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
-| playground/WalkerWalk | - | [sac_playground_dm_control.json](../slm_lab/spec/benchmark/playground/sac_playground_dm_control.json) | - |
+| Environment | PPO | SAC | HF Data |
+|-------------|-----|-----|---------|
+| playground/CartpoleBalance | - | - | - |
+| playground/CheetahRun | - | - | - |
+| playground/HumanoidWalk | - | - | - |
+| playground/AcrobotSwingup | - | - | - |
+| playground/BallInCup | - | - | - |
+| playground/CartpoleBalanceSparse | - | - | - |
+| playground/CartpoleSwingup | - | - | - |
+| playground/CartpoleSwingupSparse | - | - | - |
+| playground/CheetahRunBackwards | - | - | - |
+| playground/FingerSpin | - | - | - |
+| playground/FingerTurnEasy | - | - | - |
+| playground/FingerTurnHard | - | - | - |
+| playground/FishSwim | - | - | - |
+| playground/HopperHop | - | - | - |
+| playground/HopperStand | - | - | - |
+| playground/HumanoidRun | - | - | - |
+| playground/HumanoidStand | - | - | - |
+| playground/PendulumSwingup | - | - | - |
+| playground/PointMassEasy | - | - | - |
+| playground/ReacherEasy | - | - | - |
+| playground/ReacherHard | - | - | - |
+| playground/SwimmerSwimmer6 | - | - | - |
+| playground/WalkerRun | - | - | - |
+| playground/WalkerStand | - | - | - |
+| playground/WalkerWalk | - | - | - |
 
 #### Locomotion Robots (19 envs)
 
-| Environment | SAC | Spec | HF Data |
-|-------------|-----|------|---------|
-| playground/BarkourJoystick | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/G1JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/G1JoystickRoughTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/G1Walking | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Go1JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Go1JoystickRoughTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Go2JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Go2JoystickRoughTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/H1JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/H1JoystickRoughTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/H1Walking | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Op3JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Panda | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/SpotJoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/SpotJoystickRoughTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/T1Walking | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Unitree_A1JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Unitree_A1JoystickRoughTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
-| playground/Unitree_H1JoystickFlatTerrain | - | [sac_playground_locomotion.json](../slm_lab/spec/benchmark/playground/sac_playground_locomotion.json) | - |
+| Environment | PPO | SAC | HF Data |
+|-------------|-----|-----|---------|
+| playground/BarkourJoystick | - | - | - |
+| playground/G1JoystickFlatTerrain | - | - | - |
+| playground/G1JoystickRoughTerrain | - | - | - |
+| playground/G1Walking | - | - | - |
+| playground/Go1JoystickFlatTerrain | - | - | - |
+| playground/Go1JoystickRoughTerrain | - | - | - |
+| playground/Go2JoystickFlatTerrain | - | - | - |
+| playground/Go2JoystickRoughTerrain | - | - | - |
+| playground/H1JoystickFlatTerrain | - | - | - |
+| playground/H1JoystickRoughTerrain | - | - | - |
+| playground/H1Walking | - | - | - |
+| playground/Op3JoystickFlatTerrain | - | - | - |
+| playground/Panda | - | - | - |
+| playground/SpotJoystickFlatTerrain | - | - | - |
+| playground/SpotJoystickRoughTerrain | - | - | - |
+| playground/T1Walking | - | - | - |
+| playground/Unitree_A1JoystickFlatTerrain | - | - | - |
+| playground/Unitree_A1JoystickRoughTerrain | - | - | - |
+| playground/Unitree_H1JoystickFlatTerrain | - | - | - |
 
 #### Manipulation (10 envs)
 
-| Environment | SAC | Spec | HF Data |
-|-------------|-----|------|---------|
-| playground/AlohaTransferCube | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/LeapHandGraspAndPlace | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/LeapHandPinch | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/LeapHandRotate | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/PandaPickAndPlace | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/PandaPushT | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/PandaRearrangeObjects | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/PandaRobosuite | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/PandaThrowAndCatch | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
-| playground/UCBerkeley_HumanoidPickAndPlace | - | [sac_playground_manipulation.json](../slm_lab/spec/benchmark/playground/sac_playground_manipulation.json) | - |
+| Environment | PPO | SAC | HF Data |
+|-------------|-----|-----|---------|
+| playground/AlohaTransferCube | - | - | - |
+| playground/LeapHandGraspAndPlace | - | - | - |
+| playground/LeapHandPinch | - | - | - |
+| playground/LeapHandRotate | - | - | - |
+| playground/PandaPickAndPlace | - | - | - |
+| playground/PandaPushT | - | - | - |
+| playground/PandaRearrangeObjects | - | - | - |
+| playground/PandaRobosuite | - | - | - |
+| playground/PandaThrowAndCatch | - | - | - |
+| playground/UCBerkeley_HumanoidPickAndPlace | - | - | - |
 

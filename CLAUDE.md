@@ -128,7 +128,7 @@ Create and maintain persistent context that survives context compaction. Keep do
 Modular deep reinforcement learning framework in PyTorch for RL research and experimentation. Supports multiple algorithms (DQN, PPO, SAC, etc.), environments (Gymnasium, Atari, MuJoCo), and distributed training with hyperparameter search.
 
 **Key capabilities:**
-- Reproducible experiments via JSON specs
+- Reproducible experiments via YAML specs
 - Modular algorithm/network/memory components
 - ASHA hyperparameter search with early termination
 - Cloud GPU training (optional - use dstack or your own infrastructure)
@@ -161,7 +161,7 @@ Understanding SLM-Lab's modular design is essential for development work.
    - `control.py`: Session/trial management
    - `search.py`: ASHA hyperparameter search
 
-6. **Spec System** (`slm_lab/spec/`) - JSON configuration for reproducibility
+6. **Spec System** (`slm_lab/spec/`) - YAML configuration for reproducibility
    - Structure: `meta`, `agent`, `env`, `body`, `search`
    - Variable substitution: `${var}` with `-s var=value`
 
@@ -169,7 +169,7 @@ Understanding SLM-Lab's modular design is essential for development work.
 
 - **Modularity**: Swap algorithms/networks/memories via spec changes
 - **Vectorization**: Parallel env rollouts for sample efficiency
-- **Spec-driven**: All experiments defined in JSON - no code changes needed
+- **Spec-driven**: All experiments defined in YAML (benchmark_arc/) or JSON (benchmark/) - no code changes needed
 - **Checkpointing**: Auto-save at intervals, resume from checkpoints
 
 ## Development Setup

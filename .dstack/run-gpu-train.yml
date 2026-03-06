@@ -16,10 +16,13 @@ env:
   - PROFILE
   - PROF_SKIP
   - PROF_ACTIVE
+  - PLAYGROUND
+  - XLA_PYTHON_CLIENT_PREALLOCATE: "false"
 
 commands:
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
   - cd /workflow && uv sync
+  - if [ -n "$PLAYGROUND" ]; then cd /workflow && uv sync --group playground; fi
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
 resources:
@@ -29,7 +32,7 @@ resources:
   memory: 32GB..
 
 spot_policy: auto
-max_duration: 8h
+max_duration: 6h
 max_price: 0.50
 retry:
   on_events: [no-capacity]
