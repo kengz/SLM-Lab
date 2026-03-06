@@ -165,7 +165,10 @@ def _make_playground_env(
     """Create a MuJoCo Playground vectorized environment."""
     try:
         from slm_lab.env.playground import PlaygroundVecEnv
-        from slm_lab.env.wrappers import PlaygroundRenderWrapper
+        from slm_lab.env.wrappers import (
+            PlaygroundRenderWrapper,
+            TorchNormalizeObservation,
+        )
     except ImportError:
         raise ImportError(
             "MuJoCo Playground is required for playground/ environments. "
@@ -191,6 +194,10 @@ def _make_playground_env(
 
     if render_mode:
         env = PlaygroundRenderWrapper(env)
+
+    if device is not None:
+        if normalize_obs:
+            env = TorchNormalizeObservation(env)
 
     # Skip numpy-only wrappers in GPU mode (network-level normalization used instead)
     if device is None:

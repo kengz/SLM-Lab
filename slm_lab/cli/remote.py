@@ -20,11 +20,11 @@ def run_remote(
     sets: list[str] = typer.Option(
         [], "--set", "-s", help="Set spec variables: KEY=VALUE"
     ),
-    gpu: bool = typer.Option(
-        False, "--gpu", help="Use GPU hardware (default: CPU)"
-    ),
+    gpu: bool = typer.Option(False, "--gpu", help="Use GPU hardware (default: CPU)"),
     playground: bool = typer.Option(
-        False, "--playground", help="MuJoCo Playground env (installs JAX/playground deps)"
+        False,
+        "--playground",
+        help="MuJoCo Playground env (installs JAX/playground deps)",
     ),
     profile: bool = typer.Option(
         False, "--profile", help="Enable performance profiling (forces dev mode)"

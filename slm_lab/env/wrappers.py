@@ -6,6 +6,7 @@ from collections import deque
 import gymnasium as gym
 import numpy as np
 import pandas as pd
+import torch
 from slm_lab.lib import util
 
 
@@ -86,7 +87,9 @@ class ClockMixin:
         Priority: VectorFullGameStatistics > RecordEpisodeStatistics > TrackReward
         This ensures we report full-game scores for Atari with life_loss_info.
         """
-        from gymnasium.wrappers.vector import RecordEpisodeStatistics as VectorRecordEpisodeStatistics
+        from gymnasium.wrappers.vector import (
+            RecordEpisodeStatistics as VectorRecordEpisodeStatistics,
+        )
 
         env = self.env
         while env is not None:
@@ -240,8 +243,8 @@ class VectorRenderAll(gym.vector.VectorWrapper):
     def _get_base_env(self):
         """Find base env with call() method."""
         env = self.env
-        while hasattr(env, 'env'):
-            if hasattr(env, 'call'):
+        while hasattr(env, "env"):
+            if hasattr(env, "call"):
                 return env
             env = env.env
         return env
@@ -253,14 +256,16 @@ class VectorRenderAll(gym.vector.VectorWrapper):
             return
 
         base_env = self._get_base_env()
-        frames = base_env.call("render") if hasattr(base_env, 'call') else None
+        frames = base_env.call("render") if hasattr(base_env, "call") else None
         if frames is None or frames[0] is None:
             return
 
         if self.window is None:
             pygame.init()
             frame_h, frame_w = frames[0].shape[:2]
-            self.window = pygame.display.set_mode((frame_w * self.grid_cols, frame_h * self.grid_rows))
+            self.window = pygame.display.set_mode(
+                (frame_w * self.grid_cols, frame_h * self.grid_rows)
+            )
             pygame.display.set_caption(f"Vector Env ({self.num_envs} envs)")
             self.clock = pygame.time.Clock()
 
@@ -286,6 +291,7 @@ class VectorRenderAll(gym.vector.VectorWrapper):
     def close(self):
         if self.window is not None:
             import pygame
+
             pygame.quit()
             self.window = None
         return super().close()
@@ -339,6 +345,45 @@ class PlaygroundRenderWrapper(gym.vector.VectorWrapper):
     def close(self):
         if self.window is not None:
             import pygame
+
             pygame.quit()
             self.window = None
         return super().close()
+
+
+class TorchNormalizeObservation(gym.vector.VectorWrapper):
+    """Running-mean normalization for CUDA tensor observations (Welford algorithm)."""
+
+    def __init__(self, env: gym.vector.VectorEnv, epsilon: float = 1e-8):
+        super().__init__(env)
+        self.epsilon = epsilon
+        self._mean = None
+        self._var = None
+        self._count = 0
+
+    def _update_and_normalize(self, obs):
+        if self._mean is None:
+            self._mean = torch.zeros_like(obs[0])
+            self._var = torch.ones_like(obs[0])
+        batch_mean = obs.mean(dim=0)
+        batch_var = obs.var(dim=0, unbiased=False)
+        batch_count = obs.shape[0]
+        # Welford parallel update
+        total = self._count + batch_count
+        delta = batch_mean - self._mean
+        self._mean = self._mean + delta * batch_count / total
+        self._var = (
+            self._var * self._count
+            + batch_var * batch_count
+            + delta**2 * self._count * batch_count / total
+        ) / total
+        self._count = total
+        return (obs - self._mean) / (self._var + self.epsilon).sqrt()
+
+    def step(self, actions):
+        obs, *rest = self.env.step(actions)
+        return self._update_and_normalize(obs), *rest
+
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        return self._update_and_normalize(obs), info
