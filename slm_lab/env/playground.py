@@ -47,7 +47,8 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
 
         # Load the MJX environment and wrap for batched training
         # wrap_for_brax_training applies: VmapWrapper → EpisodeWrapper → BraxAutoResetWrapper
-        base_env = pg_registry.load(env_name)
+        self._base_env = pg_registry.load(env_name)  # kept for rendering
+        base_env = self._base_env
         self._env = pg_wrapper.wrap_for_brax_training(
             base_env, episode_length=episode_length, action_repeat=1
         )
@@ -137,4 +138,10 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         self._state = None
 
     def render(self):
-        return None
+        """Render env[0] as an RGB array using MuJoCo renderer."""
+        if self._state is None:
+            return None
+        # Extract first env's state from the batched pytree
+        state_0 = jax.tree.map(lambda x: x[0], self._state)
+        frames = self._base_env.render([state_0], height=240, width=320)
+        return np.array(frames[0])

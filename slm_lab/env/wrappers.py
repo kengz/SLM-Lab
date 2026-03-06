@@ -289,3 +289,56 @@ class VectorRenderAll(gym.vector.VectorWrapper):
             pygame.quit()
             self.window = None
         return super().close()
+
+
+class PlaygroundRenderWrapper(gym.vector.VectorWrapper):
+    """Render MuJoCo Playground env[0] via pygame after each step."""
+
+    def __init__(self, env: gym.vector.VectorEnv, render_freq: int = 1):
+        super().__init__(env)
+        self.render_freq = render_freq
+        self.step_count = 0
+        self.window = None
+        self.clock = None
+
+    def step(self, actions):
+        result = self.env.step(actions)
+        self.step_count += 1
+        if self.step_count % self.render_freq == 0:
+            self._show()
+        return result
+
+    def reset(self, **kwargs):
+        result = self.env.reset(**kwargs)
+        self._show()
+        return result
+
+    def _show(self):
+        try:
+            import pygame
+        except ImportError:
+            return
+        frame = self.env.render()
+        if frame is None:
+            return
+        if self.window is None:
+            pygame.init()
+            h, w = frame.shape[:2]
+            self.window = pygame.display.set_mode((w, h))
+            pygame.display.set_caption("MuJoCo Playground")
+            self.clock = pygame.time.Clock()
+        surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+        self.window.blit(surface, (0, 0))
+        pygame.display.flip()
+        self.clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.close()
+                raise KeyboardInterrupt("Render window closed")
+
+    def close(self):
+        if self.window is not None:
+            import pygame
+            pygame.quit()
+            self.window = None
+        return super().close()

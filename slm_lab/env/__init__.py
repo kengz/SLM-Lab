@@ -160,10 +160,12 @@ def _make_playground_env(
     clip_reward: float | None,
     gamma: float,
     device: str | None = None,
+    render_mode: str | None = None,
 ) -> gym.Env:
     """Create a MuJoCo Playground vectorized environment."""
     try:
         from slm_lab.env.playground import PlaygroundVecEnv
+        from slm_lab.env.wrappers import PlaygroundRenderWrapper
     except ImportError:
         raise ImportError(
             "MuJoCo Playground is required for playground/ environments. "
@@ -186,6 +188,9 @@ def _make_playground_env(
         env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
 
     env = VectorRecordEpisodeStatistics(env)
+
+    if render_mode:
+        env = PlaygroundRenderWrapper(env)
 
     # Skip numpy-only wrappers in GPU mode (network-level normalization used instead)
     if device is None:
@@ -242,6 +247,7 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
             clip_reward,
             gamma,
             device=env_spec.get("device"),
+            render_mode=render_mode,
         )
     elif num_envs > 1:
         env = _make_vector_env(
