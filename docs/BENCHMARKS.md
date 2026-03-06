@@ -784,8 +784,8 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 | Environment | PPO | SAC | HF Data |
 |-------------|-----|-----|---------|
-| playground/CartpoleBalance | - | - | - |
-| playground/CheetahRun | - | - | - |
+| playground/CartpoleBalance | 213.5 | - | [ppo_playground_cartpole_2026_03_06_064424](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpole_2026_03_06_064424) |
+| playground/CheetahRun | - | 186.5 | [sac_playground_cheetah_2026_03_06_064434](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_cheetah_2026_03_06_064434) |
 | playground/HumanoidWalk | - | - | - |
 | playground/AcrobotSwingup | - | - | - |
 | playground/BallInCup | - | - | - |
@@ -801,8 +801,8 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/HopperStand | - | - | - |
 | playground/HumanoidRun | - | - | - |
 | playground/HumanoidStand | - | - | - |
-| playground/PendulumSwingup | - | - | - |
-| playground/PointMassEasy | - | - | - |
+| playground/PendulumSwingup | 35.74 | - | [ppo_playground_arc_pendulumswingup_2026_03_06_094355](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) |
+| playground/PointMass | - | - | - |
 | playground/ReacherEasy | - | - | - |
 | playground/ReacherHard | - | - | - |
 | playground/SwimmerSwimmer6 | - | - | - |
