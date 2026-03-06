@@ -59,8 +59,11 @@ SLM Lab uses [Gymnasium](https://gymnasium.farama.org/) (the maintained fork of 
 | **Box2D** | LunarLander, BipedalWalker | Medium | [Gymnasium Box2D](https://gymnasium.farama.org/environments/box2d/) |
 | **MuJoCo** | Hopper, HalfCheetah, Humanoid | Hard | [Gymnasium MuJoCo](https://gymnasium.farama.org/environments/mujoco/) |
 | **Atari** | Breakout, MsPacman, and 54 more | Varied | [ALE](https://ale.farama.org/environments/) |
+| **MuJoCo Playground** | CheetahRun, Go1Joystick, PandaPickCube | Hard | [Playground](https://github.com/google-deepmind/mujoco_playground) |
 
 Any gymnasium-compatible environment works—just specify its name in the spec.
+
+**MuJoCo Playground** adds 54 GPU-accelerated environments across DM Control Suite (25), Locomotion (19), and Manipulation (10). Requires separate install: `uv sync --group playground`. Use the `playground/` prefix in specs (e.g., `playground/CheetahRun`). See `slm_lab/spec/benchmark/playground/` for benchmark specs.
 
 ## Quick Start
 

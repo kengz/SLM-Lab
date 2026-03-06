@@ -1,0 +1,1202 @@
+{
+  "sac_playground_acrobot_swingup": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/AcrobotSwingup",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_acrobot_swingup_sparse": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/AcrobotSwingupSparse",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_ball_in_cup": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/BallInCup",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_cartpole_balance": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CartpoleBalance",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_cartpole_balance_sparse": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CartpoleBalanceSparse",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_cartpole_swingup": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CartpoleSwingup",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_cartpole_swingup_sparse": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CartpoleSwingupSparse",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_cheetah_run": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CheetahRun",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_finger_spin": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/FingerSpin",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_finger_turn_easy": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/FingerTurnEasy",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_finger_turn_hard": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/FingerTurnHard",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_fish_swim": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/FishSwim",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_hopper_hop": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/HopperHop",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_hopper_stand": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/HopperStand",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_humanoid_stand": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 16,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/HumanoidStand",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_humanoid_walk": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 16,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/HumanoidWalk",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_humanoid_run": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 16,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/HumanoidRun",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_pendulum_swingup": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/PendulumSwingup",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_point_mass": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/PointMass",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_reacher_easy": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/ReacherEasy",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_reacher_hard": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/ReacherHard",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 500000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_swimmer": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/SwimmerSwimmer6",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_walker_run": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/WalkerRun",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_walker_stand": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/WalkerStand",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_walker_walk": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 8,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": { "name": "MSELoss" },
+        "optim_spec": { "name": "Adam", "lr": 3e-4 },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/WalkerWalk",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  }
+}

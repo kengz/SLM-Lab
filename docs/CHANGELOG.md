@@ -1,3 +1,18 @@
+# SLM-Lab v5.3.0
+
+MuJoCo Playground integration. 54 GPU-accelerated environments via JAX/MJX backend.
+
+**What changed:**
+- **New env backend**: MuJoCo Playground (DeepMind) — 25 DM Control Suite, 19 Locomotion (Go1, Spot, H1, G1), 10 Manipulation (Panda, ALOHA, LEAP)
+- **PlaygroundVecEnv**: JAX-native vectorized env wrapper with `jax.vmap` batching and Brax auto-reset. Converts JAX arrays to numpy at the API boundary for PyTorch compatibility
+- **Prefix routing**: `playground/EnvName` in specs routes to PlaygroundVecEnv instead of Gymnasium
+- **Optional dependency**: `uv sync --group playground` installs `mujoco-playground`, `jax`, `brax`
+- **Benchmark specs**: `slm_lab/spec/benchmark/playground/` — SAC specs for all 54 envs across 3 categories
+
+<!-- TODO: Add benchmark results from DM Control Suite baseline runs (task #11) -->
+
+---
+
 # SLM-Lab v5.2.0
 
 Training path performance optimization. **+15% SAC throughput on GPU**, verified with no score regression.

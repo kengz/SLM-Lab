@@ -3,6 +3,7 @@ from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -150,14 +151,25 @@ class Replay(Memory):
         self, *, state, action, reward, next_state, done, terminated, truncated
     ):
         """Implementation for update() to add experience to memory, expanding the memory size if necessary"""
+        # GPU tensor path: convert CUDA tensors to numpy for storage
+        if torch.is_tensor(state):
+            state = state.cpu().numpy()
+        if torch.is_tensor(next_state):
+            next_state = next_state.cpu().numpy()
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
         # Preserve dtype: uint8 images stay uint8 (memory efficient); everything else float16
         state_dtype = np.uint8 if state.dtype == np.uint8 else np.float16
-        self.states[self.head] = state if state.dtype == state_dtype else state.astype(state_dtype)
+        self.states[self.head] = (
+            state if state.dtype == state_dtype else state.astype(state_dtype)
+        )
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.ns_buffer.append(next_state if next_state.dtype == state_dtype else next_state.astype(state_dtype))
+        self.ns_buffer.append(
+            next_state
+            if next_state.dtype == state_dtype
+            else next_state.astype(state_dtype)
+        )
         self.dones[self.head] = done
         self.terminateds[self.head] = terminated
         self.truncateds[self.head] = truncated

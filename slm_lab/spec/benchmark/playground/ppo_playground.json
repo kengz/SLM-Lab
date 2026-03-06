@@ -1,0 +1,173 @@
+{
+  "ppo_playground_cartpole": {
+    "agent": {
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "no_decay",
+          "start_val": 0.2,
+          "end_val": 0.2,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.0,
+          "end_val": 0.0,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "time_horizon": 2048,
+        "minibatch_size": 64,
+        "training_epoch": 10,
+        "normalize_v_targets": true
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64, 64],
+        "hid_layers_activation": "tanh",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
+        "use_same_optim": true,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 3e-4
+        },
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CartpoleBalance",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 100000
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 5000,
+      "eval_frequency": 5000,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_cheetah": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 4,
+        "training_start_step": 5000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1e6,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 3e-4
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/CheetahRun",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+  "sac_playground_humanoid": {
+    "agent": {
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_frequency": 1,
+        "training_iter": 16,
+        "training_start_step": 10000
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1e6,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 3e-4
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.005,
+        "gpu": "auto"
+      }
+    },
+    "env": {
+      "name": "playground/HumanoidWalk",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 2000000,
+      "normalize_obs": true
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  }
+}

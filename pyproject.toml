@@ -56,6 +56,10 @@ ml = [
     "torch>=2.8.0",
     "torcharc>=1.0.0",
 ]
+# MuJoCo Playground dependencies - install with: uv sync --group playground
+playground = [
+    "playground",
+]
 # Dev dependencies - install with: uv sync --group dev
 dev = [
     "coverage>=7.6.1",
