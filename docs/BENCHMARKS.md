@@ -794,7 +794,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/CartpoleSwingupSparse | - | - | - |
 | playground/CheetahRunBackwards | - | - | - |
 | playground/FingerSpin | - | 327.57 | [sac_playground_arc_fingerspin_2026_03_06_150750](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerspin_2026_03_06_150750) |
-| playground/FingerTurnEasy | - | - | - |
+| playground/FingerTurnEasy | - | 408.73 | [sac_playground_arc_fingerturneasy_2026_03_06_134326](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerturneasy_2026_03_06_134326) |
 | playground/FingerTurnHard | - | - | - |
 | playground/FishSwim | - | - | - |
 | playground/HopperHop | - | - | - |
