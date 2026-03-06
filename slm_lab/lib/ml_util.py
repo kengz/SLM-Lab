@@ -171,6 +171,9 @@ def to_torch_batch(batch, device, is_episodic):
         if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])
         elif isinstance(batch[k], list):
+            if batch[k] and isinstance(batch[k][0], torch.Tensor):
+                batch[k] = torch.stack(batch[k]).to(device, non_blocking=True).float()
+                continue
             batch[k] = np.array(batch[k])
         arr = batch[k]
         if not arr.flags["C_CONTIGUOUS"]:
