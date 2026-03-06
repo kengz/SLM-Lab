@@ -802,8 +802,8 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/HumanoidRun | - | - | - |
 | playground/HumanoidStand | - | - | - |
 | playground/PendulumSwingup | 35.74 | - | [ppo_playground_arc_pendulumswingup_2026_03_06_094355](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) |
-| playground/PointMass | - | - | - |
-| playground/ReacherEasy | - | - | - |
+| playground/PointMass | 493.79 | - | [ppo_playground_arc_pointmass_2026_03_06_105141](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pointmass_2026_03_06_105141) |
+| playground/ReacherEasy | 285.63 | - | [ppo_playground_arc_reachereasy_2026_03_06_102444](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_reachereasy_2026_03_06_102444) |
 | playground/ReacherHard | - | - | - |
 | playground/SwimmerSwimmer6 | - | - | - |
 | playground/WalkerRun | - | - | - |
