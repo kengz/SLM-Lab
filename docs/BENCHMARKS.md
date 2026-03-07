@@ -789,11 +789,12 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|-----|-----|-------------|-----|--------|------------|---------|
 | playground/CartpoleBalance | 918.12 | - | ~995 | ~2000 (PPO/256e) | 2M | ~0.3h | [ppo_playground_arc_cartpolebalance_2026_03_06_153756](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalance_2026_03_06_153756) |
+| playground/CartpoleBalance (DR128) | - | 613.83 | ~995 | ~3540 (SAC-DR128/128e) | 10M | ~0.8h | [sac_playground_arc_dr128_cartpolebalance_2026_03_06_181905](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_dr128_cartpolebalance_2026_03_06_181905) |
 | playground/CheetahRun | 53.61 | 112.59 | ~839 | ~2000(PPO) / ~140(SAC) | 2M | ~0.3h / ~4h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cheetahrun_2026_03_06_134309) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cheetahrun_2026_03_06_094013) |
 | playground/HumanoidWalk | - | - | ~281 | - | - | - | - |
 | playground/AcrobotSwingup | - | 3.46 | ~63 | ~140 (SAC/16e) | 2M | ~4h | [sac_playground_arc_fast_acrobotswingup_2026_03_06_111158](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_acrobotswingup_2026_03_06_111158) |
-| playground/BallInCup | - | - | ~944 | - | - | - | - |
-| playground/CartpoleBalanceSparse | - | - | ~992 | - | - | - | - |
+| playground/BallInCup | - | 158.88 | ~944 | ~344 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_ballincup_2026_03_06_181754](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_ballincup_2026_03_06_181754) |
+| playground/CartpoleBalanceSparse | 504.59 | - | ~992 | ~310 (PPO/256e) | 1M | ~0.9h | [ppo_playground_arc_cartpolebalancesparse_2026_03_06_181842](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalancesparse_2026_03_06_181842) |
 | playground/CartpoleSwingup | - | 371.40 | ~868 | ~60 (SAC-UTD1/4e) | 1M | ~4.6h | [sac_playground_arc_cartpoleswingup_2026_03_06_130653](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cartpoleswingup_2026_03_06_130653) |
 | playground/CartpoleSwingupSparse | - | - | ~630 | - | - | - | - |
 | playground/CheetahRunBackwards | - | - | ~600 | - | - | - | - |
