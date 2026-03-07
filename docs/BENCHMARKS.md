@@ -824,14 +824,14 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | | | |
 |---|---|---|
 | ![AcrobotSwingup](plots/AcrobotSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![AcrobotSwingupSparse](plots/AcrobotSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![BallInCup](plots/BallInCup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![CartpoleBalance](plots/CartpoleBalance_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleBalance](plots/CartpoleBalance_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleBalanceSparse](plots/CartpoleBalanceSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![CartpoleSwingup](plots/CartpoleSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleSwingupSparse](plots/CartpoleSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CheetahRun](plots/CheetahRun_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![FingerSpin](plots/FingerSpin_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FingerTurnEasy](plots/FingerTurnEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FingerTurnHard](plots/FingerTurnHard_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![FishSwim](plots/FishSwim_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HopperHop](plots/HopperHop_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HopperStand](plots/HopperStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![HumanoidRun](plots/HumanoidRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HumanoidStand](plots/HumanoidStand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HumanoidWalk](plots/HumanoidWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![PendulumSwingup](plots/PendulumSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PointMass](plots/PointMass_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![ReacherEasy](plots/ReacherEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![ReacherHard](plots/ReacherHard_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SwimmerSwimmer6](plots/SwimmerSwimmer6_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerRun](plots/WalkerRun_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![WalkerStand](plots/WalkerStand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerWalk](plots/WalkerWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | |
+| ![CartpoleBalance](plots/CartpoleBalance_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleBalanceSparse](plots/CartpoleBalanceSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleSwingup](plots/CartpoleSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![CartpoleSwingupSparse](plots/CartpoleSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CheetahRun](plots/CheetahRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FingerSpin](plots/FingerSpin_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![FingerTurnEasy](plots/FingerTurnEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FingerTurnHard](plots/FingerTurnHard_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FishSwim](plots/FishSwim_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![HopperHop](plots/HopperHop_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HopperStand](plots/HopperStand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HumanoidRun](plots/HumanoidRun_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![HumanoidStand](plots/HumanoidStand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HumanoidWalk](plots/HumanoidWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PendulumSwingup](plots/PendulumSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![PointMass](plots/PointMass_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![ReacherEasy](plots/ReacherEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![ReacherHard](plots/ReacherHard_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![SwimmerSwimmer6](plots/SwimmerSwimmer6_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerRun](plots/WalkerRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerStand](plots/WalkerStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![WalkerWalk](plots/WalkerWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
 
 #### Locomotion Robots (19 envs)
 
