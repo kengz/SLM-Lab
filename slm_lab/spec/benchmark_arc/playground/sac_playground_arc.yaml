@@ -1,0 +1,202 @@
+# SAC Playground specs — MJX GPU-accelerated environments
+#
+# Variants differ only in num_envs (parallelism) and batch_size.
+# UTD = training_iter / max(training_frequency, num_envs)
+#
+# Usage: -s env=playground/CheetahRun -s max_frame=2000000
+#
+# Variant         num_envs  batch   UTD     fps     Notes
+# fast            64        1024    0.0625  ~350    default — most envs
+# utd1            4         256     1.0     ~60     hard swingup/pendulum family
+# dr128           128       2048    0.008   ~1500   data-rich (Raffin 2025)
+# dr256           256       4096    0.001   ~4000   data-rich
+# dr512           512       8192    0.0005  ~8000   data-rich
+
+# --- Shared anchors ---
+
+_arc_body_256: &arc_body_256
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_sac_net: &sac_net
+  type: TorchArcNet
+  arc: *arc_body_256
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  update_type: polyak
+  update_frequency: 1
+  polyak_coef: 0.005
+  gpu: auto
+
+_sac_algorithm: &sac_algorithm
+  name: SoftActorCritic
+  action_pdtype: default
+  action_policy: default
+  gamma: 0.99
+  training_frequency: 1
+  training_iter: 4
+  training_start_step: 5000
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 1
+
+# --- fast: 64 envs, UTD=0.0625 — default for most playground envs (~350fps) ---
+
+sac_playground_arc_fast:
+  agent:
+    name: SoftActorCritic
+    algorithm: *sac_algorithm
+    memory:
+      name: Replay
+      batch_size: 1024
+      max_size: 1000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 64
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
+# --- utd1: 4 envs, UTD=1.0 — hard swingup/pendulum envs (~60fps, 1M frames) ---
+# DO NOT use max_frame > 1000000 — takes 9h, hits dstack 6h wall at ~1.3M frames
+
+sac_playground_arc_utd1:
+  agent:
+    name: SoftActorCritic
+    algorithm: *sac_algorithm
+    memory:
+      name: Replay
+      batch_size: 256
+      max_size: 1000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 4
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
+# --- dr128: 128 envs, UTD≈0.008 — Raffin (2025) data-rich regime (~1500fps) ---
+
+sac_playground_arc_dr128:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 512
+      training_iter: 4
+      training_start_step: 20000
+    memory:
+      name: Replay
+      batch_size: 2048
+      max_size: 2000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 128
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta:
+    distributed: false
+    log_frequency: 50000
+    eval_frequency: 50000
+    rigorous_eval: 0
+    max_session: 4
+    max_trial: 1
+
+# --- dr256: 256 envs, UTD≈0.001 (~4000fps) ---
+
+sac_playground_arc_dr256:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 4096
+      training_iter: 4
+      training_start_step: 50000
+    memory:
+      name: Replay
+      batch_size: 4096
+      max_size: 2000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 256
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta:
+    distributed: false
+    log_frequency: 50000
+    eval_frequency: 50000
+    rigorous_eval: 0
+    max_session: 4
+    max_trial: 1
+
+# --- dr512: 512 envs, UTD≈0.0005 (~8000fps) ---
+
+sac_playground_arc_dr512:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      name: SoftActorCritic
+      action_pdtype: default
+      action_policy: default
+      gamma: 0.99
+      training_frequency: 16384
+      training_iter: 8
+      training_start_step: 100000
+    memory:
+      name: Replay
+      batch_size: 8192
+      max_size: 2000000
+      use_cer: false
+    net: *sac_net
+  env:
+    name: "${env}"
+    num_envs: 512
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta:
+    distributed: false
+    log_frequency: 50000
+    eval_frequency: 50000
+    rigorous_eval: 0
+    max_session: 4
+    max_trial: 1
