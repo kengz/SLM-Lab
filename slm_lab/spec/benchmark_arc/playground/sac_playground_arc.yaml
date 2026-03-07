@@ -8,7 +8,6 @@
 # Variant         num_envs  batch   UTD     fps     Notes
 # fast            64        1024    0.0625  ~350    default — most envs
 # hard            16        512     1.0     ~150    hard envs (Humanoid, Hopper, swingup)
-# utd1            4         256     1.0     ~60     DEPRECATED — exceeds 4h, use hard
 # dr128           128       2048    0.008   ~1500   data-rich (Raffin 2025)
 # dr256           256       4096    0.001   ~4000   data-rich
 # dr512           512       8192    0.0005  ~8000   data-rich
@@ -77,27 +76,6 @@ sac_playground_arc_fast:
   env:
     name: "${env}"
     num_envs: 64
-    max_t: null
-    max_frame: "${max_frame}"
-    normalize_obs: true
-  meta: *meta
-
-# --- utd1: 4 envs, UTD=1.0 — hard swingup/pendulum envs (~60fps, 1M frames) ---
-# DO NOT use max_frame > 1000000 — takes 9h, hits dstack 6h wall at ~1.3M frames
-
-sac_playground_arc_utd1:
-  agent:
-    name: SoftActorCritic
-    algorithm: *sac_algorithm
-    memory:
-      name: Replay
-      batch_size: 256
-      max_size: 1000000
-      use_cer: false
-    net: *sac_net
-  env:
-    name: "${env}"
-    num_envs: 4
     max_t: null
     max_frame: "${max_frame}"
     normalize_obs: true

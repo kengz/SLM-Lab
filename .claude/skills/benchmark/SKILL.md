@@ -31,12 +31,14 @@ When a run completes (`dstack ps` shows `exited (0)`):
    ```
    NOTE: `-d` sets the base data dir, `-f` takes folder names (NOT full paths).
    If some folders are in `data/` (local runs) and some in `data/benchmark-dev/data/`, use `data/` as base (it has the `info/` subfolder needed for metrics).
-7. **Show plot** (MANDATORY — every agent MUST do this, no exceptions):
-   - Find plot: `ls docs/plots/ | grep -i envname`
-   - **Use the Read tool on the image file** — this makes the plot visible inline in the conversation
-   - Then message team-lead: "Plot ready: docs/plots/FILENAME.png" and include the image in your message
-   - Team-lead must also Read the image to display it in the main conversation
-8. **Commit** score + link + plot together
+7. **Display plot** (MANDATORY — call the Read tool on the image file, no exceptions):
+   ```
+   Read: docs/plots/EnvName_multi_trial_graph_mean_returns_ma_vs_frames.png
+   ```
+   This MUST happen in your agent turn — call Read, see the image, THEN send your completion message.
+   Team-lead must also call Read to display it in the main conversation.
+8. **Embed plot in BENCHMARKS.md** — for Phase 5 playground envs, ensure the plot is in the DM Control plot grid (search for the existing grid in the Phase 5 section). If the env is already in the grid, no action needed. If missing, add it.
+9. **Commit** score + link + plot together
 
 A row in BENCHMARKS.md is NOT complete until it has: score, HF link, and plot.
 
