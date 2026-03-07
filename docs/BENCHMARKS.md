@@ -796,8 +796,8 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/BallInCup | - | 158.88 | ~944 | ~344 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_ballincup_2026_03_06_181754](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_ballincup_2026_03_06_181754) |
 | playground/CartpoleBalanceSparse | 504.59 | - | ~992 | ~310 (PPO/256e) | 1M | ~0.9h | [ppo_playground_arc_cartpolebalancesparse_2026_03_06_181842](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalancesparse_2026_03_06_181842) |
 | playground/CartpoleSwingup | - | 371.40 | ~868 | ~60 (SAC-UTD1/4e) | 1M | ~4.6h | [sac_playground_arc_cartpoleswingup_2026_03_06_130653](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cartpoleswingup_2026_03_06_130653) |
+| playground/AcrobotSwingupSparse | - | - | ~20 | - | - | - | - |
 | playground/CartpoleSwingupSparse | - | - | ~630 | - | - | - | - |
-| playground/CheetahRunBackwards | - | - | ~600 | - | - | - | - |
 | playground/FingerSpin | - | 327.57 | ~742 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerspin_2026_03_06_150750](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerspin_2026_03_06_150750) |
 | playground/FingerTurnEasy | - | 408.73 | ~709 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerturneasy_2026_03_06_134326](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerturneasy_2026_03_06_134326) |
 | playground/FingerTurnHard | - | 198.22 | ~249 | ~413 (SAC-fast/64e) | 2M | ~1.3h | [sac_playground_arc_fast_fingerturnhard_2026_03_06_181841](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_fingerturnhard_2026_03_06_181841) |
@@ -819,38 +819,38 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 | Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|-----|-----|-------------|-----|--------|------------|---------|
+| playground/ApolloJoystickFlatTerrain | - | - | N/A | - | - | - | - |
 | playground/BarkourJoystick | - | - | N/A | - | - | - | - |
+| playground/BerkeleyHumanoidJoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/BerkeleyHumanoidJoystickRoughTerrain | - | - | N/A | - | - | - | - |
 | playground/G1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
 | playground/G1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/G1Walking | - | - | N/A | - | - | - | - |
 | playground/Go1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
 | playground/Go1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/Go2JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/Go2JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/H1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/H1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/H1Walking | - | - | N/A | - | - | - | - |
-| playground/Op3JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/Panda | - | - | N/A | - | - | - | - |
-| playground/SpotJoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/SpotJoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/T1Walking | - | - | N/A | - | - | - | - |
-| playground/Unitree_A1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/Unitree_A1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/Unitree_H1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/Go1Getup | - | - | N/A | - | - | - | - |
+| playground/Go1Handstand | - | - | N/A | - | - | - | - |
+| playground/Go1Footstand | - | - | N/A | - | - | - | - |
+| playground/H1InplaceGaitTracking | - | - | N/A | - | - | - | - |
+| playground/H1JoystickGaitTracking | - | - | N/A | - | - | - | - |
+| playground/Op3Joystick | - | - | N/A | - | - | - | - |
+| playground/SpotFlatTerrainJoystick | - | - | N/A | - | - | - | - |
+| playground/SpotGetup | - | - | N/A | - | - | - | - |
+| playground/SpotJoystickGaitTracking | - | - | N/A | - | - | - | - |
+| playground/T1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
+| playground/T1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
 
 #### Manipulation (10 envs)
 
 | Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|-----|-----|-------------|-----|--------|------------|---------|
-| playground/AlohaTransferCube | - | - | N/A | - | - | - | - |
-| playground/LeapHandGraspAndPlace | - | - | N/A | - | - | - | - |
-| playground/LeapHandPinch | - | - | N/A | - | - | - | - |
-| playground/LeapHandRotate | - | - | N/A | - | - | - | - |
-| playground/PandaPickAndPlace | - | - | N/A | - | - | - | - |
-| playground/PandaPushT | - | - | N/A | - | - | - | - |
-| playground/PandaRearrangeObjects | - | - | N/A | - | - | - | - |
-| playground/PandaRobosuite | - | - | N/A | - | - | - | - |
-| playground/PandaThrowAndCatch | - | - | N/A | - | - | - | - |
-| playground/UCBerkeley_HumanoidPickAndPlace | - | - | N/A | - | - | - | - |
+| playground/AlohaHandOver | - | - | N/A | - | - | - | - |
+| playground/AlohaSinglePegInsertion | - | - | N/A | - | - | - | - |
+| playground/PandaPickCube | - | - | N/A | - | - | - | - |
+| playground/PandaPickCubeOrientation | - | - | N/A | - | - | - | - |
+| playground/PandaPickCubeCartesian | - | - | N/A | - | - | - | - |
+| playground/PandaOpenCabinet | - | - | N/A | - | - | - | - |
+| playground/PandaRobotiqPushCube | - | - | N/A | - | - | - | - |
+| playground/LeapCubeReorient | - | - | N/A | - | - | - | - |
+| playground/LeapCubeRotateZAxis | - | - | N/A | - | - | - | - |
+| playground/AeroCubeRotateZAxis | - | - | N/A | - | - | - | - |
 
