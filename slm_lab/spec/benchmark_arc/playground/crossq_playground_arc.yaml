@@ -1,0 +1,246 @@
+# CrossQ Playground specs — MJX GPU-accelerated environments
+# SAC without target networks + Batch Renormalization in critics
+# UTD=1 (training_iter=1) — the key CrossQ advantage over SAC
+# Critic width formula: W = 256 * sqrt(SAC_training_iter)
+#
+# Usage: -s env=playground/HopperHop -s max_frame=2000000
+#
+# Variant         critics       actor        envs
+# easy            [256,256]+BRN [256,256]    CartpoleSwingup, BallInCup, SwimmerSwimmer6, FishSwim, FingerSpin/Turn
+# hard            [512,512]+BRN [256,256]    HopperHop, HopperStand, AcrobotSwingup, WalkerRun, WalkerStand
+# vhard           [1024,1024]+BRN [256,256]  HumanoidWalk, HumanoidStand, HumanoidRun, CheetahRun
+
+# --- Actor: plain [256,256] MLP, no batch normalization ---
+
+_actor: &actor
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# --- Critics: width scales with env difficulty, all with BRN ---
+
+_critic_256_brn: &critic_256_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 256
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 10000
+        - ReLU:
+        - LazyLinear:
+            out_features: 256
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 10000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_critic_512_brn: &critic_512_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 512
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 10000
+        - ReLU:
+        - LazyLinear:
+            out_features: 512
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 10000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_critic_1024_brn: &critic_1024_brn
+  modules:
+    body:
+      Sequential:
+        - LazyLinear:
+            out_features: 1024
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 10000
+        - ReLU:
+        - LazyLinear:
+            out_features: 1024
+        - LazyBatchRenorm1d:
+            momentum: 0.01
+            eps: 0.001
+            warmup_steps: 10000
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+# --- Net specs ---
+
+_net: &net
+  type: TorchArcNet
+  arc: *actor
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_critic_net_256: &critic_net_256
+  type: TorchArcNet
+  arc: *critic_256_brn
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_critic_net_512: &critic_net_512
+  type: TorchArcNet
+  arc: *critic_512_brn
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_critic_net_1024: &critic_net_1024
+  type: TorchArcNet
+  arc: *critic_1024_brn
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: null
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+# --- Algorithm ---
+
+_algorithm: &algorithm
+  name: CrossQ
+  action_pdtype: default
+  action_policy: default
+  gamma: 0.99
+  training_frequency: 1
+  training_iter: 1
+  training_start_step: 5000
+  policy_delay: 3
+  log_alpha_max: 0.5
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 1000000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  rigorous_eval: 0
+  max_session: 4
+  max_trial: 1
+
+# --- Easy: [256,256]+BRN critics, plain [256,256] actor ---
+# For: CartpoleSwingup, CartpoleSwingupSparse, BallInCup, SwimmerSwimmer6, FishSwim, FingerSpin, FingerTurn*
+
+crossq_playground_arc_easy:
+  agent:
+    name: CrossQ
+    algorithm: *algorithm
+    memory: *memory
+    net: *net
+    critic_net: *critic_net_256
+  env:
+    name: "${env}"
+    num_envs: 16
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
+# --- Hard: [512,512]+BRN critics, plain [256,256] actor ---
+# For: HopperHop, HopperStand, AcrobotSwingup, WalkerRun, WalkerStand
+
+crossq_playground_arc_hard:
+  agent:
+    name: CrossQ
+    algorithm:
+      <<: *algorithm
+      training_start_step: 10000
+    memory: *memory
+    net: *net
+    critic_net: *critic_net_512
+  env:
+    name: "${env}"
+    num_envs: 16
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
+# --- Very hard: [1024,1024]+BRN critics, plain [256,256] actor ---
+# For: HumanoidWalk, HumanoidStand, HumanoidRun, CheetahRun
+
+crossq_playground_arc_vhard:
+  agent:
+    name: CrossQ
+    algorithm:
+      <<: *algorithm
+      training_start_step: 10000
+    memory: *memory
+    net: *net
+    critic_net: *critic_net_1024
+  env:
+    name: "${env}"
+    num_envs: 16
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
