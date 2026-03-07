@@ -799,7 +799,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/CheetahRunBackwards | - | - | ~600 | - | - | - | - |
 | playground/FingerSpin | - | 327.57 | ~742 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerspin_2026_03_06_150750](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerspin_2026_03_06_150750) |
 | playground/FingerTurnEasy | - | 408.73 | ~709 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerturneasy_2026_03_06_134326](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerturneasy_2026_03_06_134326) |
-| playground/FingerTurnHard | - | - | ~249 | - | - | - | - |
+| playground/FingerTurnHard | - | 198.22 | ~249 | ~413 (SAC-fast/64e) | 2M | ~1.3h | [sac_playground_arc_fast_fingerturnhard_2026_03_06_181841](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_fingerturnhard_2026_03_06_181841) |
 | playground/FishSwim | - | 98.57 | ~136 | ~114 (SAC/16e) | 2M | ~4.7h | [sac_playground_arc_fishswim_2026_03_06_134402](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fishswim_2026_03_06_134402) |
 | playground/HopperHop | - | - | ~295 | - | - | - | - |
 | playground/HopperStand | - | 277.46 | ~645 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
@@ -808,7 +808,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/PendulumSwingup | 35.74 | 0.00 | ~959 | ~2000(PPO) / ~350(SAC) | 1M | ~0.1h / ~0.8h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_06_094355) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_pendulumswingup_2026_03_06_150813) |
 | playground/PointMass | 493.79 | - | ~988 | ~2000 (PPO/256e) | 500K | ~0.1h | [ppo_playground_arc_pointmass_2026_03_06_105141](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pointmass_2026_03_06_105141) |
 | playground/ReacherEasy | 285.63 | - | ~945 | ~2000 (PPO/256e) | 500K | ~0.1h | [ppo_playground_arc_reachereasy_2026_03_06_102444](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_reachereasy_2026_03_06_102444) |
-| playground/ReacherHard | - | - | ~225 | - | - | - | - |
+| playground/ReacherHard | - | 958.57 | ~225 | ~481 (SAC-fast/64e) | 2M | ~1.2h | [sac_playground_arc_fast_reacherhard_2026_03_06_181908](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_reacherhard_2026_03_06_181908) |
 | playground/SwimmerSwimmer6 | - | - | ~300 | - | - | - | - |
 | playground/WalkerRun | - | - | ~678 | - | - | - | - |
 | playground/WalkerStand | - | 934.20 | ~983 | ~345 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_walkerstand_2026_03_06_114303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_06_114303) |
