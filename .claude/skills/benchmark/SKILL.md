@@ -29,8 +29,12 @@ When a run completes (`dstack ps` shows `exited (0)`):
    ```bash
    uv run slm-lab plot -t "EnvName" -d data/benchmark-dev/data -f FOLDER1,FOLDER2,...
    ```
-   NOTE: `-d` sets the base data dir, `-f` takes folder names (NOT full paths).
-   If some folders are in `data/` (local runs) and some in `data/benchmark-dev/data/`, use `data/` as base (it has the `info/` subfolder needed for metrics).
+   CRITICAL RULES for plot generation:
+   - Use ONLY the exact folder(s) from the HF Data column of the BENCHMARKS.md table — NEVER grep or ls to find folders
+   - Multiple folders in data/benchmark-dev/data/ may exist for the same env (old failed runs + new good runs). Only use the canonical folder from the table.
+   - Include ALL algorithms that have entries in the table for that env (e.g., both PPO and SAC folders if both have scores)
+   - If the canonical folder is in local `data/` (not in `data/benchmark-dev/data/`), use `-d data` instead
+   - `-d` sets the base data dir, `-f` takes folder names (NOT full paths)
 7. **Display plot** (MANDATORY — call the Read tool on the image file, no exceptions):
    ```
    Read: docs/plots/EnvName_multi_trial_graph_mean_returns_ma_vs_frames.png
