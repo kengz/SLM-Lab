@@ -784,6 +784,8 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 **Status**: 🔄 Benchmark runs in progress
 
+**Priority order**: PPO (fill all DM Control missing entries) → CrossQ (faster+better than SAC) → SAC (complete remaining if budget allows)
+
 #### DM Control Suite (25 envs)
 
 | Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
