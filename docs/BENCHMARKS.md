@@ -834,40 +834,98 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 #### Locomotion Robots (19 envs)
 
-| Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
-|-------------|-----|-----|-------------|-----|--------|------------|---------|
-| playground/ApolloJoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/BarkourJoystick | - | - | N/A | - | - | - | - |
-| playground/BerkeleyHumanoidJoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/BerkeleyHumanoidJoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/G1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/G1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/Go1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/Go1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
-| playground/Go1Getup | - | - | N/A | - | - | - | - |
-| playground/Go1Handstand | - | - | N/A | - | - | - | - |
-| playground/Go1Footstand | - | - | N/A | - | - | - | - |
-| playground/H1InplaceGaitTracking | - | - | N/A | - | - | - | - |
-| playground/H1JoystickGaitTracking | - | - | N/A | - | - | - | - |
-| playground/Op3Joystick | - | - | N/A | - | - | - | - |
-| playground/SpotFlatTerrainJoystick | - | - | N/A | - | - | - | - |
-| playground/SpotGetup | - | - | N/A | - | - | - | - |
-| playground/SpotJoystickGaitTracking | - | - | N/A | - | - | - | - |
-| playground/T1JoystickFlatTerrain | - | - | N/A | - | - | - | - |
-| playground/T1JoystickRoughTerrain | - | - | N/A | - | - | - | - |
+| Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
+|-------------|------|-------|-------------|-----|--------|------------|---------|
+| playground/ApolloJoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/BarkourJoystick | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/BerkeleyHumanoidJoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/BerkeleyHumanoidJoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/G1JoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/G1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/Go1Footstand | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/Go1Getup | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/Go1Handstand | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/Go1JoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/Go1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/H1InplaceGaitTracking | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/H1JoystickGaitTracking | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/Op3Joystick | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/SpotFlatTerrainJoystick | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/SpotGetup | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/SpotJoystickGaitTracking | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/T1JoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/T1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
 
 #### Manipulation (10 envs)
 
-| Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
-|-------------|-----|-----|-------------|-----|--------|------------|---------|
-| playground/AlohaHandOver | - | - | N/A | - | - | - | - |
-| playground/AlohaSinglePegInsertion | - | - | N/A | - | - | - | - |
-| playground/PandaPickCube | - | - | N/A | - | - | - | - |
-| playground/PandaPickCubeOrientation | - | - | N/A | - | - | - | - |
-| playground/PandaPickCubeCartesian | - | - | N/A | - | - | - | - |
-| playground/PandaOpenCabinet | - | - | N/A | - | - | - | - |
-| playground/PandaRobotiqPushCube | - | - | N/A | - | - | - | - |
-| playground/LeapCubeReorient | - | - | N/A | - | - | - | - |
-| playground/LeapCubeRotateZAxis | - | - | N/A | - | - | - | - |
-| playground/AeroCubeRotateZAxis | - | - | N/A | - | - | - | - |
+| Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
+|-------------|------|-------|-------------|-----|--------|------------|---------|
+| playground/AeroCubeRotateZAxis | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/AlohaHandOver | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/AlohaSinglePegInsertion | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/LeapCubeReorient | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/LeapCubeRotateZAxis | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/PandaOpenCabinet | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/PandaPickCube | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/PandaPickCubeCartesian | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/PandaPickCubeOrientation | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
+| playground/PandaRobotiqPushCube | PPO | - | N/A | - | - | - | - |
+| | SAC | - | | - | - | - | - |
+| | CrossQ | - | | - | - | - | - |
 
