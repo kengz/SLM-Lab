@@ -31,10 +31,11 @@ When a run completes (`dstack ps` shows `exited (0)`):
    ```
    NOTE: `-d` sets the base data dir, `-f` takes folder names (NOT full paths).
    If some folders are in `data/` (local runs) and some in `data/benchmark-dev/data/`, use `data/` as base (it has the `info/` subfolder needed for metrics).
-7. **Show plot to user** (MANDATORY — teammates must message team-lead with the plot path; team-lead must read+display it):
+7. **Show plot** (MANDATORY — every agent MUST do this, no exceptions):
    - Find plot: `ls docs/plots/ | grep -i envname`
-   - Read the image file using the Read tool so the plot is visible in the conversation
-   - Report to team-lead: "Plot ready: docs/plots/FILENAME.png" — team-lead must then Read the image
+   - **Use the Read tool on the image file** — this makes the plot visible inline in the conversation
+   - Then message team-lead: "Plot ready: docs/plots/FILENAME.png" and include the image in your message
+   - Team-lead must also Read the image to display it in the main conversation
 8. **Commit** score + link + plot together
 
 A row in BENCHMARKS.md is NOT complete until it has: score, HF link, and plot.

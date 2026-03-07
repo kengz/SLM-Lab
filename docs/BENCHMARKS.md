@@ -815,6 +815,18 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/WalkerStand | - | 934.20 | ~983 | ~345 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_walkerstand_2026_03_06_114303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_06_114303) |
 | playground/WalkerWalk | 73.21 | 883.86 | ~902 | ~2000(PPO) / ~345(SAC) | 2M / 1M | ~0.3h / ~0.8h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerwalk_2026_03_06_134336) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerwalk_2026_03_06_114337) |
 
+| | | |
+|---|---|---|
+| \![CartpoleBalance](plots/CartpoleBalance_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![CartpoleBalanceSparse](plots/CartpoleBalanceSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![CartpoleSwingup](plots/CartpoleSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![CartpoleSwingupSparse](plots/CartpoleSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![AcrobotSwingup](plots/AcrobotSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![AcrobotSwingupSparse](plots/AcrobotSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![PendulumSwingup](plots/PendulumSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![PointMass](plots/PointMass_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![BallInCup](plots/BallInCup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![ReacherEasy](plots/ReacherEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![ReacherHard](plots/ReacherHard_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![CheetahRun](plots/CheetahRun_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![FishSwim](plots/FishSwim_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![SwimmerSwimmer6](plots/SwimmerSwimmer6_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![FingerSpin](plots/FingerSpin_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![FingerTurnEasy](plots/FingerTurnEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![FingerTurnHard](plots/FingerTurnHard_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![HopperStand](plots/HopperStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![HopperHop](plots/HopperHop_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![WalkerWalk](plots/WalkerWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![WalkerStand](plots/WalkerStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![WalkerRun](plots/WalkerRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![HumanoidWalk](plots/HumanoidWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | \![HumanoidStand](plots/HumanoidStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| \![HumanoidRun](plots/HumanoidRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
+
 #### Locomotion Robots (19 envs)
 
 | Environment | PPO | SAC | D4PG Target | FPS | Frames | Wall Clock | HF Data |
