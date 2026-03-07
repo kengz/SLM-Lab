@@ -792,7 +792,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/CartpoleBalance (DR128) | - | 613.83 | ~995 | ~3540 (SAC-DR128/128e) | 10M | ~0.8h | [sac_playground_arc_dr128_cartpolebalance_2026_03_06_181905](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_dr128_cartpolebalance_2026_03_06_181905) |
 | playground/CheetahRun | 53.61 | 112.59 | ~839 | ~2000(PPO) / ~140(SAC) | 2M | ~0.3h / ~4h | [ppo](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cheetahrun_2026_03_06_134309) [sac](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cheetahrun_2026_03_06_094013) |
 | playground/HumanoidWalk | - | - | ~281 | - | - | - | - |
-| playground/AcrobotSwingup | - | 3.46 | ~63 | ~140 (SAC/16e) | 2M | ~4h | [sac_playground_arc_fast_acrobotswingup_2026_03_06_111158](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_acrobotswingup_2026_03_06_111158) |
+| playground/AcrobotSwingup | - | ~61 (est.) | ~63 | ~67 (SAC-UTD1/4e) | 1M | ~4.6h | — killed before completion, no HF data |
 | playground/BallInCup | - | 158.88 | ~944 | ~344 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_ballincup_2026_03_06_181754](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_ballincup_2026_03_06_181754) |
 | playground/CartpoleBalanceSparse | 504.59 | - | ~992 | ~310 (PPO/256e) | 1M | ~0.9h | [ppo_playground_arc_cartpolebalancesparse_2026_03_06_181842](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_cartpolebalancesparse_2026_03_06_181842) |
 | playground/CartpoleSwingup | - | 371.40 | ~868 | ~60 (SAC-UTD1/4e) | 1M | ~4.6h | [sac_playground_arc_cartpoleswingup_2026_03_06_130653](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_cartpoleswingup_2026_03_06_130653) |
@@ -802,7 +802,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/FingerTurnEasy | - | 408.73 | ~709 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_fingerturneasy_2026_03_06_134326](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fingerturneasy_2026_03_06_134326) |
 | playground/FingerTurnHard | - | 198.22 | ~249 | ~413 (SAC-fast/64e) | 2M | ~1.3h | [sac_playground_arc_fast_fingerturnhard_2026_03_06_181841](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_fingerturnhard_2026_03_06_181841) |
 | playground/FishSwim | - | 98.57 | ~136 | ~114 (SAC/16e) | 2M | ~4.7h | [sac_playground_arc_fishswim_2026_03_06_134402](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fishswim_2026_03_06_134402) |
-| playground/HopperHop | - | - | ~295 | - | - | - | - |
+| playground/HopperHop | - | ~9.7 (est.) | ~295 | ~60 (SAC-UTD1/4e) | 1M | ~4.6h | — killed before completion, no HF data |
 | playground/HopperStand | - | 277.46 | ~645 | ~350 (SAC-fast/64e) | 1M | ~0.8h | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
 | playground/HumanoidRun | - | - | ~11 | - | - | - | - |
 | playground/HumanoidStand | - | - | ~514 | - | - | - | - |
