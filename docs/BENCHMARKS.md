@@ -875,7 +875,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|------|-------|-------------|-----|--------|------------|---------|
-| playground/ApolloJoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| playground/ApolloJoystickFlatTerrain | PPO loco | -1.88 | N/A | ~305 (loco/64e) | 4M | ~3.6h | [ppo_playground_arc_loco_apollojoystickflatterrain_2026_03_07_225339](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_apollojoystickflatterrain_2026_03_07_225339) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/BarkourJoystick | PPO loco | 0.00 | N/A | ~525 (loco/64e) | 4M | ~2.1h | [ppo_playground_arc_loco_barkourjoystick_2026_03_07_230720](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_barkourjoystick_2026_03_07_230720) |
