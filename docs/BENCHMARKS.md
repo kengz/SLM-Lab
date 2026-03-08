@@ -791,6 +791,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|------|-------|-------------|-----|--------|------------|---------|
 | playground/AcrobotSwingup | PPO | 29.53 | ~63 | ~325 (256e) | 4M | ~3.4h | [ppo_playground_arc_acrobotswingup_2026_03_07_085704](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_acrobotswingup_2026_03_07_085704) |
+| | CrossQ | 1.96 | | ~500 (hard/16e) | 2M | ~0.7h | [crossq_playground_arc_hard_acrobotswingup_2026_03_07_210437](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_hard_acrobotswingup_2026_03_07_210437) |
 | | SAC | 46.28 | | ~67 (hard/16e) | 1M | ~4.6h | [sac_playground_arc_utd1_acrobotswingup_2026_03_06_221001](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_utd1_acrobotswingup_2026_03_06_221001) |
 | playground/AcrobotSwingupSparse | PPO | 0.21 | ~20 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_acrobotswingupsparse_2026_03_07_133615](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_acrobotswingupsparse_2026_03_07_133615) |
 | | SAC | 0.00 | | ~67 (hard/16e) | 1M | ~4.6h | [sac_playground_arc_utd1_acrobotswingupsparse_2026_03_06_221029](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_utd1_acrobotswingupsparse_2026_03_06_221029) |
