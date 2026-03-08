@@ -852,6 +852,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | | CrossQ | 903.27 | | ~450 (hard/16e) | 2M | ~1.2h | [crossq_playground_arc_hard_walkerstand_2026_03_07_214118](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_hard_walkerstand_2026_03_07_214118) |
 | | SAC | 934.20 | | ~345 (fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_walkerstand_2026_03_06_114303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_06_114303) |
 | playground/WalkerWalk | PPO | 73.21 | ~902 | ~2000 (256e) | 2M | ~0.3h | [ppo_playground_arc_walkerwalk_2026_03_06_134336](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerwalk_2026_03_06_134336) |
+| | CrossQ | 919.08 | | ~450 (hard/16e) | 2M | ~1.3h | [crossq_playground_arc_hard_walkerwalk_2026_03_07_220905](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_hard_walkerwalk_2026_03_07_220905) |
 | | SAC | 883.86 | | ~345 (fast/64e) | 1M | ~0.8h | [sac_playground_arc_fast_walkerwalk_2026_03_06_114337](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerwalk_2026_03_06_114337) |
 
 | | | |
