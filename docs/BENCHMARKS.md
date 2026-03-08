@@ -831,6 +831,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/HumanoidRun | CrossQ | 1.96 | ~11 | ~189 (vhard/16e) | 1M | ~1.5h | [crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456) |
 | | SAC | 7.90 | | ~335 (fast/64e) | 4M | ~3.4h | [sac_playground_arc_fast_humanoidrun_2026_03_07_001036](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidrun_2026_03_07_001036) |
 | playground/HumanoidStand | PPO | 11.89 | ~514 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_humanoidstand_2026_03_07_133528](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidstand_2026_03_07_133528) |
+| | PPO loco | 16.07 | | ~290 (loco/64e) | 4M | ~3.8h | [ppo_playground_arc_loco_humanoidstand_2026_03_07_222019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_humanoidstand_2026_03_07_222019) |
 | | CrossQ | 9.99 | | ~170 (vhard/16e) | 1M | ~1.6h | [crossq_playground_arc_vhard_humanoidstand_2026_03_07_210445](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidstand_2026_03_07_210445) |
 | | SAC | 26.44 | | ~329 (fast/64e) | 2M | ~1.7h | [sac_playground_arc_fast_humanoidstand_2026_03_07_000958](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidstand_2026_03_07_000958) |
 | playground/HumanoidWalk | PPO | 5.50 | ~281 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_humanoidwalk_2026_03_07_133505](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidwalk_2026_03_07_133505) |
@@ -876,7 +877,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/ApolloJoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/BarkourJoystick | PPO | - | N/A | - | - | - | - |
+| playground/BarkourJoystick | PPO loco | 0.00 | N/A | ~525 (loco/64e) | 4M | ~2.1h | [ppo_playground_arc_loco_barkourjoystick_2026_03_07_230720](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_barkourjoystick_2026_03_07_230720) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/BerkeleyHumanoidJoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
