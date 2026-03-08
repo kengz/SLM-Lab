@@ -828,7 +828,8 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/HopperStand | PPO | 158.28 | ~645 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_hopperstand_2026_03_07_124451](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_hopperstand_2026_03_07_124451) |
 | | CrossQ | 147.77 | | ~200 (hard/16e) | 2M | ~2.8h | [crossq_playground_arc_hard_hopperstand_2026_03_07_184954](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_hard_hopperstand_2026_03_07_184954) |
 | | SAC | 277.46 | | ~350 (fast/64e) | 1M | ~0.8h | [sac_playground_arc_hopperstand_2026_03_06_125934](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_hopperstand_2026_03_06_125934) |
-| playground/HumanoidRun | CrossQ | 1.96 | ~11 | ~189 (vhard/16e) | 1M | ~1.5h | [crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456) |
+| playground/HumanoidRun | PPO | 2.32 | ~11 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_humanoidrun_2026_03_08_123543](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidrun_2026_03_08_123543) |
+| | CrossQ | 1.96 | | ~189 (vhard/16e) | 1M | ~1.5h | [crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456) |
 | | SAC | 7.90 | | ~335 (fast/64e) | 4M | ~3.4h | [sac_playground_arc_fast_humanoidrun_2026_03_07_001036](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidrun_2026_03_07_001036) |
 | playground/HumanoidStand | PPO | 11.89 | ~514 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_humanoidstand_2026_03_07_133528](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidstand_2026_03_07_133528) |
 | | PPO loco | 16.07 | | ~290 (loco/64e) | 4M | ~3.8h | [ppo_playground_arc_loco_humanoidstand_2026_03_07_222019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_humanoidstand_2026_03_07_222019) |
@@ -950,7 +951,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/AlohaHandOver | PPO | - | N/A | - | - | - | - |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/AlohaSinglePegInsertion | PPO | - | N/A | - | - | - | - |
+| playground/AlohaSinglePegInsertion | PPO loco | 76.54 | N/A | ~412 (loco/64e) | 4M | ~2.7h | [ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_08_093428](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_08_093428) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/LeapCubeReorient | PPO | - | N/A | - | - | - | - |
