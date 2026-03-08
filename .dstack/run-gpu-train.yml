@@ -23,6 +23,7 @@ commands:
   - apt-get update && apt-get install -y swig libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
   - cd /workflow && uv sync
   - if [ -n "$PLAYGROUND" ]; then cd /workflow && uv sync --group playground && uv pip install "jax[cuda12]"; fi
+  - if [ -n "$PLAYGROUND" ]; then cd /workflow && uv run python -c "from mujoco_playground._src.mjx_env import ensure_menagerie_exists; ensure_menagerie_exists()"; fi
   - cd /workflow && uv run slm-lab run ${SPEC_VARS} ${SPEC_FILE} ${SPEC_NAME} ${LAB_MODE} --upload-hf
 
 resources:
