@@ -881,19 +881,19 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/BarkourJoystick | PPO loco | 0.00 | N/A | ~525 (loco/64e) | 4M | ~2.1h | [ppo_playground_arc_loco_barkourjoystick_2026_03_07_230720](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_barkourjoystick_2026_03_07_230720) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/BerkeleyHumanoidJoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| playground/BerkeleyHumanoidJoystickFlatTerrain | PPO loco | 0.00 | N/A | ~314 (loco/64e) | 4M | ~3.5h | [ppo_playground_arc_loco_berkeleyhumanoidjoystickflatterrain_2026_03_07_235007](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_berkeleyhumanoidjoystickflatterrain_2026_03_07_235007) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/BerkeleyHumanoidJoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/G1JoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| playground/G1JoystickFlatTerrain | PPO loco | -7.72 | N/A | ~197 (loco/64e) | 4M | ~5.6h | [ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/G1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/Go1Footstand | PPO | - | N/A | - | - | - | - |
+| playground/Go1Footstand | PPO loco | 0.33 | N/A | ~444 (loco/64e) | 4M | ~2.5h | [ppo_playground_arc_loco_go1footstand_2026_03_08_010822](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1footstand_2026_03_08_010822) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/Go1Getup | PPO | - | N/A | - | - | - | - |
@@ -908,25 +908,25 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/Go1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/H1InplaceGaitTracking | PPO | - | N/A | - | - | - | - |
+| playground/H1InplaceGaitTracking | PPO loco | 0.14 | N/A | ~490 (loco/64e) | 4M | ~2.3h | [ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_012421](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_012421) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/H1JoystickGaitTracking | PPO | - | N/A | - | - | - | - |
+| playground/H1JoystickGaitTracking | PPO loco | 0.00 | N/A | ~501 (loco/64e) | 4M | ~2.2h | [ppo_playground_arc_loco_h1joystickgaittracking_2026_03_08_014229](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1joystickgaittracking_2026_03_08_014229) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/Op3Joystick | PPO | - | N/A | - | - | - | - |
+| playground/Op3Joystick | PPO loco | 0.00 | N/A | ~412 (loco/64e) | 4M | ~2.7h | [ppo_playground_arc_loco_op3joystick_2026_03_08_031447](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_op3joystick_2026_03_08_031447) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/SpotFlatTerrainJoystick | PPO | - | N/A | - | - | - | - |
+| playground/SpotFlatTerrainJoystick | PPO loco | 0.00 | N/A | ~539 (loco/64e) | 4M | ~2.1h | [ppo_playground_arc_loco_spotflatterrainjoystick_2026_03_08_015635](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotflatterrainjoystick_2026_03_08_015635) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/SpotGetup | PPO | - | N/A | - | - | - | - |
+| playground/SpotGetup | PPO loco | 1.48 | N/A | ~498 (loco/64e) | 4M | ~2.2h | [ppo_playground_arc_loco_spotgetup_2026_03_08_033550](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotgetup_2026_03_08_033550) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/SpotJoystickGaitTracking | PPO | - | N/A | - | - | - | - |
+| playground/SpotJoystickGaitTracking | PPO loco | 0.10 | N/A | ~572 (loco/64e) | 4M | ~1.9h | [ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_08_034659](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_08_034659) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/T1JoystickFlatTerrain | PPO | - | N/A | - | - | - | - |
+| playground/T1JoystickFlatTerrain | PPO loco | 0.03 | N/A | ~245 (loco/64e) | 4M | ~4.5h | [ppo_playground_arc_loco_t1joystickflatterrain_2026_03_08_033500](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_t1joystickflatterrain_2026_03_08_033500) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/T1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
