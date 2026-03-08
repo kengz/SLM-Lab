@@ -933,6 +933,13 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 
+| | | |
+|---|---|---|
+| ![ApolloJoystickFlatTerrain](plots/ApolloJoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![BarkourJoystick](plots/BarkourJoystick_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![BerkeleyHumanoidJoystickFlatTerrain](plots/BerkeleyHumanoidJoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![G1JoystickFlatTerrain](plots/G1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1Footstand](plots/Go1Footstand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![H1InplaceGaitTracking](plots/H1InplaceGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![H1JoystickGaitTracking](plots/H1JoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Op3Joystick](plots/Op3Joystick_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotFlatTerrainJoystick](plots/SpotFlatTerrainJoystick_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![SpotGetup](plots/SpotGetup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotJoystickGaitTracking](plots/SpotJoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+
 #### Manipulation (10 envs)
 
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
