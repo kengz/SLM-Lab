@@ -1,6 +1,6 @@
 # PPO Playground using TorchArcNet
 # Single shared spec with ${env} and ${max_frame} substitution
-# Usage: uv run slm-lab slm_lab/spec/benchmark_arc/playground/ppo_playground_arc.yaml ppo_playground_arc train -s env=playground/CartpoleBalance -s max_frame=100000
+# Usage: uv run slm-lab slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -s env=playground/CartpoleBalance -s max_frame=100000
 
 # --- Shared anchors ---
 

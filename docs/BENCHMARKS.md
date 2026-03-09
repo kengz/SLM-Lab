@@ -779,7 +779,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Running**:
 ```bash
-source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max_frame=500000 slm_lab/spec/benchmark_arc/playground/ppo_playground_arc.yaml ppo_playground_arc train -n pg-cartpole
+source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max_frame=500000 slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -n pg-cartpole
 ```
 
 **Status**: 🔄 Benchmark runs in progress
