@@ -966,13 +966,13 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/LeapCubeReorient | PPO loco | -10.19 | N/A | ~240 (loco/64e) | 4M | ~4.6h | [ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/LeapCubeRotateZAxis | PPO loco | -0.51 | N/A | ~122 (loco/64e) | 2M | ~4.5h | [ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_08_094515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_08_094515) |
+| playground/LeapCubeRotateZAxis | PPO loco | -0.44 | N/A | ~122 (loco/64e) | 2M | ~4.5h | [ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_09_120722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_09_120722) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/PandaOpenCabinet | PPO loco | 1556.88 | N/A | ~279 (loco/64e) | 4M | ~4.0h | [ppo_playground_arc_loco_pandaopencabinet_2026_03_08_093515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandaopencabinet_2026_03_08_093515) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/PandaPickCube | PPO loco | 705.30 | N/A | ~249 (loco/64e) | 4M | ~4.5h | [ppo_playground_arc_loco_pandapickcube_2026_03_08_093457](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcube_2026_03_08_093457) |
+| playground/PandaPickCube | PPO loco | 594.20 | N/A | ~249 (loco/64e) | 4M | ~4.5h | [ppo_playground_arc_loco_pandapickcube_2026_03_09_120645](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcube_2026_03_09_120645) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/PandaPickCubeCartesian | PPO | - | N/A | - | - | - | - |
