@@ -855,7 +855,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/ReacherHard | PPO | 259.40 | ~225 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_reacherhard_2026_03_07_124346](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_reacherhard_2026_03_07_124346) |
 | | CrossQ | 921.27 | | ~670 (easy/16e) | 2M | ~0.8h | [crossq_playground_arc_easy_reacherhard_2026_03_07_222029](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_easy_reacherhard_2026_03_07_222029) |
 | | SAC | 958.57 | | ~481 (fast/64e) | 2M | ~1.2h | [sac_playground_arc_fast_reacherhard_2026_03_06_181908](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_reacherhard_2026_03_06_181908) |
-| playground/SwimmerSwimmer6 | PPO | 114.97 | ~300 | ~300 (16e) | 4M | ~3.7h | [ppo_playground_arc_swimmerswimmer6_2026_03_07_133515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_swimmerswimmer6_2026_03_07_133515) |
+| playground/SwimmerSwimmer6 | PPO | 149.60 | ~300 | ~360 (256e) | 4M | ~3.1h | [ppo_playground_arc_swimmerswimmer6_2026_03_09_012155](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_swimmerswimmer6_2026_03_09_012155) |
 | | CrossQ | 101.43 | | ~300 (easy/16e) | 2M | ~1.9h | [crossq_playground_arc_easy_swimmerswimmer6_2026_03_07_185101](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_easy_swimmerswimmer6_2026_03_07_185101) |
 | | SAC | 137.46 | | ~518 (fast/64e) | 2M | ~1.1h | [sac_playground_arc_fast_swimmerswimmer6_2026_03_06_221116](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_swimmerswimmer6_2026_03_06_221116) |
 | playground/WalkerRun | PPO | 59.63 | ~678 | ~355 (256e) | 4M | ~3.1h | [ppo_playground_arc_walkerrun_2026_03_08_173102](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerrun_2026_03_08_173102) |
@@ -954,34 +954,40 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|------|-------|-------------|-----|--------|------------|---------|
-| playground/AeroCubeRotateZAxis | PPO | - | N/A | - | - | - | - |
+| playground/AeroCubeRotateZAxis | PPO loco | -5.71 | N/A | ~221 (loco/64e) | 4M | ~5.0h | [ppo_playground_arc_loco_aerocuberotatezaxis_2026_03_08_093426](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_aerocuberotatezaxis_2026_03_08_093426) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/AlohaHandOver | PPO | - | N/A | - | - | - | - |
+| playground/AlohaHandOver | PPO loco | 0.05 | N/A | ~245 (loco/64e) | 4M | ~4.5h | [ppo_playground_arc_loco_alohahandover_2026_03_08_093402](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohahandover_2026_03_08_093402) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/AlohaSinglePegInsertion | PPO loco | 76.54 | N/A | ~412 (loco/64e) | 4M | ~2.7h | [ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_08_093428](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_08_093428) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/LeapCubeReorient | PPO | - | N/A | - | - | - | - |
+| playground/LeapCubeReorient | PPO loco | -10.19 | N/A | ~240 (loco/64e) | 4M | ~4.6h | [ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/LeapCubeRotateZAxis | PPO | - | N/A | - | - | - | - |
+| playground/LeapCubeRotateZAxis | PPO loco | -0.51 | N/A | ~122 (loco/64e) | 2M | ~4.5h | [ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_08_094515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_08_094515) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/PandaOpenCabinet | PPO | - | N/A | - | - | - | - |
+| playground/PandaOpenCabinet | PPO loco | 1556.88 | N/A | ~279 (loco/64e) | 4M | ~4.0h | [ppo_playground_arc_loco_pandaopencabinet_2026_03_08_093515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandaopencabinet_2026_03_08_093515) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/PandaPickCube | PPO | - | N/A | - | - | - | - |
+| playground/PandaPickCube | PPO loco | 705.30 | N/A | ~249 (loco/64e) | 4M | ~4.5h | [ppo_playground_arc_loco_pandapickcube_2026_03_08_093457](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcube_2026_03_08_093457) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/PandaPickCubeCartesian | PPO | - | N/A | - | - | - | - |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/PandaPickCubeOrientation | PPO | - | N/A | - | - | - | - |
+| playground/PandaPickCubeOrientation | PPO loco | 389.02 | N/A | ~244 (loco/64e) | 4M | ~4.6h | [ppo_playground_arc_loco_pandapickcubeorientation_2026_03_08_093522](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcubeorientation_2026_03_08_093522) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/PandaRobotiqPushCube | PPO | - | N/A | - | - | - | - |
+| playground/PandaRobotiqPushCube | PPO loco | 0.20 | N/A | ~297 (loco/64e) | 4M | ~3.7h | [ppo_playground_arc_loco_pandarobotiqpushcube_2026_03_08_093600](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandarobotiqpushcube_2026_03_08_093600) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
+
+| | | |
+|---|---|---|
+| ![AeroCubeRotateZAxis](plots/AeroCubeRotateZAxis_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![AlohaHandOver](plots/AlohaHandOver_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![AlohaSinglePegInsertion](plots/AlohaSinglePegInsertion_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![LeapCubeReorient](plots/LeapCubeReorient_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![LeapCubeRotateZAxis](plots/LeapCubeRotateZAxis_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PandaOpenCabinet](plots/PandaOpenCabinet_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![PandaPickCube](plots/PandaPickCube_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PandaPickCubeOrientation](plots/PandaPickCubeOrientation_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PandaRobotiqPushCube](plots/PandaRobotiqPushCube_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 
