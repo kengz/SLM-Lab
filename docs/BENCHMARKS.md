@@ -900,10 +900,10 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/G1JoystickFlatTerrain | PPO loco | -7.72 | N/A | ~197 (loco/64e) | 4M | ~5.6h | [ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/G1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| playground/G1JoystickRoughTerrain | PPO loco | - | N/A | ~197 (loco/64e) | 4M | ~5.6h | - | <!-- bipedal, near-zero by constraint -->
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/Go1Footstand | PPO loco | 0.33 | N/A | ~444 (loco/64e) | 4M | ~2.5h | [ppo_playground_arc_loco_go1footstand_2026_03_08_010822](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1footstand_2026_03_08_010822) |
+| playground/Go1Footstand | PPO loco | 0.34 | N/A | ~210 (loco/64e) | 4M | ~5.3h | [ppo_playground_arc_loco_go1footstand_2026_03_09_120437](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1footstand_2026_03_09_120437) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/Go1Getup | PPO | - | N/A | - | - | - | - |
@@ -912,10 +912,10 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/Go1Handstand | PPO loco | 0.33 | N/A | ~198 (loco/64e) | 4M | ~5.6h | [ppo_playground_arc_loco_go1handstand_2026_03_09_120629](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1handstand_2026_03_09_120629) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/Go1JoystickFlatTerrain | PPO loco | 0.00 | N/A | ~580 (loco/64e) | 4M | ~1.9h | [ppo_playground_arc_loco_go1joystickflatterrain_2026_03_08_002844](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickflatterrain_2026_03_08_002844) |
+| playground/Go1JoystickFlatTerrain | PPO loco | 0.00 | N/A | ~274 (loco/64e) | 4M | ~4.1h | [ppo_playground_arc_loco_go1joystickflatterrain_2026_03_09_120436](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickflatterrain_2026_03_09_120436) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/Go1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| playground/Go1JoystickRoughTerrain | PPO loco | 0.00 | N/A | ~213 (loco/64e) | 4M | ~5.2h | [ppo_playground_arc_loco_go1joystickroughterrain_2026_03_09_120719](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickroughterrain_2026_03_09_120719) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/H1InplaceGaitTracking | PPO loco | 0.14 | N/A | ~368 (loco/64e) | 4M | ~3.0h | [ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_221210](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_221210) |
@@ -933,13 +933,13 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | playground/SpotGetup | PPO loco | 1.46 | N/A | ~498 (loco/64e) | 4M | ~2.2h | [ppo_playground_arc_loco_spotgetup_2026_03_09_005004](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotgetup_2026_03_09_005004) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/SpotJoystickGaitTracking | PPO loco | 0.10 | N/A | ~572 (loco/64e) | 4M | ~1.9h | [ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_08_034659](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_08_034659) |
+| playground/SpotJoystickGaitTracking | PPO loco | 0.11 | N/A | ~276 (loco/64e) | 4M | ~4.2h | [ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_09_120509](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_09_120509) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 | playground/T1JoystickFlatTerrain | PPO loco | 0.03 | N/A | ~245 (loco/64e) | 4M | ~4.5h | [ppo_playground_arc_loco_t1joystickflatterrain_2026_03_09_014921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_t1joystickflatterrain_2026_03_09_014921) |
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
-| playground/T1JoystickRoughTerrain | PPO | - | N/A | - | - | - | - |
+| playground/T1JoystickRoughTerrain | PPO loco | - | N/A | ~245 (loco/64e) | 4M | ~4.5h | - | <!-- bipedal, near-zero by constraint -->
 | | SAC | - | | - | - | - | - |
 | | CrossQ | - | | - | - | - | - |
 
@@ -949,7 +949,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | ![G1JoystickFlatTerrain](plots/G1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1Footstand](plots/Go1Footstand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1Handstand](plots/Go1Handstand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 | ![H1InplaceGaitTracking](plots/H1InplaceGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![H1JoystickGaitTracking](plots/H1JoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Op3Joystick](plots/Op3Joystick_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 | ![SpotFlatTerrainJoystick](plots/SpotFlatTerrainJoystick_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotGetup](plots/SpotGetup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotJoystickGaitTracking](plots/SpotJoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) |
-| ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
+| ![Go1JoystickFlatTerrain](plots/Go1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1JoystickRoughTerrain](plots/Go1JoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 
 #### Manipulation (10 envs)
 
