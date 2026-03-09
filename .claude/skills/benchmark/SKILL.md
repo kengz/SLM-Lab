@@ -146,18 +146,65 @@ source .env && uv run slm-lab run-remote --gpu SPEC_FILE SPEC_NAME search -n NAM
 
 Budget: ~3-4 trials per dimension. After search: update spec with best params, run `train`, use that result.
 
-## Autonomous Execution
+## Agent Team Workflow (MANDATORY for team lead)
 
-Work continuously when benchmarking. Use `sleep 300 && dstack ps` to actively wait (5 min intervals) — never delegate monitoring to background processes or scripts. Stay engaged in the conversation.
+**You are the team lead. Never work solo on benchmarks — always spawn an agent team.**
 
-**Workflow loop** (repeat every 5-10 minutes):
-1. **Check status**: `dstack ps` — identify completed/failed/running
-2. **Intake completed runs**: For EACH completed run, do the full intake checklist above (score → HF link → pull → plot → table update)
-3. **Launch next batch**: Up to 10 concurrent. Check capacity before launching more
-4. **Iterate on failures**: Relaunch or adjust config immediately
-5. **Commit progress**: Regular commits of score + link + plot updates
+### Team Roles
 
-**Key principle**: Work continuously, check in regularly, iterate immediately on failures. Never idle. Keep reminding yourself to continue without pausing — check on tasks, update, plan, and pick up the next task immediately until all tasks are completed.
+**launcher** — Reads BENCHMARKS.md, identifies missing entries, launches up to 10 dstack runs. Checks FPS after ~5min and stops slow runs (>6h projected). Reports run names + envs to team lead.
+
+**monitor** — Polls `dstack ps` every 5min (`sleep 300 && dstack ps`). Detects completions and failures. When runs complete, assigns intake tasks. When runs fail, reports to team lead immediately. Runs continuously until all runs are done.
+
+**intake-A / intake-B / intake-C** — Each owns a batch of 3-4 completed runs. Executes the full intake checklist (score → HF folder → pull data → plot → BENCHMARKS.md update). Does NOT commit — team lead commits.
+
+### Spawn Pattern
+
+```
+TeamCreate → TaskCreate (one per batch of runs) →
+  Agent(launcher) + Agent(monitor) + Agent(intake-A) + Agent(intake-B) + ...
+```
+
+Spawn all agents in parallel. Intake agents start idle and pick up work as monitor assigns completed runs.
+
+### Team Lead Responsibilities
+
+1. **On spawn**: Brief each agent with full context (run names, env names, BENCHMARKS.md format, intake checklist)
+2. **On intake completion**: Read each plot image (Read tool), verify BENCHMARKS.md edits, then commit
+3. **On monitor report**: If runs fail, relaunch immediately; if fps too slow, stop + reduce frames
+4. **Commit cadence**: Batch-commit after each intake wave (score + HF link + plot per commit)
+5. **Shutdown team**: When all runs intaked and committed, send shutdown_request to all teammates
+
+### Monitor Agent Instructions Template
+
+```
+You are monitor on team TEAM_NAME. Poll dstack ps every 5min.
+Active runs: [LIST OF RUN NAMES]
+When a run shows exited(0): send message to team-lead with run name and env name.
+When a run shows exited(1) or failed: send message to team-lead immediately.
+Use: while true; do dstack ps; sleep 300; done
+Stop when team-lead sends shutdown_request.
+```
+
+### Intake Agent Instructions Template
+
+```
+You are intake-agent-X on team TEAM_NAME. Intake these completed runs: [LIST]
+For each run, follow the full intake checklist in the benchmark skill.
+Working dir: /Users/keng/projects/SLM-Lab
+Do NOT commit — team lead commits.
+After all runs done: send results summary to team-lead (scores, HF folders, any issues).
+```
+
+### Autonomous Execution
+
+**Workflow loop** (team lead orchestrates, agents execute):
+1. **launcher**: Identifies gaps in BENCHMARKS.md → launches up to 10 runs → reports to team lead
+2. **monitor**: Watches for completions → notifies team lead → assigns intake work
+3. **intake agents**: Execute full checklist per run → report to team lead
+4. **team lead**: Reviews plots, commits, relaunches failures, spawns next batch
+
+**Key principle**: Keep agents working in parallel. Never idle as team lead while GPU runs are active — spawn a monitor agent. Commit after each intake wave. Shut down team cleanly when done.
 
 ## Troubleshooting
 
