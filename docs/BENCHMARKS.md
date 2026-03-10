@@ -777,7 +777,6 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Spec Files** (one file per algorithm, all envs via `-s env=` flag):
 - **PPO**: [ppo_playground_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml)
-- **PPO (Loco/Manip)**: [ppo_playground_arc_loco.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc_loco.yaml)
 - **SAC**: [sac_playground_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_playground_arc.yaml)
 - **CrossQ**: [crossq_playground_arc.yaml](../slm_lab/spec/benchmark_arc/crossq/crossq_playground_arc.yaml)
 
@@ -816,7 +815,7 @@ source .env && uv run slm-lab run-remote --gpu --playground \
 # PPO — Locomotion / Manipulation
 source .env && uv run slm-lab run-remote --gpu --playground \
   -s env=playground/Go1Footstand -s max_frame=4000000 \
-  slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc_loco.yaml ppo_playground_arc_loco train -n NAME
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc_loco train -n NAME
 ```
 
 #### Phase 5.1: DM Control Suite (25 envs)

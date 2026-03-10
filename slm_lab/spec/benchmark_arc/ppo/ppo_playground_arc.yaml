@@ -1,6 +1,6 @@
 # PPO Playground using TorchArcNet
 # Single shared spec with ${env} and ${max_frame} substitution
-# Usage: uv run slm-lab slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -s env=playground/CartpoleBalance -s max_frame=100000
+# Usage: uv run slm-lab slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml SPEC_NAME train -s env=playground/CartpoleBalance -s max_frame=2000000
 
 # --- Shared anchors ---
 
@@ -58,6 +58,15 @@ _ppo_algorithm: &ppo_algorithm
   training_epoch: 10
   normalize_v_targets: true
 
+_ppo_algorithm_loco: &ppo_algorithm_loco
+  <<: *ppo_algorithm
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.01
+    end_val: 0.01
+    start_step: 0
+    end_step: 0
+
 _memory: &memory
   name: OnPolicyBatchReplay
 
@@ -68,7 +77,7 @@ _meta: &meta
   max_session: 4
   max_trial: 1
 
-# --- Generic playground spec ---
+# --- DM Control (5.1): 16 envs, no normalize_obs ---
 
 ppo_playground_arc:
   agent:
@@ -81,4 +90,20 @@ ppo_playground_arc:
     num_envs: 16
     max_t: null
     max_frame: "${max_frame}"
+  meta: *meta
+
+# --- Locomotion / Manipulation (5.2/5.3): 64 envs, normalize_obs=true ---
+
+ppo_playground_arc_loco:
+  agent:
+    name: PPO
+    algorithm: *ppo_algorithm_loco
+    memory: *memory
+    net: *ppo_net
+  env:
+    name: "${env}"
+    num_envs: 64
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
   meta: *meta
