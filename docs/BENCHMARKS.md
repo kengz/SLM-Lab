@@ -769,22 +769,47 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Install**: `uv sync --group playground`
 
-**Algorithm Specs**: PPO [64,64] tanh and SAC [256,256] relu with TorchArc. Tiered frame budgets: simple envs 500K, medium 1M, hard 2-5M frames.
-
 **Hardware**: RunPod RTX A4500 (20GB) / A5000 (24GB) — JAX+PyTorch both on GPU, DLPack zero-copy
 
 **Settings**: max_frame varies | max_session 4 | device cuda
 
-**FPS Reference**: PPO (256 envs) ~2000fps | SAC-baseline (16 envs) ~140fps | SAC-fast (64 envs) ~300–470fps | SAC-UTD1 (4 envs) ~60fps | SAC-DR128 (128 envs) ~3500fps
+**Spec Files** (all under `slm_lab/spec/benchmark_arc/`):
 
-**Running**:
+| Section | Spec File | Spec Name | Notes |
+|---------|-----------|-----------|-------|
+| 5.1 DM Control — PPO | `ppo/ppo_playground_arc.yaml` | `ppo_playground_arc` | 256 envs, ~2000fps |
+| 5.1 DM Control — SAC fast | `sac/sac_playground_arc.yaml` | `sac_playground_arc_fast` | 64 envs, UTD=0.0625, ~400fps |
+| 5.1 DM Control — SAC hard | `sac/sac_playground_arc.yaml` | `sac_playground_arc_hard` | 16 envs, UTD=1.0, ~80fps |
+| 5.1 DM Control — CrossQ easy | `crossq/crossq_playground_arc.yaml` | `crossq_playground_arc_easy` | CartpoleSwingup, FingerSpin/Turn, etc. |
+| 5.1 DM Control — CrossQ hard | `crossq/crossq_playground_arc.yaml` | `crossq_playground_arc_hard` | HopperHop/Stand, WalkerRun/Stand |
+| 5.1 DM Control — CrossQ vhard | `crossq/crossq_playground_arc.yaml` | `crossq_playground_arc_vhard` | CheetahRun, HumanoidStand/Walk/Run |
+| 5.2 Locomotion | `ppo/ppo_playground_arc_loco.yaml` | `ppo_playground_arc_loco` | 64 envs, normalize_obs=true |
+| 5.3 Manipulation | `ppo/ppo_playground_arc_loco.yaml` | `ppo_playground_arc_loco` | same spec as loco |
+
+**Reproducing** (requires `--playground` flag for JAX install):
 ```bash
-source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max_frame=500000 slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -n pg-cartpole
+# DM Control — PPO
+source .env && uv run slm-lab run-remote --gpu --playground \
+  -s env=playground/CartpoleBalance -s max_frame=2000000 \
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc
+
+# DM Control — SAC fast
+source .env && uv run slm-lab run-remote --gpu --playground \
+  -s env=playground/CheetahRun -s max_frame=2000000 \
+  slm_lab/spec/benchmark_arc/sac/sac_playground_arc.yaml sac_playground_arc_fast
+
+# DM Control — CrossQ
+source .env && uv run slm-lab run-remote --gpu --playground \
+  -s env=playground/WalkerRun -s max_frame=2000000 \
+  slm_lab/spec/benchmark_arc/crossq/crossq_playground_arc.yaml crossq_playground_arc_hard
+
+# Locomotion / Manipulation
+source .env && uv run slm-lab run-remote --gpu --playground \
+  -s env=playground/Go1Footstand -s max_frame=4000000 \
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc_loco.yaml ppo_playground_arc_loco
 ```
 
 **Status**: 🔄 Benchmark runs in progress
-
-**Priority order**: PPO (fill all DM Control missing entries) → CrossQ (faster+better than SAC) → SAC (complete remaining if budget allows)
 
 #### Phase 5.1: DM Control Suite (25 envs)
 
