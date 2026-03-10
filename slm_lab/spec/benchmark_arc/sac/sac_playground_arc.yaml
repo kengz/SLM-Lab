@@ -1,16 +1,15 @@
 # SAC Playground specs — MJX GPU-accelerated environments
 #
-# Variants differ only in num_envs (parallelism) and batch_size.
-# UTD = training_iter / max(training_frequency, num_envs)
+# UTD formula:
+#   training_frequency=1:  UTD = training_iter / num_envs
+#   training_frequency>1:  UTD = training_iter / training_frequency
+#   (training fires every ceil(training_frequency/num_envs) env steps)
 #
 # Usage: -s env=playground/CheetahRun -s max_frame=2000000
 #
-# Variant         num_envs  batch   UTD     fps     Notes
-# fast            64        1024    0.0625  ~350    default — most envs
-# hard            16        512     1.0     ~150    hard envs (Humanoid, Hopper, swingup)
-# dr128           128       2048    0.008   ~1500   data-rich (Raffin 2025)
-# dr256           256       4096    0.001   ~4000   data-rich
-# dr512           512       8192    0.0005  ~8000   data-rich
+# Variant         num_envs  freq    iter  batch   UTD     fps     Notes
+# fast            64        1       4     1024    0.0625  ~350    default — most envs
+# hard            16        1       16    512     1.0     ~58     hard envs needing high UTD
 
 # --- Shared anchors ---
 
@@ -81,19 +80,15 @@ sac_playground_arc_fast:
     normalize_obs: true
   meta: *meta
 
-# --- hard: 16 envs, UTD=1.0 — hard envs needing high UTD (~150fps, 2M in ~3.5h) ---
-# Replaces utd1 (4 envs, ~60fps, exceeded 4h). Same UTD=1 but 4x faster via 4x envs.
+# --- hard: 16 envs, UTD=1.0 — hard envs needing high UTD (~58fps actual, 2M in ~9.5h > 4h budget) ---
+# Use max_frame=1000000 to stay within dstack 6h limit (~1.25M frames collected).
 # Use for: HopperHop, Humanoid*, CartpoleSwingup*, PendulumSwingup, BallInCup, Swimmer
 
 sac_playground_arc_hard:
   agent:
     name: SoftActorCritic
     algorithm:
-      name: SoftActorCritic
-      action_pdtype: default
-      action_policy: default
-      gamma: 0.99
-      training_frequency: 1
+      <<: *sac_algorithm
       training_iter: 16
       training_start_step: 10000
     memory:
@@ -109,102 +104,3 @@ sac_playground_arc_hard:
     max_frame: "${max_frame}"
     normalize_obs: true
   meta: *meta
-
-# --- dr128: 128 envs, UTD≈0.008 — Raffin (2025) data-rich regime (~1500fps) ---
-
-sac_playground_arc_dr128:
-  agent:
-    name: SoftActorCritic
-    algorithm:
-      name: SoftActorCritic
-      action_pdtype: default
-      action_policy: default
-      gamma: 0.99
-      training_frequency: 512
-      training_iter: 4
-      training_start_step: 20000
-    memory:
-      name: Replay
-      batch_size: 2048
-      max_size: 2000000
-      use_cer: false
-    net: *sac_net
-  env:
-    name: "${env}"
-    num_envs: 128
-    max_t: null
-    max_frame: "${max_frame}"
-    normalize_obs: true
-  meta:
-    distributed: false
-    log_frequency: 50000
-    eval_frequency: 50000
-    rigorous_eval: 0
-    max_session: 4
-    max_trial: 1
-
-# --- dr256: 256 envs, UTD≈0.001 (~4000fps) ---
-
-sac_playground_arc_dr256:
-  agent:
-    name: SoftActorCritic
-    algorithm:
-      name: SoftActorCritic
-      action_pdtype: default
-      action_policy: default
-      gamma: 0.99
-      training_frequency: 4096
-      training_iter: 4
-      training_start_step: 50000
-    memory:
-      name: Replay
-      batch_size: 4096
-      max_size: 2000000
-      use_cer: false
-    net: *sac_net
-  env:
-    name: "${env}"
-    num_envs: 256
-    max_t: null
-    max_frame: "${max_frame}"
-    normalize_obs: true
-  meta:
-    distributed: false
-    log_frequency: 50000
-    eval_frequency: 50000
-    rigorous_eval: 0
-    max_session: 4
-    max_trial: 1
-
-# --- dr512: 512 envs, UTD≈0.0005 (~8000fps) ---
-
-sac_playground_arc_dr512:
-  agent:
-    name: SoftActorCritic
-    algorithm:
-      name: SoftActorCritic
-      action_pdtype: default
-      action_policy: default
-      gamma: 0.99
-      training_frequency: 16384
-      training_iter: 8
-      training_start_step: 100000
-    memory:
-      name: Replay
-      batch_size: 8192
-      max_size: 2000000
-      use_cer: false
-    net: *sac_net
-  env:
-    name: "${env}"
-    num_envs: 512
-    max_t: null
-    max_frame: "${max_frame}"
-    normalize_obs: true
-  meta:
-    distributed: false
-    log_frequency: 50000
-    eval_frequency: 50000
-    rigorous_eval: 0
-    max_session: 4
-    max_trial: 1
