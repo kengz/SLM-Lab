@@ -14,6 +14,31 @@ description: Run SLM-Lab deep RL benchmarks, monitor dstack jobs, extract result
 5. **Runs must complete in <6h** (dstack max_duration)
 6. **Max 10 concurrent dstack runs** — launch in batches of 10, wait for capacity/completion before launching more. Never submit all runs at once; dstack capacity is limited and mass submissions cause "no offers" failures
 
+## Frame Budget — MANDATORY CALCULATION (do this BEFORE every submission)
+
+**dstack kills jobs at 6h with ZERO data** — no trial_metrics, no HF upload, nothing. A run killed at the wall = complete waste.
+
+**Rule: max_frame = observed_fps × 5.5h × 3600** (5.5h, not 6h — leaves 30min margin)
+
+**ALWAYS check FPS after 5-10 min of a new run before committing to the frame budget:**
+```bash
+dstack logs NAME --since 10m 2>&1 | grep "trial_metrics" | tail -3
+# fps = frames_so_far / elapsed_seconds
+```
+If projected wall clock > 5.5h at observed fps → **stop immediately and relaunch with reduced max_frame**.
+
+**Known fps at 64 envs (ppo_playground_arc):**
+| Env category | fps | Safe max_frame (5.5h) |
+|---|---|---|
+| CartpoleBalance, CheetahRun, WalkerWalk | ~450-1800 | 8M–10M |
+| WalkerStand, HopperStand | ~270 | 5M |
+| HumanoidStand | ~200 | 4M |
+| HumanoidWalk | ~290 | 5M |
+| Rough terrain loco (G1Rough, T1Rough, Go1Getup) | ~60-65 | 1M |
+| BerkeleyHumanoidRough | ~36 | 700K |
+
+**For unknown envs:** Submit with conservative 2M, check fps after 5 min, stop and relaunch with correct budget if needed.
+
 ## Per-Run Intake Checklist
 
 **Every completed run MUST go through ALL of these steps. No exceptions. Do not skip any step.**

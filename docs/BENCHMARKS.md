@@ -802,6 +802,8 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | crossq_playground_arc | [512,512]+BRN | Standard — most envs |
 | crossq_playground_arc_vhard | [1024,1024]+BRN | Heavy envs — Humanoid*, CheetahRun |
 
+> **Frame budgets (max_frame = fps × 5.5h × 3600):** Fast envs (CartpoleBalance, CheetahRun, WalkerWalk ~450-1800fps): 8M–10M | Medium (WalkerStand ~270fps, HumanoidStand ~200fps): 4M–5M | Rough terrain loco (G1Rough, T1Rough, Go1Getup ~60fps): 1M | Unknown envs: start at 2M, check fps after 5min. dstack kills at 6h with zero data — always use 5.5h budget.
+
 **Reproduce** (requires `--playground` flag for JAX install, `-s env=ENV -s max_frame=N`):
 
 ```bash
