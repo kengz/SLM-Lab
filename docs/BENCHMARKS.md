@@ -786,7 +786,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 
 **Priority order**: PPO (fill all DM Control missing entries) → CrossQ (faster+better than SAC) → SAC (complete remaining if budget allows)
 
-#### DM Control Suite (25 envs)
+#### Phase 5.1: DM Control Suite (25 envs)
 
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|------|-------|-------------|-----|--------|------------|---------|
@@ -881,7 +881,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | ![SwimmerSwimmer6](plots/SwimmerSwimmer6_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerRun](plots/WalkerRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerStand](plots/WalkerStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 | ![WalkerWalk](plots/WalkerWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
 
-#### Locomotion Robots (19 envs)
+#### Phase 5.2: Locomotion Robots (19 envs)
 
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|------|-------|-------------|-----|--------|------------|---------|
@@ -951,7 +951,7 @@ source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance -s max
 | ![SpotFlatTerrainJoystick](plots/SpotFlatTerrainJoystick_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotGetup](plots/SpotGetup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotJoystickGaitTracking](plots/SpotJoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 | ![Go1JoystickFlatTerrain](plots/Go1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1JoystickRoughTerrain](plots/Go1JoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 
-#### Manipulation (10 envs)
+#### Phase 5.3: Manipulation (10 envs)
 
 | Environment | Algo | Score | D4PG Target | FPS | Frames | Wall Clock | HF Data |
 |-------------|------|-------|-------------|-----|--------|------------|---------|
