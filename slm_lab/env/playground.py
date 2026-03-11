@@ -27,6 +27,20 @@ except ImportError:
 _config_overrides = {"impl": "warp"}
 
 
+def _build_config_overrides(env_name: str) -> dict:
+    """Build config overrides for the given env.
+
+    Warp backend requires njmax=None (auto-detect) when the env default is 0.
+    njmax=0 in Warp means "allocate 0 constraint slots", causing nefc overflow
+    for any env with joint limits. njmax=None triggers _default_njmax().
+    """
+    overrides = dict(_config_overrides)
+    default_cfg = pg_registry.get_default_config(env_name)
+    if getattr(default_cfg, "njmax", None) == 0:
+        overrides["njmax"] = None
+    return overrides
+
+
 class PlaygroundVecEnv(gym.vector.VectorEnv):
     """Vectorized wrapper for MuJoCo Playground environments.
 
@@ -53,7 +67,8 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         # Load the MJX environment and wrap for batched training
         # wrap_for_brax_training applies: VmapWrapper → EpisodeWrapper → BraxAutoResetWrapper
         # impl='warp' selects MJWarp (Warp-accelerated MJX) on CUDA; 'jax' on CPU
-        self._base_env = pg_registry.load(env_name, config_overrides=_config_overrides)  # kept for rendering
+        config_overrides = _build_config_overrides(env_name)
+        self._base_env = pg_registry.load(env_name, config_overrides=config_overrides)  # kept for rendering
         base_env = self._base_env
         self._env = pg_wrapper.wrap_for_brax_training(
             base_env, episode_length=episode_length, action_repeat=1
