@@ -81,9 +81,18 @@ watch -n 2 nvidia-smi
 
 When a run completes (`dstack ps` shows `exited (0)`):
 
-1. **Extract score**: `dstack logs NAME | grep "trial_metrics"` → get `total_reward_ma`
+1. **Extract score + stats** from logs:
+   ```bash
+   dstack logs NAME 2>&1 | grep "trial_metrics"   # → total_reward_ma, frame
+   dstack logs NAME 2>&1 | grep "fps:" | tail -5   # → fps (take last stable value)
+   dstack logs NAME 2>&1 | grep "wall_t:" | tail -1 # → wall_t in seconds → convert to h:mm
+   ```
+   - **MA** = `total_reward_ma` from trial_metrics
+   - **Frames** = `frame:` from trial_metrics (e.g. `1.00e+08`)
+   - **FPS** = last fps value from step logs (e.g. `12500`)
+   - **Wall Clock** = `wall_t` seconds → format as `Xh Ym` (e.g. `2h 18m`)
 2. **Find HF folder name**: `dstack logs NAME 2>&1 | grep "Uploading data/"` → extract folder name from the upload log line
-3. **Update table score** in BENCHMARKS.md
+3. **Update table** in BENCHMARKS.md: fill ALL columns — MA, HF Data, FPS, Frames, Wall Clock
 4. **Update table HF link**: `[FOLDER](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/FOLDER)`
 5. **Pull HF data locally**: `source .env && huggingface-cli download SLM-Lab/benchmark-dev --local-dir data/benchmark-dev --repo-type dataset --include "data/FOLDER/*"`
 6. **Generate plot** (MANDATORY — do NOT skip):
