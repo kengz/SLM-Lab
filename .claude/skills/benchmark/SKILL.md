@@ -39,6 +39,36 @@ If projected wall clock > 5.5h at observed fps → **stop immediately and relaun
 
 **For unknown envs:** Submit with conservative 2M, check fps after 5 min, stop and relaunch with correct budget if needed.
 
+## GPU Utilization Check — MANDATORY for Phase 5 / MJWarp runs
+
+**MJWarp must run on GPU. Always verify GPU is actually utilized after a new run starts.**
+
+```bash
+# Option 1: dstack metrics (easiest — shows live GPU %)
+dstack metrics NAME
+
+# Option 2: SSH in and run nvidia-smi
+dstack ssh NAME
+# inside the instance:
+nvidia-smi
+watch -n 2 nvidia-smi
+```
+
+**Thresholds:**
+- GPU util >80% → MJWarp GPU acceleration working correctly ✅
+- GPU util <20% → GPU not utilized — CPU fallback or JAX not using CUDA ❌ Stop run, investigate
+
+**What to check:**
+- GPU utilization % (should be high)
+- GPU memory used (1024 envs on A5000 24GB — expect 8–16GB used)
+- Confirm logs show: `Playground device: GPU (cuda) — DLPack zero-copy` and `impl=warp`
+
+**FPS sanity check for MJWarp at high num_envs (A5000):**
+- 64 envs → ~450fps (confirmed baseline)
+- 1024 envs → ~5000–7000fps expected (linear GPU scaling)
+- 512 envs → ~2500–3500fps expected
+- If fps < 1000 at 1024 envs → MJWarp not GPU-accelerated, stop and investigate before launching more runs
+
 **Phase 5 Playground spec selection:**
 - DM Control (5.1): `ppo_playground` (1024 envs), `sac_playground` (256 envs), `crossq_playground` (16 envs)
 - Locomotion (5.2) / Manipulation (5.3): `ppo_playground_loco` (512 envs), same SAC/CrossQ specs
