@@ -891,31 +891,31 @@ source .env && uv run slm-lab run-remote --gpu \
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
-| playground/AcrobotSwingup | PPO | 🔄 | - | ppo_playground | - | 230 | - | - | - |
+| playground/AcrobotSwingup | PPO | 🔄 | - | ppo_playground | - | 250 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
 | playground/AcrobotSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 20 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/BallInCup | PPO | 🔄 | - | ppo_playground | - | 944 | - | - | - |
+| playground/BallInCup | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/CartpoleBalance | PPO | 🔄 | - | ppo_playground | - | 995 | - | - | - |
+| playground/CartpoleBalance | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/CartpoleBalanceSparse | PPO | 🔄 | - | ppo_playground | - | 992 | - | - | - |
+| playground/CartpoleBalanceSparse | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/CartpoleSwingup | PPO | 🔄 | - | ppo_playground | - | 868 | - | - | - |
+| playground/CartpoleSwingup | PPO | 🔄 | - | ppo_playground | - | 850 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/CartpoleSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 630 | - | - | - |
+| playground/CartpoleSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 650 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/CheetahRun | PPO | 🔄 | - | ppo_playground | - | 839 | - | - | - |
+| playground/CheetahRun | PPO | 🔄 | - | ppo_playground | - | 850 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerSpin | PPO | 🔄 | - | ppo_playground | - | 742 | - | - | - |
+| playground/FingerSpin | PPO | 🔄 | - | ppo_playground | - | 750 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FingerTurnEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
@@ -927,13 +927,13 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FishSwim | PPO | 🔄 | - | ppo_playground | - | 600 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HopperHop | PPO | 🔄 | - | ppo_playground | - | 295 | - | - | - |
+| playground/HopperHop | PPO | 🔄 | - | ppo_playground | - | 300 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/HopperStand | PPO | 🔄 | - | ppo_playground | - | 645 | - | - | - |
+| playground/HopperStand | PPO | 🔄 | - | ppo_playground | - | 650 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidRun | PPO | 🔄 | - | ppo_playground | - | 130 | - | - | - |
+| playground/HumanoidRun | PPO | 🔄 | - | ppo_playground | - | 150 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HumanoidStand | PPO | 🔄 | - | ppo_playground_loco | - | 700 | - | - | - |
@@ -942,13 +942,13 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HumanoidWalk | PPO | 🔄 | - | ppo_playground | - | 500 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/PendulumSwingup | PPO | 🔄 | - | ppo_playground | - | 959 | - | - | - |
+| playground/PendulumSwingup | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/PointMass | PPO | 🔄 | - | ppo_playground | - | 988 | - | - | - |
+| playground/PointMass | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherEasy | PPO | 🔄 | - | ppo_playground | - | 945 | - | - | - |
+| playground/ReacherEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | playground/ReacherHard | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
@@ -957,14 +957,14 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/SwimmerSwimmer6 | PPO | 🔄 | - | ppo_playground | - | 550 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerRun | PPO | 🔄 | - | ppo_playground | - | 678 | - | - | - |
+| playground/WalkerRun | PPO | 🔄 | - | ppo_playground | - | 700 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerStand | PPO | 🔄 | - | ppo_playground | - | 983 | - | - | - |
+| playground/WalkerStand | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
 | | PPO | 🔄 | - | ppo_playground_loco | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerWalk | PPO | 🔄 | - | ppo_playground | - | 902 | - | - | - |
+| playground/WalkerWalk | PPO | 🔄 | - | ppo_playground | - | 900 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 
@@ -984,7 +984,7 @@ source .env && uv run slm-lab run-remote --gpu \
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
-| playground/ApolloJoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 13 | - | - | - |
+| playground/ApolloJoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 15 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/BarkourJoystick | PPO | 🔄 | - | ppo_playground_loco | - | 35 | - | - | - |
@@ -996,16 +996,16 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/BerkeleyHumanoidJoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 15 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/G1JoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 12 | - | - | - |
+| playground/G1JoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 10 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/G1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 6 | - | - | - |
+| playground/G1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 5 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Go1Footstand | PPO | 🔄 | - | ppo_playground_loco | - | 15 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Getup | PPO | 🔄 | - | ppo_playground_loco | - | 7 | - | - | - |
+| playground/Go1Getup | PPO | 🔄 | - | ppo_playground_loco | - | 5 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Go1Handstand | PPO | 🔄 | - | ppo_playground_loco | - | 15 | - | - | - |
@@ -1014,31 +1014,31 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/Go1JoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 25 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 22 | - | - | - |
+| playground/Go1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 20 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1InplaceGaitTracking | PPO | 🔄 | - | ppo_playground_loco | - | 9 | - | - | - |
+| playground/H1InplaceGaitTracking | PPO | 🔄 | - | ppo_playground_loco | - | 10 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1JoystickGaitTracking | PPO | 🔄 | - | ppo_playground_loco | - | 32 | - | - | - |
+| playground/H1JoystickGaitTracking | PPO | 🔄 | - | ppo_playground_loco | - | 30 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Op3Joystick | PPO | 🔄 | - | ppo_playground_loco | - | 20 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotFlatTerrainJoystick | PPO | 🔄 | - | ppo_playground_loco | - | 32 | - | - | - |
+| playground/SpotFlatTerrainJoystick | PPO | 🔄 | - | ppo_playground_loco | - | 30 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/SpotGetup | PPO | 🔄 | - | ppo_playground_loco | - | 20 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotJoystickGaitTracking | PPO | 🔄 | - | ppo_playground_loco | - | 33 | - | - | - |
+| playground/SpotJoystickGaitTracking | PPO | 🔄 | - | ppo_playground_loco | - | 35 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/T1JoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 25 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/T1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 8 | - | - | - |
+| playground/T1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 10 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 
@@ -1057,7 +1057,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/AeroCubeRotateZAxis | PPO | 🔄 | - | ppo_playground_loco | - | — | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/AlohaHandOver | PPO | 🔄 | - | ppo_playground_loco | - | 2 | - | - | - |
+| playground/AlohaHandOver | PPO | 🔄 | - | ppo_playground_loco | - | 5 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/AlohaSinglePegInsertion | PPO | 🔄 | - | ppo_playground_loco | - | 300 | - | - | - |
@@ -1075,13 +1075,13 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/PandaPickCube | PPO | 🔄 | - | ppo_playground_loco | - | 1300 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaPickCubeCartesian | PPO | 🔄 | - | ppo_playground_loco | - | 11 | - | - | - |
+| playground/PandaPickCubeCartesian | PPO | 🔄 | - | ppo_playground_loco | - | 10 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/PandaPickCubeOrientation | PPO | 🔄 | - | ppo_playground_loco | - | 1100 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaRobotiqPushCube | PPO | 🔄 | - | ppo_playground_loco | - | 22 | - | - | - |
+| playground/PandaRobotiqPushCube | PPO | 🔄 | - | ppo_playground_loco | - | 20 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 
