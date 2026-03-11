@@ -900,7 +900,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/BallInCup | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/CartpoleBalance | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
+| playground/CartpoleBalance | PPO | ✅ | 319.77 | ppo_playground | [ppo_playground_cartpolebalance_2026_03_11_084925](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpolebalance_2026_03_11_084925) | 1000 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | playground/CartpoleBalanceSparse | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
@@ -912,7 +912,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/CartpoleSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 650 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/CheetahRun | PPO | 🔄 | - | ppo_playground | - | 850 | - | - | - |
+| playground/CheetahRun | PPO | ✅ | 51.21 | ppo_playground | [ppo_playground_cheetahrun_2026_03_11_084951](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cheetahrun_2026_03_11_084951) | 850 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FingerSpin | PPO | 🔄 | - | ppo_playground | - | 750 | - | - | - |
