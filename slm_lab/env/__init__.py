@@ -255,8 +255,7 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
         if torch_gpu and not jax_gpu:
             logger.warning(
                 "JAX is NOT GPU-accelerated (CPU-only jaxlib installed). "
-                "Simulation runs on CPU — no playground speedup. "
-                "Fix: add 'pip install jax[cuda12]' to dstack YAML after uv sync --group playground."
+                "Simulation runs on CPU — using JAX/MJX backend instead of MJWarp."
             )
         device = "cuda" if (torch_gpu and jax_gpu) else None
 
