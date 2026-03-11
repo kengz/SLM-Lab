@@ -20,6 +20,8 @@ METRICS_COLS = [
 
 logger = logger.get_logger(__name__)
 
+_no_baseline_logged: set[str] = set()
+
 
 # methods to generate returns (total rewards)
 
@@ -128,7 +130,9 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     rand_bl = random_baseline.get_random_baseline(env_name)
     if rand_bl is None:
         mean_rand_returns = 0.0
-        logger.warning('Random baseline unavailable for environment. Please generate separately.')
+        if env_name not in _no_baseline_logged:
+            _no_baseline_logged.add(env_name)
+            logger.info(f'Random baseline unavailable for {env_name}, defaulting to 0.')
     else:
         mean_rand_returns = rand_bl['mean']
     mean_returns = session_df['total_reward']
