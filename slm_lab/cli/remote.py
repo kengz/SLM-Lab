@@ -21,11 +21,6 @@ def run_remote(
         [], "--set", "-s", help="Set spec variables: KEY=VALUE"
     ),
     gpu: bool = typer.Option(False, "--gpu", help="Use GPU hardware (default: CPU)"),
-    playground: bool = typer.Option(
-        False,
-        "--playground",
-        help="MuJoCo Playground env (installs JAX/playground deps)",
-    ),
     profile: bool = typer.Option(
         False, "--profile", help="Enable performance profiling (forces dev mode)"
     ),
@@ -65,7 +60,6 @@ def run_remote(
     env["SPEC_NAME"] = spec_name
     env["LAB_MODE"] = mode
     env["SPEC_VARS"] = " ".join(f"-s {item}" for item in sets) if sets else ""
-    env["PLAYGROUND"] = "true" if playground else ""
     env["PROFILE"] = "true" if profile else ""
     env.setdefault("PROF_SKIP", "500")
     env.setdefault("PROF_ACTIVE", "20")
