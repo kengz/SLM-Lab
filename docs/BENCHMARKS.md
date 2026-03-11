@@ -894,7 +894,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/AcrobotSwingup | PPO | ❌ | 20.29 | ppo_playground | [ppo_playground_acrobotswingup_2026_03_11_142836](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_acrobotswingup_2026_03_11_142836) | 220 | 12730 | 100M | 2h 11m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/AcrobotSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 15 | - | - | - |
+| playground/AcrobotSwingupSparse | PPO | ❌ | 0.35 | ppo_playground | [ppo_playground_acrobotswingupsparse_2026_03_11_160346](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_acrobotswingupsparse_2026_03_11_160346) | 15 | 15610 | 100M | 1h 47m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
 | playground/BallInCup | PPO | ✅ | 718.66 | ppo_playground | [ppo_playground_ballincup_2026_03_11_124251](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_ballincup_2026_03_11_124251) | ~0 (ref fails) | 15140 | 100M | 1h 50m |
@@ -933,13 +933,13 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HopperStand | PPO | ❌ | 2.87 | ppo_playground | [ppo_playground_hopperstand_2026_03_11_095253](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_hopperstand_2026_03_11_095253) | ~70 | 10750 | 100M | 2h 34m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidRun | PPO | 🔄 | - | ppo_playground | - | 130 | - | - | - |
+| playground/HumanoidRun | PPO | ❌ | 3.81 | ppo_playground | [ppo_playground_humanoidrun_2026_03_11_152710](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidrun_2026_03_11_152710) | 130 | 13900 | 100M | 2h 0m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HumanoidStand | PPO | ❌ | 16.23 | ppo_playground_loco | [ppo_playground_loco_humanoidstand_2026_03_11_152703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_humanoidstand_2026_03_11_152703) | 700 | 15610 | 100M | 1h 47m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidWalk | PPO | 🔄 | - | ppo_playground | - | 500 | - | - | - |
+| playground/HumanoidWalk | PPO | ❌ | 9.20 | ppo_playground | [ppo_playground_humanoidwalk_2026_03_11_152704](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidwalk_2026_03_11_152704) | 500 | 11570 | 100M | 2h 24m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/PendulumSwingup | PPO | ✅ | 395.31 | ppo_playground | [ppo_playground_pendulumswingup_2026_03_11_142901](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pendulumswingup_2026_03_11_142901) | ~70 | 12080 | 100M | 2h 18m |
