@@ -15,7 +15,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.env_var import lab_mode
 from slm_lab.lib.perf import log_perf_setup, optimize
 from slm_lab.lib.torch_profiler import torch_profiler_context
-from slm_lab.spec import spec_util
+from slm_lab.spec import random_baseline, spec_util
 
 
 def make_agent_env(spec, global_nets=None):
@@ -62,6 +62,9 @@ class Session:
             util.log_self_desc(
                 self.agent.algorithm, omit=["net_spec", "explore_var_spec"]
             )
+            env_name = self.spec['env']['name']
+            if random_baseline.get_random_baseline(env_name) is None:
+                logger.info(f'Random baseline unavailable for {env_name}, defaulting to 0.')
 
     def to_ckpt(self, env: gym.Env, mode: str = "eval") -> bool:
         """Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end"""
