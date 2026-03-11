@@ -765,6 +765,8 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 ### Phase 5: MuJoCo Playground (JAX/MJX GPU-Accelerated)
 
+> ⚠️ **Note (2026-03-11)**: Phase 5 results below were collected with the JAX/MJX backend. Switching to MJWarp (NVIDIA Warp) backend for improved performance and reproducibility. All Phase 5 benchmarks will be rerun from scratch. Current results are **pre-MJWarp baselines only**.
+
 **Docs**: [MuJoCo Playground](https://google-deepmind.github.io/mujoco_playground/) | State/Action: Continuous | Target: Research-grade baselines (no official solved threshold)
 
 **Settings**: max_frame varies (1M–4M) | num_envs 16–256 | max_session 4 | log_frequency 1e4
