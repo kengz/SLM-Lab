@@ -838,6 +838,24 @@ MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism).
 
 **Reference throughput** (MuJoCo Playground paper, PPO on A100, steps/sec at 2048–8192 envs): Cartpole ~720K | Acrobot ~750K | Pendulum ~720K | Reacher ~520K | Cheetah ~435K | FingerSpin ~247K | Swimmer ~167K | Walker ~140K | Hopper ~200K | Humanoid ~92K. SLM-Lab uses fewer envs + PyTorch overhead + DLPack transfers, so expect 5–20% of reference throughput.
 
+#### Autonomous Benchmark Guidelines
+
+**Frame minimum**: Target at least 10M frames per env for PPO (high num_envs makes this fast). SAC hard / CrossQ at 16 envs are gradient-bound — 2M is acceptable there.
+
+**Wall-time budget**: 4h soft target per run. dstack kills at 6h with **zero data** (no trial_metrics, no HF upload). Always calculate: `max_frame = observed_fps * 5.5h * 3600` and leave margin.
+
+**FPS calibration**: On first run of any new env, check fps after 5-10 min (`dstack logs NAME --since 10m | grep trial_metrics`). If projected wall clock exceeds 5.5h, stop immediately and relaunch with reduced max_frame.
+
+**Spec selection**: DM Control envs use `ppo_playground` (1024 envs). Locomotion and Manipulation envs use `ppo_playground_loco` (512 envs).
+
+**normalize_obs warning**: DM Control envs have bounded observations — `normalize_obs=true` (the playground spec default) may cause NaN rewards. If NaN is observed in training logs, override with `-s normalize_obs=false`.
+
+**Target (ref) scores**: Aspirational from official mujoco_playground training plots (2048+ envs, 80M-200M steps). Our runs use fewer envs and frames, so scores may not reach these. Use as directional targets, not guarantees.
+
+**Run order**: Submit fastest algorithms first — PPO (high num_envs, ~2000+ fps) finishes in minutes, then SAC standard (256 envs), then SAC hard / CrossQ (16 envs, gradient-bound, slowest).
+
+**Iteration**: If score is far below Target (ref), consider: (1) increasing max_frame if fps allows, (2) trying a different spec variant (e.g., `ppo_playground_loco` instead of `ppo_playground`), (3) hyperparameter search if the algorithm fundamentally stalls.
+
 **Reproduce** (`-s env=ENV -s max_frame=N`):
 
 ```bash
@@ -918,7 +936,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HumanoidRun | PPO | ❌ | 2.32 | ppo_playground | [ppo_playground_arc_humanoidrun_2026_03_08_123543](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidrun_2026_03_08_123543) | 130 | ~300 | 4M | ~3.7h |
 | | CrossQ | ❌ | 1.96 | crossq_playground_vhard | [crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidrun_2026_03_07_210456) | | ~189 | 1M | ~1.5h |
 | | SAC | ❌ | 7.90 | sac_playground | [sac_playground_arc_fast_humanoidrun_2026_03_07_001036](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidrun_2026_03_07_001036) | | ~335 | 4M | ~3.3h |
-| playground/HumanoidStand | PPO | ❌ | 16.07 | ppo_playground | [ppo_playground_arc_loco_humanoidstand_2026_03_07_222019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_humanoidstand_2026_03_07_222019) | 700 | ~290 | 4M | ~3.8h |
+| playground/HumanoidStand | PPO | ❌ | 16.07 | ppo_playground_loco | [ppo_playground_arc_loco_humanoidstand_2026_03_07_222019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_humanoidstand_2026_03_07_222019) | 700 | ~290 | 4M | ~3.8h |
 | | CrossQ | ❌ | 13.05 | crossq_playground_vhard | [crossq_playground_arc_vhard_humanoidstand_2026_03_10_095248](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidstand_2026_03_10_095248) | | ~183 | 3M | ~4.6h |
 | | SAC | ❌ | 26.44 | sac_playground | [sac_playground_arc_fast_humanoidstand_2026_03_07_000958](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidstand_2026_03_07_000958) | | ~329 | 2M | ~1.7h |
 | playground/HumanoidWalk | PPO | ❌ | 7.47 | ppo_playground | [ppo_playground_arc_humanoidwalk_2026_03_10_105303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidwalk_2026_03_10_105303) | 500 | ~294 | 4M | ~3.8h |
@@ -943,7 +961,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | | CrossQ | ❌ | 226.19 | crossq_playground | [crossq_playground_arc_hard_walkerrun_2026_03_07_185025](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_hard_walkerrun_2026_03_07_185025) | | ~200 | 2M | ~2.8h |
 | | SAC | ⚠️ | 604.51 | sac_playground | [sac_playground_arc_fast_walkerrun_2026_03_07_082256](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerrun_2026_03_07_082256) | | ~289 | 4M | ~3.8h |
 | playground/WalkerStand | PPO | ❌ | 294.79 | ppo_playground | [ppo_playground_arc_walkerstand_2026_03_07_124400](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerstand_2026_03_07_124400) | 983 | ~300 | 4M | ~3.7h |
-| | PPO | ❌ | 304.58 | ppo_playground | [ppo_playground_arc_loco_walkerstand_2026_03_07_220700](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_walkerstand_2026_03_07_220700) | | ~400 | 4M | ~2.8h |
+| | PPO | ❌ | 304.58 | ppo_playground_loco | [ppo_playground_arc_loco_walkerstand_2026_03_07_220700](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_walkerstand_2026_03_07_220700) | | ~400 | 4M | ~2.8h |
 | | CrossQ | ⚠️ | 903.27 | crossq_playground | [crossq_playground_arc_hard_walkerstand_2026_03_07_214118](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_hard_walkerstand_2026_03_07_214118) | | ~450 | 2M | ~1.2h |
 | | SAC | ⚠️ | 966.84 | sac_playground | [sac_playground_arc_fast_walkerstand_2026_03_10_094942](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_walkerstand_2026_03_10_094942) | | ~308 | 4M | ~3.6h |
 | playground/WalkerWalk | PPO | ❌ | 73.21 | ppo_playground | [ppo_playground_arc_walkerwalk_2026_03_06_134336](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_walkerwalk_2026_03_06_134336) | 902 | ~2000 | 2M | ~0.3h |
@@ -966,61 +984,61 @@ source .env && uv run slm-lab run-remote --gpu \
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
-| playground/ApolloJoystickFlatTerrain | PPO | 📊 | -1.88 | ppo_playground | [ppo_playground_arc_loco_apollojoystickflatterrain_2026_03_07_225339](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_apollojoystickflatterrain_2026_03_07_225339) | 13 | ~305 | 4M | ~3.6h |
+| playground/ApolloJoystickFlatTerrain | PPO | 📊 | -1.88 | ppo_playground_loco | [ppo_playground_arc_loco_apollojoystickflatterrain_2026_03_07_225339](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_apollojoystickflatterrain_2026_03_07_225339) | 13 | ~305 | 4M | ~3.6h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/BarkourJoystick | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_barkourjoystick_2026_03_08_203527](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_barkourjoystick_2026_03_08_203527) | 35 | ~256 | 4M | ~4.3h |
+| playground/BarkourJoystick | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_barkourjoystick_2026_03_08_203527](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_barkourjoystick_2026_03_08_203527) | 35 | ~256 | 4M | ~4.3h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/BerkeleyHumanoidJoystickFlatTerrain | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_berkeleyhumanoidjoystickflatterrain_2026_03_07_235007](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_berkeleyhumanoidjoystickflatterrain_2026_03_07_235007) | 20 | ~314 | 4M | ~3.5h |
+| playground/BerkeleyHumanoidJoystickFlatTerrain | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_berkeleyhumanoidjoystickflatterrain_2026_03_07_235007](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_berkeleyhumanoidjoystickflatterrain_2026_03_07_235007) | 20 | ~314 | 4M | ~3.5h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/BerkeleyHumanoidJoystickRoughTerrain | PPO | 🔄 | - | ppo_playground | - | 15 | - | - | - |
+| playground/BerkeleyHumanoidJoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 15 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/G1JoystickFlatTerrain | PPO | 📊 | -7.72 | ppo_playground | [ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921) | 12 | ~197 | 4M | ~5.6h |
+| playground/G1JoystickFlatTerrain | PPO | 📊 | -7.72 | ppo_playground_loco | [ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_g1joystickflatterrain_2026_03_07_231921) | 12 | ~197 | 4M | ~5.6h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/G1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground | - | 6 | - | - | - |
+| playground/G1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 6 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Footstand | PPO | 📊 | 0.34 | ppo_playground | [ppo_playground_arc_loco_go1footstand_2026_03_09_120437](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1footstand_2026_03_09_120437) | 15 | ~210 | 4M | ~5.3h |
+| playground/Go1Footstand | PPO | 📊 | 0.34 | ppo_playground_loco | [ppo_playground_arc_loco_go1footstand_2026_03_09_120437](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1footstand_2026_03_09_120437) | 15 | ~210 | 4M | ~5.3h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Getup | PPO | 🔄 | - | ppo_playground | - | 7 | - | - | - |
+| playground/Go1Getup | PPO | 🔄 | - | ppo_playground_loco | - | 7 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Handstand | PPO | 📊 | 0.33 | ppo_playground | [ppo_playground_arc_loco_go1handstand_2026_03_09_120629](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1handstand_2026_03_09_120629) | 15 | ~198 | 4M | ~5.6h |
+| playground/Go1Handstand | PPO | 📊 | 0.33 | ppo_playground_loco | [ppo_playground_arc_loco_go1handstand_2026_03_09_120629](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1handstand_2026_03_09_120629) | 15 | ~198 | 4M | ~5.6h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1JoystickFlatTerrain | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_go1joystickflatterrain_2026_03_09_120436](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickflatterrain_2026_03_09_120436) | 25 | ~274 | 4M | ~4.1h |
+| playground/Go1JoystickFlatTerrain | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_go1joystickflatterrain_2026_03_09_120436](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickflatterrain_2026_03_09_120436) | 25 | ~274 | 4M | ~4.1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1JoystickRoughTerrain | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_go1joystickroughterrain_2026_03_09_120719](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickroughterrain_2026_03_09_120719) | 22 | ~213 | 4M | ~5.2h |
+| playground/Go1JoystickRoughTerrain | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_go1joystickroughterrain_2026_03_09_120719](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_go1joystickroughterrain_2026_03_09_120719) | 22 | ~213 | 4M | ~5.2h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1InplaceGaitTracking | PPO | 📊 | 0.14 | ppo_playground | [ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_221210](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_221210) | 9 | ~368 | 4M | ~3.0h |
+| playground/H1InplaceGaitTracking | PPO | 📊 | 0.14 | ppo_playground_loco | [ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_221210](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1inplacegaittracking_2026_03_08_221210) | 9 | ~368 | 4M | ~3.0h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1JoystickGaitTracking | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_h1joystickgaittracking_2026_03_08_212500](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1joystickgaittracking_2026_03_08_212500) | 32 | ~360 | 4M | ~3.1h |
+| playground/H1JoystickGaitTracking | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_h1joystickgaittracking_2026_03_08_212500](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_h1joystickgaittracking_2026_03_08_212500) | 32 | ~360 | 4M | ~3.1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Op3Joystick | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_op3joystick_2026_03_08_212441](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_op3joystick_2026_03_08_212441) | 20 | ~317 | 4M | ~3.5h |
+| playground/Op3Joystick | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_op3joystick_2026_03_08_212441](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_op3joystick_2026_03_08_212441) | 20 | ~317 | 4M | ~3.5h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotFlatTerrainJoystick | PPO | 📊 | 0.00 | ppo_playground | [ppo_playground_arc_loco_spotflatterrainjoystick_2026_03_08_212507](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotflatterrainjoystick_2026_03_08_212507) | 32 | ~393 | 4M | ~2.8h |
+| playground/SpotFlatTerrainJoystick | PPO | 📊 | 0.00 | ppo_playground_loco | [ppo_playground_arc_loco_spotflatterrainjoystick_2026_03_08_212507](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotflatterrainjoystick_2026_03_08_212507) | 32 | ~393 | 4M | ~2.8h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotGetup | PPO | 📊 | 1.46 | ppo_playground | [ppo_playground_arc_loco_spotgetup_2026_03_09_005004](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotgetup_2026_03_09_005004) | 20 | ~498 | 4M | ~2.2h |
+| playground/SpotGetup | PPO | 📊 | 1.46 | ppo_playground_loco | [ppo_playground_arc_loco_spotgetup_2026_03_09_005004](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotgetup_2026_03_09_005004) | 20 | ~498 | 4M | ~2.2h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotJoystickGaitTracking | PPO | 📊 | 0.11 | ppo_playground | [ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_09_120509](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_09_120509) | 33 | ~276 | 4M | ~4.0h |
+| playground/SpotJoystickGaitTracking | PPO | 📊 | 0.11 | ppo_playground_loco | [ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_09_120509](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_spotjoystickgaittracking_2026_03_09_120509) | 33 | ~276 | 4M | ~4.0h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/T1JoystickFlatTerrain | PPO | 📊 | 0.03 | ppo_playground | [ppo_playground_arc_loco_t1joystickflatterrain_2026_03_09_014921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_t1joystickflatterrain_2026_03_09_014921) | 25 | ~245 | 4M | ~4.5h |
+| playground/T1JoystickFlatTerrain | PPO | 📊 | 0.03 | ppo_playground_loco | [ppo_playground_arc_loco_t1joystickflatterrain_2026_03_09_014921](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_t1joystickflatterrain_2026_03_09_014921) | 25 | ~245 | 4M | ~4.5h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/T1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground | - | 8 | - | - | - |
+| playground/T1JoystickRoughTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 8 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 
@@ -1036,34 +1054,34 @@ source .env && uv run slm-lab run-remote --gpu \
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
-| playground/AeroCubeRotateZAxis | PPO | 📊 | -5.71 | ppo_playground | [ppo_playground_arc_loco_aerocuberotatezaxis_2026_03_08_093426](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_aerocuberotatezaxis_2026_03_08_093426) | — | ~221 | 4M | ~5.0h |
+| playground/AeroCubeRotateZAxis | PPO | 📊 | -5.71 | ppo_playground_loco | [ppo_playground_arc_loco_aerocuberotatezaxis_2026_03_08_093426](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_aerocuberotatezaxis_2026_03_08_093426) | — | ~221 | 4M | ~5.0h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/AlohaHandOver | PPO | 📊 | 0.05 | ppo_playground | [ppo_playground_arc_loco_alohahandover_2026_03_08_093402](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohahandover_2026_03_08_093402) | 2 | ~245 | 4M | ~4.5h |
+| playground/AlohaHandOver | PPO | 📊 | 0.05 | ppo_playground_loco | [ppo_playground_arc_loco_alohahandover_2026_03_08_093402](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohahandover_2026_03_08_093402) | 2 | ~245 | 4M | ~4.5h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/AlohaSinglePegInsertion | PPO | 📊 | 74.62 | ppo_playground | [ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_09_012118](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_09_012118) | 300 | ~412 | 4M | ~2.7h |
+| playground/AlohaSinglePegInsertion | PPO | 📊 | 74.62 | ppo_playground_loco | [ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_09_012118](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_alohasinglepeginsertion_2026_03_09_012118) | 300 | ~412 | 4M | ~2.7h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/LeapCubeReorient | PPO | 📊 | -10.19 | ppo_playground | [ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428) | 200 | ~240 | 4M | ~4.6h |
+| playground/LeapCubeReorient | PPO | 📊 | -10.19 | ppo_playground_loco | [ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcubereorient_2026_03_08_093428) | 200 | ~240 | 4M | ~4.6h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/LeapCubeRotateZAxis | PPO | 📊 | -0.44 | ppo_playground | [ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_09_120722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_09_120722) | 15 | ~122 | 2M | ~4.6h |
+| playground/LeapCubeRotateZAxis | PPO | 📊 | -0.44 | ppo_playground_loco | [ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_09_120722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_leapcuberotatezaxis_2026_03_09_120722) | 15 | ~122 | 2M | ~4.6h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaOpenCabinet | PPO | 📊 | 784.92 | ppo_playground | [ppo_playground_arc_loco_pandaopencabinet_2026_03_09_120645](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandaopencabinet_2026_03_09_120645) | 1250 | ~279 | 4M | ~4.0h |
+| playground/PandaOpenCabinet | PPO | 📊 | 784.92 | ppo_playground_loco | [ppo_playground_arc_loco_pandaopencabinet_2026_03_09_120645](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandaopencabinet_2026_03_09_120645) | 1250 | ~279 | 4M | ~4.0h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaPickCube | PPO | 📊 | 594.20 | ppo_playground | [ppo_playground_arc_loco_pandapickcube_2026_03_09_120645](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcube_2026_03_09_120645) | 1300 | ~249 | 4M | ~4.5h |
+| playground/PandaPickCube | PPO | 📊 | 594.20 | ppo_playground_loco | [ppo_playground_arc_loco_pandapickcube_2026_03_09_120645](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcube_2026_03_09_120645) | 1300 | ~249 | 4M | ~4.5h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaPickCubeCartesian | PPO | 🔄 | - | ppo_playground | - | 11 | - | - | - |
+| playground/PandaPickCubeCartesian | PPO | 🔄 | - | ppo_playground_loco | - | 11 | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaPickCubeOrientation | PPO | 📊 | 687.74 | ppo_playground | [ppo_playground_arc_loco_pandapickcubeorientation_2026_03_09_120703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcubeorientation_2026_03_09_120703) | 1100 | ~244 | 4M | ~4.6h |
+| playground/PandaPickCubeOrientation | PPO | 📊 | 687.74 | ppo_playground_loco | [ppo_playground_arc_loco_pandapickcubeorientation_2026_03_09_120703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandapickcubeorientation_2026_03_09_120703) | 1100 | ~244 | 4M | ~4.6h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/PandaRobotiqPushCube | PPO | 📊 | 0.15 | ppo_playground | [ppo_playground_arc_loco_pandarobotiqpushcube_2026_03_09_120722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandarobotiqpushcube_2026_03_09_120722) | 22 | ~297 | 4M | ~3.7h |
+| playground/PandaRobotiqPushCube | PPO | 📊 | 0.15 | ppo_playground_loco | [ppo_playground_arc_loco_pandarobotiqpushcube_2026_03_09_120722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_pandarobotiqpushcube_2026_03_09_120722) | 22 | ~297 | 4M | ~3.7h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 

@@ -39,6 +39,12 @@ If projected wall clock > 5.5h at observed fps → **stop immediately and relaun
 
 **For unknown envs:** Submit with conservative 2M, check fps after 5 min, stop and relaunch with correct budget if needed.
 
+**Phase 5 Playground spec selection:**
+- DM Control (5.1): `ppo_playground` (1024 envs), `sac_playground` (256 envs), `crossq_playground` (16 envs)
+- Locomotion (5.2) / Manipulation (5.3): `ppo_playground_loco` (512 envs), same SAC/CrossQ specs
+- DM Control with NaN rewards: override with `-s normalize_obs=false`
+- Run order: PPO first (fastest), then SAC, then CrossQ
+
 ## Per-Run Intake Checklist
 
 **Every completed run MUST go through ALL of these steps. No exceptions. Do not skip any step.**
