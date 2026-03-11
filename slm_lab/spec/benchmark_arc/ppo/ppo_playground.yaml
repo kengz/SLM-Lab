@@ -67,6 +67,7 @@ _algorithm: &algorithm
 _net: &net
   type: TorchArcNet
   arc: *body
+  shared: false
   hid_layers_activation: tanh
   init_fn: orthogonal_
   clip_grad_val: 1.0
