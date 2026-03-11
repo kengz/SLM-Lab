@@ -26,14 +26,10 @@ except ImportError:
 
 # Use MJWarp (Warp-accelerated MJX) on CUDA GPUs for ~3-5x faster simulation.
 # Falls back to standard JAX/MJX on CPU.
-# Detect via torch (reliable) rather than jax.devices() — JAX may report CPU
-# even when CUDA is available if jaxlib was installed without CUDA support.
+# Detect via JAX device list — MJWarp requires JAX to be CUDA-capable, so we
+# must confirm JAX itself sees a GPU, not just torch.
 def _detect_cuda() -> bool:
-    try:
-        import torch
-        return torch.cuda.is_available()
-    except ImportError:
-        return any(d.platform == "gpu" for d in jax.devices())
+    return any(d.platform == "gpu" for d in jax.devices())
 
 
 _has_cuda = _detect_cuda()
