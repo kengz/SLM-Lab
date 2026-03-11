@@ -148,6 +148,64 @@ class TestMakeEnvPlaygroundRouting:
 
 
 # ============================================================================
+# PlaygroundVecEnv impl detection tests (require mujoco_playground)
+# ============================================================================
+
+
+class TestPlaygroundImplDetection:
+    """Test that PlaygroundVecEnv selects the right impl based on hardware."""
+
+    @pytest.fixture(autouse=True)
+    def check_playground_available(self):
+        pytest.importorskip("mujoco_playground")
+
+    def test_impl_is_warp_on_cuda(self):
+        """On CUDA GPU, impl should be 'warp'."""
+        import jax
+
+        if not any(d.platform == "gpu" for d in jax.devices()):
+            pytest.skip("No CUDA GPU available")
+        import slm_lab.env.playground as pg_module
+
+        assert pg_module._impl == "warp"
+
+        from slm_lab.env.playground import PlaygroundVecEnv
+
+        env = PlaygroundVecEnv("CartpoleBalance", num_envs=2)
+        env.close()
+
+    def test_impl_is_jax_on_cpu(self):
+        """On CPU (no CUDA), impl should be 'jax'."""
+        import jax
+
+        if any(d.platform == "gpu" for d in jax.devices()):
+            pytest.skip("CUDA GPU present — test is for CPU only")
+        import slm_lab.env.playground as pg_module
+
+        assert pg_module._impl == "jax"
+
+        from slm_lab.env.playground import PlaygroundVecEnv
+
+        env = PlaygroundVecEnv("CartpoleBalance", num_envs=2)
+        env.close()
+
+    def test_config_overrides_matches_impl(self):
+        """_config_overrides dict must reflect the selected impl."""
+        import slm_lab.env.playground as pg_module
+
+        assert pg_module._config_overrides == {"impl": pg_module._impl}
+
+    def test_impl_is_consistent_with_cuda_flag(self):
+        """_impl and _has_cuda must agree: warp iff CUDA present."""
+        import slm_lab.env.playground as pg_module
+
+        if pg_module._has_cuda:
+            assert pg_module._impl == "warp"
+        else:
+            assert pg_module._impl == "jax"
+
+
+# ============================================================================
 # Import guard tests
 # ============================================================================
 

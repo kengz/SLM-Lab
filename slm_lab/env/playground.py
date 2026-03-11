@@ -21,6 +21,12 @@ except ImportError:
         "Install with: uv sync --group playground"
     )
 
+# Use MJWarp (Warp-accelerated MJX) on CUDA GPUs for ~3-5x faster simulation.
+# Falls back to standard JAX/MJX on CPU.
+_has_cuda = any(d.platform == "gpu" for d in jax.devices())
+_impl = "warp" if _has_cuda else "jax"
+_config_overrides = {"impl": _impl}
+
 
 class PlaygroundVecEnv(gym.vector.VectorEnv):
     """Vectorized wrapper for MuJoCo Playground environments.
@@ -47,7 +53,8 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
 
         # Load the MJX environment and wrap for batched training
         # wrap_for_brax_training applies: VmapWrapper → EpisodeWrapper → BraxAutoResetWrapper
-        self._base_env = pg_registry.load(env_name)  # kept for rendering
+        # impl='warp' selects MJWarp (Warp-accelerated MJX) on CUDA; 'jax' on CPU
+        self._base_env = pg_registry.load(env_name, config_overrides=_config_overrides)  # kept for rendering
         base_env = self._base_env
         self._env = pg_wrapper.wrap_for_brax_training(
             base_env, episode_length=episode_length, action_repeat=1
