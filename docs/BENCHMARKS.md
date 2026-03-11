@@ -948,10 +948,10 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/PointMass | PPO | ✅ | 801.57 | ppo_playground | [ppo_playground_pointmass_2026_03_11_100801](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pointmass_2026_03_11_100801) | 1000 | 13920 | 100M | 1h 59m |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
+| playground/ReacherEasy | PPO | ✅ | 964.20 | ppo_playground | [ppo_playground_reachereasy_2026_03_11_121032](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_reachereasy_2026_03_11_121032) | 950 | 14020 | 100M | 1h 59m |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherHard | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
+| playground/ReacherHard | PPO | ✅ | 957.94 | ppo_playground | [ppo_playground_reacherhard_2026_03_11_121052](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_reacherhard_2026_03_11_121052) | 950 | 12380 | 100M | 2h 15m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/SwimmerSwimmer6 | PPO | 🔄 | - | ppo_playground | - | 550 | - | - | - |
@@ -960,7 +960,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/WalkerRun | PPO | 🔄 | - | ppo_playground | - | 700 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerStand | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
+| playground/WalkerStand | PPO | ✅ | 781.26 | ppo_playground | [ppo_playground_walkerstand_2026_03_11_100507](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerstand_2026_03_11_100507) | 1000 | 10170 | 100M | 2h 44m |
 | | PPO | 🔄 | - | ppo_playground_loco | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
