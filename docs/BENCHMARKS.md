@@ -775,6 +775,8 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Backend**: MJWarp (`impl='warp'`) used uniformly — JAX dispatches Warp CUDA kernels for physics, DLPack transfers to PyTorch. No `--playground` flag needed (playground deps always installed on GPU cloud).
 
+> **Note**: Current results are pre-MJWarp baselines collected with CPU MJX. Full rerun required with MJWarp implementation. Some environments may show different convergence behavior with Warp physics (known slight regressions in PandaPick* and AlohaSinglePeg per [upstream discussion](https://github.com/google-deepmind/mujoco_playground/discussions/197)).
+
 **Algorithms**: PPO, SAC, and CrossQ. Network: MLP [256,256], orthogonal init.
 
 **Spec Files** (one file per algorithm, all envs via `-s env=` flag):
@@ -804,7 +806,9 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | crossq_playground_arc | [512,512]+BRN | Standard — most envs |
 | crossq_playground_arc_vhard | [1024,1024]+BRN | Heavy envs — Humanoid*, CheetahRun |
 
-> **Frame budgets (max_frame = fps × 5.5h × 3600):** Fast envs (CartpoleBalance, CheetahRun, WalkerWalk ~450-1800fps): 8M–10M | Medium (WalkerStand ~270fps, HumanoidStand ~200fps): 4M–5M | Rough terrain loco (G1Rough, T1Rough, Go1Getup ~60fps): 1M | Unknown envs: start at 2M, check fps after 5min. dstack kills at 6h with zero data — always use 5.5h budget.
+> **Frame budgets (max_frame = fps × 5.5h × 3600):** MJWarp training throughput ~450fps (A5000, with gradient steps). Fast envs (CartpoleBalance ~2000fps, CheetahRun ~450fps, WalkerWalk ~345fps): 8M–10M | Medium (WalkerStand ~270fps, HumanoidStand ~200fps): 4M–5M | Slow loco/manip (~120-300fps): 2M–4M | Rough terrain loco (G1Rough, T1Rough, Go1Getup ~60fps): 1M | Unknown envs: start at 2M, check fps after 5min. dstack kills at 6h with zero data — always use 5.5h budget.
+>
+> **Reference throughput** (MuJoCo Playground paper, PPO on A100, steps/sec): Cartpole ~720K | Acrobot ~750K | Pendulum ~720K | Reacher ~520K | Cheetah ~435K | FingerSpin ~247K | Swimmer ~167K | Walker ~140K | Hopper ~200K | Humanoid ~92K. Actual SLM-Lab training fps is lower due to PyTorch overhead and DLPack transfers.
 
 **Reproduce** (`-s env=ENV -s max_frame=N`):
 
@@ -877,7 +881,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HumanoidStand | PPO | ❌ | 16.07 | ppo_playground_arc | [ppo_playground_arc_loco_humanoidstand_2026_03_07_222019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_loco_humanoidstand_2026_03_07_222019) | ~514 | ~290 | 4M | ~3.8h |
 | | CrossQ | ❌ | 13.05 | crossq_playground_arc_vhard | [crossq_playground_arc_vhard_humanoidstand_2026_03_10_095248](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidstand_2026_03_10_095248) | | ~183 | 3M | ~4.6h |
 | | SAC | ❌ | 26.44 | sac_playground_arc_fast | [sac_playground_arc_fast_humanoidstand_2026_03_07_000958](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidstand_2026_03_07_000958) | | ~329 | 2M | ~1.7h |
-| playground/HumanoidWalk | PPO | ❌ | 7.47 | ppo_playground_arc | [ppo_playground_arc_humanoidwalk_2026_03_10_105303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidwalk_2026_03_10_105303) | | ~294 | 4M | ~3.8h |
+| playground/HumanoidWalk | PPO | ❌ | 7.47 | ppo_playground_arc | [ppo_playground_arc_humanoidwalk_2026_03_10_105303](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_humanoidwalk_2026_03_10_105303) | ~150 | ~294 | 4M | ~3.8h |
 | | CrossQ | ❌ | 4.94 | crossq_playground_arc_vhard | [crossq_playground_arc_vhard_humanoidwalk_2026_03_07_210417](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/crossq_playground_arc_vhard_humanoidwalk_2026_03_07_210417) | | ~189 | 1M | ~1.5h |
 | | SAC | ❌ | 10.33 | sac_playground_arc_fast | [sac_playground_arc_fast_humanoidwalk_2026_03_06_221222](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/sac_playground_arc_fast_humanoidwalk_2026_03_06_221222) | | ~329 | 2M | ~1.7h |
 | playground/PendulumSwingup | PPO | ❌ | 342.23 | ppo_playground_arc | [ppo_playground_arc_pendulumswingup_2026_03_07_082244](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_arc_pendulumswingup_2026_03_07_082244) | ~959 | ~300 | 4M | ~3.7h |
@@ -919,6 +923,8 @@ source .env && uv run slm-lab run-remote --gpu \
 | ![WalkerWalk](plots/WalkerWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
 
 #### Phase 5.2: Locomotion Robots (19 envs)
+
+> **No published target scores** for locomotion/manipulation envs — these are research-grade environments with no established baselines. Our PPO results serve as initial baselines. Reward structure: joystick ~10-25/episode, getup ~12-20. Bipedal joystick robots (Apollo, BerkeleyHumanoid, G1, T1) need 100M+ frames per Brax standards — 4h budget = negative results by design constraint.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|-----|--------|------------|
@@ -989,6 +995,8 @@ source .env && uv run slm-lab run-remote --gpu \
 | ![Go1JoystickFlatTerrain](plots/Go1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1JoystickRoughTerrain](plots/Go1JoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 
 #### Phase 5.3: Manipulation (10 envs)
+
+> **No published target scores** for manipulation envs. Reward structure: Panda ~700-1900, Aloha ~5-75, AlohaPegInsertion ~200-500, LeapCube ~50-500. Panda tasks show strong PPO results (PandaOpenCabinet 785, PandaPickCube 594). MJWarp may show slight regressions in PandaPick* and AlohaSinglePeg per upstream benchmarks.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|-----|--------|------------|

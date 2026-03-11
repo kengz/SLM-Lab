@@ -1,8 +1,18 @@
 # PPO Playground using TorchArcNet
-# Single unified spec with ${env} and ${max_frame} substitution
-# Usage: uv run slm-lab slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -s env=playground/CartpoleBalance -s max_frame=2000000
+# Reference hparams from mujoco_playground (google-deepmind/mujoco_playground)
 #
-# num_envs=64 for all envs (DM Control, Loco, Manip) — 4× FPS vs 16 envs
+# Variants:
+#   ppo_playground_arc       — DM Control (gamma=0.995, lr=1e-3, epochs=16)
+#   ppo_playground_arc_loco  — Locomotion/Manipulation (gamma=0.97, lr=3e-4, epochs=4)
+#
+# Usage:
+#   uv run slm-lab ... ppo_playground_arc train -s env=playground/CartpoleBalance -s max_frame=2000000
+#   uv run slm-lab ... ppo_playground_arc_loco train -s env=playground/Go1Getup -s max_frame=5000000
+#
+# Reference batch sizes (for context):
+#   DM Control: 2048 envs × 30 steps = 61K per update
+#   Locomotion: 8192 envs × 20 steps = 164K per update
+#   SLM-Lab:      64 envs × 2048 steps = 131K per update (comparable)
 
 # --- Shared anchors ---
 
@@ -20,27 +30,26 @@ _arc_body_64: &arc_body_64
       body: [x]
     output: body
 
-_ppo_net: &ppo_net
-  type: TorchArcNet
-  shared: false
-  arc: *arc_body_64
-  hid_layers_activation: tanh
-  init_fn: orthogonal_
-  clip_grad_val: 0.5
-  use_same_optim: true
-  loss_spec:
-    name: MSELoss
-  optim_spec:
-    name: Adam
-    lr: 3.0e-4
-  gpu: auto
+_memory: &memory
+  name: OnPolicyBatchReplay
 
-_ppo_algorithm: &ppo_algorithm
+_meta: &meta
+  distributed: false
+  log_frequency: 5000
+  eval_frequency: 5000
+  max_session: 4
+  max_trial: 1
+
+# --- DM Control: gamma=0.995, lr=1e-3, epochs=16 ---
+# Reference: num_envs=2048, unroll=30, minibatches=32, epochs=16
+# reward_scaling=10.0 in ref (not available in SLM-Lab; normalize_v_targets compensates)
+
+_ppo_algorithm_dm: &ppo_algorithm_dm
   name: PPO
   action_pdtype: default
   action_policy: default
   explore_var_spec: null
-  gamma: 0.99
+  gamma: 0.995
   lam: 0.95
   clip_eps_spec:
     name: no_decay
@@ -56,28 +65,90 @@ _ppo_algorithm: &ppo_algorithm
     end_step: 0
   val_loss_coef: 0.5
   time_horizon: 2048
-  minibatch_size: 64
-  training_epoch: 10
+  minibatch_size: 4096
+  training_epoch: 16
   normalize_v_targets: true
 
-_memory: &memory
-  name: OnPolicyBatchReplay
-
-_meta: &meta
-  distributed: false
-  log_frequency: 5000
-  eval_frequency: 5000
-  max_session: 4
-  max_trial: 1
-
-# --- Unified: 64 envs, normalize_obs=true, entropy=0.01 ---
+_ppo_net_dm: &ppo_net_dm
+  type: TorchArcNet
+  shared: false
+  arc: *arc_body_64
+  hid_layers_activation: tanh
+  init_fn: orthogonal_
+  clip_grad_val: 1.0
+  use_same_optim: true
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+  gpu: auto
 
 ppo_playground_arc:
   agent:
     name: PPO
-    algorithm: *ppo_algorithm
+    algorithm: *ppo_algorithm_dm
     memory: *memory
-    net: *ppo_net
+    net: *ppo_net_dm
+  env:
+    name: "${env}"
+    num_envs: 64
+    max_t: null
+    max_frame: "${max_frame}"
+    normalize_obs: true
+  meta: *meta
+
+# --- Locomotion/Manipulation: gamma=0.97, lr=3e-4, epochs=4 ---
+# Reference: num_envs=8192, unroll=20, minibatches=32, epochs=4
+# Reference networks: [128]×4 (loco default) or [512,256,128] (joystick/dexterous)
+# Keeping [64,64] for now since larger nets + 64 envs may be too slow
+
+_ppo_algorithm_loco: &ppo_algorithm_loco
+  name: PPO
+  action_pdtype: default
+  action_policy: default
+  explore_var_spec: null
+  gamma: 0.97
+  lam: 0.95
+  clip_eps_spec:
+    name: no_decay
+    start_val: 0.2
+    end_val: 0.2
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.01
+    end_val: 0.01
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  time_horizon: 2048
+  minibatch_size: 4096
+  training_epoch: 4
+  normalize_v_targets: true
+
+_ppo_net_loco: &ppo_net_loco
+  type: TorchArcNet
+  shared: false
+  arc: *arc_body_64
+  hid_layers_activation: tanh
+  init_fn: orthogonal_
+  clip_grad_val: 1.0
+  use_same_optim: true
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  gpu: auto
+
+ppo_playground_arc_loco:
+  agent:
+    name: PPO
+    algorithm: *ppo_algorithm_loco
+    memory: *memory
+    net: *ppo_net_loco
   env:
     name: "${env}"
     num_envs: 64

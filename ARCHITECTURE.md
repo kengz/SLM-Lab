@@ -190,19 +190,100 @@ Standard path for Classic Control, Box2D, MuJoCo, Atari. Vectorization mode sele
 - ALE/Atari: `AtariVectorEnv` (native C++ vectorization, fastest) or sync for rendering
 - Complex envs with `num_envs >= 8`: `AsyncVectorEnv`
 
-### MuJoCo Playground Backend (`playground/`)
+### MuJoCo Playground Backend (`playground/`) — MJWarp Architecture
 
 GPU-accelerated JAX environments from DeepMind. 54 environments across 3 categories:
 - **DM Control Suite** (25): CheetahRun, HopperHop, WalkerWalk, HumanoidRun, CartpoleBalance, ...
 - **Locomotion** (19): Go1JoystickFlatTerrain, SpotGetup, H1JoystickGaitTracking, ...
 - **Manipulation** (10): PandaPickCube, AlohaHandOver, LeapCubeReorient, ...
 
-`PlaygroundVecEnv` wraps the Playground API as `gymnasium.vector.VectorEnv`:
-- **Loading**: `mujoco_playground.registry.load(env_name)` returns `MjxEnv`
-- **Batching**: `wrap_for_brax_training()` applies `VmapWrapper` (jax.vmap), `EpisodeWrapper` (step counting + truncation), `BraxAutoResetWrapper` (auto-reset on done)
-- **State**: Playground `State` dataclass with `.obs`, `.reward`, `.done`, `.info['truncation']`
-- **Boundary**: JAX arrays converted to numpy via `np.asarray()` at the VecEnv API boundary
-- **Optional dep**: `uv sync --group playground` installs `mujoco-playground`, `jax`, `brax`
+#### MJWarp Backend
+
+All playground environments use MJWarp (`impl='warp'`), hardcoded via `_config_overrides = {"impl": "warp"}` in `playground.py`. MJWarp uses NVIDIA Warp CUDA kernels for physics simulation, dispatched through JAX's XLA FFI (Foreign Function Interface).
+
+**Critical: JAX is still required with MJWarp.** Warp-lang does NOT bypass JAX. JAX provides the tracing, compilation, and batching (`jax.vmap`) infrastructure; Warp provides the CUDA physics kernels called via XLA custom calls.
+
+#### Installation
+
+Playground dependencies are installed via `uv sync --group playground`, which pulls:
+- `mujoco-playground` (environment definitions)
+- `jax[cuda12]` (GPU dispatch layer)
+- `warp-lang` (CUDA physics kernels)
+- `brax` (wrapper utilities)
+
+Configured in `pyproject.toml` as `playground[cuda] ; sys_platform != 'darwin'` — this installs `jax[cuda12]` + `warp-lang` together via the NVIDIA PyPI index. Do NOT manually `pip install jax[cuda12]` separately. On macOS, only CPU/numpy paths are available (no CUDA).
+
+#### PlaygroundVecEnv Pipeline
+
+`PlaygroundVecEnv` (`slm_lab/env/playground.py`) wraps the Playground API as `gymnasium.vector.VectorEnv`:
+
+1. **Load**: `pg_registry.load(env_name, config_overrides={"impl": "warp"})` returns `MjxEnv`
+2. **Wrap**: `wrap_for_brax_training(env)` applies three layers:
+   - `VmapWrapper` — `jax.vmap` for batched parallel simulation across `num_envs`
+   - `EpisodeWrapper` — step counting, sets `state.info["truncation"]` on time limit
+   - `BraxAutoResetWrapper` — automatic reset on episode termination
+3. **JIT**: `jax.jit(env.reset)` and `jax.jit(env.step)` compiled once at init
+4. **State**: Brax `State` dataclass with `.obs`, `.reward`, `.done`, `.info["truncation"]`, `.metrics`
+
+#### JAX-to-PyTorch Data Transfer
+
+The `_to_output()` method handles the JAX→PyTorch boundary:
+
+- **GPU path** (`device='cuda'`): DLPack zero-copy transfer via `torch.from_dlpack(jax_array)`. Both JAX and PyTorch share the same GPU memory — no data copy.
+- **CPU path** (`device=None`): `np.asarray(jax_array)` materialization. Used on macOS or when no GPU is available.
+- **Rewards/dones**: Always numpy (used for Python control flow and memory storage).
+
+`XLA_PYTHON_CLIENT_PREALLOCATE=false` must be set when sharing GPU with PyTorch, preventing JAX from pre-allocating all GPU memory. Set automatically in `_make_playground_env()`.
+
+#### Device Detection
+
+Auto-detection in `make_env()`: `torch.cuda.is_available()` → `device='cuda'` (DLPack) or `None` (numpy). No manual device configuration needed.
+
+#### Truncation Handling
+
+Brax `EpisodeWrapper` sets `state.info["truncation"]` (1.0 = time limit, 0.0 = not truncated) as a dict entry, NOT a direct attribute. Accessed via `state.info.get("truncation")`. This distinguishes terminal states (agent failure) from truncation (time limit), which is critical for correct value bootstrapping.
+
+#### Dict Observations
+
+Some environments (locomotion, manipulation) return dict observations. `PlaygroundVecEnv._get_obs()` flattens these by sorting keys alphabetically and concatenating values along the last axis via `jnp.concatenate`.
+
+#### GPU Performance
+
+Confirmed on NVIDIA A5000: ~1737 fps during rollout, ~450 fps during training with gradient steps (PPO, 64 envs, CartpoleBalance).
+
+#### dstack Cloud Configuration
+
+`.dstack/run-gpu-train.yml` always installs playground dependencies and pre-clones mujoco_menagerie:
+
+```yaml
+commands:
+  - uv sync --group playground
+  - uv run python -c "from mujoco_playground._src.mjx_env import ensure_menagerie_exists; ensure_menagerie_exists()"
+  - uv run slm-lab run ...
+```
+
+The `ensure_menagerie_exists()` call before training fixes a race condition where multiple sessions would simultaneously clone the menagerie repository. Without this pre-clone, only session 0 would succeed.
+
+#### Wrapper Stack (Playground Path)
+
+The playground wrapper pipeline in `_make_playground_env()`:
+
+1. `PlaygroundVecEnv` — JAX/MJWarp batched simulation
+2. `VectorRescaleAction` — rescale to [-1, 1] if needed
+3. `VectorRecordEpisodeStatistics` — episode return/length tracking
+4. `PlaygroundRenderWrapper` — MuJoCo rendering (dev mode only)
+5. GPU mode: `TorchNormalizeObservation` (if `normalize_obs: true`)
+6. CPU mode: `VectorNormalizeObservation`, `VectorClipObservation`, `VectorNormalizeReward`, `VectorClipReward`
+7. `VectorClockWrapper` — frame counting for training loop termination
+
+#### Key Files
+
+| File | Purpose |
+|------|---------|
+| `slm_lab/env/playground.py` | `PlaygroundVecEnv` — JAX/MJWarp vectorized env |
+| `slm_lab/env/__init__.py` | `_make_playground_env()` — routing and wrapper stack |
+| `.dstack/run-gpu-train.yml` | Cloud GPU config with playground setup |
+| `slm_lab/spec/benchmark_arc/` | Playground benchmark specs (PPO, SAC, CrossQ) |
 
 ### Future: Isaac Lab (planned)
 
