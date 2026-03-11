@@ -1,14 +1,17 @@
 # PPO MuJoCo Playground — MJWarp GPU
 #
 # Variants:
-#   ppo_playground      — DM Control (gamma=0.995, lr=1e-3, 16 epochs, 1024 envs)
-#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=3e-4, 4 epochs, 512 envs)
+#   ppo_playground        — DM Control v1 (gamma=0.995, lr=1e-3, 16 epochs, 1024 envs, [64,64])
+#   ppo_playground_loco   — Locomotion/Manipulation v1 (gamma=0.97, lr=3e-4, 4 epochs, 512 envs, [64,64])
+#   ppo_playground_v2     — DM Control v2 (same as v1 but [256,256] + linear lr/clip/entropy decay)
+#   ppo_playground_loco_v2 — Loco v2 ([256,256] + linear decay)
 #
 # Usage:
 #   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=50000000
+#   slm-lab ... ppo_playground_v2 train -s env=playground/CheetahRun -s max_frame=100000000
 #   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=50000000
 #
-# Batch math (constant ~131K per update across both variants):
+# Batch math (constant ~131K per update across all variants):
 #   DM Control: 1024 envs x 128 steps = 131K, 32 minibatches, 16 epochs = 512 grad steps
 #   Loco/Manip:  512 envs x 256 steps = 131K, 32 minibatches,  4 epochs = 128 grad steps
 
@@ -21,6 +24,20 @@ _body: &body
         - LazyLinear: {out_features: 64}
         - Tanh:
         - LazyLinear: {out_features: 64}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_body256: &body256
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
         - Tanh:
   graph:
     input: x
@@ -115,6 +132,80 @@ ppo_playground_loco:
       optim_spec:
         name: Adam
         lr: 3.0e-4
+  env:
+    <<: *env
+    num_envs: 512
+  meta: *meta
+
+# --- DM Control v2: [256,256] + linear lr/clip/entropy decay, 1024 envs ---
+
+ppo_playground_v2:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 128
+      training_epoch: 16
+      clip_eps_spec:
+        name: linear_decay
+        start_val: 0.2
+        end_val: 0.0
+        start_step: 0
+        end_step: "${max_frame}"
+      entropy_coef_spec:
+        name: linear_decay
+        start_val: 0.01
+        end_val: 0.0
+        start_step: 0
+        end_step: "${max_frame}"
+    memory: *memory
+    net:
+      <<: *net
+      arc: *body256
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+      lr_scheduler_spec:
+        name: LinearToZero
+        frame: "${max_frame}"
+  env:
+    <<: *env
+    num_envs: 1024
+  meta: *meta
+
+# --- Locomotion v2: [256,256] + linear decay, 512 envs ---
+
+ppo_playground_loco_v2:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 256
+      training_epoch: 4
+      clip_eps_spec:
+        name: linear_decay
+        start_val: 0.2
+        end_val: 0.0
+        start_step: 0
+        end_step: "${max_frame}"
+      entropy_coef_spec:
+        name: linear_decay
+        start_val: 0.01
+        end_val: 0.0
+        start_step: 0
+        end_step: "${max_frame}"
+    memory: *memory
+    net:
+      <<: *net
+      arc: *body256
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+      lr_scheduler_spec:
+        name: LinearToZero
+        frame: "${max_frame}"
   env:
     <<: *env
     num_envs: 512
