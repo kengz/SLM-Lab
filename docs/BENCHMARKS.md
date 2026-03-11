@@ -765,7 +765,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 ### Phase 5: MuJoCo Playground (JAX/MJX GPU-Accelerated)
 
-> ⚠️ **Note (2026-03-11)**: Phase 5 results below were collected with the JAX/MJX backend. Switching to MJWarp (NVIDIA Warp) backend for improved performance and reproducibility. All Phase 5 benchmarks will be rerun from scratch. Current results are **pre-MJWarp baselines only**.
+> **Note (2026-03-11)**: MJWarp (NVIDIA Warp) backend support has been implemented. The code selects `impl='warp'` when JAX detects a CUDA GPU, falling back to `impl='jax'` (CPU MJX) otherwise. Phase 5 results below use CPU MJX (same backend as before — JAX CUDA unavailable on current RunPod setup). No rerun needed; results are valid CPU MJX baselines. MJWarp will activate automatically if JAX CUDA becomes available.
 
 **Docs**: [MuJoCo Playground](https://google-deepmind.github.io/mujoco_playground/) | State/Action: Continuous | Target: Research-grade baselines (no official solved threshold)
 
