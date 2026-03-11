@@ -1,0 +1,101 @@
+# SAC MuJoCo Playground — MJWarp GPU
+#
+# Variants:
+#   sac_playground      — 256 envs, UTD=0.016, fast buffer fill (most envs)
+#   sac_playground_hard — 16 envs, UTD=1.0, high gradient density (hard envs)
+#
+# Usage:
+#   slm-lab ... sac_playground train -s env=playground/CheetahRun -s max_frame=20000000
+#   slm-lab ... sac_playground_hard train -s env=playground/HopperHop -s max_frame=2000000
+#
+# UTD = training_iter / num_envs (with training_frequency=1)
+
+# --- Shared ---
+
+_body: &body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_net: &net
+  type: TorchArcNet
+  arc: *body
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 3.0e-4
+  update_type: polyak
+  update_frequency: 1
+  polyak_coef: 0.005
+  gpu: auto
+
+_algorithm: &algorithm
+  name: SoftActorCritic
+  gamma: 0.99
+  training_frequency: 1
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  max_session: 4
+  max_trial: 1
+
+_env: &env
+  name: "${env}"
+  max_t: null
+  max_frame: "${max_frame}"
+  normalize_obs: true
+
+# --- Default: 256 envs, UTD=0.016, fast buffer fill ---
+
+sac_playground:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *algorithm
+      training_iter: 4
+      training_start_step: 5000
+    memory:
+      name: Replay
+      batch_size: 1024
+      max_size: 1000000
+      use_cer: false
+    net: *net
+  env:
+    <<: *env
+    num_envs: 256
+  meta: *meta
+
+# --- Hard: 16 envs, UTD=1.0, high gradient density ---
+# For: HopperHop, Humanoid*, CartpoleSwingup*, PendulumSwingup, BallInCup, Swimmer
+
+sac_playground_hard:
+  agent:
+    name: SoftActorCritic
+    algorithm:
+      <<: *algorithm
+      training_iter: 16
+      training_start_step: 10000
+    memory:
+      name: Replay
+      batch_size: 512
+      max_size: 1000000
+      use_cer: false
+    net: *net
+  env:
+    <<: *env
+    num_envs: 16
+  meta: *meta

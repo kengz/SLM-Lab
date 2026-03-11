@@ -1,0 +1,120 @@
+# PPO MuJoCo Playground — MJWarp GPU
+#
+# Variants:
+#   ppo_playground      — DM Control (gamma=0.995, lr=1e-3, 16 epochs, 1024 envs)
+#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=3e-4, 4 epochs, 512 envs)
+#
+# Usage:
+#   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=50000000
+#   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=50000000
+#
+# Batch math (constant ~131K per update across both variants):
+#   DM Control: 1024 envs x 128 steps = 131K, 32 minibatches, 16 epochs = 512 grad steps
+#   Loco/Manip:  512 envs x 256 steps = 131K, 32 minibatches,  4 epochs = 128 grad steps
+
+# --- Shared ---
+
+_body: &body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 64}
+        - Tanh:
+        - LazyLinear: {out_features: 64}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 5000
+  eval_frequency: 5000
+  max_session: 4
+  max_trial: 1
+
+_env: &env
+  name: "${env}"
+  max_t: null
+  max_frame: "${max_frame}"
+  normalize_obs: true
+
+_algorithm: &algorithm
+  name: PPO
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec:
+    name: no_decay
+    start_val: 0.2
+    end_val: 0.2
+    start_step: 0
+    end_step: 0
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.01
+    end_val: 0.01
+    start_step: 0
+    end_step: 0
+  val_loss_coef: 0.5
+  minibatch_size: 4096
+  normalize_v_targets: true
+
+_net: &net
+  type: TorchArcNet
+  arc: *body
+  hid_layers_activation: tanh
+  init_fn: orthogonal_
+  clip_grad_val: 1.0
+  use_same_optim: true
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+  gpu: auto
+
+# --- DM Control: gamma=0.995, lr=1e-3, 16 epochs, 1024 envs ---
+
+ppo_playground:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 128
+      training_epoch: 16
+    memory: *memory
+    net:
+      <<: *net
+      optim_spec:
+        name: Adam
+        lr: 1.0e-3
+  env:
+    <<: *env
+    num_envs: 1024
+  meta: *meta
+
+# --- Locomotion/Manipulation: gamma=0.97, lr=3e-4, 4 epochs, 512 envs ---
+
+ppo_playground_loco:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 256
+      training_epoch: 4
+    memory: *memory
+    net:
+      <<: *net
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+  env:
+    <<: *env
+    num_envs: 512
+  meta: *meta

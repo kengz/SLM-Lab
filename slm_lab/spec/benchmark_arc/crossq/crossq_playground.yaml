@@ -1,0 +1,137 @@
+# CrossQ MuJoCo Playground — MJWarp GPU
+# SAC without target networks + Batch Renormalization in critics
+#
+# Variants:
+#   crossq_playground       — [512,512]+BRN critics (most envs)
+#   crossq_playground_vhard — [1024,1024]+BRN critics (Humanoid*, CheetahRun)
+#
+# Usage:
+#   slm-lab ... crossq_playground train -s env=playground/WalkerRun -s max_frame=2000000
+#   slm-lab ... crossq_playground_vhard train -s env=playground/HumanoidWalk -s max_frame=2000000
+
+# --- Shared ---
+
+_brn: &brn
+  momentum: 0.01
+  eps: 0.001
+  warmup_steps: 10000
+
+_actor_body: &actor_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+        - LazyLinear: {out_features: 256}
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_critic_512: &critic_512
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 512}
+        - LazyBatchRenorm1d: *brn
+        - ReLU:
+        - LazyLinear: {out_features: 512}
+        - LazyBatchRenorm1d: *brn
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_critic_1024: &critic_1024
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 1024}
+        - LazyBatchRenorm1d: *brn
+        - ReLU:
+        - LazyLinear: {out_features: 1024}
+        - LazyBatchRenorm1d: *brn
+        - ReLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_net_base: &net_base
+  type: TorchArcNet
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    betas: [0.5, 0.999]
+  gpu: auto
+
+_actor_net: &actor_net
+  <<: *net_base
+  arc: *actor_body
+
+_algorithm: &algorithm
+  name: CrossQ
+  gamma: 0.99
+  training_frequency: 1
+  training_iter: 1
+  training_start_step: 10000
+  policy_delay: 3
+  log_alpha_max: 0.5
+
+_memory: &memory
+  name: Replay
+  batch_size: 256
+  max_size: 1000000
+  use_cer: false
+
+_meta: &meta
+  distributed: false
+  log_frequency: 10000
+  eval_frequency: 10000
+  max_session: 4
+  max_trial: 1
+
+_env: &env
+  name: "${env}"
+  num_envs: 16
+  max_t: null
+  max_frame: "${max_frame}"
+  normalize_obs: true
+
+# --- Standard: [512,512]+BRN critics ---
+
+crossq_playground:
+  agent:
+    name: CrossQ
+    algorithm: *algorithm
+    memory: *memory
+    net: *actor_net
+    critic_net:
+      <<: *net_base
+      arc: *critic_512
+  env: *env
+  meta: *meta
+
+# --- Very hard: [1024,1024]+BRN critics ---
+# For: HumanoidWalk, HumanoidStand, HumanoidRun, CheetahRun
+
+crossq_playground_vhard:
+  agent:
+    name: CrossQ
+    algorithm: *algorithm
+    memory: *memory
+    net: *actor_net
+    critic_net:
+      <<: *net_base
+      arc: *critic_1024
+  env: *env
+  meta: *meta

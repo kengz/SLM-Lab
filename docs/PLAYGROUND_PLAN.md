@@ -57,8 +57,9 @@ Current: 4 JSON files in `slm_lab/spec/benchmark/playground/`
 Target: YAML files in `slm_lab/spec/benchmark_arc/playground/` with TorchArc architecture
 
 Files to create:
-- `ppo_playground_arc.yaml` — PPO shared template with `${env}` and `${max_frame}`
-- `sac_playground_arc.yaml` — SAC shared template (DM Control + Locomotion + Manipulation)
+- `ppo_playground.yaml` — PPO shared template with `${env}` and `${max_frame}`
+- `sac_playground.yaml` — SAC shared template (DM Control + Locomotion + Manipulation)
+- `crossq_playground.yaml` — CrossQ shared template
 
 YAML pattern to follow: `sac_mujoco_arc.yaml` (anchors, TorchArcNet, `${env}` substitution)
 
@@ -86,7 +87,7 @@ slm-lab run-remote --gpu -s env=ALE/Pong-v5 slm_lab/spec/benchmark_arc/ppo/ppo_a
 
 Playground equivalent (after C.5, no --playground needed):
 ```bash
-source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -n pg-cartpole
+source .env && slm-lab run-remote --gpu -s env=playground/CartpoleBalance slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground train -n pg-cartpole
 ```
 
 Status: ⬜ TODO (part of C.2)

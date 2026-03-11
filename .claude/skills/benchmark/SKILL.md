@@ -27,7 +27,7 @@ dstack logs NAME --since 10m 2>&1 | grep "trial_metrics" | tail -3
 ```
 If projected wall clock > 5.5h at observed fps → **stop immediately and relaunch with reduced max_frame**.
 
-**Known fps at 64 envs (ppo_playground_arc):**
+**Known fps at 64 envs (ppo_playground):**
 | Env category | fps | Safe max_frame (5.5h) |
 |---|---|---|
 | CartpoleBalance, CheetahRun, WalkerWalk | ~450-1800 | 8M–10M |
