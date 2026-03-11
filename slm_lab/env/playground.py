@@ -105,7 +105,7 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         if self._device is not None:
             import torch
 
-            t = torch.from_dlpack(jax.dlpack.to_dlpack(x))
+            t = torch.from_dlpack(x)
             # If JAX is on CPU but device is cuda, move explicitly (CPU->GPU copy)
             return t if t.is_cuda else t.to(self._device)
         return np.asarray(x).astype(np.float32)
@@ -136,8 +136,8 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         rewards = np.asarray(self._state.reward).astype(np.float32)
         dones = np.asarray(self._state.done).astype(bool)
 
-        # State may have a separate .truncation field (time limit, etc.)
-        truncation = getattr(self._state, "truncation", None)
+        # Brax EpisodeWrapper sets state.info['truncation'] (1 = time limit, 0 = not)
+        truncation = self._state.info.get("truncation", None)
         if truncation is not None:
             truncated = np.asarray(truncation).astype(bool)
             terminated = dones & ~truncated
