@@ -1,8 +1,11 @@
 """MuJoCo Playground environment wrapper for SLM-Lab.
 
-Wraps MuJoCo Playground (JAX-based MJX) environments as gymnasium VectorEnv,
+Wraps MuJoCo Playground (JAX/MJWarp) environments as gymnasium VectorEnv,
 enabling use with SLM-Lab's training loop. BraxAutoResetWrapper handles
 batched step/reset internally; arrays are converted to numpy at the boundary.
+
+Backend selection: MJWarp (Warp-accelerated MJX, ~3-5x faster) is used when
+a CUDA GPU is detected; falls back to standard JAX/MJX on CPU.
 """
 
 import gymnasium as gym
@@ -23,7 +26,17 @@ except ImportError:
 
 # Use MJWarp (Warp-accelerated MJX) on CUDA GPUs for ~3-5x faster simulation.
 # Falls back to standard JAX/MJX on CPU.
-_has_cuda = any(d.platform == "gpu" for d in jax.devices())
+# Detect via torch (reliable) rather than jax.devices() — JAX may report CPU
+# even when CUDA is available if jaxlib was installed without CUDA support.
+def _detect_cuda() -> bool:
+    try:
+        import torch
+        return torch.cuda.is_available()
+    except ImportError:
+        return any(d.platform == "gpu" for d in jax.devices())
+
+
+_has_cuda = _detect_cuda()
 _impl = "warp" if _has_cuda else "jax"
 _config_overrides = {"impl": _impl}
 
@@ -31,6 +44,7 @@ _config_overrides = {"impl": _impl}
 class PlaygroundVecEnv(gym.vector.VectorEnv):
     """Vectorized wrapper for MuJoCo Playground environments.
 
+    Uses MJWarp backend on CUDA GPUs, JAX/MJX on CPU (see module-level _impl).
     BraxAutoResetWrapper handles batched execution internally.
     Converts JAX arrays to numpy at the API boundary for
     compatibility with SLM-Lab's PyTorch training loop.
