@@ -247,26 +247,11 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
 
     device = env_spec.get("device")
     if is_playground and (device is None or device == "auto"):
-        try:
-            import jax
-            import torch
-
-            torch_gpu = torch.cuda.is_available()
-            jax_gpu = jax.devices()[0].platform == "gpu"
-            if torch_gpu and not jax_gpu:
-                logger.warning(
-                    "JAX is NOT GPU-accelerated (CPU-only jaxlib installed). "
-                    "Simulation runs on CPU — using JAX/MJX backend instead of MJWarp."
-                )
-            device = "cuda" if (torch_gpu and jax_gpu) else None
-        except ImportError:
-            device = None  # jax not installed, fall back to CPU path
+        import torch
+        device = "cuda" if torch.cuda.is_available() else None
 
     if is_playground:
-        if device:
-            logger.info("Playground device: GPU (cuda) — JAX+PyTorch both on GPU, DLPack zero-copy")
-        else:
-            logger.info("Playground device: CPU — JAX on CPU, using numpy transfer")
+        logger.info(f"Playground device: {'GPU (cuda) — DLPack zero-copy' if device else 'CPU — numpy transfer'}")
         env = _make_playground_env(
             name,
             num_envs,

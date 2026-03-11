@@ -4,8 +4,8 @@ Wraps MuJoCo Playground (JAX/MJWarp) environments as gymnasium VectorEnv,
 enabling use with SLM-Lab's training loop. BraxAutoResetWrapper handles
 batched step/reset internally; arrays are converted to numpy at the boundary.
 
-Backend selection: MJWarp (Warp-accelerated MJX, ~3-5x faster) is used when
-a CUDA GPU is detected; falls back to standard JAX/MJX on CPU.
+Uses MJWarp backend (Warp-accelerated MJX) uniformly for GPU simulation.
+JAX is the dispatch/tracing layer; Warp CUDA kernels handle physics.
 """
 
 import gymnasium as gym
@@ -24,17 +24,7 @@ except ImportError:
         "Install with: uv sync --group playground"
     )
 
-# Use MJWarp (Warp-accelerated MJX) on CUDA GPUs for ~3-5x faster simulation.
-# Falls back to standard JAX/MJX on CPU.
-# Detect via JAX device list — MJWarp requires JAX to be CUDA-capable, so we
-# must confirm JAX itself sees a GPU, not just torch.
-def _detect_cuda() -> bool:
-    return any(d.platform == "gpu" for d in jax.devices())
-
-
-_has_cuda = _detect_cuda()
-_impl = "warp" if _has_cuda else "jax"
-_config_overrides = {"impl": _impl}
+_config_overrides = {"impl": "warp"}
 
 
 class PlaygroundVecEnv(gym.vector.VectorEnv):
