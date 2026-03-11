@@ -30,10 +30,9 @@ _config_overrides = {"impl": "warp"}
 class PlaygroundVecEnv(gym.vector.VectorEnv):
     """Vectorized wrapper for MuJoCo Playground environments.
 
-    Uses MJWarp backend on CUDA GPUs, JAX/MJX on CPU (see module-level _impl).
-    BraxAutoResetWrapper handles batched execution internally.
-    Converts JAX arrays to numpy at the API boundary for
-    compatibility with SLM-Lab's PyTorch training loop.
+    Uses MJWarp backend uniformly (impl='warp'). BraxAutoResetWrapper handles
+    batched execution internally. Converts JAX arrays to numpy or torch tensors
+    via DLPack at the API boundary for SLM-Lab's PyTorch training loop.
     """
 
     def __init__(

@@ -765,17 +765,17 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 ### Phase 5: MuJoCo Playground (JAX/MJX GPU-Accelerated)
 
-> **Note (2026-03-11)**: MJWarp (NVIDIA Warp) backend support has been implemented. The code selects `impl='warp'` when JAX detects a CUDA GPU, falling back to `impl='jax'` (CPU MJX) otherwise. Phase 5 results below use CPU MJX (same backend as before — JAX CUDA unavailable on current RunPod setup). No rerun needed; results are valid CPU MJX baselines. MJWarp will activate automatically if JAX CUDA becomes available.
-
 **Docs**: [MuJoCo Playground](https://google-deepmind.github.io/mujoco_playground/) | State/Action: Continuous | Target: Research-grade baselines (no official solved threshold)
 
 **Settings**: max_frame varies (1M–4M) | num_envs 16–256 | max_session 4 | log_frequency 1e4
 
-**Hardware**: RunPod RTX A4500 (20GB) / A5000 (24GB) — JAX+PyTorch both on GPU, DLPack zero-copy
+**Hardware**: RunPod RTX A4500 (20GB) / A5000 (24GB) — MJWarp (Warp CUDA kernels) + DLPack zero-copy to PyTorch
 
-**Install**: `uv sync --group playground`
+**Install**: `uv sync --group playground` (includes JAX + warp-lang + jax[cuda12])
 
-**Algorithms**: PPO, SAC, and CrossQ. Network: MLP [256,256], orthogonal init. All envs use JAX/MJX GPU-accelerated backend with DLPack zero-copy transfer to PyTorch. All algorithms require `--playground` flag for JAX installation.
+**Backend**: MJWarp (`impl='warp'`) used uniformly — JAX dispatches Warp CUDA kernels for physics, DLPack transfers to PyTorch. No `--playground` flag needed (playground deps always installed on GPU cloud).
+
+**Algorithms**: PPO, SAC, and CrossQ. Network: MLP [256,256], orthogonal init.
 
 **Spec Files** (one file per algorithm, all envs via `-s env=` flag):
 - **PPO**: [ppo_playground_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml)
@@ -806,21 +806,21 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 > **Frame budgets (max_frame = fps × 5.5h × 3600):** Fast envs (CartpoleBalance, CheetahRun, WalkerWalk ~450-1800fps): 8M–10M | Medium (WalkerStand ~270fps, HumanoidStand ~200fps): 4M–5M | Rough terrain loco (G1Rough, T1Rough, Go1Getup ~60fps): 1M | Unknown envs: start at 2M, check fps after 5min. dstack kills at 6h with zero data — always use 5.5h budget.
 
-**Reproduce** (requires `--playground` flag for JAX install, `-s env=ENV -s max_frame=N`):
+**Reproduce** (`-s env=ENV -s max_frame=N`):
 
 ```bash
 # PPO — all envs (DM Control, Loco, Manip)
-source .env && uv run slm-lab run-remote --gpu --playground \
+source .env && uv run slm-lab run-remote --gpu \
   -s env=playground/CartpoleBalance -s max_frame=2000000 \
   slm_lab/spec/benchmark_arc/ppo/ppo_playground_arc.yaml ppo_playground_arc train -n NAME
 
 # SAC — use sac_playground_arc_fast (most envs) or sac_playground_arc_hard (HopperHop, Acrobot*, PendulumSwingup)
-source .env && uv run slm-lab run-remote --gpu --playground \
+source .env && uv run slm-lab run-remote --gpu \
   -s env=playground/CheetahRun -s max_frame=2000000 \
   slm_lab/spec/benchmark_arc/sac/sac_playground_arc.yaml SPEC_NAME train -n NAME
 
 # CrossQ — use crossq_playground_arc (most envs) or crossq_playground_arc_vhard (Humanoid*, CheetahRun)
-source .env && uv run slm-lab run-remote --gpu --playground \
+source .env && uv run slm-lab run-remote --gpu \
   -s env=playground/WalkerRun -s max_frame=2000000 \
   slm_lab/spec/benchmark_arc/crossq/crossq_playground_arc.yaml SPEC_NAME train -n NAME
 ```
