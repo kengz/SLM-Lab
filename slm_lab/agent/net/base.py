@@ -22,6 +22,7 @@ class Net(ABC):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.grad_norms = None  # for debugging
+        self._nan_skip_count = 0  # rate-limit NaN warning
         if util.use_gpu(self.net_spec.get('gpu')):
             if torch.cuda.device_count():
                 self.device = f'cuda:{net_spec.get("cuda_id", 0)}'
@@ -41,7 +42,9 @@ class Net(ABC):
     def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
         # Skip update if loss is NaN/inf to prevent gradient explosion
         if not torch.isfinite(loss):
-            logger.warning(f'Skipping update: loss is {loss.item():.2e}')
+            self._nan_skip_count += 1
+            if self._nan_skip_count == 1 or self._nan_skip_count % 10000 == 0:
+                logger.warning(f'Skipping update: loss is {loss.item():.2e} (total skips: {self._nan_skip_count})')
             # Return small nonzero to avoid dev_check_train_step zero loss path
             return torch.tensor(1e-10, device=loss.device, requires_grad=False)
         optim.zero_grad()
