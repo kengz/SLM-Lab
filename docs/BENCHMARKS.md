@@ -934,10 +934,10 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HumanoidWalk | PPO | 🔄 | - | ppo_playground | - | 500 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/PendulumSwingup | PPO | 🔄 | - | ppo_playground | - | ~70 | - | - | - |
+| playground/PendulumSwingup | PPO | ⚠️ | 276.46 | ppo_playground | [ppo_playground_pendulumswingup_2026_03_12_111925](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pendulumswingup_2026_03_12_111925) | 395 | 11170 | 100M | 2h 29m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/PointMass | PPO | 🔄 | - | ppo_playground | - | 900 | - | - | - |
+| playground/PointMass | PPO | ⚠️ | 863.53 | ppo_playground | [ppo_playground_pointmass_2026_03_12_111935](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pointmass_2026_03_12_111935) | 900 | 11060 | 100M | 2h 31m |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | playground/ReacherEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
