@@ -767,7 +767,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Docs**: [MuJoCo Playground](https://google-deepmind.github.io/mujoco_playground/) | State/Action: Continuous | Target: Research-grade baselines (no official solved threshold)
 
-**Settings**: max_frame varies (1M–10M) | num_envs 16–1024 | max_session 4 | log_frequency 5e3–1e4
+**Settings**: max_session 4 | log_frequency 100000 — see sub-phase sections for max_frame and num_envs
 
 **Hardware**: RunPod RTX A4500 (20GB) / A5000 (24GB) — MJWarp (Warp CUDA kernels) + DLPack zero-copy to PyTorch
 
@@ -775,7 +775,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 **Backend**: MJWarp (`impl='warp'`) — JAX dispatches Warp CUDA kernels for physics, DLPack zero-copy transfers to PyTorch.
 
-**Algorithms**: PPO, SAC, and CrossQ. Network: MLP [256,256], orthogonal init.
+**Algorithms**: PPO, SAC, and CrossQ.
 
 **Spec Files** (one file per algorithm, all envs via `-s env=` flag):
 - **PPO**: [ppo_playground.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml)
@@ -809,40 +809,28 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism). All physics environments run in parallel on CUDA via Warp kernels; more envs = more parallel work = higher throughput until GPU saturates.
 
-**Formula**: `max_frame = expected_fps × 4h × 3600` (4h soft target; dstack kills at 6h with **zero data** — always leave margin).
+**Formula**: `max_frame = observed_fps × 5.5h × 3600` (5.5h budget; dstack kills at 6h with **zero data** — always leave 30min margin). Always check fps after 5-10 min on first run of any env.
 
-**Measured baseline** (A5000 24GB, 64 envs, PPO training with gradient steps): ~450 fps.
-
-**Projected throughput at higher num_envs** (linear scaling from 64-env baseline):
-
-| num_envs | Scaling | Expected FPS | Frames in 4h | Frames in 6h |
-|----------|---------|-------------|--------------|--------------|
-| 64 | 1x (measured) | ~450 | ~6.5M | ~9.7M |
-| 256 | 4x | ~1,500–3,000 | ~22M–43M | ~32M–65M |
-| 512 | 8x | ~3,000–5,000 | ~43M–72M | ~65M–108M |
-| 1024 | 16x | ~5,000–7,000 | ~72M–100M | ~108M–151M |
-| 2048 | 32x | ~10,000+ | ~144M+ | ~216M+ |
-
-**Reference**: mujoco_playground runs 100M frames on A100 at 2048–8192 envs. With MJWarp on A5000 at 1024 envs, we reach 100M in ~2–3h — matching reference scale.
+**Confirmed throughput** (A5000 24GB, 1024 envs PPO): ~10K–15K fps for DM Control — 100M frames in ~2–3h.
 
 **Per-category defaults** (conservative, verify on first run):
 
-| Category | Spec | num_envs | Default max_frame | Rationale |
-|----------|------|----------|-------------------|-----------|
-| DM Control (PPO) | ppo_playground | 1024 | 50M | ~5000fps × 3h = 54M; ref uses 60M |
-| Locomotion (PPO) | ppo_playground_loco | 512 | 50M | ~3000fps × 4h = 43M; ref uses 100M+ |
-| Manipulation (PPO) | ppo_playground_loco | 512 | 30M | ~2000fps × 4h = 29M; ref uses 20M–40M |
-| SAC | sac_playground | 256 | 20M | ~1500fps × 4h = 22M; ref uses 5M–10M |
+| Category | Spec | num_envs | Default max_frame | Observed FPS (A5000) |
+|----------|------|----------|-------------------|----------------------|
+| DM Control (PPO) | ppo_playground | 1024 | 100M | ~10K–15K fps → 100M in ~2–3h |
+| Locomotion (PPO) | ppo_playground_loco | 512 | 100M | ~5K–8K fps → 100M in ~3.5–5.5h |
+| Manipulation (PPO) | ppo_playground_loco | 512 | 100M | ~3K–5K fps → 100M in ~5–9h; verify fps first |
+| SAC standard | sac_playground | 256 | 20M | ~1500fps → 20M in ~3.7h |
 | SAC hard / CrossQ | sac_playground_hard / crossq_playground | 16 | 2M | ~60–500fps; gradient-bound |
-| Rough terrain loco | ppo_playground_loco | 512 | 10M | Complex physics → lower fps (~500–1500) |
+| Rough terrain loco | ppo_playground_loco | 512 | 10M | ~500–1500fps; lower due to complex physics |
 
-**Reference throughput** (MuJoCo Playground paper, PPO on A100, steps/sec at 2048–8192 envs): Cartpole ~720K | Acrobot ~750K | Pendulum ~720K | Reacher ~520K | Cheetah ~435K | FingerSpin ~247K | Swimmer ~167K | Walker ~140K | Hopper ~200K | Humanoid ~92K. SLM-Lab uses fewer envs + PyTorch overhead + DLPack transfers, so expect 5–20% of reference throughput.
+**Reference throughput** (MuJoCo Playground paper, PPO on A100 at 2048–8192 envs): Cartpole ~720K sps | Cheetah ~435K sps | Walker ~140K sps | Humanoid ~92K sps. SLM-Lab at 1024 envs on A5000 achieves ~10K–15K fps for DM Control (confirmed), which is ~2–5% of reference steps/sec but sufficient to reach 100M frames in 2–3h.
 
 #### Autonomous Benchmark Guidelines
 
-**Frame minimum**: Target at least 10M frames per env for PPO (high num_envs makes this fast). SAC hard / CrossQ at 16 envs are gradient-bound — 2M is acceptable there.
+**Frame target**: 100M frames per env for PPO (all phases). SAC standard: 20M. SAC hard / CrossQ at 16 envs are gradient-bound — 2M is acceptable.
 
-**Wall-time budget**: 4h soft target per run. dstack kills at 6h with **zero data** (no trial_metrics, no HF upload). Always calculate: `max_frame = observed_fps * 5.5h * 3600` and leave margin.
+**Wall-time budget**: 5.5h budget per run (dstack kills at 6h with **zero data** — no trial_metrics, no HF upload). Always calculate: `max_frame = observed_fps × 5.5h × 3600` and stop any run projected to exceed this.
 
 **FPS calibration**: On first run of any new env, check fps after 5-10 min (`dstack logs NAME --since 10m | grep trial_metrics`). If projected wall clock exceeds 5.5h, stop immediately and relaunch with reduced max_frame.
 
@@ -850,7 +838,7 @@ MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism).
 
 **normalize_obs warning**: DM Control envs have bounded observations — `normalize_obs=true` (the playground spec default) may cause NaN rewards. If NaN is observed in training logs, override with `-s normalize_obs=false`.
 
-**Target (ref) scores**: From official mujoco_playground training plots (2048+ envs, 100M steps). Our runs use fewer envs, so scores may differ — use as directional targets.
+**Target (ref) scores**: From official mujoco_playground training plots (2048 envs DM Control / 8192 envs Loco+Manip, 100M steps). Our runs use 1024/512 envs — use as directional targets, not hard thresholds.
 
 **Run order**: Submit fastest algorithms first — PPO (high num_envs, ~2000+ fps) finishes in minutes, then SAC standard (256 envs), then SAC hard / CrossQ (16 envs, gradient-bound, slowest).
 
@@ -859,30 +847,30 @@ MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism).
 **Reproduce** (`-s env=ENV -s max_frame=N`):
 
 ```bash
-# PPO DM Control — 1024 envs, 50M frames
+# PPO DM Control — 1024 envs, 100M frames
 source .env && uv run slm-lab run-remote --gpu \
-  -s env=playground/CartpoleBalance -s max_frame=50000000 \
-  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground train -n NAME
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground train \
+  -s env=playground/CartpoleBalance -s max_frame=100000000 -n NAME
 
-# PPO Locomotion — 512 envs, 50M frames
+# PPO Locomotion/Manipulation — 512 envs, 100M frames
 source .env && uv run slm-lab run-remote --gpu \
-  -s env=playground/Go1Getup -s max_frame=50000000 \
-  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground_loco train -n NAME
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground_loco train \
+  -s env=playground/Go1Getup -s max_frame=100000000 -n NAME
 
-# SAC — 256 envs, 20M frames
+# SAC standard — 256 envs, 20M frames
 source .env && uv run slm-lab run-remote --gpu \
-  -s env=playground/CheetahRun -s max_frame=20000000 \
-  slm_lab/spec/benchmark_arc/sac/sac_playground.yaml sac_playground train -n NAME
+  slm_lab/spec/benchmark_arc/sac/sac_playground.yaml sac_playground train \
+  -s env=playground/CheetahRun -s max_frame=20000000 -n NAME
 
 # SAC hard — 16 envs, 2M frames (gradient-bound)
 source .env && uv run slm-lab run-remote --gpu \
-  -s env=playground/HopperHop -s max_frame=2000000 \
-  slm_lab/spec/benchmark_arc/sac/sac_playground.yaml sac_playground_hard train -n NAME
+  slm_lab/spec/benchmark_arc/sac/sac_playground.yaml sac_playground_hard train \
+  -s env=playground/HopperHop -s max_frame=2000000 -n NAME
 
-# CrossQ — 16 envs, 2M frames
+# CrossQ — 16 envs, 2M frames (gradient-bound)
 source .env && uv run slm-lab run-remote --gpu \
-  -s env=playground/WalkerRun -s max_frame=2000000 \
-  slm_lab/spec/benchmark_arc/crossq/crossq_playground.yaml crossq_playground train -n NAME
+  slm_lab/spec/benchmark_arc/crossq/crossq_playground.yaml crossq_playground train \
+  -s env=playground/WalkerRun -s max_frame=2000000 -n NAME
 ```
 
 #### Phase 5.1: DM Control Suite (25 envs)
