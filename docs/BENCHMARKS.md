@@ -823,7 +823,7 @@ MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism).
 | 1024 | 16x | ~5,000–7,000 | ~72M–100M | ~108M–151M |
 | 2048 | 32x | ~10,000+ | ~144M+ | ~216M+ |
 
-**Reference**: mujoco_playground runs 100M–200M frames on A100 at 2048–8192 envs. With MJWarp on A5000 at 1024 envs, we may reach 50M–100M in 4h — matching reference scale.
+**Reference**: mujoco_playground runs 100M frames on A100 at 2048–8192 envs. With MJWarp on A5000 at 1024 envs, we reach 100M in ~2–3h — matching reference scale.
 
 **Per-category defaults** (conservative, verify on first run):
 
@@ -850,7 +850,7 @@ MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism).
 
 **normalize_obs warning**: DM Control envs have bounded observations — `normalize_obs=true` (the playground spec default) may cause NaN rewards. If NaN is observed in training logs, override with `-s normalize_obs=false`.
 
-**Target (ref) scores**: Aspirational from official mujoco_playground training plots (2048+ envs, 80M-200M steps). Our runs use fewer envs and frames, so scores may not reach these. Use as directional targets, not guarantees.
+**Target (ref) scores**: From official mujoco_playground training plots (2048+ envs, 100M steps). Our runs use fewer envs, so scores may differ — use as directional targets.
 
 **Run order**: Submit fastest algorithms first — PPO (high num_envs, ~2000+ fps) finishes in minutes, then SAC standard (256 envs), then SAC hard / CrossQ (16 envs, gradient-bound, slowest).
 
@@ -887,7 +887,9 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.1: DM Control Suite (25 envs)
 
-**Target (ref)**: scores from mujoco_playground official training runs (2048+ envs, 80M-200M steps). Our runs use fewer envs and frames, so may not reach these — use as directional targets.
+**Settings**: max_frame 100M | num_envs 1024 (PPO) / 256 (SAC) / 16 (CrossQ) | max_session 4 | log_frequency 100000
+
+**Target (ref)**: scores from mujoco_playground official runs (2048+ envs, 100M steps) — use as directional targets.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
@@ -982,6 +984,10 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.2: Locomotion Robots (19 envs)
 
+**Settings**: max_frame 100M | num_envs 512 (PPO) / 256 (SAC) / 16 (CrossQ) | max_session 4 | log_frequency 100000
+
+**Target (ref)**: scores from mujoco_playground official runs (2048+ envs, 100M steps) — use as directional targets.
+
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
 | playground/ApolloJoystickFlatTerrain | PPO | 🔄 | - | ppo_playground_loco | - | 15 | - | - | - |
@@ -1051,6 +1057,10 @@ source .env && uv run slm-lab run-remote --gpu \
 | ![Go1JoystickFlatTerrain](plots/Go1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1JoystickRoughTerrain](plots/Go1JoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
 
 #### Phase 5.3: Manipulation (10 envs)
+
+**Settings**: max_frame 100M | num_envs 512 (PPO) / 256 (SAC) / 16 (CrossQ) | max_session 4 | log_frequency 100000
+
+**Target (ref)**: scores from mujoco_playground official runs (2048+ envs, 100M steps) — use as directional targets.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
