@@ -1,8 +1,12 @@
 # PPO MuJoCo Playground — MJWarp GPU
 #
 # Variants:
-#   ppo_playground      — DM Control (gamma=0.995, lr=3e-4, 16 epochs, 1024 envs, [512,512]+ELU)
-#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=3e-4, 4 epochs, 512 envs, [512,512]+ELU)
+#   ppo_playground      — DM Control (gamma=0.995, lr=1e-3, 16 epochs, 1024 envs)
+#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=1e-3, 4 epochs, 512 envs)
+#
+# Architecture: asymmetric policy=[64,64]+SiLU, value=[256,256,256]+SiLU
+#   Per official mujoco_playground (policy=[32,32,32,32]+Swish, value=[256,256,256,256,256]+Swish)
+#   Smaller policy = lower sample complexity + cleaner gradient signal
 #
 # Usage:
 #   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=50000000
@@ -14,14 +18,30 @@
 
 # --- Shared ---
 
-_body: &body
+_policy_body: &policy_body
   modules:
     body:
       Sequential:
-        - LazyLinear: {out_features: 512}
-        - ELU:
-        - LazyLinear: {out_features: 512}
-        - ELU:
+        - LazyLinear: {out_features: 64}
+        - SiLU:
+        - LazyLinear: {out_features: 64}
+        - SiLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_value_body: &value_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
   graph:
     input: x
     modules:
@@ -49,34 +69,30 @@ _algorithm: &algorithm
   gamma: 0.99
   lam: 0.95
   clip_eps_spec:
-    name: linear_decay
+    name: no_decay
     start_val: 0.2
-    end_val: 0.1
-    start_step: 0
-    end_step: "${max_frame}"
   entropy_coef_spec:
-    name: linear_decay
+    name: no_decay
     start_val: 0.01
-    end_val: 0.005
-    start_step: 0
-    end_step: "${max_frame}"
   val_loss_coef: 0.5
   minibatch_size: 4096
   normalize_v_targets: true
 
 _net: &net
   type: TorchArcNet
-  arc: *body
+  actor_arc: *policy_body
+  critic_arc: *value_body
   shared: false
   hid_layers_activation: relu
-  init_fn: null
+  init_fn: orthogonal_
   clip_grad_val: 1.0
-  use_same_optim: true
+  use_same_optim: false
   loss_spec:
     name: MSELoss
   optim_spec:
     name: Adam
-    lr: 3.0e-4
+    lr: 1.0e-3
+    eps: 1.0e-5
   lr_scheduler_spec:
     name: LinearToMin
     frame: "${max_frame}"
