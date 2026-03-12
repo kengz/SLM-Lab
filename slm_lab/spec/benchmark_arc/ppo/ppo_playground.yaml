@@ -1,20 +1,20 @@
 # PPO MuJoCo Playground — MJWarp GPU
 #
 # Variants:
-#   ppo_playground      — DM Control (gamma=0.995, lr=1e-3, 16 epochs, 1024 envs)
-#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=1e-3, 4 epochs, 512 envs)
+#   ppo_playground      — DM Control (gamma=0.995, lr=1e-3, 16 epochs, 2048 envs)
+#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=1e-3, 4 epochs, 2048 envs)
 #
 # Architecture: asymmetric policy=[64,64]+SiLU, value=[256,256,256]+SiLU
 #   Per official mujoco_playground (policy=[32,32,32,32]+Swish, value=[256,256,256,256,256]+Swish)
 #   Smaller policy = lower sample complexity + cleaner gradient signal
 #
 # Usage:
-#   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=50000000
-#   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=50000000
+#   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=100000000
+#   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=100000000
 #
-# Batch math (constant ~131K per update across both variants):
-#   DM Control: 1024 envs x 128 steps = 131K, 32 minibatches, 16 epochs = 512 grad steps
-#   Loco/Manip:  512 envs x 256 steps = 131K, 32 minibatches,  4 epochs = 128 grad steps
+# Batch math:
+#   DM Control: 2048 envs x 128 steps = 262K, 64 minibatches, 16 epochs = 1024 grad steps
+#   Loco/Manip: 2048 envs x 256 steps = 524K, 128 minibatches,  4 epochs =  512 grad steps
 
 # --- Shared ---
 
@@ -113,7 +113,7 @@ ppo_playground:
     net: *net
   env:
     <<: *env
-    num_envs: 1024
+    num_envs: 2048
   meta: *meta
 
 # --- Locomotion/Manipulation: gamma=0.97, 4 epochs, 512 envs ---
@@ -130,5 +130,5 @@ ppo_playground_loco:
     net: *net
   env:
     <<: *env
-    num_envs: 512
+    num_envs: 2048
   meta: *meta
