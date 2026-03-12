@@ -940,10 +940,10 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/PointMass | PPO | ⚠️ | 863.53 | ppo_playground | [ppo_playground_pointmass_2026_03_12_111935](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pointmass_2026_03_12_111935) | 900 | 11060 | 100M | 2h 31m |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
+| playground/ReacherEasy | PPO | ✅ | 955.08 | ppo_playground | [ppo_playground_reachereasy_2026_03_12_122115](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_reachereasy_2026_03_12_122115) | 950 | 14910 | 100M | 1h 52m |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherHard | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
+| playground/ReacherHard | PPO | ✅ | 946.99 | ppo_playground | [ppo_playground_reacherhard_2026_03_12_123226](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_reacherhard_2026_03_12_123226) | 950 | 16240 | 100M | 1h 42m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/SwimmerSwimmer6 | PPO | 🔄 | - | ppo_playground | - | 560 | - | - | - |
