@@ -889,7 +889,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/AcrobotSwingupSparse | PPO | ✅ | 42.74 | ppo_playground | [ppo_playground_acrobotswingupsparse_2026_03_12_103824](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_acrobotswingupsparse_2026_03_12_103824) | 15 | 17390 | 100M | 1h 36m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/BallInCup | PPO | 🔄 | - | ppo_playground | - | 680 | - | - | - |
+| playground/BallInCup | PPO | ✅ | 942.44 | ppo_playground | [ppo_playground_ballincup_2026_03_12_105443](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_ballincup_2026_03_12_105443) | 680 | 11900 | 100M | 2h 20m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/CartpoleBalance | PPO | ⚠️ | 792 | ppo_playground | [ppo_playground_cartpolebalance_2026_03_12_084408](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpolebalance_2026_03_12_084408) | 950 | 12.0K | 100M | 2h 19m |
@@ -919,7 +919,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FishSwim | PPO | ⚠️ | 489.29 | ppo_playground | [ppo_playground_fishswim_2026_03_12_084450](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fishswim_2026_03_12_084450) | 650 | 13590 | 100M | 2h 3m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HopperHop | PPO | 🔄 | - | ppo_playground | - | ~2 | - | - | - |
+| playground/HopperHop | PPO | ❌ | 22.00 | ppo_playground | [ppo_playground_hopperhop_2026_03_12_110855](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_hopperhop_2026_03_12_110855) | ~2 | 13630 | 100M | 2h 2m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
 | playground/HopperStand | PPO | 🔄 | - | ppo_playground_loco | - | ~70 | - | - | - |
