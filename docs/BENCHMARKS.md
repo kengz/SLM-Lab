@@ -924,22 +924,22 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FingerTurnHard | PPO | ❌ | 455.30 | ppo_playground_v2 | [ppo_playground_v2_fingerturnhard_2026_03_11_182615](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerturnhard_2026_03_11_182615) | 950 | 16010 | 100M | 1h 44m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FishSwim | PPO | ❌ | 104.20 | ppo_playground | [ppo_playground_fishswim_2026_03_11_142859](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fishswim_2026_03_11_142859) | 650 | 10010 | 50M | 1h 23m |
+| playground/FishSwim | PPO | ❌ | 215.09 | ppo_playground | [ppo_playground_v2_fishswim_2026_03_11_193403](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fishswim_2026_03_11_193403) | 650 | 10870 | 100M | 2h 33m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HopperHop | PPO | 🔄 | - | ppo_playground | - | ~2 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/HopperStand | PPO | ❌ | 2.87 | ppo_playground | [ppo_playground_hopperstand_2026_03_11_095253](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_hopperstand_2026_03_11_095253) | ~70 | 10750 | 100M | 2h 34m |
+| playground/HopperStand | PPO | ✅ | 224.18 | ppo_playground_loco | [ppo_playground_loco_v2_hopperstand_2026_03_11_193434](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_v2_hopperstand_2026_03_11_193434) | ~70 | 22560 | 100M | 1h 14m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidRun | PPO | ❌ | 3.81 | ppo_playground | [ppo_playground_humanoidrun_2026_03_11_152710](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidrun_2026_03_11_152710) | 130 | 13900 | 100M | 2h 0m |
+| playground/HumanoidRun | PPO | ❌ | 4.26 | ppo_playground | [ppo_playground_v2_humanoidrun_2026_03_11_190714](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_humanoidrun_2026_03_11_190714) | 130 | 10360 | 100M | 2h 41m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HumanoidStand | PPO | ❌ | 28.59 | ppo_playground_loco | [ppo_playground_loco_v2_humanoidstand_2026_03_11_182722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_v2_humanoidstand_2026_03_11_182722) | 700 | 13910 | 100M | 2h 0m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidWalk | PPO | ❌ | 9.20 | ppo_playground | [ppo_playground_humanoidwalk_2026_03_11_152704](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidwalk_2026_03_11_152704) | 500 | 11570 | 100M | 2h 24m |
+| playground/HumanoidWalk | PPO | ❌ | 10.72 | ppo_playground | [ppo_playground_v2_humanoidwalk_2026_03_11_191943](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_humanoidwalk_2026_03_11_191943) | 500 | 11850 | 100M | 2h 21m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/PendulumSwingup | PPO | ✅ | 395.31 | ppo_playground | [ppo_playground_pendulumswingup_2026_03_11_142901](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pendulumswingup_2026_03_11_142901) | ~70 | 12080 | 100M | 2h 18m |
