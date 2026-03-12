@@ -907,7 +907,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/CheetahRun | PPO | ✅ | 865.83 | ppo_playground | [ppo_playground_cheetahrun_2026_03_12_082509](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cheetahrun_2026_03_12_082509) | 850 | 11260 | 100M | 2h 28m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerSpin | PPO | 🔄 | - | ppo_playground | - | 600 | - | - | - |
+| playground/FingerSpin | PPO | ⚠️ | 537 | ppo_playground | [HF Data](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerspin_2026_03_12_084320) | 600 | 11.4K | 100M | 2h 27m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FingerTurnEasy | PPO | ❌ | 610.06 | ppo_playground | [ppo_playground_fingerturneasy_2026_03_12_084456](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_12_084456) | 950 | 15990 | 100M | 1h 44m |
@@ -955,7 +955,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/WalkerStand | PPO | ✅ | 970.94 | ppo_playground | [ppo_playground_walkerstand_2026_03_12_085743](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerstand_2026_03_12_085743) | 1000 | 14670 | 100M | 1h 54m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerWalk | PPO | 🔄 | - | ppo_playground | - | 960 | - | - | - |
+| playground/WalkerWalk | PPO | ✅ | 952 | ppo_playground | [HF Data](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerwalk_2026_03_12_090437) | 960 | 13.0K | 100M | 2h 9m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 
