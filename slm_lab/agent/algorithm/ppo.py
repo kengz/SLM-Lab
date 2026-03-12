@@ -108,16 +108,15 @@ class PPO(ActorCritic):
             ],
         )
         self.to_train = 0
-        # guard
+        # guard: minibatch_size must divide evenly into batch_size = time_horizon * num_envs
         num_envs = self.agent.env.num_envs
-        if self.minibatch_size % num_envs != 0 or self.time_horizon % num_envs != 0:
-            self.minibatch_size = math.ceil(self.minibatch_size / num_envs) * num_envs
-            self.time_horizon = math.ceil(self.time_horizon / num_envs) * num_envs
-            logger.info(
-                f"minibatch_size and time_horizon needs to be multiples of num_envs; autocorrected values: minibatch_size: {self.minibatch_size}  time_horizon {self.time_horizon}"
-            )
-        # Ensure minibatch_size doesn't exceed batch_size
         batch_size = self.time_horizon * num_envs
+        if batch_size % self.minibatch_size != 0:
+            # round down to largest clean divisor
+            self.minibatch_size = batch_size // (batch_size // self.minibatch_size)
+            logger.info(
+                f"minibatch_size adjusted to divide batch_size evenly: minibatch_size={self.minibatch_size} batch_size={batch_size}"
+            )
         if self.minibatch_size > batch_size:
             self.minibatch_size = batch_size
             logger.info(
