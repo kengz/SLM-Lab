@@ -907,7 +907,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/CheetahRun | PPO | ✅ | 865.83 | ppo_playground | [ppo_playground_cheetahrun_2026_03_12_082509](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cheetahrun_2026_03_12_082509) | 850 | 11260 | 100M | 2h 28m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerSpin | PPO | ⚠️ | 537 | ppo_playground | [ppo_playground_fingerspin_2026_03_12_084320](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerspin_2026_03_12_084320) | 600 | 11.4K | 100M | 2h 27m |
+| playground/FingerSpin | PPO | ⚠️ | 561.3 | ppo_playground | [ppo_playground_fingerspin_2026_03_12_173104](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerspin_2026_03_12_173104) | 600 | 7.9K | 65M | 2h 16m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FingerTurnEasy | PPO | ⚠️ | 544.76 | ppo_playground | [ppo_playground_fingerturneasy_2026_03_12_134301](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_12_134301) | 950 | 6362 | 65M | 2h 50m |
