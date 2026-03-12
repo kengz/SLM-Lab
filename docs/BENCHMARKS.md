@@ -887,9 +887,9 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.1: DM Control Suite (25 envs)
 
-**Settings**: max_frame 100M | num_envs 1024 (PPO) / 256 (SAC) / 16 (CrossQ) | max_session 4 | log_frequency 100000
+**Settings**: max_frame 100M | num_envs 1024 | max_session 4 | log_frequency 100000
 
-**Target (ref)**: scores from mujoco_playground official runs (2048+ envs, 100M steps) — use as directional targets.
+**Target (ref)**: scores from mujoco_playground official runs (2048 envs, 100M steps) — use as directional targets.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
@@ -984,9 +984,9 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.2: Locomotion Robots (19 envs)
 
-**Settings**: max_frame 100M | num_envs 512 (PPO) / 256 (SAC) / 16 (CrossQ) | max_session 4 | log_frequency 100000
+**Settings**: max_frame 100M | num_envs 512 | max_session 4 | log_frequency 100000
 
-**Target (ref)**: scores from mujoco_playground official runs (2048+ envs, 100M steps) — use as directional targets.
+**Target (ref)**: scores from mujoco_playground official runs (8192 envs, 100M steps) — use as directional targets.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
@@ -1058,9 +1058,9 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.3: Manipulation (10 envs)
 
-**Settings**: max_frame 100M | num_envs 512 (PPO) / 256 (SAC) / 16 (CrossQ) | max_session 4 | log_frequency 100000
+**Settings**: max_frame 100M | num_envs 512 | max_session 4 | log_frequency 100000
 
-**Target (ref)**: scores from mujoco_playground official runs (2048+ envs, 100M steps) — use as directional targets.
+**Target (ref)**: scores from mujoco_playground official runs (8192 envs, 100M steps) — use as directional targets.
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
