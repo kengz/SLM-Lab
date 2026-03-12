@@ -918,19 +918,19 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FingerSpin | PPO | ⚠️ | 500.95 | ppo_playground | [ppo_playground_v2_fingerspin_2026_03_11_182614](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerspin_2026_03_11_182614) | 600 | 15920 | 100M | 1h 45m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnEasy | PPO | ❌ | 593.91 | ppo_playground | [ppo_playground_v2_fingerturneasy_2026_03_11_190315](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerturneasy_2026_03_11_190315) | 950 | 15370 | 100M | 1h 48m |
+| playground/FingerTurnEasy | PPO | ❌ | 598.75 | ppo_playground | [ppo_playground_fingerturneasy_2026_03_11_210311](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_11_210311) | 950 | 12090 | 100M | 2h 18m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnHard | PPO | ❌ | 455.30 | ppo_playground_v2 | [ppo_playground_v2_fingerturnhard_2026_03_11_182615](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerturnhard_2026_03_11_182615) | 950 | 16010 | 100M | 1h 44m |
+| playground/FingerTurnHard | PPO | ❌ | 553.35 | ppo_playground | [ppo_playground_fingerturnhard_2026_03_11_213004](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturnhard_2026_03_11_213004) | 950 | 12320 | 100M | 2h 15m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FishSwim | PPO | ❌ | 215.09 | ppo_playground | [ppo_playground_v2_fishswim_2026_03_11_193403](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fishswim_2026_03_11_193403) | 650 | 10870 | 100M | 2h 33m |
+| playground/FishSwim | PPO | ❌ | 550.04 | ppo_playground | [ppo_playground_fishswim_2026_03_11_205020](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fishswim_2026_03_11_205020) | 650 | 9650 | 100M | 2h 53m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HopperHop | PPO | 🔄 | - | ppo_playground | - | ~2 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/HopperStand | PPO | ✅ | 203 | ppo_playground_loco | [ppo_playground_loco_hopperstand_2026_03_11_213050](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_hopperstand_2026_03_11_213050) | ~70 | 21000 | 100M | 1h 19m |
+| playground/HopperStand | PPO | ✅ | 202.54 | ppo_playground_loco | [ppo_playground_loco_hopperstand_2026_03_11_213050](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_hopperstand_2026_03_11_213050) | ~70 | 21000 | 100M | 1h 19m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HumanoidRun | PPO | ❌ | 4.26 | ppo_playground | [ppo_playground_v2_humanoidrun_2026_03_11_190714](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_humanoidrun_2026_03_11_190714) | 130 | 10360 | 100M | 2h 41m |
@@ -939,7 +939,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HumanoidStand | PPO | ❌ | 29.81 | ppo_playground_loco | [ppo_playground_loco_humanoidstand_2026_03_11_205103](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_humanoidstand_2026_03_11_205103) | 700 | 24210 | 100M | 1h 9m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidWalk | PPO | ❌ | 10.72 | ppo_playground | [ppo_playground_v2_humanoidwalk_2026_03_11_191943](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_humanoidwalk_2026_03_11_191943) | 500 | 11850 | 100M | 2h 21m |
+| playground/HumanoidWalk | PPO | ❌ | 29.89 | ppo_playground | [ppo_playground_humanoidwalk_2026_03_11_205019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidwalk_2026_03_11_205019) | 500 | 9400 | 100M | 2h 57m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/PendulumSwingup | PPO | ✅ | 395.31 | ppo_playground | [ppo_playground_pendulumswingup_2026_03_11_142901](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pendulumswingup_2026_03_11_142901) | ~70 | 12080 | 100M | 2h 18m |
@@ -957,7 +957,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/SwimmerSwimmer6 | PPO | ❌ | 161.07 | ppo_playground | [ppo_playground_swimmerswimmer6_2026_03_11_152737](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_swimmerswimmer6_2026_03_11_152737) | 560 | 11310 | 50M | 1h 14m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerRun | PPO | ⚠️ | 482.17 | ppo_playground_v2 | [ppo_playground_v2_walkerrun_2026_03_11_182608](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_walkerrun_2026_03_11_182608) | 560 | 11720 | 100M | 2h 22m |
+| playground/WalkerRun | PPO | ⚠️ | 482.17 | ppo_playground | [ppo_playground_v2_walkerrun_2026_03_11_182608](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_walkerrun_2026_03_11_182608) | 560 | 11720 | 100M | 2h 22m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/WalkerStand | PPO | ⚠️ | 781.26 | ppo_playground | [ppo_playground_walkerstand_2026_03_11_100507](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerstand_2026_03_11_100507) | 1000 | 10170 | 100M | 2h 44m |
