@@ -883,80 +883,79 @@ source .env && uv run slm-lab run-remote --gpu \
 
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
-| playground/AcrobotSwingup | PPO | ❌ | 20.29 | ppo_playground | [ppo_playground_acrobotswingup_2026_03_11_142836](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_acrobotswingup_2026_03_11_142836) | 220 | 12730 | 100M | 2h 11m |
+| playground/AcrobotSwingup | PPO | 🔄 | - | ppo_playground | - | 220 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/AcrobotSwingupSparse | PPO | ❌ | 0.35 | ppo_playground | [ppo_playground_acrobotswingupsparse_2026_03_11_160346](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_acrobotswingupsparse_2026_03_11_160346) | 15 | 15610 | 100M | 1h 47m |
+| playground/AcrobotSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 15 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/BallInCup | PPO | ✅ | 718.66 | ppo_playground | [ppo_playground_ballincup_2026_03_11_124251](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_ballincup_2026_03_11_124251) | ~0 (ref fails) | 15140 | 100M | 1h 50m |
+| playground/BallInCup | PPO | 🔄 | - | ppo_playground | - | ~0 (ref fails) | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/CartpoleBalance | PPO | ⚠️ | 876.30 | ppo_playground | [ppo_playground_cartpolebalance_2026_03_11_095201](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpolebalance_2026_03_11_095201) | 950 | 12130 | 100M | 2h 17m |
+| playground/CartpoleBalance | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/CartpoleBalanceSparse | PPO | ✅ | 835.74 | ppo_playground | [ppo_playground_cartpolebalancesparse_2026_03_11_142826](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpolebalancesparse_2026_03_11_142826) | 700 | 12040 | 100M | 2h 18m |
+| playground/CartpoleBalanceSparse | PPO | 🔄 | - | ppo_playground | - | 700 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/CartpoleSwingup | PPO | ⚠️ | 636.71 | ppo_playground | [ppo_playground_cartpoleswingup_2026_03_11_100907](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpoleswingup_2026_03_11_100907) | 800 | 15050 | 100M | 1h 50m |
+| playground/CartpoleSwingup | PPO | 🔄 | - | ppo_playground | - | 800 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/CartpoleSwingupSparse | PPO | ❌ | 27.54 | ppo_playground | [ppo_playground_cartpoleswingupsparse_2026_03_11_142924](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cartpoleswingupsparse_2026_03_11_142924) | 425 | 11200 | 100M | 2h 29m |
+| playground/CartpoleSwingupSparse | PPO | 🔄 | - | ppo_playground | - | 425 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/CheetahRun | PPO | ⚠️ | 662.97 | ppo_playground | [ppo_playground_v2_cheetahrun_2026_03_11_182514](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_cheetahrun_2026_03_11_182514) | 850 | 13990 | 100M | 1h 59m |
+| playground/CheetahRun | PPO | 🔄 | - | ppo_playground | - | 850 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerSpin | PPO | ⚠️ | 500.95 | ppo_playground | [ppo_playground_v2_fingerspin_2026_03_11_182614](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerspin_2026_03_11_182614) | 600 | 15920 | 100M | 1h 45m |
+| playground/FingerSpin | PPO | 🔄 | - | ppo_playground | - | 600 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnEasy | PPO | ❌ | 598.75 | ppo_playground | [ppo_playground_fingerturneasy_2026_03_11_210311](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_11_210311) | 950 | 12090 | 100M | 2h 18m |
+| playground/FingerTurnEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnHard | PPO | ❌ | 553.35 | ppo_playground | [ppo_playground_fingerturnhard_2026_03_11_213004](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturnhard_2026_03_11_213004) | 950 | 12320 | 100M | 2h 15m |
+| playground/FingerTurnHard | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FishSwim | PPO | ❌ | 550.04 | ppo_playground | [ppo_playground_fishswim_2026_03_11_205020](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fishswim_2026_03_11_205020) | 650 | 9650 | 100M | 2h 53m |
+| playground/FishSwim | PPO | 🔄 | - | ppo_playground | - | 650 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HopperHop | PPO | 🔄 | - | ppo_playground | - | ~2 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/HopperStand | PPO | ✅ | 202.54 | ppo_playground_loco | [ppo_playground_loco_hopperstand_2026_03_11_213050](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_hopperstand_2026_03_11_213050) | ~70 | 21000 | 100M | 1h 19m |
+| playground/HopperStand | PPO | 🔄 | - | ppo_playground_loco | - | ~70 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidRun | PPO | ❌ | 7 | ppo_playground | [ppo_playground_humanoidrun_2026_03_11_210531](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidrun_2026_03_11_210531) | 130 | 9300 | 100M | 2h 59m |
+| playground/HumanoidRun | PPO | 🔄 | - | ppo_playground | - | 130 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidStand | PPO | ❌ | 30.04 | ppo_playground_loco | [ppo_playground_loco_humanoidstand_2026_03_11_223955](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_humanoidstand_2026_03_11_223955) | 700 | 14960 | 100M | 1h 55m |
+| playground/HumanoidStand | PPO | 🔄 | - | ppo_playground_loco | - | 700 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidWalk | PPO | ❌ | 29.89 | ppo_playground | [ppo_playground_humanoidwalk_2026_03_11_205019](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidwalk_2026_03_11_205019) | 500 | 9400 | 100M | 2h 57m |
+| playground/HumanoidWalk | PPO | 🔄 | - | ppo_playground | - | 500 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/PendulumSwingup | PPO | ✅ | 395.31 | ppo_playground | [ppo_playground_pendulumswingup_2026_03_11_142901](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pendulumswingup_2026_03_11_142901) | ~70 | 12080 | 100M | 2h 18m |
+| playground/PendulumSwingup | PPO | 🔄 | - | ppo_playground | - | ~70 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/PointMass | PPO | ⚠️ | 801.57 | ppo_playground | [ppo_playground_pointmass_2026_03_11_100801](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_pointmass_2026_03_11_100801) | 900 | 13920 | 100M | 1h 59m |
+| playground/PointMass | PPO | 🔄 | - | ppo_playground | - | 900 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherEasy | PPO | ✅ | 964.20 | ppo_playground | [ppo_playground_reachereasy_2026_03_11_121032](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_reachereasy_2026_03_11_121032) | 950 | 14020 | 100M | 1h 59m |
+| playground/ReacherEasy | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/ReacherHard | PPO | ✅ | 956.05 | ppo_playground | [ppo_playground_reacherhard_2026_03_11_142826](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_reacherhard_2026_03_11_142826) | 950 | 11520 | 100M | 2h 25m |
+| playground/ReacherHard | PPO | 🔄 | - | ppo_playground | - | 950 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/SwimmerSwimmer6 | PPO | ❌ | 161.07 | ppo_playground | [ppo_playground_swimmerswimmer6_2026_03_11_152737](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_swimmerswimmer6_2026_03_11_152737) | 560 | 11310 | 50M | 1h 14m |
+| playground/SwimmerSwimmer6 | PPO | 🔄 | - | ppo_playground | - | 560 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerRun | PPO | ⚠️ | 482.17 | ppo_playground | [ppo_playground_v2_walkerrun_2026_03_11_182608](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_walkerrun_2026_03_11_182608) | 560 | 11720 | 100M | 2h 22m |
+| playground/WalkerRun | PPO | 🔄 | - | ppo_playground | - | 560 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerStand | PPO | ⚠️ | 781.26 | ppo_playground | [ppo_playground_walkerstand_2026_03_11_100507](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerstand_2026_03_11_100507) | 1000 | 10170 | 100M | 2h 44m |
-| | PPO | 🔄 | - | ppo_playground_loco | - | | - | - | - |
+| playground/WalkerStand | PPO | 🔄 | - | ppo_playground | - | 1000 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerWalk | PPO | ❌ | 613.47 | ppo_playground | [ppo_playground_walkerwalk_2026_03_11_095325](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerwalk_2026_03_11_095325) | 960 | 10730 | 100M | 2h 35m |
+| playground/WalkerWalk | PPO | 🔄 | - | ppo_playground | - | 960 | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 
