@@ -13,15 +13,16 @@
 #   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=100000000
 #
 # Batch math:
-#   DM Control: 2048 envs x 30 steps = 61K, 32 minibatches, 16 epochs = 512 grad steps
+#   DM Control: 2048 envs x 30 steps = 61K, 30 minibatches, 16 epochs = 480 grad steps
 #   Loco/Manip: 2048 envs x 64 steps = 131K, 32 minibatches,  4 epochs = 128 grad steps
 #
 # time_horizon rationale: official mujoco_playground uses unroll_length=30 (DM Control)
 #   time_horizon=128 (p5-ppo5) was 4x too long → 4x slower convergence observed empirically
 #
-# minibatch_size rationale: official uses num_minibatches=32
-#   DM Control: 61K / 32 = 1920; Loco: 131K / 32 = 4096 (already correct)
-#   With 32 minibatches (vs 15 before), DM Control gets 512 grad steps/batch (vs 240)
+# minibatch_size rationale: official uses num_minibatches=32 (minibatch_size=1920)
+#   SLM-Lab venv_pack constraint: minibatch_size must be >= num_envs (2048)
+#   DM Control: 61K / 2048 = 30 minibatches (vs 15 before → 2x more grad steps)
+#   Loco: 131K / 4096 = 32 minibatches (already matches official)
 
 # --- Shared ---
 
@@ -116,7 +117,7 @@ ppo_playground:
       gamma: 0.995
       time_horizon: 30
       training_epoch: 16
-      minibatch_size: 1920  # 2048 envs x 30 steps / 32 minibatches = 1920
+      minibatch_size: 2048  # 2048 envs x 30 steps / 30 minibatches = 2048 (venv constraint: must be >= num_envs)
     memory: *memory
     net: *net
   env:
