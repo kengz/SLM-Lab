@@ -957,7 +957,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/SwimmerSwimmer6 | PPO | ❌ | 161.07 | ppo_playground | [ppo_playground_swimmerswimmer6_2026_03_11_152737](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_swimmerswimmer6_2026_03_11_152737) | 560 | 11310 | 50M | 1h 14m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/WalkerRun | PPO | ❌ | 223.46 | ppo_playground | [ppo_playground_walkerrun_2026_03_11_123928](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerrun_2026_03_11_123928) | 560 | 12560 | 100M | 2h 13m |
+| playground/WalkerRun | PPO | ⚠️ | 482.17 | ppo_playground | [ppo_playground_v2_walkerrun_2026_03_11_182608](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_walkerrun_2026_03_11_182608) | 560 | 11720 | 100M | 2h 22m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/WalkerStand | PPO | ⚠️ | 781.26 | ppo_playground | [ppo_playground_walkerstand_2026_03_11_100507](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_walkerstand_2026_03_11_100507) | 1000 | 10170 | 100M | 2h 44m |
