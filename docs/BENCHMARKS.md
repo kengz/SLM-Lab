@@ -936,7 +936,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HumanoidRun | PPO | ❌ | 4.26 | ppo_playground | [ppo_playground_v2_humanoidrun_2026_03_11_190714](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_humanoidrun_2026_03_11_190714) | 130 | 10360 | 100M | 2h 41m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HumanoidStand | PPO | ❌ | 28.59 | ppo_playground_loco | [ppo_playground_loco_v2_humanoidstand_2026_03_11_182722](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_v2_humanoidstand_2026_03_11_182722) | 700 | 13910 | 100M | 2h 0m |
+| playground/HumanoidStand | PPO | ❌ | 29.81 | ppo_playground_loco | [ppo_playground_loco_humanoidstand_2026_03_11_205103](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_humanoidstand_2026_03_11_205103) | 700 | 24210 | 100M | 1h 9m |
 | | CrossQ | 🔄 | - | crossq_playground_vhard | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HumanoidWalk | PPO | ❌ | 10.72 | ppo_playground | [ppo_playground_v2_humanoidwalk_2026_03_11_191943](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_humanoidwalk_2026_03_11_191943) | 500 | 11850 | 100M | 2h 21m |
