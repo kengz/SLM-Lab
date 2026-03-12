@@ -788,8 +788,8 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 | SPEC_NAME | num_envs | time_horizon | batch_size | Notes |
 |-----------|----------|--------------|------------|-------|
-| ppo_playground | 1024 | 128 | 131K | DM Control (gamma=0.995, 16 epochs) |
-| ppo_playground_loco | 512 | 256 | 131K | Locomotion/Manipulation (gamma=0.97, 4 epochs) |
+| ppo_playground | 2048 | 128 | 262K | DM Control (gamma=0.995, 16 epochs) |
+| ppo_playground_loco | 2048 | 256 | 524K | Locomotion/Manipulation (gamma=0.97, 4 epochs) |
 
 **SAC** (sac_playground.yaml):
 
@@ -817,14 +817,14 @@ MJWarp GPU throughput scales roughly linearly with `num_envs` (GPU parallelism).
 
 | Category | Spec | num_envs | Default max_frame | Observed FPS (A5000) |
 |----------|------|----------|-------------------|----------------------|
-| DM Control (PPO) | ppo_playground | 1024 | 100M | ~10K–15K fps → 100M in ~2–3h |
-| Locomotion (PPO) | ppo_playground_loco | 512 | 100M | ~5K–8K fps → 100M in ~3.5–5.5h |
-| Manipulation (PPO) | ppo_playground_loco | 512 | 100M | ~3K–5K fps → 100M in ~5–9h; verify fps first |
+| DM Control (PPO) | ppo_playground | 2048 | 100M | ~20K–30K fps → 100M in ~1–1.5h |
+| Locomotion (PPO) | ppo_playground_loco | 2048 | 100M | ~8K–15K fps → 100M in ~2–3.5h |
+| Manipulation (PPO) | ppo_playground_loco | 2048 | 100M | ~5K–10K fps → 100M in ~3–6h; verify fps first |
 | SAC standard | sac_playground | 256 | 20M | ~1500fps → 20M in ~3.7h |
 | SAC hard / CrossQ | sac_playground_hard / crossq_playground | 16 | 2M | ~60–500fps; gradient-bound |
-| Rough terrain loco | ppo_playground_loco | 512 | 10M | ~500–1500fps; lower due to complex physics |
+| Rough terrain loco | ppo_playground_loco | 2048 | 10M | ~1K–3K fps; lower due to complex physics |
 
-**Reference throughput** (MuJoCo Playground paper, PPO on A100 at 2048–8192 envs): Cartpole ~720K sps | Cheetah ~435K sps | Walker ~140K sps | Humanoid ~92K sps. SLM-Lab at 1024 envs on A5000 achieves ~10K–15K fps for DM Control (confirmed), which is ~2–5% of reference steps/sec but sufficient to reach 100M frames in 2–3h.
+**Reference throughput** (MuJoCo Playground paper, PPO on A100 at 2048–8192 envs): Cartpole ~720K sps | Cheetah ~435K sps | Walker ~140K sps | Humanoid ~92K sps. SLM-Lab at 2048 envs on A5000 targets ~20K–30K fps for DM Control (2x confirmed 1024-env baseline).
 
 #### Autonomous Benchmark Guidelines
 
@@ -875,7 +875,7 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.1: DM Control Suite (25 envs)
 
-**Settings**: max_frame 100M | num_envs 1024 | max_session 4 | log_frequency 100000
+**Settings**: max_frame 100M | num_envs 2048 | max_session 4 | log_frequency 100000
 
 **Target (ref)**: scores from mujoco_playground official runs (2048 envs, 100M steps) — use as directional targets.
 
@@ -972,7 +972,7 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.2: Locomotion Robots (19 envs)
 
-**Settings**: max_frame 100M | num_envs 512 | max_session 4 | log_frequency 100000
+**Settings**: max_frame 100M | num_envs 2048 | max_session 4 | log_frequency 100000
 
 **Target (ref)**: scores from mujoco_playground official runs (8192 envs, 100M steps) — use as directional targets.
 
@@ -1046,7 +1046,7 @@ source .env && uv run slm-lab run-remote --gpu \
 
 #### Phase 5.3: Manipulation (10 envs)
 
-**Settings**: max_frame 100M | num_envs 512 | max_session 4 | log_frequency 100000
+**Settings**: max_frame 100M | num_envs 2048 | max_session 4 | log_frequency 100000
 
 **Target (ref)**: scores from mujoco_playground official runs (8192 envs, 100M steps) — use as directional targets.
 
