@@ -879,6 +879,8 @@ source .env && uv run slm-lab run-remote --gpu \
 
 **Target (ref)**: scores from mujoco_playground official runs (2048 envs, 100M steps) — use as directional targets.
 
+> **⚠️ Spec fix (2026-03-12)**: All PPO runs before this date used a buggy spec that set `time_horizon` to `num_envs` (1M-sample batches instead of 262K). Fixed in commit `61fcd82a` + spec overhauled in `2ae24433` (lr=1e-3, [64,64]+SiLU policy, [256,256,256]+SiLU value, orthogonal init, fixed clip_eps=0.2). Reruns in progress (p5-ppo5- prefix). Scores will be updated.
+
 | ENV | Algorithm | Status | MA | SPEC_NAME | HF Data | Target (ref) | FPS | Frames | Wall Clock |
 |-----|-----------|--------|-----|-----------|---------|--------------|-----|--------|------------|
 | playground/AcrobotSwingup | PPO | ❌ | 20.29 | ppo_playground | [ppo_playground_acrobotswingup_2026_03_11_142836](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_acrobotswingup_2026_03_11_142836) | 220 | 12730 | 100M | 2h 11m |
