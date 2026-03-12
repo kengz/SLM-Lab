@@ -919,7 +919,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FishSwim | PPO | ⚠️ | 463.03 | ppo_playground | [ppo_playground_fishswim_2026_03_12_140629](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fishswim_2026_03_12_140629) | 650 | 5560 | 60M | 3h 0m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/HopperHop | PPO | ❌ | 22.00 | ppo_playground | [ppo_playground_hopperhop_2026_03_12_110855](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_hopperhop_2026_03_12_110855) | ~2 | 13630 | 100M | 2h 2m |
+| playground/HopperHop | PPO | ✅ | 22.00 | ppo_playground | [ppo_playground_hopperhop_2026_03_12_110855](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_hopperhop_2026_03_12_110855) | ~2 | 13630 | 100M | 2h 2m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
 | playground/HopperStand | PPO | 🔄 | - | ppo_playground_loco | - | ~70 | - | - | - |
