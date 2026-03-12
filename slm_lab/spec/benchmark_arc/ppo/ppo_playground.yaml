@@ -61,7 +61,7 @@ _memory: &memory
 
 _meta: &meta
   distributed: false
-  log_frequency: 100000
+  log_frequency: 1000000
   eval_frequency: 100000
   max_session: 4
   max_trial: 1
