@@ -915,13 +915,13 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/CheetahRun | PPO | ❌ | 511.27 | ppo_playground | [ppo_playground_cheetahrun_2026_03_11_095607](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_cheetahrun_2026_03_11_095607) | 850 | 12170 | 100M | 2h 17m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerSpin | PPO | ✅ | 662.74 | ppo_playground | [ppo_playground_fingerspin_2026_03_11_100649](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerspin_2026_03_11_100649) | 600 | 13890 | 100M | 1h 59m |
+| playground/FingerSpin | PPO | ⚠️ | 500.95 | ppo_playground_v2 | [ppo_playground_v2_fingerspin_2026_03_11_182614](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerspin_2026_03_11_182614) | 600 | 15920 | 100M | 1h 45m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FingerTurnEasy | PPO | ❌ | 528.73 | ppo_playground | [ppo_playground_fingerturneasy_2026_03_11_123957](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_11_123957) | 950 | 10590 | 100M | 2h 37m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnHard | PPO | ❌ | 415.89 | ppo_playground | [ppo_playground_fingerturnhard_2026_03_11_124037](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturnhard_2026_03_11_124037) | 950 | 12400 | 100M | 2h 15m |
+| playground/FingerTurnHard | PPO | ❌ | 455.30 | ppo_playground_v2 | [ppo_playground_v2_fingerturnhard_2026_03_11_182615](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_v2_fingerturnhard_2026_03_11_182615) | 950 | 16010 | 100M | 1h 44m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FishSwim | PPO | ❌ | 104.20 | ppo_playground | [ppo_playground_fishswim_2026_03_11_142859](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fishswim_2026_03_11_142859) | 650 | 10010 | 50M | 1h 23m |
