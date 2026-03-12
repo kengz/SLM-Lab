@@ -33,7 +33,7 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | p5-ppo6-acrobotswingup2 | AcrobotSwingup | ppo_playground | 100M | provisioning |
 | p5-ppo6-fingerturneasy2 | FingerTurnEasy | ppo_playground | 100M | provisioning |
 | p5-ppo6-cartpoleswingupsparse | CartpoleSwingupSparse | ppo_playground | 100M | provisioning |
-| p5-ppo6-hopperstand | HopperStand | ppo_playground_loco | 100M | provisioning |
+| p5-ppo6-hopperstand | HopperStand | ppo_playground_loco | 100M | **done** — 16.38 ⚠️ |
 | p5-ppo6-humanoidwalk | HumanoidWalk | ppo_playground_loco | 100M | provisioning |
 | p5-ppo6-humanoidstand | HumanoidStand | ppo_playground_loco | 100M | provisioning |
 | p5-ppo6-humanoidrun | HumanoidRun | ppo_playground_loco | 100M | provisioning |
@@ -79,7 +79,7 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | Env | Target | Run Name | Notes |
 |---|---|---|---|
 | CartpoleSwingupSparse | 425 | p5-ppo6-cartpoleswingupsparse | PPO may struggle with sparse reward |
-| HopperStand | ~70 | p5-ppo6-hopperstand | loco spec |
+| HopperStand | ~70 | p5-ppo6-hopperstand | **done** 16.38 ⚠️ — curve rising steeply at 100M, huge seed variance (one seed ~100, others ~0). Needs 200M+ |
 
 ### ❌ Humanoid — loco spec retry (log_std fix now in effect)
 | Env | Prior Score | Target | Run Name | Notes |

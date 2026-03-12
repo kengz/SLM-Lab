@@ -922,7 +922,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/HopperHop | PPO | ✅ | 22.00 | ppo_playground | [ppo_playground_hopperhop_2026_03_12_110855](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_hopperhop_2026_03_12_110855) | ~2 | 13630 | 100M | 2h 2m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground_hard | - | | - | - | - |
-| playground/HopperStand | PPO | 🔄 | - | ppo_playground_loco | - | ~70 | - | - | - |
+| playground/HopperStand | PPO | ⚠️ | 16.38 | ppo_playground_loco | [ppo_playground_loco_hopperstand_2026_03_12_175845](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_hopperstand_2026_03_12_175845) | ~70 | 36.6K | 100M | 46m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/HumanoidRun | PPO | ❌ | 2.86 | ppo_playground | [ppo_playground_humanoidrun_2026_03_12_131459](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_humanoidrun_2026_03_12_131459) | 130 | 6988 | 100M | 3h 59m |
