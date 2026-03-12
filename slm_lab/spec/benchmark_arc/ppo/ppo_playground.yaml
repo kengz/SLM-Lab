@@ -1,8 +1,8 @@
 # PPO MuJoCo Playground — MJWarp GPU
 #
 # Variants:
-#   ppo_playground      — DM Control (gamma=0.995, lr=3e-4, 16 epochs, 1024 envs, [512,512]+ELU)
-#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=3e-4, 4 epochs, 512 envs, [512,512]+ELU)
+#   ppo_playground      — DM Control (gamma=0.995, lr=3e-4→3e-5, 16 epochs, 1024 envs, [512,512]+ELU)
+#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=3e-4→3e-5, 4 epochs, 512 envs, [512,512]+ELU)
 #
 # Usage:
 #   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=50000000
@@ -43,11 +43,12 @@ _env: &env
   max_t: null
   max_frame: "${max_frame}"
   normalize_obs: true
+  normalize_reward: true
 
 _algorithm: &algorithm
   name: PPO
   gamma: 0.99
-  lam: 0.95
+  lam: 0.97
   clip_eps_spec:
     name: linear_decay
     start_val: 0.2
@@ -56,11 +57,12 @@ _algorithm: &algorithm
     end_step: "${max_frame}"
   entropy_coef_spec:
     name: linear_decay
-    start_val: 0.01
-    end_val: 0.005
+    start_val: 0.003
+    end_val: 0.001
     start_step: 0
     end_step: "${max_frame}"
   val_loss_coef: 0.5
+  clip_vloss: true
   minibatch_size: 4096
   normalize_v_targets: true
 
@@ -69,7 +71,7 @@ _net: &net
   arc: *body
   shared: false
   hid_layers_activation: relu
-  init_fn: null
+  init_fn: orthogonal_
   clip_grad_val: 1.0
   use_same_optim: true
   loss_spec:
@@ -80,7 +82,7 @@ _net: &net
   lr_scheduler_spec:
     name: LinearToMin
     frame: "${max_frame}"
-    min_factor: 0.033
+    min_factor: 0.1
   gpu: auto
 
 # --- DM Control: gamma=0.995, 16 epochs, 1024 envs ---
