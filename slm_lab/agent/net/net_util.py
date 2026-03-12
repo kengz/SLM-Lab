@@ -90,6 +90,14 @@ def get_lr_scheduler(optim, lr_scheduler_spec, steps_per_schedule=1):
         lr_scheduler = LRSchedulerClass(
             optim, lr_lambda=lambda x, n=num_updates: max(0, 1 - x / n)
         )
+    elif lr_scheduler_spec["name"] == "LinearToMin":
+        LRSchedulerClass = getattr(torch.optim.lr_scheduler, "LambdaLR")
+        frame = float(lr_scheduler_spec["frame"])
+        min_factor = float(lr_scheduler_spec.get("min_factor", 0.1))
+        num_updates = max(1, frame / steps_per_schedule)
+        lr_scheduler = LRSchedulerClass(
+            optim, lr_lambda=lambda x, n=num_updates, m=min_factor: max(m, 1 - x * (1 - m) / n)
+        )
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec["name"])
         sched_kwargs = {k: v for k, v in lr_scheduler_spec.items() if k != "name"}

@@ -1,17 +1,14 @@
 # PPO MuJoCo Playground — MJWarp GPU
 #
 # Variants:
-#   ppo_playground        — DM Control v1 (gamma=0.995, lr=1e-3, 16 epochs, 1024 envs, [64,64])
-#   ppo_playground_loco   — Locomotion/Manipulation v1 (gamma=0.97, lr=3e-4, 4 epochs, 512 envs, [64,64])
-#   ppo_playground_v2     — DM Control v2 (same as v1 but [256,256] + linear lr/clip/entropy decay)
-#   ppo_playground_loco_v2 — Loco v2 ([256,256] + linear decay)
+#   ppo_playground      — DM Control (gamma=0.995, lr=3e-4, 16 epochs, 1024 envs, [512,512]+ELU)
+#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=3e-4, 4 epochs, 512 envs, [512,512]+ELU)
 #
 # Usage:
 #   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=50000000
-#   slm-lab ... ppo_playground_v2 train -s env=playground/CheetahRun -s max_frame=100000000
 #   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=50000000
 #
-# Batch math (constant ~131K per update across all variants):
+# Batch math (constant ~131K per update across both variants):
 #   DM Control: 1024 envs x 128 steps = 131K, 32 minibatches, 16 epochs = 512 grad steps
 #   Loco/Manip:  512 envs x 256 steps = 131K, 32 minibatches,  4 epochs = 128 grad steps
 
@@ -21,24 +18,10 @@ _body: &body
   modules:
     body:
       Sequential:
-        - LazyLinear: {out_features: 64}
-        - Tanh:
-        - LazyLinear: {out_features: 64}
-        - Tanh:
-  graph:
-    input: x
-    modules:
-      body: [x]
-    output: body
-
-_body256: &body256
-  modules:
-    body:
-      Sequential:
-        - LazyLinear: {out_features: 256}
-        - Tanh:
-        - LazyLinear: {out_features: 256}
-        - Tanh:
+        - LazyLinear: {out_features: 512}
+        - ELU:
+        - LazyLinear: {out_features: 512}
+        - ELU:
   graph:
     input: x
     modules:
@@ -66,17 +49,17 @@ _algorithm: &algorithm
   gamma: 0.99
   lam: 0.95
   clip_eps_spec:
-    name: no_decay
+    name: linear_decay
     start_val: 0.2
-    end_val: 0.2
+    end_val: 0.1
     start_step: 0
-    end_step: 0
+    end_step: "${max_frame}"
   entropy_coef_spec:
-    name: no_decay
+    name: linear_decay
     start_val: 0.01
-    end_val: 0.01
+    end_val: 0.005
     start_step: 0
-    end_step: 0
+    end_step: "${max_frame}"
   val_loss_coef: 0.5
   minibatch_size: 4096
   normalize_v_targets: true
@@ -85,17 +68,22 @@ _net: &net
   type: TorchArcNet
   arc: *body
   shared: false
-  hid_layers_activation: tanh
-  init_fn: orthogonal_
+  hid_layers_activation: relu
+  init_fn: null
   clip_grad_val: 1.0
   use_same_optim: true
   loss_spec:
     name: MSELoss
   optim_spec:
     name: Adam
+    lr: 3.0e-4
+  lr_scheduler_spec:
+    name: LinearToMin
+    frame: "${max_frame}"
+    min_factor: 0.033
   gpu: auto
 
-# --- DM Control: gamma=0.995, lr=1e-3, 16 epochs, 1024 envs ---
+# --- DM Control: gamma=0.995, 16 epochs, 1024 envs ---
 
 ppo_playground:
   agent:
@@ -106,17 +94,13 @@ ppo_playground:
       time_horizon: 128
       training_epoch: 16
     memory: *memory
-    net:
-      <<: *net
-      optim_spec:
-        name: Adam
-        lr: 1.0e-3
+    net: *net
   env:
     <<: *env
     num_envs: 1024
   meta: *meta
 
-# --- Locomotion/Manipulation: gamma=0.97, lr=3e-4, 4 epochs, 512 envs ---
+# --- Locomotion/Manipulation: gamma=0.97, 4 epochs, 512 envs ---
 
 ppo_playground_loco:
   agent:
@@ -127,85 +111,7 @@ ppo_playground_loco:
       time_horizon: 256
       training_epoch: 4
     memory: *memory
-    net:
-      <<: *net
-      optim_spec:
-        name: Adam
-        lr: 3.0e-4
-  env:
-    <<: *env
-    num_envs: 512
-  meta: *meta
-
-# --- DM Control v2: [256,256] + linear lr/clip/entropy decay, 1024 envs ---
-
-ppo_playground_v2:
-  agent:
-    name: PPO
-    algorithm:
-      <<: *algorithm
-      gamma: 0.995
-      time_horizon: 128
-      training_epoch: 16
-      clip_eps_spec:
-        name: linear_decay
-        start_val: 0.2
-        end_val: 0.0
-        start_step: 0
-        end_step: "${max_frame}"
-      entropy_coef_spec:
-        name: linear_decay
-        start_val: 0.01
-        end_val: 0.0
-        start_step: 0
-        end_step: "${max_frame}"
-    memory: *memory
-    net:
-      <<: *net
-      arc: *body256
-      optim_spec:
-        name: Adam
-        lr: 3.0e-4
-      lr_scheduler_spec:
-        name: LinearToZero
-        frame: "${max_frame}"
-  env:
-    <<: *env
-    num_envs: 1024
-  meta: *meta
-
-# --- Locomotion v2: [256,256] + linear decay, 512 envs ---
-
-ppo_playground_loco_v2:
-  agent:
-    name: PPO
-    algorithm:
-      <<: *algorithm
-      gamma: 0.97
-      time_horizon: 256
-      training_epoch: 4
-      clip_eps_spec:
-        name: linear_decay
-        start_val: 0.2
-        end_val: 0.0
-        start_step: 0
-        end_step: "${max_frame}"
-      entropy_coef_spec:
-        name: linear_decay
-        start_val: 0.01
-        end_val: 0.0
-        start_step: 0
-        end_step: "${max_frame}"
-    memory: *memory
-    net:
-      <<: *net
-      arc: *body256
-      optim_spec:
-        name: Adam
-        lr: 3.0e-4
-      lr_scheduler_spec:
-        name: LinearToZero
-        frame: "${max_frame}"
+    net: *net
   env:
     <<: *env
     num_envs: 512
