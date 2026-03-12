@@ -26,6 +26,12 @@ except ImportError:
 
 _config_overrides = {"impl": "warp"}
 
+# Per-env action_repeat from official dm_control_suite_params.py
+# These match mujoco_playground's canonical training configs exactly.
+_ACTION_REPEAT: dict[str, int] = {
+    "PendulumSwingup": 4,
+}
+
 
 def _build_config_overrides(env_name: str) -> dict:
     """Build config overrides for the given env.
@@ -70,8 +76,9 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         config_overrides = _build_config_overrides(env_name)
         self._base_env = pg_registry.load(env_name, config_overrides=config_overrides)  # kept for rendering
         base_env = self._base_env
+        action_repeat = _ACTION_REPEAT.get(env_name, 1)
         self._env = pg_wrapper.wrap_for_brax_training(
-            base_env, episode_length=episode_length, action_repeat=1
+            base_env, episode_length=episode_length, action_repeat=action_repeat
         )
 
         # Build observation and action spaces

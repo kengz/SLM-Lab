@@ -1,8 +1,10 @@
 # PPO MuJoCo Playground — MJWarp GPU
 #
 # Variants:
-#   ppo_playground      — DM Control (gamma=0.995, lr=1e-3, 16 epochs, 2048 envs)
-#   ppo_playground_loco — Locomotion/Manipulation (gamma=0.97, lr=1e-3, 4 epochs, 2048 envs)
+#   ppo_playground            — DM Control default (gamma=0.995, 16 epochs, 2048 envs)
+#   ppo_playground_fingerspin — FingerSpin: gamma=0.95 (official dm_control_suite_params.py)
+#   ppo_playground_pendulum   — PendulumSwingup: 4 epochs (official); action_repeat=4 set in playground.py
+#   ppo_playground_loco       — Locomotion/Manipulation (gamma=0.97, 4 epochs, 2048 envs)
 #
 # Architecture: asymmetric policy=[64,64]+SiLU, value=[256,256,256]+SiLU
 #   Per official mujoco_playground (policy=[32,32,32,32]+Swish, value=[256,256,256,256,256]+Swish)
@@ -125,7 +127,43 @@ ppo_playground:
     num_envs: 2048
   meta: *meta
 
-# --- Locomotion/Manipulation: gamma=0.97, 4 epochs, 512 envs ---
+# --- FingerSpin: gamma=0.95 (official dm_control_suite_params.py override) ---
+
+ppo_playground_fingerspin:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.95
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+    memory: *memory
+    net: *net
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- PendulumSwingup: training_epoch=4 (official); action_repeat=4 handled in playground.py ---
+
+ppo_playground_pendulum:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 4
+      minibatch_size: 2048
+    memory: *memory
+    net: *net
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Locomotion/Manipulation: gamma=0.97, 4 epochs, 2048 envs ---
 
 ppo_playground_loco:
   agent:
