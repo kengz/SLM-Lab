@@ -47,7 +47,7 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | FingerTurnHard | ppo_playground | 100M | 65M run at 484, still rising (target 950) | **launched** p5-ppo6-fingerturnhard2 |
 | FishSwim | ppo_playground | 100M | Previous run only 60M (wall-limited); curve rising | **launched** p5-ppo6-fishswim2 |
 | PendulumSwingup | ppo_playground_pendulum | 100M | Rerun with action_repeat=4 (playground.py fix) + training_epoch=4 | pending slot |
-| HopperStand | ppo_playground_loco | 700M | 16.38 at 100M, curve rising; 36.6K fps × 19800s = 725M budget | pending slot |
+| HopperStand | ppo_playground_loco | — | 16.38 at 100M ⚠️ — needs spec fix to hit ~70 within 100M | REMOVED — spec fix needed, not more frames |
 
 ---
 
@@ -72,7 +72,7 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | CartpoleSwingup | 665 | 800 | p5-ppo6-cartpoleswingup2 | should hit 800 at 100M |
 | CartpoleBalanceSparse | 511 | 700 | p5-ppo6-cartpolebalancesparse2 | rising steeply, should improve |
 | AcrobotSwingup | 209 | 220 | p5-ppo6-acrobotswingup2 | very close, 100M should cross |
-| FingerTurnEasy | 544 | 950 | p5-ppo6-fingerturneasy2 | still climbing, needs 200M? |
+| FingerTurnEasy | 544 | 950 | p5-ppo6-fingerturneasy2 | running at 100M; if still ⚠️ → spec fix needed |
 | FingerTurnHard | 484 | 950 | queued | same as above |
 | FingerSpin | 537 | 600 | p5-ppo6-fingerspin2 | ppo_playground_fingerspin (gamma=0.95 is official) |
 
@@ -80,7 +80,7 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | Env | Target | Run Name | Notes |
 |---|---|---|---|
 | CartpoleSwingupSparse | 425 | p5-ppo6-cartpoleswingupsparse | PPO may struggle with sparse reward |
-| HopperStand | ~70 | p5-ppo6-hopperstand | ⚠️ 16.38 (max 44, one seed ~100) — loco spec works, needs 200M+ (36.6K fps = ~1.5h) |
+| HopperStand | ~70 | p5-ppo6-hopperstand | ⚠️ 16.38 at 100M — loco spec insufficient; needs spec investigation |
 
 ### ❌ Humanoid — loco spec retry (log_std fix now in effect)
 | Env | Prior Score | Target | Run Name | Notes |
