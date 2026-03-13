@@ -222,3 +222,45 @@ source .env && uv run slm-lab run-remote --gpu \
   slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground_loco train \
   -s env=playground/HumanoidRun -s max_frame=100000000 -n p5-ppo6-humanoidrun2
 ```
+
+---
+
+## CRITICAL CORRECTION (2026-03-13) — Humanoid is DM Control, not Loco
+
+**Root cause of Humanoid failure**: HumanoidRun/Walk/Stand are registered in `dm_control_suite/__init__.py` — they ARE DM Control envs. We incorrectly ran them with `ppo_playground_loco` (gamma=0.97, 4 epochs, time_horizon=64).
+
+Official config uses DEFAULT DM Control params for them: discounting=0.995, 2048 envs, lr=1e-3, unroll_length=30, 16 epochs.
+
+**NaN was never the root cause** — intake-b confirmed NaN skips were 0, 0, 2 in the loco runs. The spec was simply wrong.
+
+**Fix**: Run all 3 Humanoid envs with `ppo_playground` (DM Control spec). No spec change needed.
+
+```bash
+# Launch with correct spec
+source .env && uv run slm-lab run-remote --gpu \
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground train \
+  -s env=playground/HumanoidRun -s max_frame=100000000 -n p5-ppo6-humanoidrun2
+
+source .env && uv run slm-lab run-remote --gpu \
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground train \
+  -s env=playground/HumanoidWalk -s max_frame=100000000 -n p5-ppo6-humanoidwalk2
+
+source .env && uv run slm-lab run-remote --gpu \
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml ppo_playground train \
+  -s env=playground/HumanoidStand -s max_frame=100000000 -n p5-ppo6-humanoidstand2
+```
+
+**HopperStand**: Also a DM Control env. If p5-ppo6-hopperstand (loco spec, 16.38) is below target, rerun with `ppo_playground`.
+
+**Do NOT intake** the loco-spec Humanoid runs (2.78/6.82/12.45) — wrong spec, not valid benchmark results. The old ppo_playground runs (2.86/3.73) were also wrong spec but at least the right family.
+
+**Updated queue (prepend these as highest priority)**:
+
+| Priority | Env | Spec | Run name |
+|---|---|---|---|
+| 0 | HumanoidRun | ppo_playground | p5-ppo6-humanoidrun2 |
+| 0 | HumanoidWalk | ppo_playground | p5-ppo6-humanoidwalk2 |
+| 0 | HumanoidStand | ppo_playground | p5-ppo6-humanoidstand2 |
+| 0 | HopperStand | ppo_playground | p5-ppo6-hopperstand2 (if loco result ⚠️) |
+
+Note on loco spec (`ppo_playground_loco`): only for actual locomotion robot envs (Go1, G1, BerkeleyHumanoid, etc.) — NOT for DM Control Humanoid.
