@@ -28,11 +28,11 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | Run Name | Env | Spec | max_frame | Status |
 |---|---|---|---|---|
 | p5-ppo6-fingerspin2 | FingerSpin | ppo_playground (gamma=0.995 actual, NOT 0.95) | 65M | **done** — 561.3 ⚠️ |
-| p5-ppo6-cartpoleswingup2 | CartpoleSwingup | ppo_playground | 100M | provisioning |
-| p5-ppo6-cartpolebalancesparse2 | CartpoleBalanceSparse | ppo_playground | 100M | provisioning |
-| p5-ppo6-acrobotswingup2 | AcrobotSwingup | ppo_playground | 100M | provisioning |
-| p5-ppo6-fingerturneasy2 | FingerTurnEasy | ppo_playground | 100M | provisioning |
-| p5-ppo6-cartpoleswingupsparse | CartpoleSwingupSparse | ppo_playground | 100M | provisioning |
+| p5-ppo6-cartpoleswingup2 | CartpoleSwingup | ppo_playground | 100M | **done** — 641.51 ⚠️ (still rising) |
+| p5-ppo6-cartpolebalancesparse2 | CartpoleBalanceSparse | ppo_playground | 100M | **done** — 991.81 ✅ (converges to ~1000) |
+| p5-ppo6-acrobotswingup2 | AcrobotSwingup | ppo_playground | 100M | **done** — 253.24 ✅ (steady rise to 253) |
+| p5-ppo6-fingerturneasy2 | FingerTurnEasy | ppo_playground | 100M | running |
+| p5-ppo6-cartpoleswingupsparse | CartpoleSwingupSparse | ppo_playground | 100M | **done** — 331.23 ⚠️ (oscillating, huge variance) |
 | p5-ppo6-hopperstand | HopperStand | ppo_playground_loco | 100M | **done** — 16.38 ⚠️ |
 | p5-ppo6-humanoidwalk | HumanoidWalk | ppo_playground_loco | 100M | provisioning |
 | p5-ppo6-humanoidstand | HumanoidStand | ppo_playground_loco | 100M | provisioning |
