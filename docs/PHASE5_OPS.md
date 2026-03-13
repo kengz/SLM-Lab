@@ -14,12 +14,47 @@ Single source of truth for in-flight work. Resume from here.
 
 ---
 
-## Still Running (as of handover 2026-03-12 ~23:30)
+## Currently Running (as of 2026-03-13 ~00:20)
 
-| Run Name | Env | Spec | Est. completion |
+**Wave A (old spec, no reward_scale):**
+
+| Run Name | Env | Spec | Progress | Notes |
+|---|---|---|---|---|
+| p5-ppo6-fingerturnhard2 | FingerTurnHard | ppo_playground | ~90M/100M | Won't hit 950, MA ~504 |
+| p5-ppo6-fishswim2 | FishSwim | ppo_playground | ~41M/100M | MA ~558, target 650 |
+
+**Wave B (old spec, correct spec assignment — launched 22:09):**
+
+| Run Name | Env | Spec | Notes |
 |---|---|---|---|
-| p5-ppo6-fishswim2 | FishSwim | ppo_playground | ~2h remaining |
-| p5-ppo6-fingerturnhard2 | FingerTurnHard | ppo_playground | ~1h remaining |
+| p5-ppo6-humanoidrun2 | HumanoidRun | ppo_playground | Was incorrectly on loco spec before |
+| p5-ppo6-humanoidwalk2 | HumanoidWalk | ppo_playground | Same |
+| p5-ppo6-humanoidstand2 | HumanoidStand | ppo_playground | Same |
+| p5-ppo6-hopperstand2 | HopperStand | ppo_playground | Same |
+| p5-ppo6-pendulumswingup | PendulumSwingup | ppo_playground_pendulum | action_repeat=4 fix |
+| p5-ppo6-fingerspin3 | FingerSpin | ppo_playground_fingerspin | gamma=0.95 canonical |
+
+**Note**: Wave B runs use old minibatch_size=2048 and no reward_scale. Spec fixes (reward_scale=10.0, minibatch_size=4096) applied locally but not yet in these runs. Next wave will use updated spec.
+
+---
+
+## Spec Changes Applied (2026-03-13)
+
+### Fix 1: reward_scale=10.0 (matches official mujoco_playground)
+- `playground.py`: `PlaygroundVecEnv` now multiplies rewards by `self._reward_scale`
+- `__init__.py`: threads `reward_scale` from env spec to wrapper
+- `ppo_playground.yaml`: `reward_scale: 10.0` in shared `_env` anchor
+
+### Fix 2: Revert minibatch_size 2048→4096 (fixes CartpoleSwingup regression)
+- `ppo_playground.yaml`: all DM Control specs (ppo_playground, fingerspin, pendulum) now use minibatch_size=4096
+- 15 minibatches × 16 epochs = 240 grad steps (was 30×16=480)
+- Restores p5-ppo5 performance for CartpoleSwingup (803 vs 443)
+
+### Pending: Multi-unroll collection (highest impact, needs code work)
+- Official Brax PPO collects 983K transitions/update (16 sequential unrolls of 30 steps across 2048 envs)
+- SLM-Lab collects 61K (1 unroll) — 16x less data per update
+- This is the root cause for hard tasks (FingerTurn, etc.)
+- See `docs/phase5_brax_comparison.md` for full analysis
 
 ---
 

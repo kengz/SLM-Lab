@@ -114,10 +114,9 @@ def init_action_pd(ActionPD, pdparam):
             loc, scale = pdparam
         else:  # 1D actions - single tensor of shape [batch, 2] for [loc, log_scale]
             loc, scale = pdparam.split(1, dim=-1)  # keeps [batch, 1] shape for sum(-1)
-        # scale (stdev) must be > 0, log-clamp-exp (max=0.5 → std_max≈1.65)
-        # Tighter than CleanRL (max=2) to prevent physics blowup in complex envs (e.g. Humanoid)
-        # with orthogonal_ init that saturates log_std at max, causing std>>1 and NaN rewards
-        scale = torch.clamp(scale, min=-5, max=0.5).exp()
+        # scale (stdev) must be > 0, log-clamp-exp (max=2.0 → std_max≈7.39)
+        # Matches Brax softplus (effectively unbounded); allows larger exploration std
+        scale = torch.clamp(scale, min=-5, max=2.0).exp()
         if "covariance_matrix" in args:  # split output
             # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)

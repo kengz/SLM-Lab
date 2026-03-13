@@ -1,4 +1,4 @@
-# PPO MuJoCo Playground — MJWarp GPU
+# PPO MuJoCo Playground — MJWarp GPU (matching official Brax PPO hyperparameters)
 #
 # Variants:
 #   ppo_playground            — DM Control default (gamma=0.995, 16 epochs, 2048 envs)
@@ -6,7 +6,7 @@
 #   ppo_playground_pendulum   — PendulumSwingup: 4 epochs (official); action_repeat=4 set in playground.py
 #   ppo_playground_loco       — Locomotion/Manipulation (gamma=0.97, 4 epochs, 2048 envs)
 #
-# Architecture: asymmetric policy=[64,64]+SiLU, value=[256,256,256]+SiLU
+# Architecture: asymmetric policy=[64,64]+SiLU, value=[256,256,256,256,256]+SiLU
 #   Per official mujoco_playground (policy=[32,32,32,32]+Swish, value=[256,256,256,256,256]+Swish)
 #   Smaller policy = lower sample complexity + cleaner gradient signal
 #
@@ -15,16 +15,12 @@
 #   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=100000000
 #
 # Batch math:
-#   DM Control: 2048 envs x 30 steps = 61K, 30 minibatches, 16 epochs = 480 grad steps
+#   DM Control: 2048 envs x 480 steps = 983K, 32 minibatches, 16 epochs = 512 grad steps
 #   Loco/Manip: 2048 envs x 64 steps = 131K, 32 minibatches,  4 epochs = 128 grad steps
 #
-# time_horizon rationale: official mujoco_playground uses unroll_length=30 (DM Control)
-#   time_horizon=128 (p5-ppo5) was 4x too long → 4x slower convergence observed empirically
-#
-# minibatch_size rationale: official uses num_minibatches=32 (minibatch_size=1920)
-#   SLM-Lab venv_pack constraint: minibatch_size must be >= num_envs (2048)
-#   DM Control: 61K / 2048 = 30 minibatches (vs 15 before → 2x more grad steps)
-#   Loco: 131K / 4096 = 32 minibatches (already matches official)
+# Brax-matching rationale: official mujoco_playground uses unroll_length=30 with 16 unrolls
+#   per training step → effective time_horizon=480. clip_eps=0.3, no grad clipping, constant LR
+#   for DM Control. Loco uses different params (grad clipping on, etc.).
 
 # --- Shared ---
 
@@ -52,6 +48,10 @@ _value_body: &value_body
         - SiLU:
         - LazyLinear: {out_features: 256}
         - SiLU:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
   graph:
     input: x
     modules:
@@ -73,6 +73,7 @@ _env: &env
   max_t: null
   max_frame: "${max_frame}"
   normalize_obs: true
+  reward_scale: 10.0
 
 _algorithm: &algorithm
   name: PPO
@@ -80,7 +81,7 @@ _algorithm: &algorithm
   lam: 0.95
   clip_eps_spec:
     name: no_decay
-    start_val: 0.2
+    start_val: 0.3
   entropy_coef_spec:
     name: no_decay
     start_val: 0.01
@@ -95,7 +96,7 @@ _net: &net
   shared: false
   hid_layers_activation: relu
   init_fn: orthogonal_
-  clip_grad_val: 1.0
+  clip_grad_val: null
   use_same_optim: false
   loss_spec:
     name: MSELoss
@@ -106,7 +107,7 @@ _net: &net
   lr_scheduler_spec:
     name: LinearToMin
     frame: "${max_frame}"
-    min_factor: 0.033
+    min_factor: 1.0
   gpu: auto
 
 # --- DM Control: gamma=0.995, 16 epochs, 2048 envs ---
@@ -117,9 +118,9 @@ ppo_playground:
     algorithm:
       <<: *algorithm
       gamma: 0.995
-      time_horizon: 30
+      time_horizon: 480
       training_epoch: 16
-      minibatch_size: 2048  # 2048 envs x 30 steps / 30 minibatches = 2048 (venv constraint: must be >= num_envs)
+      minibatch_size: 30720  # 2048 envs x 480 steps / 32 minibatches = 30720
     memory: *memory
     net: *net
   env:
@@ -135,9 +136,9 @@ ppo_playground_fingerspin:
     algorithm:
       <<: *algorithm
       gamma: 0.95
-      time_horizon: 30
+      time_horizon: 480
       training_epoch: 16
-      minibatch_size: 2048
+      minibatch_size: 30720
     memory: *memory
     net: *net
   env:
@@ -153,9 +154,9 @@ ppo_playground_pendulum:
     algorithm:
       <<: *algorithm
       gamma: 0.995
-      time_horizon: 30
+      time_horizon: 480
       training_epoch: 4
-      minibatch_size: 2048
+      minibatch_size: 30720
     memory: *memory
     net: *net
   env:
@@ -174,7 +175,9 @@ ppo_playground_loco:
       time_horizon: 64
       training_epoch: 4
     memory: *memory
-    net: *net
+    net:
+      <<: *net
+      clip_grad_val: 1.0
   env:
     <<: *env
     num_envs: 2048

@@ -58,6 +58,7 @@ RESERVED_KEYS = {
     "clip_obs",
     "clip_reward",
     "device",
+    "reward_scale",
 }
 
 
@@ -161,6 +162,7 @@ def _make_playground_env(
     gamma: float,
     device: str | None = None,
     render_mode: str | None = None,
+    reward_scale: float = 1.0,
 ) -> gym.Env:
     """Create a MuJoCo Playground vectorized environment."""
     try:
@@ -181,7 +183,7 @@ def _make_playground_env(
 
     # Strip "playground/" prefix to get the env name for the registry
     pg_env_name = name.removeprefix("playground/")
-    env = PlaygroundVecEnv(pg_env_name, num_envs, device=device)
+    env = PlaygroundVecEnv(pg_env_name, num_envs, device=device, reward_scale=reward_scale)
     logger.info(f"Playground: JAX→PyTorch via {'DLPack zero-copy (GPU)' if device else 'numpy (CPU)'}")
 
     if _needs_action_rescaling(env):
@@ -252,6 +254,7 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
 
     if is_playground:
         logger.info(f"Playground device: {'GPU (cuda) — DLPack zero-copy' if device else 'CPU — numpy transfer'}")
+        reward_scale = env_spec.get("reward_scale", 1.0)
         env = _make_playground_env(
             name,
             num_envs,
@@ -262,6 +265,7 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
             gamma,
             device=device,
             render_mode=render_mode,
+            reward_scale=reward_scale,
         )
     elif num_envs > 1:
         env = _make_vector_env(

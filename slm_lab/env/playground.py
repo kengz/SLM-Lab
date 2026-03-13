@@ -62,8 +62,10 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         seed: int = 0,
         episode_length: int = 1000,
         device: str | None = None,
+        reward_scale: float = 1.0,
     ):
         self._env_name = env_name
+        self._reward_scale = reward_scale
         self._device = device
         if device is not None:
             import torch
@@ -144,7 +146,7 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
 
         obs = self._get_obs(self._state)
         # Rewards, dones, info always numpy (used for control flow and memory)
-        rewards = np.asarray(self._state.reward).astype(np.float32)
+        rewards = np.asarray(self._state.reward).astype(np.float32) * self._reward_scale
         dones = np.asarray(self._state.done).astype(bool)
 
         # Brax EpisodeWrapper sets state.info['truncation'] (1 = time limit, 0 = not)
