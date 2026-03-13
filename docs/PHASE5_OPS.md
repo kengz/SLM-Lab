@@ -45,7 +45,7 @@ Reference: mujoco_playground GitHub discussion #197, JAX green curve at ~100M fr
 | Env | Spec | max_frame | Rationale | Status |
 |---|---|---|---|---|
 | FingerTurnHard | ppo_playground | 100M | 65M run at 484, still rising (target 950) | **launched** p5-ppo6-fingerturnhard2 |
-| FishSwim | ppo_playground | 100M | Previous run was only 60M (wall-clock limited); curve still rising | pending slot |
+| FishSwim | ppo_playground | 100M | Previous run only 60M (wall-limited); curve rising | **launched** p5-ppo6-fishswim2 |
 | PendulumSwingup | ppo_playground_pendulum | 100M | Rerun with action_repeat=4 (playground.py fix) + training_epoch=4 | pending slot |
 | HopperStand | ppo_playground_loco | 200M | 100M run scored 16.38 ⚠️ (one seed ~100, curve rising steeply) | pending slot |
 
