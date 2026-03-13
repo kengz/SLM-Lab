@@ -264,3 +264,20 @@ source .env && uv run slm-lab run-remote --gpu \
 | 0 | HopperStand | ppo_playground | p5-ppo6-hopperstand2 (if loco result ⚠️) |
 
 Note on loco spec (`ppo_playground_loco`): only for actual locomotion robot envs (Go1, G1, BerkeleyHumanoid, etc.) — NOT for DM Control Humanoid.
+
+---
+
+## METRIC CORRECTION (2026-03-13) — strength vs final_strength
+
+**Problem**: `strength` = trajectory-averaged mean over entire run. For slow-rising envs this severely underrepresents end-of-training performance. After metric correction to `strength`:
+
+| Env | strength | total_reward_ma | target | conclusion |
+|---|---|---|---|---|
+| CartpoleSwingup | **443.0** | 641.51 | 800 | Massive regression from p5-ppo5 (803). Strength 443 << 665 (65M result) — curve rises but slow start drags average down |
+| CartpoleBalanceSparse | **545.1** | 991.81 | 700 | Hits target by end (final MA=992) but sparse reward delays convergence |
+| AcrobotSwingup | **172.8** | 253.24 | 220 | Below target by strength, above by final MA |
+| CartpoleSwingupSparse | **270.9** | 331.23 | 425 | Below both metrics |
+
+**Resolution needed**: Reference scores from mujoco_playground are end-of-training values, not trajectory averages. `final_strength` (= last eval MA) is the correct comparison metric. **Recommend switching BENCHMARKS.md score column to `final_strength`** and audit all existing entries.
+
+**CartpoleSwingup regression** is real regardless of metric: p5-ppo5 `final_strength` would be ~800+, p5-ppo6 `total_reward_ma`=641. The p5-ppo6 minibatch change (2048→30 minibatches) hurt CartpoleSwingup convergence speed. Fix: revert `ppo_playground` minibatch_size to 4096 (15 minibatches) — OR accept and investigate if CartpoleSwingup needs its own spec variant.
