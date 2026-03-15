@@ -59,6 +59,7 @@ ml = [
 # MuJoCo Playground dependencies - install with: uv sync --group playground
 playground = [
     "playground[cuda] ; sys_platform != 'darwin'",
+    "playground ; sys_platform == 'darwin'",
 ]
 # Dev dependencies - install with: uv sync --group dev
 dev = [
@@ -67,6 +68,7 @@ dev = [
     "glances>=4.3.3",
     "HolisticTraceAnalysis>=0.5.0",
     "ipykernel>=6.29.5",
+    "ml-collections>=1.1.0",
     "nvidia-ml-py>=13.580.65",
     "pytest-cov>=2.7.1",
     "pytest-timeout>=1.3.3",
@@ -94,6 +96,11 @@ name = "nvidia"
 url = "https://pypi.nvidia.com"
 explicit = true
 
+[[tool.uv.index]]
+name = "mujoco"
+url = "https://py.mujoco.org"
+explicit = true
+
 [tool.uv.sources]
 torch = [
   { index = "pytorch-cu128", marker = "platform_system != 'Darwin'"},
@@ -101,6 +108,10 @@ torch = [
 warp-lang = [
   { index = "nvidia" },
 ]
+playground = { git = "https://github.com/google-deepmind/mujoco_playground", rev = "main" }
+mujoco = { index = "mujoco" }
+mujoco-mjx = { git = "https://github.com/google-deepmind/mujoco", rev = "main", subdirectory = "mjx" }
+brax = { git = "https://github.com/google/brax", rev = "main" }
 
 [tool.pytest.ini_options]
 addopts = [
