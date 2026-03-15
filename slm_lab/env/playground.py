@@ -18,13 +18,29 @@ from gymnasium.vector.utils import batch_space
 try:
     from mujoco_playground import registry as pg_registry
     from mujoco_playground import wrapper as pg_wrapper
+    from mujoco_playground._src import mjx_env as _mjx_env_module
 except ImportError:
     raise ImportError(
         "MuJoCo Playground is required for playground environments. "
         "Install with: uv sync --group playground"
     )
 
-_config_overrides = {"impl": "warp"}
+# Monkey-patch mjx_env.make_data to ensure naccdmax is set when missing.
+# Some mujoco_warp versions default naccdmax=None to 0, causing CCD buffer
+# overflow for envs with mesh/convex colliders. We resolve None to naconmax
+# (the total active-contact buffer), which is always a safe upper bound.
+_original_make_data = _mjx_env_module.make_data
+
+
+def _patched_make_data(*args, **kwargs):
+    naccdmax = kwargs.get("naccdmax")
+    naconmax = kwargs.get("naconmax")
+    if naccdmax is None and naconmax is not None:
+        kwargs["naccdmax"] = naconmax
+    return _original_make_data(*args, **kwargs)
+
+
+_mjx_env_module.make_data = _patched_make_data
 
 # Per-env action_repeat from official dm_control_suite_params.py
 # These match mujoco_playground's canonical training configs exactly.
@@ -36,14 +52,16 @@ _ACTION_REPEAT: dict[str, int] = {
 def _build_config_overrides(env_name: str) -> dict:
     """Build config overrides for the given env.
 
-    Warp backend requires njmax=None (auto-detect) when the env default is 0.
-    njmax=0 in Warp means "allocate 0 constraint slots", causing nefc overflow
-    for any env with joint limits. njmax=None triggers _default_njmax().
+    Sets impl='warp' for envs that support backend selection.
+    When njmax is 0, sets None to trigger auto-detection via _default_njmax().
     """
-    overrides = dict(_config_overrides)
     default_cfg = pg_registry.get_default_config(env_name)
-    if getattr(default_cfg, "njmax", None) == 0:
+    overrides = {"impl": "warp"} if hasattr(default_cfg, "impl") else {}
+    njmax = getattr(default_cfg, "njmax", None)
+
+    if njmax is not None and njmax == 0:
         overrides["njmax"] = None
+
     return overrides
 
 
@@ -62,10 +80,8 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         seed: int = 0,
         episode_length: int = 1000,
         device: str | None = None,
-        reward_scale: float = 1.0,
     ):
         self._env_name = env_name
-        self._reward_scale = reward_scale
         self._device = device
         if device is not None:
             import torch
@@ -76,7 +92,9 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         # wrap_for_brax_training applies: VmapWrapper → EpisodeWrapper → BraxAutoResetWrapper
         # impl='warp' selects MJWarp (Warp-accelerated MJX) on CUDA; 'jax' on CPU
         config_overrides = _build_config_overrides(env_name)
-        self._base_env = pg_registry.load(env_name, config_overrides=config_overrides)  # kept for rendering
+        self._base_env = pg_registry.load(
+            env_name, config_overrides=config_overrides
+        )  # kept for rendering
         base_env = self._base_env
         action_repeat = _ACTION_REPEAT.get(env_name, 1)
         self._env = pg_wrapper.wrap_for_brax_training(
@@ -146,7 +164,7 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
 
         obs = self._get_obs(self._state)
         # Rewards, dones, info always numpy (used for control flow and memory)
-        rewards = np.asarray(self._state.reward).astype(np.float32) * self._reward_scale
+        rewards = np.asarray(self._state.reward).astype(np.float32)
         dones = np.asarray(self._state.done).astype(bool)
 
         # Brax EpisodeWrapper sets state.info['truncation'] (1 = time limit, 0 = not)

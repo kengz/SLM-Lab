@@ -20,6 +20,7 @@ from gymnasium.wrappers.vector import (
     NormalizeReward as VectorNormalizeReward,
     RecordEpisodeStatistics as VectorRecordEpisodeStatistics,
     RescaleAction as VectorRescaleAction,
+    TransformReward as VectorTransformReward,
 )
 
 from slm_lab.env.wrappers import (
@@ -183,7 +184,7 @@ def _make_playground_env(
 
     # Strip "playground/" prefix to get the env name for the registry
     pg_env_name = name.removeprefix("playground/")
-    env = PlaygroundVecEnv(pg_env_name, num_envs, device=device, reward_scale=reward_scale)
+    env = PlaygroundVecEnv(pg_env_name, num_envs, device=device)
     logger.info(f"Playground: JAX→PyTorch via {'DLPack zero-copy (GPU)' if device else 'numpy (CPU)'}")
 
     if _needs_action_rescaling(env):
@@ -194,6 +195,9 @@ def _make_playground_env(
         env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
 
     env = VectorRecordEpisodeStatistics(env)
+
+    if reward_scale != 1.0:
+        env = VectorTransformReward(env, lambda r: r * reward_scale)
 
     if render_mode:
         env = PlaygroundRenderWrapper(env)
