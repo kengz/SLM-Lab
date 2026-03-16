@@ -1010,7 +1010,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/Go1Footstand | PPO | ✅ | 22.74 | ppo_playground_loco | [ppo_playground_loco_go1footstand_2026_03_14_194515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1footstand_2026_03_14_194515) | 15 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Getup | PPO | ❌ | 0.00 | ppo_playground_loco | [ppo_playground_loco_go1getup_2026_03_15_150301](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1getup_2026_03_15_150301) | 5 | - | 100M | ~1h |
+| playground/Go1Getup | PPO | ✅ | 18.16 | ppo_playground_loco_go1 | [ppo_playground_loco_go1getup_2026_03_15_150301](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1getup_2026_03_15_150301) | 5 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Go1Handstand | PPO | ⚠️ | 6.48 | ppo_playground_loco | [ppo_playground_loco_go1handstand_2026_03_14_202609](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1handstand_2026_03_14_202609) | 15 | - | 100M | ~1h |
