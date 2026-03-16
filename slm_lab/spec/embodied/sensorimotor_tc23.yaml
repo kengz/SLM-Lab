@@ -1,0 +1,117 @@
+# TC-23: Deferred Imitation
+#
+# Agent watches a 3-step demonstration then reproduces it after delays of 1 min, 1 hr, 1 day.
+# Delay implemented via Gaussian noise on episodic memory (sigma = 0.01 * delay_minutes).
+# Demonstration: pick cube_red -> place in box_open -> push cube_blue off table.
+# Axiom trace: Ax6 (being-with/Mitsein — imitation requires modeling another agent's actions).
+# Pass threshold: short_delay >= 0.70; medium_delay >= 0.50; score >= 0.50.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc23.yaml', 'ppo_sensorimotor_tc23')
+
+ppo_sensorimotor_tc23:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 300                       # 300 steps per reproduction episode (12 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: deferred_imitation
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 3                   # cube_red + cube_blue + box_open
+      use_ground_truth_obs: true
+      # TC-23 specific
+      demo_steps: 100                # demonstration duration (4 s)
+      reproduction_trials: 20        # per delay condition
+      # Delay conditions (simulated via memory noise)
+      delays:
+        short_minutes: 1             # 1 min delay
+        medium_minutes: 60           # 1 hr delay
+        long_minutes: 1440           # 1 day delay
+      memory_noise_sigma_per_min: 0.01  # noise ~ 0.01 * delay_minutes
+      # Action sequence success criteria
+      pickup_lift_height: 0.03       # m above table — object lifted threshold
+      place_in_box_tolerance: 0.05   # m — object center must be within box bounds
+      push_off_z_threshold: 0.73     # m — object below table surface (fell off)
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc23
+    pass_threshold: 0.50             # 0.40*short + 0.40*medium + 0.20*long
+    ci_lower_min: 0.35               # 0.70 * 0.50
+    short_delay_rate_min: 0.70
+    short_delay_ci_lower_min: 0.49   # 0.70 * 0.70
+    medium_delay_rate_min: 0.50
+    # Long delay is supplementary — no hard threshold

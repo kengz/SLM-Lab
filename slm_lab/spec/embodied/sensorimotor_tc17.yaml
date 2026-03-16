@@ -1,0 +1,115 @@
+# TC-17: Intentional Means-End (Remove Obstacle)
+#
+# Agent must push barrier aside (subgoal) then grasp target (main goal).
+# Phase 1: training (50 episodes, 300 steps) with shaped reward.
+# Phase 2: evaluation (20 episodes, 300 steps) — no reward.
+# Axiom trace: Ax4 (care — goal-directed motivation to remove obstacle).
+# Pass threshold: completion_rate >= 0.70; order_rate >= 0.60; score >= 0.60.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc17.yaml', 'ppo_sensorimotor_tc17')
+
+ppo_sensorimotor_tc17:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 300                       # 300 steps per episode (12 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: intentional_means_end
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 2                   # cube_red (target) + barrier
+      use_ground_truth_obs: true
+      # TC-17 specific
+      training_episodes: 50
+      eval_episodes: 20
+      # Reward shaping (training only)
+      grasp_target_reward: 10.0
+      barrier_contact_reward: 2.0
+      barrier_moved_reward: 5.0      # awarded once barrier moves > 0.10 m
+      barrier_move_threshold: 0.10   # m from initial position
+      # Barrier geometry
+      barrier_size:                  # m
+        - 0.15
+        - 0.10
+        - 0.10
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc17
+    pass_threshold: 0.60             # 0.5*completion + 0.3*order + 0.2*efficiency
+    ci_lower_min: 0.42               # 0.70 * 0.60
+    completion_rate_min: 0.70
+    order_rate_min: 0.60

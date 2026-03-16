@@ -1,0 +1,124 @@
+# TC-16: Object Permanence (A-not-B Task) — KEYSTONE
+#
+# Gates all spatial reasoning downstream (TC-17, TC-18, TC-22, TC-24).
+# Dual criterion: Stage 4 (perseveration expected), Stage 5 (correct search expected).
+# Acquisition gate: A-trial success >= 0.80 required before B-trials are evaluated.
+# Axiom trace: Ax1 (being-in-the-world — world persists beyond perception),
+#              Ax8 (affordances — hidden objects retain affordances).
+# Pass thresholds:
+#   Stage 4: A-not-B error rate >= 0.60 in first 5 B-trials; score_tc16_stage4 >= 0.60.
+#   Stage 5: correct search rate >= 0.80; score_tc16_stage5 >= 0.80.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc16.yaml', 'ppo_sensorimotor_tc16')
+
+ppo_sensorimotor_tc16:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 100                       # 100 steps per trial (4 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: object_permanence
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 1                   # sphere_red as target
+      use_ground_truth_obs: true
+      # TC-16 specific
+      a_trials: 5                    # habituation at location A
+      b_trials: 16                   # critical test at location B (15 + 1 initial)
+      hiding_steps: 10               # animation duration for hiding object
+      delay_steps: 5                 # delay between hiding and search (0.2 s)
+      search_radius: 0.05            # m — ee must be within this of screen base
+      a_trial_reward: 5.0            # reward for correct A-trial search
+      b_trial_reward: 0.0            # no reward during probe
+      acquisition_gate_min: 0.80     # A-trial success rate required to proceed
+      # Stage variant: 'stage4' or 'stage5' (set per training run)
+      eval_stage: stage4
+      # Supplementary delay conditions
+      delay_variants:
+        - 5                          # 0.2 s (standard)
+        - 25                         # 1.0 s
+        - 50                         # 2.0 s
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    # Stage 4 criteria (perseveration expected)
+    stage4_score_fn: score_tc16_stage4
+    stage4_pass_threshold: 0.60      # A-not-B error rate in first 5 B-trials
+    stage4_acquisition_gate: 0.80    # A-trial rate prerequisite
+    # Stage 5 criteria (correct search expected)
+    stage5_score_fn: score_tc16_stage5
+    stage5_pass_threshold: 0.80
+    stage5_ci_lower_min: 0.56        # 0.70 * 0.80

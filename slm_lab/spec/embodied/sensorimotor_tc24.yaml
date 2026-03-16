@@ -1,0 +1,121 @@
+# TC-24: Invisible Displacement
+#
+# Most advanced object permanence test. Agent must track target through a multi-step
+# invisible transfer: target placed in container -> container hidden -> emerges empty
+# -> agent must infer target is where container was emptied.
+# Phase 1: visible displacement warmup (5 trials) — agent must pass before Phase 2.
+# Phase 2: invisible displacement test (20 trials) — no reward.
+# Axiom trace: Ax1 (being-in-the-world — world model maintains object representations
+#              through unobserved transitions).
+# Pass threshold: visible >= 0.80 (warmup gate); invisible >= 0.60; score >= 0.55.
+# Statistical note: with 2 locations chance = 50%; 12/20 = 60% gives p ≈ 0.06.
+#   Consider 3 locations or 30 trials before Phase 3.2 evaluation (see sensorimotor-tests.md §16).
+#
+# Load: spec_util.get('embodied/sensorimotor_tc24.yaml', 'ppo_sensorimotor_tc24')
+
+ppo_sensorimotor_tc24:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 300                       # 300 steps per trial (12 s — sequence is slow)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: invisible_displacement
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 4                   # sphere_red + box_open (container) + screen_A + screen_B
+      use_ground_truth_obs: true
+      # TC-24 specific
+      visible_warmup_trials: 5       # Phase 1 — must pass before Phase 2
+      invisible_test_trials: 20      # Phase 2
+      # Displacement sequence timing (each step = 20 control steps = 0.8 s)
+      sequence_step_duration: 20     # slow down for tracking
+      # Locations randomized per trial
+      n_locations: 2                 # A or B (consider 3 for statistical power)
+      # Container state encoding
+      container_empty_obs: true      # encode container_empty bool in observation
+      # Search detection
+      search_radius: 0.05            # m — ee within this of screen base counts as search
+      # Warmup reward
+      warmup_correct_reward: 5.0
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc24
+    pass_threshold: 0.55             # 0.3*visible + 0.7*invisible
+    ci_lower_min: 0.35               # 0.70 * 0.55 (rounded down)
+    visible_warmup_gate: 0.80        # must pass warmup before Phase 2 is scored
+    invisible_rate_min: 0.60
+    invisible_ci_lower_min: 0.35     # 0.70 * 0.60 (rounded down)

@@ -1,0 +1,115 @@
+# Base Sensorimotor config — shared defaults for TC-11 through TC-24.
+#
+# Task-specific overrides live in sensorimotor_tc_XX.yaml (one file per task).
+# Load via: spec_util.get('embodied/base_sensorimotor.yaml', 'ppo_sensorimotor_base')
+#
+# Agent: PPO with 2-layer MLP (512 units), Phase 3.2a architecture.
+# Env:   SLM/Sensorimotor-v0 — MuJoCo 3D tabletop, 56-dim obs (Phase 3.2a), 10-DOF action.
+#        56-dim = 25 proprio + 2 tactile + 6 EE + 2 internal + 21 object state (3 objects x 7).
+#        Action: 7 joint targets + 1 gripper + 2 head pan/tilt, all in [-1, 1].
+#        Env registered in slm_lab/env/__init__.py; task variant set via env kwargs.
+#
+# Training pipeline (training-pipeline.md §4):
+#   Phase 3.2a: ground-truth obs, basic PPO policy, proprio encoder.
+#   Phase 3.2b+: vision encoder enabled (obs expands to 547 dims).
+#
+# Reward structure (sensorimotor-tests.md §1.1):
+#   - Energy: initial 100.0, decay 0.05/step. Terminal at 0 or t >= max_t.
+#   - Intrinsic: eta * ||predicted - actual state||^2, eta=0.01 (training only).
+#   - Extrinsic: sparse task reward, magnitude specified per task.
+#
+# Evaluation (sensorimotor-tests.md §2):
+#   - Minimum 20 eval trials (lower than Pavlovian's 50 — motor tasks lower variance).
+#   - Pass: score >= threshold AND 95% CI lower > 0.70 * threshold.
+#   - Mastery: score >= 0.95, completion time bottom quartile, trajectory smoothness bottom quartile.
+
+ppo_sensorimotor_base:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512              # longer horizon for 3D manipulation tasks
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0             # global norm clipping (training-pipeline.md §4.3)
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    # Registered Gymnasium env. Task variant is set per-file via env_kwargs.
+    name: SLM/Sensorimotor-v0
+    max_t: 500                       # 500 control steps @ 25 Hz = 20 s per episode
+    max_frame: 1000000               # 1M frames default; override per task
+    num_envs: 16                     # Phase 3.2 — more envs for 3D physics parallelism
+    # Sensorimotor env parameters (passed as kwargs to env constructor)
+    env_kwargs:
+      task: null                     # Override per task
+      dt: 0.002                      # MuJoCo timestep 500 Hz (env-detailed.md)
+      control_freq: 25               # Control rate 25 Hz
+      arena_size: 5.0                # Room 5x5x3 m
+      table_height: 0.75             # Table at 0.75 m
+      max_energy: 100.0
+      energy_decay: 0.05             # 0.05 per control step (sensorimotor-tests.md §1)
+      intrinsic_eta: 0.01            # Curiosity reward scale
+      n_objects: 3                   # Default objects in scene
+      use_ground_truth_obs: true     # Phase 3.2a: ground-truth object state
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192             # ~16 * time_horizon
+    max_session: 1
+    max_trial: 1
+  # Curriculum / mastery parameters (read by curriculum.py)
+  curriculum:
+    mastery_threshold: 0.95          # higher than Pavlovian — motor mastery requires fluency
+    mastery_window: 20               # episodes in sliding window
+    min_eval_trials: 20              # minimum eval trials (sensorimotor-tests.md §2.1)
+    max_eval_trials: 50              # extend if CI unresolved after 20
+  # Intrinsic motivation parameters
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false        # eval is extrinsic-only
