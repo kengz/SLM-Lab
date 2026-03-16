@@ -1,0 +1,112 @@
+# TC-19: Active Experimentation
+#
+# Agent systematically varies actions to discover all 5 interaction affordances of a cube:
+# push, lift, rotate, drop, place_in_box.
+# Single eval phase: free exploration with intrinsic reward only (20 episodes, 500 steps).
+# Axiom trace: Ax15 (maximum grip — agent actively varies actions for richer coupling).
+# Pass threshold: coverage >= 0.80 (4/5 modes); entropy > random baseline; score >= 0.60.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc19.yaml', 'ppo_sensorimotor_tc19')
+
+ppo_sensorimotor_tc19:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 500                       # 500 steps per episode (20 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: active_experimentation
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 2                   # 1 cube + 1 open box
+      use_ground_truth_obs: true
+      # TC-19 specific
+      eval_episodes: 20
+      # Post-hoc mode classification thresholds
+      mode_thresholds:
+        push_lateral_min: 0.03       # m lateral displacement, no lift
+        lift_z_min: 0.80             # m above floor (table + 0.05 m clearance)
+        rotate_angle_min: 0.3        # rad orientation change
+        drop_z_peak_min: 0.85        # m peak height before falling
+        place_in_box_tol: 0.05       # m — object center within box bounds
+      available_modes: 5
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc19
+    pass_threshold: 0.60             # 0.5*coverage + 0.5*entropy_ratio
+    ci_lower_min: 0.42               # 0.70 * 0.60
+    coverage_min: 0.80               # >= 4 of 5 modes
+    entropy_must_exceed_random: true

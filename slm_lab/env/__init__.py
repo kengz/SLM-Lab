@@ -53,6 +53,15 @@ gym.register(
     max_episode_steps=1000,
 )
 
+# Register Sensorimotor environments (TC-11 through TC-24)
+for _tc_id in range(11, 25):
+    gym.register(
+        id=f"SLM-Sensorimotor-TC{_tc_id:02d}-v0",
+        entry_point="slm_lab.env.sensorimotor:SLMSensorimotor",
+        kwargs={"task_id": f"TC-{_tc_id:02d}"},
+        max_episode_steps=500,
+    )
+
 logger = logger.get_logger(__name__)
 
 # Keys handled by make_env, not passed to gym.make

@@ -359,7 +359,7 @@ class TestPredefinedGates:
         assert len(CHECKPOINT_A.criteria) == 10
 
     def test_checkpoint_b_has_tc11(self):
-        assert "multimodal_integration" in CHECKPOINT_B.criteria
+        assert "reflex_validation" in CHECKPOINT_B.criteria
 
     def test_dino_probe_gate(self):
         assert "dino_probe" in DINO_PROBE_GATE.criteria

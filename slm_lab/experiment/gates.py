@@ -118,11 +118,11 @@ CHECKPOINT_A = GateConfig(
     description="Pavlovian stage exit: all 10 TC tasks at their pass thresholds",
 )
 
-# Checkpoint B: TC-11 sensorimotor multimodal integration ≥50%.
+# Checkpoint B: TC-11 reflex validation ≥50%.
 CHECKPOINT_B = GateConfig(
     name="CHECKPOINT_B",
-    criteria={"multimodal_integration": 0.50},
-    description="Sensorimotor stage entry: TC-11 at ≥50%",
+    criteria={"reflex_validation": 0.50},
+    description="Sensorimotor stage entry: TC-11 reflex validation at ≥50%",
 )
 
 # DINO probe gate: perception probe accuracy >70%.
@@ -136,7 +136,7 @@ DINO_PROBE_GATE = GateConfig(
 CHECKPOINT_D = GateConfig(
     name="CHECKPOINT_D",
     criteria={
-        "multimodal_integration": 0.90,
+        "reflex_validation": 0.90,
         "contingency_detection": 0.60,
         "reach_grasp": 0.50,
         "object_permanence_basic": 0.50,

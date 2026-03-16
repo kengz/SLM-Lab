@@ -1,0 +1,115 @@
+# TC-11: Reflex Validation
+#
+# Keystone for born-ready modules. Tests 3 pre-wired reflexes:
+#   visual tracking (head pan follows moving sphere),
+#   grasp reflex (gripper closes on palm contact),
+#   perturbation recovery (arm returns to home after external force).
+# Single evaluation phase — no training. Reflexes are hardcoded/pretrained.
+# Axiom trace: Ax14 (motor intentionality).
+# Pass threshold: overall score >= 0.90; each individual reflex rate >= 0.80.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc11.yaml', 'ppo_sensorimotor_tc11')
+
+ppo_sensorimotor_tc11:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 50                        # 50 steps per reflex trial (2 s at 25 Hz)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: reflex_validation
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 1                   # moving sphere for visual tracking
+      use_ground_truth_obs: true
+      # TC-11 specific
+      trials_per_reflex: 20          # 60 total (3 reflexes x 20 trials)
+      iti_steps: 25                  # inter-trial interval (1 s)
+      visual_track_tolerance_deg: 15.0
+      grasp_close_steps: 10          # gripper must close within 10 steps of contact
+      grasp_closed_threshold: 0.02   # m, gripper gap < 0.02 = closed
+      proprio_return_tolerance: 0.1  # rad, joint error threshold
+      proprio_return_steps: 50       # must return within 50 steps
+      perturbation_force_n: 10.0     # N, 0.2 s duration
+      sphere_speed: 0.3              # m/s across visual field
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc11
+    pass_threshold: 0.90             # overall weighted average of 3 reflex types
+    ci_lower_min: 0.63               # 0.70 * 0.90
+    visual_reflex_min: 0.80
+    tactile_reflex_min: 0.80
+    proprio_reflex_min: 0.80

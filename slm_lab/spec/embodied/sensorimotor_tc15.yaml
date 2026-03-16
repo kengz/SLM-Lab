@@ -1,0 +1,110 @@
+# TC-15: Means-End Precursor (String Pull)
+#
+# Agent must discover that pulling a string (rigid rod) retrieves an out-of-reach target.
+# Phase 1: discovery (10 episodes, 500 steps) — accidental discovery via intrinsic reward.
+# Phase 2: evaluation (20 episodes, 300 steps) — no reward.
+# Success criterion: 70%+ of 10 trials after first accidental discovery.
+# Axiom trace: Ax8 (affordances — string affords pulling to retrieve target).
+# Pass threshold: score >= 0.70; first success within Phase 1.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc15.yaml', 'ppo_sensorimotor_tc15')
+
+ppo_sensorimotor_tc15:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 500                       # 500 steps per episode (20 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: means_end_precursor
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 2                   # target (cube_red) + string rod
+      use_ground_truth_obs: true
+      # TC-15 specific
+      discovery_episodes: 10         # Phase 1
+      eval_episodes: 20              # Phase 2
+      post_discovery_test_episodes: 10  # run after first success
+      target_beyond_reach: 0.15      # m beyond reachable workspace
+      string_length: 0.20            # m (rigid rod)
+      grasp_threshold: 0.02          # m — gripper gap for grasp detection
+      pull_distance: 0.10            # m — min target displacement for success
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc15
+    pass_threshold: 0.70             # fraction of post-discovery trials correct
+    ci_lower_min: 0.49               # 0.70 * 0.70
+    require_discovery_within_phase1: true

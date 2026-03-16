@@ -1,0 +1,124 @@
+# TC-20: Novel Tool Use
+#
+# Agent selects the functional tool (stick or rake) from 3 options to retrieve out-of-reach target.
+# Includes a transfer phase with a novel-appearance but functionally-equivalent tool.
+# Phase 1: discovery (20 episodes, 500 steps) with intrinsic + sparse reward.
+# Phase 2: evaluation known tools (20 episodes, 500 steps) — no reward.
+# Phase 3: transfer novel tool (10 episodes, 500 steps) — no reward.
+# Axiom trace: Ax8 (affordances), Ax16 (equipment totality — tools have purpose-relative meaning).
+# Pass threshold: known_rate >= 0.60; selection_rate >= 0.50; transfer_rate >= 0.40; score >= 0.50.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc20.yaml', 'ppo_sensorimotor_tc20')
+
+ppo_sensorimotor_tc20:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 500                       # 500 steps per episode (20 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: novel_tool_use
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 4                   # sphere_red (target) + stick + rake + spoon
+      use_ground_truth_obs: true
+      # TC-20 specific
+      discovery_episodes: 20
+      eval_episodes: 20
+      transfer_episodes: 10
+      target_beyond_reach: 0.15      # m beyond workspace
+      retrieval_reward: 10.0         # sparse reward (discovery phase)
+      # Tool definitions
+      tools:
+        stick:
+          length: 0.30               # m — functional (can push target)
+          functional: true
+        rake:
+          length: 0.30               # m with crossbar — functional (can hook target)
+          functional: true
+        spoon:
+          length: 0.15               # m — non-functional (too short)
+          functional: false
+      # Transfer tool (novel appearance, same function as rake)
+      transfer_tool: l_bar           # L-shaped bar, same functional geometry as rake
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc20
+    pass_threshold: 0.50             # 0.4*known + 0.3*selection + 0.3*transfer
+    ci_lower_min: 0.35               # 0.70 * 0.50
+    known_rate_min: 0.60
+    selection_rate_min: 0.50
+    transfer_rate_min: 0.40

@@ -1,0 +1,120 @@
+# TC-22: Insightful Problem Solving — KEYSTONE
+#
+# Gates mental simulation. Agent must solve a novel box-latch mechanism without training.
+# Zero-shot evaluation only — no task-specific training. Tests transfer from prior skills.
+# Box: transparent, with hinge-joint latch and slide-joint lid. Target sphere_blue inside.
+# Success requires: latch -> lid -> retrieve, in <= 3 attempts, with deliberation pause.
+# Axiom trace: Ax2 (ready-to-hand/present-at-hand — insightful switching from habitual
+#              to deliberate analysis before acting).
+# Pass threshold: solve_rate >= 0.50; mean_attempts <= 3; insight_indicator > 0.30; score >= 0.45.
+#
+# Load: spec_util.get('embodied/sensorimotor_tc22.yaml', 'ppo_sensorimotor_tc22')
+
+ppo_sensorimotor_tc22:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 1000000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 1000000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 512
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 512
+        - 512
+      hid_layers_activation: tanh
+      clip_grad_val: 1.0
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      critic_optim_spec:
+        name: AdamW
+        lr: 0.0003
+        betas:
+          - 0.9
+          - 0.999
+        weight_decay: 0.01
+      gpu: auto
+  env:
+    name: SLM/Sensorimotor-v0
+    max_t: 500                       # 500 steps per episode (20 s)
+    max_frame: 1000000
+    num_envs: 16
+    env_kwargs:
+      task: insightful_problem_solving
+      dt: 0.002
+      control_freq: 25
+      arena_size: 5.0
+      table_height: 0.75
+      max_energy: 100.0
+      energy_decay: 0.05
+      intrinsic_eta: 0.01
+      n_objects: 2                   # transparent box (with latch) + sphere_blue
+      use_ground_truth_obs: true
+      # TC-22 specific — zero-shot evaluation only
+      eval_episodes: 20
+      latch_positions:               # varied across trials to prevent memorization
+        - left
+        - right
+        - front
+      # Mechanism parameters
+      latch_displacement: 0.02       # m — minimum latch push to unlock lid
+      # Attempt detection
+      attempt_end_ee_distance: 0.10  # m from box — arm retract threshold
+      attempt_pause_steps: 10        # steps without movement (vel < 0.1 rad/s) = new attempt
+      # Insight indicator
+      insight_pause_steps_low: 20    # optimal pause range lower bound
+      insight_pause_steps_high: 50   # optimal pause range upper bound
+      joint_vel_movement_threshold: 0.1  # rad/s — below this = not moving
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 8192
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc22
+    pass_threshold: 0.45             # 0.4*solve + 0.3*efficiency + 0.3*insight
+    ci_lower_min: 0.25               # 0.70 * 0.45 (rounded down)
+    solve_rate_min: 0.50
+    max_mean_attempts: 3
+    insight_indicator_min: 0.30
