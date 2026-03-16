@@ -3,6 +3,7 @@
 from slm_lab.agent.net.conv import *
 from slm_lab.agent.net.mlp import *
 from slm_lab.agent.net.recurrent import *
+from slm_lab.agent.net.dasein_net import DaseinNet
 
 # Optional: torcharc-based networks (requires torcharc package)
 try:
