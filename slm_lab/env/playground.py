@@ -184,6 +184,7 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         jax_actions = jnp.array(actions, dtype=jnp.float32)
         _suppress_stderr()
         self._state = self._jit_step(self._state, jax_actions)
+        jax.block_until_ready(self._state)
         _restore_stderr()
 
         obs = self._get_obs(self._state)
