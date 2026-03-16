@@ -1025,7 +1025,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/H1InplaceGaitTracking | PPO | ⚠️ | 5.54 | ppo_playground_loco_go1 | [ppo_playground_loco_h1inplacegaittracking_2026_03_14_204728](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_h1inplacegaittracking_2026_03_14_204728) | 10 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1JoystickGaitTracking | PPO | ⚠️ | 16.24 | ppo_playground_loco | [ppo_playground_loco_h1joystickgaittracking_2026_03_14_204752](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_h1joystickgaittracking_2026_03_14_204752) | 30 | - | 100M | ~1h |
+| playground/H1JoystickGaitTracking | PPO | ✅ | 27.83 | ppo_playground_loco_precise | [ppo_playground_loco_h1joystickgaittracking_2026_03_14_204752](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_h1joystickgaittracking_2026_03_14_204752) | 30 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Op3Joystick | PPO | ❌ | 0.00 | ppo_playground_loco | [ppo_playground_loco_op3joystick_2026_03_15_150120](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_op3joystick_2026_03_15_150120) | 20 | - | 100M | ~1h |
