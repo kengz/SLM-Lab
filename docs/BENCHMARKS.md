@@ -1031,7 +1031,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/Op3Joystick | PPO | ❌ | 0.00 | ppo_playground_loco | [ppo_playground_loco_op3joystick_2026_03_15_150120](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_op3joystick_2026_03_15_150120) | 20 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotFlatTerrainJoystick | PPO | ✅ | 45.75 | ppo_playground_loco | [ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816) | 30 | - | 100M | ~1h |
+| playground/SpotFlatTerrainJoystick | PPO | ✅ | 48.58 | ppo_playground_loco_precise | [ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816) | 30 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/SpotGetup | PPO | ✅ | 19.39 | ppo_playground_loco | [ppo_playground_loco_spotgetup_2026_03_14_213703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotgetup_2026_03_14_213703) | 20 | - | 100M | ~1h |
