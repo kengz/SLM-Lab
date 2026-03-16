@@ -8,6 +8,7 @@ Uses MJWarp backend (Warp-accelerated MJX) uniformly for GPU simulation.
 JAX is the dispatch/tracing layer; Warp CUDA kernels handle physics.
 """
 
+import os
 import gymnasium as gym
 import jax
 import jax.numpy as jnp
@@ -41,6 +42,22 @@ def _patched_make_data(*args, **kwargs):
 
 
 _mjx_env_module.make_data = _patched_make_data
+
+# Suppress MuJoCo C-level stderr warnings (ccd_iterations, nefc/broadphase overflow).
+# These repeat every step for 100M frames, exploding log/output size on dstack.
+_devnull_fd = os.open(os.devnull, os.O_WRONLY)
+_saved_stderr_fd = os.dup(2)
+
+
+def _suppress_stderr():
+    """Redirect fd 2 to /dev/null."""
+    os.dup2(_devnull_fd, 2)
+
+
+def _restore_stderr():
+    """Restore fd 2 to original stderr."""
+    os.dup2(_saved_stderr_fd, 2)
+
 
 # Per-env action_repeat from official dm_control_suite_params.py
 # These match mujoco_playground's canonical training configs exactly.
@@ -104,10 +121,13 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         # Build observation and action spaces
         obs_size = base_env.observation_size
         if isinstance(obs_size, dict):
-            # Dict observations are flattened in _get_obs — compute total dim
-            total_obs_dim = sum(
-                np.prod(s) if isinstance(s, tuple) else s for s in obs_size.values()
-            )
+            if "state" in obs_size:
+                # Use only "state" key — excludes privileged_state from actor input
+                total_obs_dim = obs_size["state"] if not isinstance(obs_size["state"], tuple) else np.prod(obs_size["state"])
+            else:
+                total_obs_dim = sum(
+                    np.prod(s) if isinstance(s, tuple) else s for s in obs_size.values()
+                )
         else:
             total_obs_dim = obs_size
         act_size = base_env.action_size
@@ -144,9 +164,8 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
     def _get_obs(self, state):
         obs = state.obs
         if isinstance(obs, dict):
-            # Flatten dict observations by concatenating values
-            arrays = [obs[k] for k in sorted(obs.keys())]
-            obs = jnp.concatenate(arrays, axis=-1)
+            # Use only "state" key when available — excludes privileged_state from actor
+            obs = obs.get("state", jnp.concatenate([obs[k] for k in sorted(obs.keys())], axis=-1))
         return self._to_output(obs)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
@@ -154,13 +173,18 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
             self._rng = jax.random.PRNGKey(seed)
         self._rng, *sub_keys = jax.random.split(self._rng, self.num_envs + 1)
         sub_keys = jnp.stack(sub_keys)
+        _suppress_stderr()
         self._state = self._jit_reset(sub_keys)
+        jax.block_until_ready(self._state)
+        _restore_stderr()
         obs = self._get_obs(self._state)
         return obs, {}
 
     def step(self, actions: np.ndarray):
         jax_actions = jnp.array(actions, dtype=jnp.float32)
+        _suppress_stderr()
         self._state = self._jit_step(self._state, jax_actions)
+        _restore_stderr()
 
         obs = self._get_obs(self._state)
         # Rewards, dones, info always numpy (used for control flow and memory)
