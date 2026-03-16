@@ -1031,7 +1031,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/Op3Joystick | PPO | ❌ | 0.00 | ppo_playground_loco | [ppo_playground_loco_op3joystick_2026_03_15_150120](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_op3joystick_2026_03_15_150120) | 20 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotFlatTerrainJoystick | PPO | ⚠️ | 11.71 | ppo_playground_loco | [ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816) | 30 | - | 100M | ~1h |
+| playground/SpotFlatTerrainJoystick | PPO | ✅ | 45.75 | ppo_playground_loco | [ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816) | 30 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/SpotGetup | PPO | ✅ | 19.39 | ppo_playground_loco | [ppo_playground_loco_spotgetup_2026_03_14_213703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotgetup_2026_03_14_213703) | 20 | - | 100M | ~1h |
@@ -1069,7 +1069,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/AlohaHandOver | PPO | ✅ | 3.65 | ppo_playground_loco | [ppo_playground_loco_alohahandover_2026_03_15_023712](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_alohahandover_2026_03_15_023712) | 5 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/AlohaSinglePegInsertion | PPO | ⚠️ | 188.03 | ppo_playground_loco | [ppo_playground_loco_alohasinglepeginsertion_2026_03_15_023707](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_alohasinglepeginsertion_2026_03_15_023707) | 300 | - | 100M | ~1h |
+| playground/AlohaSinglePegInsertion | PPO | ⚠️ | 216.36 | ppo_playground_manip_aloha_peg | [ppo_playground_loco_alohasinglepeginsertion_2026_03_15_023707](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_alohasinglepeginsertion_2026_03_15_023707) | 300 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/LeapCubeReorient | PPO | ⚠️ | 74.68 | ppo_playground_loco | [ppo_playground_loco_leapcubereorient_2026_03_15_150420](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_leapcubereorient_2026_03_15_150420) | 200 | - | 100M | ~1h |
