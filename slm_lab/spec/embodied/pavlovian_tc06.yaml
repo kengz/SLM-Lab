@@ -1,0 +1,103 @@
+# TC-06: Discrimination
+#
+# Prerequisite: TC-01, TC-05. Two-feature CS discrimination:
+#   CS+: stimulus=1.0, green object visibility active → approach red (reward)
+#   CS-: stimulus=1.0, blue object visibility active → avoid red (penalty)
+# Phase 1: 60 training trials (30 CS+, 30 CS-, interleaved), shaped for CS+.
+# Phase 2: 50 probe trials (25 CS+, 25 CS-), no reward.
+# Axiom trace: Ax11 (invariants — credit assignment partitions stimulus space).
+# Pass threshold: CS+ approach >= 0.80; CS- approach <= 0.20; disc_score >= 0.60.
+#
+# Implementation note: fallback to +1/-1 scalar if two-feature proves intractable
+# (document as known simplification in experiment write-up).
+#
+# Load: spec_util.get('embodied/pavlovian_tc06.yaml', 'ppo_pavlovian_tc06')
+
+ppo_pavlovian_tc06:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 600000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 600000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 256
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 256
+        - 256
+      hid_layers_activation: tanh
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0003
+      critic_optim_spec:
+        name: Adam
+        lr: 0.001
+      gpu: auto
+  env:
+    name: SLM/Pavlovian-v0
+    max_t: 1000
+    max_frame: 600000
+    num_envs: 8
+    env_kwargs:
+      task: discrimination
+      arena_size: 10.0
+      dt: 0.0333
+      max_energy: 100.0
+      energy_decay: 0.1
+      contact_radius: 0.6
+      shaping_scale: 1.0
+      # Two-feature discrimination encoding
+      cs_encoding: visibility   # "visibility" (two-feature) or "scalar" (fallback)
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 2560
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.80
+    mastery_window: 20
+    min_eval_trials: 50
+    max_eval_trials: 100
+  phase:
+    training_trials: 60        # 30 CS+, 30 CS-, interleaved
+    probe_trials: 50           # 25 CS+, 25 CS-
+    cs_duration: 30
+    iti_duration: 60
+    cs_plus_reward: 10.0
+    cs_minus_red_penalty: -1.0
+    blue_penalty: -5.0
+    shaping_active: true       # CS+ trials in training only
+  eval:
+    score_fn: score_tc06
+    cs_plus_approach_min: 0.80
+    cs_minus_approach_max: 0.20
+    pass_threshold: 0.60       # discrimination score = cs_plus_rate - cs_minus_rate
+    ci_lower_min: 0.40

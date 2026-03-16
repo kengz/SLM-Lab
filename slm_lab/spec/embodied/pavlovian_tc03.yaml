@@ -1,0 +1,96 @@
+# TC-03: Extinction
+#
+# Prerequisite: TC-01. Acquisition gate: approach_rate >= 0.60 in last 10
+# acquisition trials — if not met, test aborts (acquisition_failed=True).
+# Phase 2: 50 unrewarded CS presentations. Score = 1 - (ext_rate / acq_rate).
+# Axiom trace: Ax14 (motor intentionality — learned responses are modifiable).
+# Pass threshold: score >= 0.70; extinction rate < 0.30 * acquisition peak.
+#
+# Load: spec_util.get('embodied/pavlovian_tc03.yaml', 'ppo_pavlovian_tc03')
+
+ppo_pavlovian_tc03:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 500000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 500000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 256
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 256
+        - 256
+      hid_layers_activation: tanh
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0003
+      critic_optim_spec:
+        name: Adam
+        lr: 0.001
+      gpu: auto
+  env:
+    name: SLM/Pavlovian-v0
+    max_t: 1000
+    max_frame: 600000
+    num_envs: 8
+    env_kwargs:
+      task: extinction
+      arena_size: 10.0
+      dt: 0.0333
+      max_energy: 100.0
+      energy_decay: 0.1
+      contact_radius: 0.6
+      shaping_scale: 1.0
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 2560
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.80
+    mastery_window: 20
+    min_eval_trials: 50
+    max_eval_trials: 100
+  phase:
+    acquisition_trials: 40
+    acquisition_gate_window: 10   # last N trials to check for gate
+    acquisition_gate_min: 0.60    # abort if below this
+    extinction_trials: 50
+    cs_duration: 30
+    iti_duration: 60
+    reward_on_contact: 10.0
+    blue_penalty: -5.0
+    shaping_active: true          # acquisition only; off during extinction
+  eval:
+    score_fn: score_tc03
+    pass_threshold: 0.70          # extinction score
+    ci_lower_min: 0.50
+    extinction_rate_max_fraction: 0.30   # ext_rate < 0.30 * acq_rate

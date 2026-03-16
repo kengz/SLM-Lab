@@ -1,0 +1,100 @@
+# TC-04: Spontaneous Recovery
+#
+# Prerequisite: TC-01, TC-03. 4-phase protocol:
+#   Phase 1: acquisition (30 trials, shaped)
+#   Phase 2: extinction (30 trials, gate: ext_rate < 0.40 * acq_rate)
+#   Phase 3: rest (150 steps, no stimuli)
+#   Phase 4: probe (10 CS presentations, no reward)
+# Axiom trace: Ax14 — extinction is new learning overlaid on original, not erasure.
+# Pass threshold: recovery_rate > 0.50 * acq_rate; score > 0.50.
+# Note: 10 probe trials → wide CI; test is diagnostic, not a hard gate.
+#
+# Load: spec_util.get('embodied/pavlovian_tc04.yaml', 'ppo_pavlovian_tc04')
+
+ppo_pavlovian_tc04:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 600000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 600000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 256
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 256
+        - 256
+      hid_layers_activation: tanh
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0003
+      critic_optim_spec:
+        name: Adam
+        lr: 0.001
+      gpu: auto
+  env:
+    name: SLM/Pavlovian-v0
+    max_t: 1000
+    max_frame: 600000
+    num_envs: 8
+    env_kwargs:
+      task: spontaneous_recovery
+      arena_size: 10.0
+      dt: 0.0333
+      max_energy: 100.0
+      energy_decay: 0.1
+      contact_radius: 0.6
+      shaping_scale: 1.0
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 2560
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.80
+    mastery_window: 20
+    min_eval_trials: 10
+    max_eval_trials: 20
+  phase:
+    acquisition_trials: 30
+    acquisition_gate_min: 0.50
+    extinction_trials: 30
+    extinction_gate_max_fraction: 0.40   # ext_rate < 0.40 * acq_rate
+    rest_steps: 150
+    probe_trials: 10
+    cs_duration: 30
+    iti_duration: 60
+    reward_on_contact: 10.0
+    blue_penalty: -5.0
+    shaping_active: true       # acquisition only
+  eval:
+    score_fn: score_tc04
+    pass_threshold: 0.50       # recovery_rate / acq_rate
+    diagnostic_only: true      # wide CI; not a hard advancement gate

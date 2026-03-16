@@ -1,0 +1,92 @@
+# TC-08: Partial Reinforcement
+#
+# Prerequisite: TC-07. Stochastic operant: reward delivered on 50% of steps
+# (Bernoulli p=0.5). Agent must maintain forward behavior despite intermittency.
+# Axiom trace: Ax4 (care — commitment despite intermittent reward; models variance in TD targets).
+# Pass threshold: partial_forward_rate >= 0.60 * continuous_forward_rate (from TC-07).
+#
+# Load: spec_util.get('embodied/pavlovian_tc08.yaml', 'ppo_pavlovian_tc08')
+
+ppo_pavlovian_tc08:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 300000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 300000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 256
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 256
+        - 256
+      hid_layers_activation: tanh
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0003
+      critic_optim_spec:
+        name: Adam
+        lr: 0.001
+      gpu: auto
+  env:
+    name: SLM/Pavlovian-v0
+    max_t: 1000
+    max_frame: 300000
+    num_envs: 8
+    env_kwargs:
+      task: partial_reinforcement
+      arena_size: 10.0
+      dt: 0.0333
+      max_energy: 100.0
+      energy_decay: 0.1
+      contact_radius: 0.6
+      reward_scale: 0.5
+      reward_probability: 0.5  # Bernoulli p for reward delivery
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 2560
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.80
+    mastery_window: 20
+    min_eval_trials: 10
+    max_eval_trials: 20
+  phase:
+    eval_episodes: 10
+    episode_length: 1000
+    # Supplementary: extinction resistance
+    extinction_resistance_steps: 500   # steps of no-reward continuation after training
+  eval:
+    score_fn: score_tc08
+    # Requires TC-07 continuous_forward_rate as reference
+    continuous_rate_source: tc07
+    pass_threshold: 1.00       # partial_rate / (0.6 * continuous_rate) >= 1.0
+    partial_min_fraction: 0.60

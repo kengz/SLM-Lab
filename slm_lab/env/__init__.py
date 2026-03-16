@@ -46,6 +46,13 @@ try:
 except ImportError:
     pass
 
+# Register Pavlovian environment
+gym.register(
+    id="SLM/Pavlovian-v0",
+    entry_point="slm_lab.env.pavlovian:PavlovianEnv",
+    max_episode_steps=1000,
+)
+
 logger = logger.get_logger(__name__)
 
 # Keys handled by make_env, not passed to gym.make

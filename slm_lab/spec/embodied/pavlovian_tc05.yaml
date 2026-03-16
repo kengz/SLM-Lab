@@ -1,0 +1,103 @@
+# TC-05: Generalization
+#
+# Prerequisite: TC-01.
+# Phase 1: acquisition at stimulus=1.0 (30 trials, shaped).
+# Phase 2: generalization probe — 5 stimulus levels [1.0, 0.8, 0.6, 0.4, 0.2],
+#          10 trials each, randomized order, no reward.
+# Score: Pearson r between stimulus level and approach rate.
+# Axiom trace: Ax11 (invariants — representation space has metric structure).
+# Pass threshold: r > 0.70; CI lower bound (bootstrap) > 0.40.
+#
+# Load: spec_util.get('embodied/pavlovian_tc05.yaml', 'ppo_pavlovian_tc05')
+
+ppo_pavlovian_tc05:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 500000
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 500000
+      val_loss_coef: 0.5
+      clip_val_loss: false
+      time_horizon: 256
+      minibatch_size: 64
+      training_epoch: 10
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: MLPNet
+      shared: false
+      hid_layers:
+        - 256
+        - 256
+      hid_layers_activation: tanh
+      clip_grad_val: 0.5
+      use_same_optim: false
+      loss_spec:
+        name: MSELoss
+      actor_optim_spec:
+        name: Adam
+        lr: 0.0003
+      critic_optim_spec:
+        name: Adam
+        lr: 0.001
+      gpu: auto
+  env:
+    name: SLM/Pavlovian-v0
+    max_t: 1000
+    max_frame: 500000
+    num_envs: 8
+    env_kwargs:
+      task: generalization
+      arena_size: 10.0
+      dt: 0.0333
+      max_energy: 100.0
+      energy_decay: 0.1
+      contact_radius: 0.6
+      shaping_scale: 1.0
+  meta:
+    distributed: false
+    log_frequency: 1000
+    eval_frequency: 2560
+    max_session: 1
+    max_trial: 1
+  curriculum:
+    mastery_threshold: 0.80
+    mastery_window: 20
+    min_eval_trials: 50        # 10 per level * 5 levels
+    max_eval_trials: 100
+  phase:
+    acquisition_trials: 30
+    probe_trials_per_level: 10
+    probe_stimulus_levels:     # obs[17] amplitude values
+      - 1.0
+      - 0.8
+      - 0.6
+      - 0.4
+      - 0.2
+    randomize_probe_order: true
+    cs_duration: 30
+    iti_duration: 60
+    reward_on_contact: 10.0
+    shaping_active: true       # acquisition only
+  eval:
+    score_fn: score_tc05
+    pass_threshold: 0.70       # Pearson r
+    ci_lower_min: 0.40         # bootstrap CI lower bound
+    ci_method: bootstrap
+    ci_resamples: 1000
