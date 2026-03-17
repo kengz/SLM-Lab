@@ -193,11 +193,10 @@ class ProprioceptionEncoder(nn.Module):
 # ---------------------------------------------------------------------------
 
 class ObjectStateEncoder(nn.Module):
-    """Per-object MLP + max-pool → 512-dim embedding (Phase 3.2a bridge).
+    """Flat-concat MLP → 512-dim embedding (Phase 3.2a bridge).
 
     Each object has 7 features: position(3), visible(1), grasped(1),
-    type_id(1), mass(1). Objects are processed independently then
-    max-pooled for permutation invariance.
+    type_id(1), mass(1). All objects concatenated then projected.
 
     Args:
         max_objects: N_obj (default 5)
@@ -206,6 +205,8 @@ class ObjectStateEncoder(nn.Module):
     Output: (B, 512)
 
     Discarded in Phase 3.2b when vision replaces ground-truth state.
+
+    Architecture per L0-perception.md §6.3.
     """
 
     OBJ_DIM = 7  # dims per object
@@ -214,15 +215,10 @@ class ObjectStateEncoder(nn.Module):
         super().__init__()
         self.max_objects = max_objects
 
-        # Per-object MLP: 7 → 64 → 128
-        self.obj_mlp = nn.Sequential(
-            nn.Linear(self.OBJ_DIM, 64), nn.ReLU(),
-            nn.Linear(64, 128), nn.ReLU(),
-        )
-
-        # Projection after max-pool: 128 → 512
+        # Flat projection: 7*N_obj → 256 → 512
         self.proj = nn.Sequential(
-            nn.Linear(128, 512), nn.LayerNorm(512),
+            nn.Linear(self.OBJ_DIM * max_objects, 256), nn.ReLU(),
+            nn.Linear(256, 512), nn.LayerNorm(512),
         )
 
     def forward(self, obj_state: torch.Tensor) -> torch.Tensor:
@@ -233,13 +229,6 @@ class ObjectStateEncoder(nn.Module):
         Returns:
             (B, 512)
         """
-        B = obj_state.shape[0]
-        # Reshape to (B, N_obj, 7)
-        x = obj_state.view(B, self.max_objects, self.OBJ_DIM)
-        # Per-object encode: (B, N_obj, 128)
-        x = self.obj_mlp(x)
-        # Max-pool over objects: (B, 128)
-        x = x.max(dim=1).values
-        return self.proj(x)  # (B, 512)
+        return self.proj(obj_state)  # (B, 512)
 
 

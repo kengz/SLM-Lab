@@ -42,6 +42,7 @@ _OBJ_SLICE = slice(35, 56)
 
 OBS_DIM = 56
 N_OBJECTS = 3           # 3 objects × 7 features = 21 dims
+D_MODEL = 512           # channel embedding dim, must match BeingEmbedding d_model
 GRU_HIDDEN_DIM = 1024   # must match BeingEmbedding.thrownness_enc.hidden_dim
 
 
@@ -114,23 +115,22 @@ class DaseinNet(Net, nn.Module):
         self.obj_enc = ObjectStateEncoder(max_objects=N_OBJECTS)
 
         # L1: being embedding (channel attention + GRU + temporal transformer)
-        self.being_emb = BeingEmbedding(max_channels=4, d_model=512)
+        self.being_emb = BeingEmbedding(max_channels=4, d_model=D_MODEL)
 
         # Shared backbone (policy + value share first two layers)
-        d = 512
         self.shared_backbone = nn.Sequential(
-            nn.Linear(d, d), nn.ReLU(),
-            nn.Linear(d, d), nn.ReLU(),
+            nn.Linear(D_MODEL, D_MODEL), nn.ReLU(),
+            nn.Linear(D_MODEL, D_MODEL), nn.ReLU(),
         )
 
         # Policy head: additional layer + mean output
-        self.policy_fc = nn.Sequential(nn.Linear(d, d), nn.ReLU())
-        self.mean_head = nn.Linear(d, self.action_dim)
+        self.policy_fc = nn.Sequential(nn.Linear(D_MODEL, D_MODEL), nn.ReLU())
+        self.mean_head = nn.Linear(D_MODEL, self.action_dim)
         self.log_std = nn.Parameter(torch.ones(self.action_dim) * self.log_std_init)
 
         # Value head: additional layer + scalar
-        self.value_fc = nn.Sequential(nn.Linear(d, d), nn.ReLU())
-        self.value_head = nn.Linear(d, 1)
+        self.value_fc = nn.Sequential(nn.Linear(D_MODEL, D_MODEL), nn.ReLU())
+        self.value_head = nn.Linear(D_MODEL, 1)
 
         # GRU hidden state buffer — (1, GRU_HIDDEN_DIM), expanded at runtime
         self.register_buffer(

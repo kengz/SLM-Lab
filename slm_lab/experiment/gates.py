@@ -2,10 +2,10 @@
 # Gates aggregate per-task EvalResults and decide whether a checkpoint is passed.
 from dataclasses import dataclass, field
 
-from slm_lab.lib import logger
+from slm_lab.lib import logger as _logger_module
 from slm_lab.experiment.eval import EvalResults
 
-logger = logger.get_logger(__name__)
+logger = _logger_module.get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
