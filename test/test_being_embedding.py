@@ -245,6 +245,7 @@ class TestHierarchicalFusion:
         assert torch.allclose(out_2ch, out_4ch)
 
     def test_gradient_flow(self):
+        torch.manual_seed(0)
         fusion = HierarchicalFusion(max_channels=4, d_model=D)
         x = torch.randn(B, 2, D, requires_grad=True)
         out = fusion(x)
@@ -333,6 +334,7 @@ class TestProjectionEncoder:
             assert out.shape == (B, D), f"Failed for H={H}"
 
     def test_gradient_flow(self):
+        torch.manual_seed(0)
         enc = ProjectionEncoder(d_model=D, n_steps=15)
         imagined = torch.randn(B, 15, D, requires_grad=True)
         out = enc(imagined)
