@@ -34,6 +34,7 @@ MAX_FORWARD: float = 1.0          # m/s
 MAX_ANGULAR: float = math.pi / 2  # rad/s
 FOV_RANGE: float = 15.0           # visibility radius (>= arena diagonal)
 FOV_HALF_ANGLE: float = math.pi   # 360-degree FOV (egocentric frame)
+MAX_STEPS: int = 1000             # episode step limit (env-detailed.md §1.2)
 
 # Object indices
 OBJ_RED = 0    # red sphere  → reward target
@@ -112,6 +113,8 @@ class _TrialState:
     responses_by_strength: dict = field(default_factory=dict)
     # TC-04 rest countdown
     rest_steps_remaining: int = 0
+    # TC-05 generalization probe order
+    probe_order: list[float] = field(default_factory=list)
     # TC-09 shaping comparison
     condition: str = "shaped"        # "shaped" | "unshaped"
     shaped_successes: list[bool] = field(default_factory=list)
@@ -239,7 +242,7 @@ class PavlovianEnv(gym.Env):
         self._ts.prev_dist_to_red = self._dist_to(OBJ_RED)
 
         terminated = self._agent.energy <= 0.0
-        truncated = False
+        truncated = self._step_count >= MAX_STEPS
         obs = self._get_obs()
         info = self._get_info()
 
@@ -272,9 +275,9 @@ class PavlovianEnv(gym.Env):
     def _reset_objects(self):
         """Place objects at fixed positions with some random jitter."""
         base_positions = [
-            (7.5, 7.5),  # red
-            (2.5, 7.5),  # blue
-            (7.5, 2.5),  # green
+            (7.0, 7.0),  # red
+            (3.0, 7.0),  # blue
+            (5.0, 3.0),  # green
         ]
         for i, (bx, by) in enumerate(base_positions):
             jx = self._rng.uniform(-0.5, 0.5)
@@ -650,18 +653,15 @@ class PavlovianEnv(gym.Env):
             for level in TEST_LEVELS:
                 probe_order.extend([level] * TRIALS_PER_LEVEL)
             self._rng.shuffle(probe_order)
-            ts._probe_order = probe_order
-
-        if ts.phase == PHASE_PROBE and not hasattr(ts, "_probe_order"):
-            ts._probe_order = []
+            ts.probe_order = probe_order
 
         # Set stimulus level
         if ts.phase == PHASE_ACQUISITION:
             ts.cs_signal = 1.0 if step_in_cycle >= ITI_DUR else 0.0
         elif ts.phase == PHASE_PROBE:
             probe_idx = ts.trial
-            if probe_idx < len(getattr(ts, "_probe_order", [])):
-                ts.gen_stimulus_level = ts._probe_order[probe_idx]
+            if probe_idx < len(ts.probe_order):
+                ts.gen_stimulus_level = ts.probe_order[probe_idx]
             ts.cs_signal = ts.gen_stimulus_level if step_in_cycle >= ITI_DUR else 0.0
 
         in_cs = step_in_cycle >= ITI_DUR
@@ -869,56 +869,58 @@ class PavlovianEnv(gym.Env):
     # ------------------------------------------------------------------
 
     def _get_obs(self) -> np.ndarray:
-        """Build 18-dim observation vector.
+        """Build 18-dim observation vector (env-detailed.md §1.4).
 
-        [0-1]  agent (x, y)
-        [2]    agent heading
-        [3]    energy (normalised)
-        [4-5]  agent velocity (v_forward, v_angular normalised)
-        [6-7]  direction to red object (unit vector, egocentric)
-        [8-10] object 0 features (dx, dy, visible)
-        [11-13] object 1 features
-        [14-16] object 2 features
-        [17]   stimulus signal
+        [0-1]   Agent position (x, y), normalised (val-5)/5
+        [2]     Heading, normalised heading/π
+        [3-4]   Cartesian velocity (vx, vy), val/1.0
+        [5]     Angular velocity, val/(π/2)
+        [6]     Energy, (energy-50)/50
+        [7]     Time fraction, 2t/max_t - 1
+        [8-10]  Red object: dist/15, egocentric_angle/π, visible (±1.0)
+        [11-13] Blue object: same
+        [14-16] Green object: same
+        [17]    Stimulus signal [-1, 1]
         """
         a = self._agent
         obs = np.zeros(OBS_DIM, dtype=np.float32)
-        obs[0] = a.x / self.arena_size
-        obs[1] = a.y / self.arena_size
+
+        # Position: (val - 5) / 5  →  maps [0,10] to [-1,+1]
+        obs[0] = (a.x - 5.0) / 5.0
+        obs[1] = (a.y - 5.0) / 5.0
+
+        # Heading
         obs[2] = a.heading / math.pi
-        obs[3] = a.energy / self.max_energy
-        obs[4] = a.v_forward / MAX_FORWARD
+
+        # Cartesian velocity components
+        obs[3] = a.v_forward * math.cos(a.heading)  # vx
+        obs[4] = a.v_forward * math.sin(a.heading)  # vy
+
+        # Angular velocity
         obs[5] = a.v_angular / MAX_ANGULAR
 
-        # Direction to red object (egocentric unit vector)
-        dx_red = self._objects[OBJ_RED].x - a.x
-        dy_red = self._objects[OBJ_RED].y - a.y
-        dist_red = math.sqrt(dx_red ** 2 + dy_red ** 2) + 1e-8
-        angle_to_red = math.atan2(dy_red, dx_red) - a.heading
-        obs[6] = math.cos(angle_to_red)
-        obs[7] = math.sin(angle_to_red)
+        # Energy: (energy - 50) / 50  →  maps [0,100] to [-1,+1]
+        obs[6] = (a.energy - 50.0) / 50.0
 
-        # Per-object features
+        # Time fraction: 2t/max_t - 1  →  maps [0, max_t] to [-1,+1]
+        obs[7] = 2.0 * self._step_count / MAX_STEPS - 1.0
+
+        # Per-object features: dist/15, egocentric angle/π, visible ±1.0
         for i, obj in enumerate(self._objects):
             base = 8 + i * 3
             if not obj.active:
                 obs[base] = 0.0
                 obs[base + 1] = 0.0
-                obs[base + 2] = 0.0
+                obs[base + 2] = -1.0  # not visible
                 continue
             dx = obj.x - a.x
             dy = obj.y - a.y
-            dist = math.sqrt(dx ** 2 + dy ** 2) + 1e-8
-            # Check visibility (FOV)
-            angle = abs(_wrap_angle(math.atan2(dy, dx) - a.heading))
-            visible = float(dist <= FOV_RANGE and angle <= FOV_HALF_ANGLE)
-            if visible:
-                obs[base] = dx / self.arena_size
-                obs[base + 1] = dy / self.arena_size
-            else:
-                obs[base] = 0.0
-                obs[base + 1] = 0.0
-            obs[base + 2] = visible
+            dist = math.sqrt(dx ** 2 + dy ** 2)
+            ego_angle = _wrap_angle(math.atan2(dy, dx) - a.heading)
+            visible = dist <= FOV_RANGE and abs(ego_angle) <= FOV_HALF_ANGLE
+            obs[base] = dist / FOV_RANGE
+            obs[base + 1] = ego_angle / math.pi
+            obs[base + 2] = 1.0 if visible else -1.0
 
         obs[17] = float(self._ts.cs_signal)
         return obs

@@ -161,19 +161,17 @@ def test_obj_encoder_custom_n_objects():
     assert out.shape == (B, 512)
 
 
-def test_obj_encoder_permutation_invariant(obj_encoder):
-    """Max-pool should be permutation invariant over objects."""
+def test_obj_encoder_flat_concat(obj_encoder):
+    """Flat-concat encoder: same input → same output; different input → different output."""
     x = torch.randn(B, 7 * N_OBJ)
-    out_orig = obj_encoder(x)
-
-    # Shuffle object order along dim-1 in groups of 7
-    x_reshaped = x.view(B, N_OBJ, 7)
-    # Reverse object order
-    idx = torch.arange(N_OBJ - 1, -1, -1)
-    x_perm = x_reshaped[:, idx, :].reshape(B, 7 * N_OBJ)
-    out_perm = obj_encoder(x_perm)
-
-    assert torch.allclose(out_orig, out_perm, atol=1e-5)
+    out1 = obj_encoder(x)
+    out2 = obj_encoder(x)
+    # Deterministic
+    assert torch.allclose(out1, out2, atol=1e-6)
+    # Different input → different output (not trivially zero)
+    x_other = torch.randn(B, 7 * N_OBJ)
+    out_other = obj_encoder(x_other)
+    assert not torch.allclose(out1, out_other, atol=1e-3)
 
 
 # ---------------------------------------------------------------------------

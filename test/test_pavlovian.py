@@ -169,7 +169,7 @@ class TestResetStep:
         for _ in range(100):
             env.step(np.array([1.0, 0.0]))
         obs, _ = env.reset()
-        assert obs[3] == pytest.approx(1.0, abs=0.05)  # energy normalised
+        assert obs[6] == pytest.approx(1.0, abs=0.05)  # obs[6] = (energy-50)/50; at 100 energy → 1.0
 
 
 # ---------------------------------------------------------------------------
@@ -478,14 +478,14 @@ class TestEnergy:
         env = env_factory(task="reward_contingency")
         env.reset()
         obs_start, _ = env.reset()
-        energy_start = obs_start[3]
+        energy_start = obs_start[6]  # obs[6] = (energy-50)/50
         # Run 300 steps with zero action (just decay)
         for _ in range(300):
             obs, _, terminated, _, _ = env.step(np.array([0.0, 0.0]))
             if terminated:
                 break
         # Energy should have decreased
-        assert obs[3] < energy_start
+        assert obs[6] < energy_start
 
     def test_episode_terminates_on_energy_depletion(self, env_factory):
         env = env_factory(task="reward_contingency", max_energy=5.0)

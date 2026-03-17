@@ -359,7 +359,7 @@ class FrustrationAccumulator:
 # IntrinsicMotivation
 # ---------------------------------------------------------------------------
 
-class NoveltyReward(nn.Module):
+class NoveltyReward:
     """ICM-style novelty: MSE between predicted and actual RSSM latent.
 
     Traceability: Ax15 → DR19 → IS15

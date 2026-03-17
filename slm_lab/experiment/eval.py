@@ -6,9 +6,9 @@ from typing import Sequence
 import numpy as np
 from scipy.stats import beta as beta_dist
 
-from slm_lab.lib import logger
+from slm_lab.lib import logger as _logger_module
 
-logger = logger.get_logger(__name__)
+logger = _logger_module.get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------

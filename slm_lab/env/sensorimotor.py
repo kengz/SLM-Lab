@@ -81,6 +81,7 @@ NOISE_VEL = 0.02     # rad/s
 NOISE_TORQUE = 0.05  # Nm
 
 TABLE_CENTER = np.array([2.5, 2.5, 0.75], dtype=np.float32)
+MAX_EPISODE_STEPS = 500  # control steps per episode (25 Hz × 20 s)
 
 
 # ---------------------------------------------------------------------------
@@ -549,6 +550,9 @@ class SLMSensorimotor(gym.Env):
         self._scene_objects = self._task.scene_objects()
 
         # Spaces
+        # Always Dict: "ground_truth" (56-dim Box) + "vision" placeholder.
+        # Agents in Phase 3.2a extract obs["ground_truth"] before passing to DaseinNet.
+        # Phase 3.2b+: vision populated with real stereo frames.
         obs_dim = OBS_DIM
         self.observation_space = spaces.Dict({
             "ground_truth": spaces.Box(
@@ -657,12 +661,8 @@ class SLMSensorimotor(gym.Env):
 
     def _get_obs(self) -> dict:
         gt = self._build_ground_truth_obs()
-        obs = {"ground_truth": gt}
-        if self.vision_mode:
-            obs["vision"] = np.zeros((2, 128, 128, 3), dtype=np.uint8)
-        else:
-            obs["vision"] = np.zeros((2, 128, 128, 3), dtype=np.uint8)  # placeholder
-        return obs
+        # vision_mode placeholder: real stereo frames added in Phase 3.2b
+        return {"ground_truth": gt, "vision": np.zeros((2, 128, 128, 3), dtype=np.uint8)}
 
     def _build_ground_truth_obs(self) -> np.ndarray:
         """Build 56-dim ground-truth observation per env-detailed.md §6.7."""
@@ -728,8 +728,7 @@ class SLMSensorimotor(gym.Env):
 
         # --- Internal state (2 channels, idx 33-34) ---
         obs[33] = (self._energy - 50.0) / 50.0
-        max_steps = 500
-        obs[34] = 2.0 * self._step_count / max_steps - 1.0
+        obs[34] = 2.0 * self._step_count / MAX_EPISODE_STEPS - 1.0
 
         # --- Object state (21 channels = 7 * 3, idx 35-55) ---
         objects_to_encode = self._scene_objects[:N_OBJECTS_MAX]
