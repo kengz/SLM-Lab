@@ -654,6 +654,9 @@ class SLMSensorimotor(gym.Env):
         if self._renderer is not None:
             self._renderer.close()
             self._renderer = None
+        if hasattr(self, "_stereo_renderer") and self._stereo_renderer is not None:
+            self._stereo_renderer.close()
+            self._stereo_renderer = None
 
     # ------------------------------------------------------------------
     # Observation
@@ -661,8 +664,29 @@ class SLMSensorimotor(gym.Env):
 
     def _get_obs(self) -> dict:
         gt = self._build_ground_truth_obs()
-        # vision_mode placeholder: real stereo frames added in Phase 3.2b
+        if self.vision_mode:
+            left, right = self._render_stereo()
+            return {"ground_truth": gt, "vision": np.stack([left, right], axis=0)}
         return {"ground_truth": gt, "vision": np.zeros((2, 128, 128, 3), dtype=np.uint8)}
+
+    def _render_stereo(self) -> tuple[np.ndarray, np.ndarray]:
+        """Render 128×128 RGB images from stereo_left and stereo_right cameras.
+
+        Returns:
+            left:  (128, 128, 3) uint8
+            right: (128, 128, 3) uint8
+        """
+        if not hasattr(self, "_stereo_renderer") or self._stereo_renderer is None:
+            self._stereo_renderer = mujoco.Renderer(self._model, height=128, width=128)
+
+        renderer = self._stereo_renderer
+        renderer.update_scene(self._data, camera="stereo_left")
+        left = renderer.render().copy()
+
+        renderer.update_scene(self._data, camera="stereo_right")
+        right = renderer.render().copy()
+
+        return left, right
 
     def _build_ground_truth_obs(self) -> np.ndarray:
         """Build 56-dim ground-truth observation per env-detailed.md §6.7."""

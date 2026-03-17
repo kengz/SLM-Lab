@@ -1,0 +1,75 @@
+# DaseinNet (vision mode) + PPO on SLM-Sensorimotor-TC11-v0
+#
+# Phase 3.2b vision pipeline: stereo DINOv2 → StereoFusion → L1 BeingEmbedding.
+# L0 channels: proprio (35-dim → 512) + vision (DINOv2 → 512).
+# InfoNCE alignment loss (α=0.1, τ=0.07) between being embedding and DINOv2 features.
+# DINOv2 backbone frozen; only LoRA (rank=16, α=32) adapters are trainable.
+# MoodFiLM at DINOv2 blocks 8, 16, 24 (L3 → vision, deferred until L3 integrated).
+#
+# Axiom trace: Ax2 (transparent coping), Ax5 (mood→perception), Ax14 (motor intentionality).
+# Load: spec_util.get('embodied/dasein_sensorimotor_vision.yaml', 'dasein_ppo_vision_tc11')
+
+dasein_ppo_vision_tc11:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: default
+      action_policy: default
+      explore_var_spec: null
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+        end_val: 0.2
+        start_step: 0
+        end_step: 0
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.01
+        end_val: 0.01
+        start_step: 0
+        end_step: 0
+      val_loss_coef: 0.5
+      time_horizon: 128
+      minibatch_size: 32          # smaller batch: vision obs is larger
+      training_epoch: 4
+      normalize_v_targets: true
+    memory:
+      name: OnPolicyBatchReplay
+    net:
+      type: DaseinNet
+      shared: true
+      vision_mode: vision          # Phase 3.2b: stereo DINOv2 pipeline
+      action_dim: 10               # 7 joint targets + gripper + head pan/tilt
+      log_std_init: 0.0
+      infonce_alpha: 0.1           # InfoNCE loss weight
+      lora_rank: 16                # DINOv2 LoRA rank
+      lora_alpha: 32.0             # DINOv2 LoRA alpha
+      clip_grad_val: 0.5
+      use_same_optim: true
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: Adam
+        lr: 1.0e-4                 # lower LR: larger model, frozen backbone
+      lr_scheduler_spec: null
+      gpu: false
+
+  env:
+    name: SLM-Sensorimotor-TC11-v0
+    num_envs: 1
+    max_t: 500
+    max_frame: 1000000             # longer training for vision pipeline
+    normalize_obs: false
+    normalize_reward: false
+
+  meta:
+    distributed: false
+    log_frequency: 2000
+    eval_frequency: 10000
+    rigorous_eval: 0
+    max_session: 1
+    max_trial: 1
+    resume: false
