@@ -923,7 +923,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FingerTurnEasy | PPO | ⚠️ | 663.58 | ppo_playground_vnorm | [ppo_playground_fingerturneasy_2026_03_12_175835](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_12_175835) | 950 | 7.9K | 100M | 3h 30m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnHard | PPO | ⚠️ | 560.32 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_fingerturnhard_2026_03_14_095538](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_vnorm_constlr_fingerturnhard_2026_03_14_095538) | 950 | 5.9K | 100M | 4h 41m |
+| playground/FingerTurnHard | PPO | ⚠️ | 590.43 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_fingerturnhard_2026_03_14_095538](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_vnorm_constlr_fingerturnhard_2026_03_14_095538) | 950 | 5.9K | 100M | 4h 41m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FishSwim | PPO | ✅ | 580.57 | ppo_playground_vnorm_constlr_clip03 | [ppo_playground_vnorm_constlr_clip03_fishswim_2026_03_14_002112](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_vnorm_constlr_clip03_fishswim_2026_03_14_002112) | 650 | 7.4K | 100M | 3h 42m |
