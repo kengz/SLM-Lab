@@ -45,18 +45,8 @@ _mjx_env_module.make_data = _patched_make_data
 
 # Suppress MuJoCo C-level stderr warnings (ccd_iterations, nefc/broadphase overflow).
 # These repeat every step for 100M frames, exploding log/output size on dstack.
-_devnull_fd = os.open(os.devnull, os.O_WRONLY)
-_saved_stderr_fd = os.dup(2)
-
-
-def _suppress_stderr():
-    """Redirect fd 2 to /dev/null."""
-    os.dup2(_devnull_fd, 2)
-
-
-def _restore_stderr():
-    """Restore fd 2 to original stderr."""
-    os.dup2(_saved_stderr_fd, 2)
+# Suppressed permanently after first step — no per-call overhead or sync barriers.
+_stderr_suppressed = False
 
 
 # Per-env action_repeat from official dm_control_suite_params.py
@@ -173,19 +163,22 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
             self._rng = jax.random.PRNGKey(seed)
         self._rng, *sub_keys = jax.random.split(self._rng, self.num_envs + 1)
         sub_keys = jnp.stack(sub_keys)
-        _suppress_stderr()
         self._state = self._jit_reset(sub_keys)
-        jax.block_until_ready(self._state)
-        _restore_stderr()
         obs = self._get_obs(self._state)
         return obs, {}
 
     def step(self, actions: np.ndarray):
         jax_actions = jnp.array(actions, dtype=jnp.float32)
-        _suppress_stderr()
         self._state = self._jit_step(self._state, jax_actions)
-        jax.block_until_ready(self._state)
-        _restore_stderr()
+        # Suppress stderr permanently after first step — MuJoCo C warnings
+        # repeat every step, but JAX async means we can't suppress per-call
+        # without block_until_ready (which kills performance ~10x for slow envs).
+        global _stderr_suppressed
+        if not _stderr_suppressed:
+            _stderr_suppressed = True
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, 2)
+            os.close(devnull)
 
         obs = self._get_obs(self._state)
         # Rewards, dones, info always numpy (used for control flow and memory)
