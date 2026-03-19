@@ -908,7 +908,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/CartpoleBalanceSparse | PPO | ✅ | 995.34 | ppo_playground_constlr | [ppo_playground_constlr_cartpolebalancesparse_2026_03_14_000352](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_constlr_cartpolebalancesparse_2026_03_14_000352) | 700 | 16.4K | 100M | 1h 46m |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
-| playground/CartpoleSwingup | PPO | ✅ | 729.09 | ppo_playground_constlr | [ppo_playground_constlr_cartpoleswingup_2026_03_13_233341](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_constlr_cartpoleswingup_2026_03_13_233341) | 800 | 15.8K | 100M | 1h 44m |
+| playground/CartpoleSwingup | PPO | ✅ | 729.09 | ppo_playground_constlr | [ppo_playground_constlr_cartpoleswingup_2026_03_17_122659](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_constlr_cartpoleswingup_2026_03_17_122659) | 800 | 15.8K | 100M | 1h 44m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/CartpoleSwingupSparse | PPO | ✅ | 521.98 | ppo_playground_constlr | [ppo_playground_constlr_cartpoleswingupsparse_2026_03_13_233449](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_constlr_cartpoleswingupsparse_2026_03_13_233449) | 425 | 15.8K | 100M | 1h 39m |
@@ -923,7 +923,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/FingerTurnEasy | PPO | ⚠️ | 663.58 | ppo_playground_vnorm | [ppo_playground_fingerturneasy_2026_03_12_175835](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_fingerturneasy_2026_03_12_175835) | 950 | 7.9K | 100M | 3h 30m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
-| playground/FingerTurnHard | PPO | ⚠️ | 590.43 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_fingerturnhard_2026_03_14_095538](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_vnorm_constlr_fingerturnhard_2026_03_14_095538) | 950 | 5.9K | 100M | 4h 41m |
+| playground/FingerTurnHard | PPO | ⚠️ | 590.43 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_fingerturnhard_2026_03_17_122614](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_vnorm_constlr_fingerturnhard_2026_03_17_122614) | 950 | 5.9K | 100M | 4h 41m |
 | | CrossQ | 🔄 | - | crossq_playground | - | | - | - | - |
 | | SAC | 🔄 | - | sac_playground | - | | - | - | - |
 | playground/FishSwim | PPO | ✅ | 580.57 | ppo_playground_vnorm_constlr_clip03 | [ppo_playground_vnorm_constlr_clip03_fishswim_2026_03_14_002112](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_vnorm_constlr_clip03_fishswim_2026_03_14_002112) | 650 | 7.4K | 100M | 3h 42m |
@@ -1007,13 +1007,13 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/G1JoystickRoughTerrain | PPO | ❌ | - | ppo_playground_loco_precise | - | 5 | - | - | dstack error |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Footstand | PPO | ✅ | 23.48 | ppo_playground_loco_precise | [ppo_playground_loco_go1footstand_2026_03_14_194515](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1footstand_2026_03_14_194515) | 15 | - | 100M | ~1h |
+| playground/Go1Footstand | PPO | ✅ | 23.48 | ppo_playground_loco_precise | [ppo_playground_loco_precise_go1footstand_2026_03_16_174009](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_precise_go1footstand_2026_03_16_174009) | 15 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Getup | PPO | ✅ | 18.16 | ppo_playground_loco_go1 | [ppo_playground_loco_go1getup_2026_03_15_150301](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1getup_2026_03_15_150301) | 5 | - | 100M | ~1h |
+| playground/Go1Getup | PPO | ✅ | 18.16 | ppo_playground_loco_go1 | [ppo_playground_loco_go1_go1getup_2026_03_16_132801](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1_go1getup_2026_03_16_132801) | 5 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/Go1Handstand | PPO | ✅ | 17.88 | ppo_playground_loco_precise | [ppo_playground_loco_go1handstand_2026_03_14_202609](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1handstand_2026_03_14_202609) | 15 | - | 100M | ~1h |
+| playground/Go1Handstand | PPO | ✅ | 17.88 | ppo_playground_loco_precise | [ppo_playground_loco_precise_go1handstand_2026_03_16_155437](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_precise_go1handstand_2026_03_16_155437) | 15 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Go1JoystickFlatTerrain | PPO | ❌ | 0.0 | ppo_playground_loco | [ppo_playground_loco_go1joystickflatterrain_2026_03_14_204658](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1joystickflatterrain_2026_03_14_204658) | 25 | - | 100M | ~1h |
@@ -1022,16 +1022,16 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/Go1JoystickRoughTerrain | PPO | ❌ | 0.00 | ppo_playground_loco | [ppo_playground_loco_go1joystickroughterrain_2026_03_15_150321](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_go1joystickroughterrain_2026_03_15_150321) | 20 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1InplaceGaitTracking | PPO | ✅ | 11.95 | ppo_playground_loco_precise | [ppo_playground_loco_h1inplacegaittracking_2026_03_14_204728](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_h1inplacegaittracking_2026_03_14_204728) | 10 | - | 100M | ~1h |
+| playground/H1InplaceGaitTracking | PPO | ✅ | 11.95 | ppo_playground_loco_precise | [ppo_playground_loco_precise_h1inplacegaittracking_2026_03_16_170327](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_precise_h1inplacegaittracking_2026_03_16_170327) | 10 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/H1JoystickGaitTracking | PPO | ✅ | 31.11 | ppo_playground_loco_precise | [ppo_playground_loco_h1joystickgaittracking_2026_03_14_204752](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_h1joystickgaittracking_2026_03_14_204752) | 30 | - | 100M | ~1h |
+| playground/H1JoystickGaitTracking | PPO | ✅ | 31.11 | ppo_playground_loco_precise | [ppo_playground_loco_precise_h1joystickgaittracking_2026_03_16_170412](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_precise_h1joystickgaittracking_2026_03_16_170412) | 30 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/Op3Joystick | PPO | ❌ | 0.00 | ppo_playground_loco | [ppo_playground_loco_op3joystick_2026_03_15_150120](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_op3joystick_2026_03_15_150120) | 20 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/SpotFlatTerrainJoystick | PPO | ✅ | 48.58 | ppo_playground_loco_precise | [ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotflatterrainjoystick_2026_03_14_205816) | 30 | - | 100M | ~1h |
+| playground/SpotFlatTerrainJoystick | PPO | ✅ | 48.58 | ppo_playground_loco_precise | [ppo_playground_loco_precise_spotflatterrainjoystick_2026_03_16_180747](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_precise_spotflatterrainjoystick_2026_03_16_180747) | 30 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/SpotGetup | PPO | ✅ | 19.39 | ppo_playground_loco | [ppo_playground_loco_spotgetup_2026_03_14_213703](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_spotgetup_2026_03_14_213703) | 20 | - | 100M | ~1h |
@@ -1069,7 +1069,7 @@ source .env && uv run slm-lab run-remote --gpu \
 | playground/AlohaHandOver | PPO | ✅ | 3.65 | ppo_playground_loco | [ppo_playground_loco_alohahandover_2026_03_15_023712](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_alohahandover_2026_03_15_023712) | 5 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
-| playground/AlohaSinglePegInsertion | PPO | ⚠️ | 223.26 | ppo_playground_manip_aloha_peg | [ppo_playground_loco_alohasinglepeginsertion_2026_03_15_023707](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_alohasinglepeginsertion_2026_03_15_023707) | 300 | - | 100M | ~1h |
+| playground/AlohaSinglePegInsertion | PPO | ⚠️ | 223.26 | ppo_playground_manip_aloha_peg | [ppo_playground_manip_aloha_peg_alohasinglepeginsertion_2026_03_17_122613](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_manip_aloha_peg_alohasinglepeginsertion_2026_03_17_122613) | 300 | - | 100M | ~1h |
 | | - | 🔄 | - | - | - | | - | - | - |
 | | - | 🔄 | - | - | - | | - | - | - |
 | playground/LeapCubeReorient | PPO | ⚠️ | 74.68 | ppo_playground_loco | [ppo_playground_loco_leapcubereorient_2026_03_15_150420](https://huggingface.co/datasets/SLM-Lab/benchmark-dev/tree/main/data/ppo_playground_loco_leapcubereorient_2026_03_15_150420) | 200 | - | 100M | ~1h |
