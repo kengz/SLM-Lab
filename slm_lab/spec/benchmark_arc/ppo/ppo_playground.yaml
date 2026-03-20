@@ -1,0 +1,800 @@
+# PPO MuJoCo Playground — MJWarp GPU
+#
+# Variants:
+#   DM Control Suite (Phase 5.1):
+#     ppo_playground            — default (gamma=0.995, 16 epochs)
+#     ppo_playground_vnorm      — + normalize_v_targets=true (precision/dexterous envs)
+#     ppo_playground_fingerspin — FingerSpin: gamma=0.95 (official override)
+#     ppo_playground_pendulum   — PendulumSwingup: 4 epochs (official); action_repeat=4 in playground.py
+#     ppo_playground_humanoid   — Humanoid: wider policy (2x256), NormalTanh, constant LR, reward_scale=10
+#     ppo_playground_rs10       — + reward_scale=10.0 + constant LR (Brax default for ALL DM Control)
+#     ppo_playground_constlr    — + constant LR (no decay)
+#     ppo_playground_vnorm_constlr — + vnorm + constant LR
+#     ppo_playground_constlr_clip03 — + constant LR + clip_eps=0.3
+#     ppo_playground_vnorm_constlr_clip03 — + vnorm + constant LR + clip_eps=0.3
+#     ppo_playground_brax_policy — 4x32 Brax policy + constant LR + vnorm (RETIRED: underperformed)
+#
+#   Locomotion (Phase 5.2):
+#     ppo_playground_loco       — default loco (4x128 policy, 5x256 value, gamma=0.97, lr=3e-4 constant)
+#     ppo_playground_loco_go1   — Go1/G1/T1 joystick (512-256-128 both nets, clip=0.3)
+#     ppo_playground_loco_precise — G1/BerkeleyHumanoid/T1/Apollo (clip=0.2, entropy=0.005)
+#
+#   Manipulation (Phase 5.3):
+#     ppo_playground_manip      — Panda tasks (4x32 policy, gamma=0.97, epoch=8, th=10)
+#     ppo_playground_manip_aloha — Aloha bimanual (3x256 policy, entropy=0.02)
+#     ppo_playground_manip_aloha_peg — AlohaSinglePegInsertion (4x256, th=40, lr=3e-4)
+#     ppo_playground_manip_dexterous — Leap/Aero dexterous (512-256-128, lr=3e-4, th=40, gamma=0.99)
+#     ppo_playground_manip_robotiq — PandaRobotiqPushCube (4x64 policy, gamma=0.994, th=100, lr=6e-4)
+#
+# DM Control architecture: asymmetric policy=[64,64]+SiLU, value=[256,256,256]+SiLU
+# Loco architecture: policy=[128,128,128,128]+SiLU, value=[256,256,256,256,256]+SiLU
+#
+# Usage:
+#   slm-lab ... ppo_playground train -s env=playground/CartpoleBalance -s max_frame=100000000
+#   slm-lab ... ppo_playground_loco train -s env=playground/Go1Getup -s max_frame=100000000
+#   slm-lab ... ppo_playground_manip train -s env=playground/PandaPickCube -s max_frame=20000000
+#
+# Batch math:
+#   DM Control: 2048 envs x 30 steps = 61K, 15 minibatches, 16 epochs = 240 grad steps
+#   Loco:       2048 envs x 20 steps = 41K, 32 minibatches,  4 epochs = 128 grad steps
+#   Manip:      2048 envs x 10 steps = 20K, varies by task
+#   Robotiq:    2048 envs x 100 steps = 205K, 32 minibatches, 8 epochs = 256 grad steps
+
+# --- Shared ---
+
+_policy_body: &policy_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 64}
+        - SiLU:
+        - LazyLinear: {out_features: 64}
+        - SiLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_value_body: &value_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
+        - LazyLinear: {out_features: 256}
+        - SiLU:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 100000
+  eval_frequency: 100000
+  max_session: 4
+  max_trial: 1
+
+_env: &env
+  name: "${env}"
+  max_t: null
+  max_frame: "${max_frame}"
+  normalize_obs: true
+
+_algorithm: &algorithm
+  name: PPO
+  action_pdtype: Normal
+  gamma: 0.99
+  lam: 0.95
+  clip_eps_spec:
+    name: no_decay
+    start_val: 0.2
+  entropy_coef_spec:
+    name: no_decay
+    start_val: 0.01
+  val_loss_coef: 0.5
+  minibatch_size: 4096
+  normalize_v_targets: false  # Brax default; some envs may need true (see docs/phase5_ops.md)
+
+_net: &net
+  type: TorchArcNet
+  actor_arc: *policy_body
+  critic_arc: *value_body
+  shared: false
+  hid_layers_activation: relu
+  init_fn: orthogonal_
+  clip_grad_val: 1.0
+  use_same_optim: false
+  loss_spec:
+    name: MSELoss
+  optim_spec:
+    name: Adam
+    lr: 1.0e-3
+    eps: 1.0e-5
+  lr_scheduler_spec:
+    name: LinearToMin
+    frame: "${max_frame}"
+    min_factor: 0.033
+  gpu: auto
+
+# --- DM Control: gamma=0.995, 16 epochs, 2048 envs ---
+
+ppo_playground:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+    memory: *memory
+    net: *net
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- FingerSpin: gamma=0.95 (official dm_control_suite_params.py override) ---
+
+ppo_playground_fingerspin:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.95
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 4096
+    memory: *memory
+    net: *net
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- PendulumSwingup: training_epoch=4 (official); action_repeat=4 handled in playground.py ---
+
+ppo_playground_pendulum:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 4
+      minibatch_size: 4096
+    memory: *memory
+    net: *net
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- DM Control + normalize_v_targets=true: for precision/dexterous envs ---
+# Use for: AcrobotSwingup, SwimmerSwimmer6, PointMass, FingerTurnEasy/Hard, FishSwim
+
+ppo_playground_vnorm:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+      normalize_v_targets: true
+    memory: *memory
+    net: *net
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Humanoid DM Control: wider policy (2x256), constant LR, reward_scale=10 ---
+# Humanoid has 21 DOF — needs wider policy than 2x64 for multi-joint coordination
+# Phase 3 solved Gymnasium Humanoid-v5 (2661 MA) with 2x256 policy + constant LR
+# Brax uses reward_scaling=10.0 for ALL DM Control envs (dm_control_suite_params.py)
+# Humanoid reward is multiplicative (standing*upright*move*control), all [0,1] — raw signal too small
+
+ppo_playground_humanoid:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      action_pdtype: NormalTanh  # Brax stores pre-tanh actions; avoids unstable atanh in 21-DOF space
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+      normalize_v_targets: true
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      lr_scheduler_spec: null  # constant LR — Brax default, Phase 3 used constant
+  env:
+    <<: *env
+    num_envs: 2048
+    reward_scale: 10.0  # Brax default for DM Control — critical for Humanoid's tiny rewards
+  meta: *meta
+
+# --- reward_scale=10.0: Brax default for ALL DM Control envs ---
+# Research: dm_control_suite_params.py applies reward_scaling=10.0 universally.
+# Previously only ppo_playground_humanoid had this. Test on all underperforming envs.
+
+ppo_playground_rs10:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+    memory: *memory
+    net:
+      <<: *net
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+    reward_scale: 10.0
+  meta: *meta
+
+# --- Constant LR variants: test Brax default (no LR decay) in isolation ---
+
+ppo_playground_constlr:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 4096
+    memory: *memory
+    net:
+      <<: *net
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+ppo_playground_vnorm_constlr:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+      normalize_v_targets: true
+    memory: *memory
+    net:
+      <<: *net
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Constant LR + clip_eps=0.3: both Brax defaults, tested together ---
+
+ppo_playground_constlr_clip03:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.3
+    memory: *memory
+    net:
+      <<: *net
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+ppo_playground_vnorm_constlr_clip03:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+      normalize_v_targets: true
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.3
+    memory: *memory
+    net:
+      <<: *net
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Brax-matched policy (4x32): deeper narrower policy matching Brax default ---
+
+ppo_playground_brax_policy:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.995
+      time_horizon: 30
+      training_epoch: 16
+      minibatch_size: 2048
+      normalize_v_targets: true
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Locomotion: official Brax defaults (gamma=0.97, lr=3e-4 constant, clip=0.3) ---
+# Policy: 4x128, Value: 5x256 (official default for most locomotion envs)
+# Use for: BarkourJoystick, H1*, Op3, Spot* (default-config envs)
+# num_envs=2048 — official uses 8192; all Phase 5.2 benchmark runs used 2048
+
+ppo_playground_loco:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 20
+      training_epoch: 4
+      minibatch_size: 4096
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.3
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      critic_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Locomotion Go1/G1/T1: 512-256-128 both nets ---
+# Use for: Go1Joystick*, Go1Getup, Go1Handstand, Go1Footstand, Go1Backflip, G1*, T1*
+# These envs provide privileged_state obs (flattened into obs alongside policy state)
+# num_envs=2048 — official uses 8192; all Phase 5.2 benchmark runs used 2048
+
+ppo_playground_loco_go1:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 20
+      training_epoch: 4
+      minibatch_size: 4096
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.3
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 512}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      critic_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 512}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
+      lr_scheduler_spec: null  # constant LR — Brax default
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Locomotion precise: G1, BerkeleyHumanoid, T1, Apollo (clip=0.2, entropy=0.005) ---
+
+ppo_playground_loco_precise:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 20
+      training_epoch: 4
+      minibatch_size: 4096
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.005
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      critic_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
+      lr_scheduler_spec: null
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Manipulation: Panda tasks (4x32 policy, epoch=8, th=10, entropy=0.02) ---
+
+ppo_playground_manip:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 10
+      training_epoch: 8
+      minibatch_size: 4096
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.02
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+              - LazyLinear: {out_features: 32}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 1.0e-3
+        eps: 1.0e-5
+      lr_scheduler_spec: null
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Manipulation: Aloha bimanual (3x256 policy, entropy=0.02) ---
+
+ppo_playground_manip_aloha:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 15
+      training_epoch: 8
+      minibatch_size: 4096
+      entropy_coef_spec:
+        name: no_decay
+        start_val: 0.02
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 1.0e-3
+        eps: 1.0e-5
+      lr_scheduler_spec: null
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Manipulation: AlohaSinglePegInsertion (4x256 policy, th=40, lr=3e-4, entropy=0.01) ---
+# Official config differs significantly from AlohaHandOver: deeper policy, lower lr/entropy, longer horizon
+
+ppo_playground_manip_aloha_peg:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.97
+      time_horizon: 40
+      training_epoch: 8
+      minibatch_size: 4096
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
+      lr_scheduler_spec: null
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Manipulation: Leap/Aero dexterous (512-256-128, lr=3e-4, th=40, gamma=0.99) ---
+# Official uses gamma=0.99 (not 0.97) for LeapCube and AeroCube envs
+
+ppo_playground_manip_dexterous:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.99
+      time_horizon: 40
+      training_epoch: 4
+      minibatch_size: 4096
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 512}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      critic_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 512}
+              - SiLU:
+              - LazyLinear: {out_features: 256}
+              - SiLU:
+              - LazyLinear: {out_features: 128}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
+      lr_scheduler_spec: null
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
+
+# --- Manipulation: PandaRobotiqPushCube (4x64 policy, gamma=0.994, th=100, lr=6e-4) ---
+
+ppo_playground_manip_robotiq:
+  agent:
+    name: PPO
+    algorithm:
+      <<: *algorithm
+      gamma: 0.994
+      time_horizon: 100
+      training_epoch: 8
+      minibatch_size: 4096
+    memory: *memory
+    net:
+      <<: *net
+      actor_arc:
+        modules:
+          body:
+            Sequential:
+              - LazyLinear: {out_features: 64}
+              - SiLU:
+              - LazyLinear: {out_features: 64}
+              - SiLU:
+              - LazyLinear: {out_features: 64}
+              - SiLU:
+              - LazyLinear: {out_features: 64}
+              - SiLU:
+        graph:
+          input: x
+          modules:
+            body: [x]
+          output: body
+      optim_spec:
+        name: Adam
+        lr: 6.0e-4
+        eps: 1.0e-5
+      lr_scheduler_spec: null
+  env:
+    <<: *env
+    num_envs: 2048
+  meta: *meta
