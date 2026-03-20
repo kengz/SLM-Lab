@@ -56,6 +56,11 @@ ml = [
     "torch>=2.8.0",
     "torcharc>=1.0.0",
 ]
+# MuJoCo Playground dependencies - install with: uv sync --group playground
+playground = [
+    "playground[cuda] ; sys_platform != 'darwin'",
+    "playground ; sys_platform == 'darwin'",
+]
 # Dev dependencies - install with: uv sync --group dev
 dev = [
     "coverage>=7.6.1",
@@ -85,10 +90,27 @@ name = "pytorch-cu128"
 url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
+[[tool.uv.index]]
+name = "mujoco"
+url = "https://py.mujoco.org"
+explicit = true
+
+[[tool.uv.index]]
+name = "nvidia"
+url = "https://pypi.nvidia.com"
+explicit = true
+
 [tool.uv.sources]
 torch = [
   { index = "pytorch-cu128", marker = "platform_system != 'Darwin'"},
 ]
+warp-lang = [
+  { index = "nvidia" },
+]
+playground = { git = "https://github.com/google-deepmind/mujoco_playground", rev = "main" }
+mujoco = { index = "mujoco" }
+mujoco-mjx = { git = "https://github.com/google-deepmind/mujoco", rev = "main", subdirectory = "mjx" }
+brax = { git = "https://github.com/google/brax", rev = "main" }
 
 [tool.pytest.ini_options]
 addopts = [
