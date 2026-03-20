@@ -110,11 +110,12 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 | Phase | Category | Envs | REINFORCE | SARSA | DQN | DDQN+PER | A2C | PPO | SAC | CrossQ | Overall |
 |-------|----------|------|-----------|-------|-----|----------|-----|-----|-----|--------|---------|
 | 1 | Classic Control | 3 | ✅ | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ | ⚠️ | Done |
-| 2 | Box2D | 2 | N/A | N/A | ⚠️ | ✅ | ❌ | ⚠️ | ⚠️ | ⚠️ | Done |
+| 2 | Box2D | 2 | N/A | N/A | ⚠️ | ✅ | | ⚠️ | ⚠️ | ⚠️ | Done |
 | 3 | MuJoCo | 11 | N/A | N/A | N/A | N/A | N/A | ⚠️ | ⚠️ | ⚠️ | Done |
-| 4 | Atari | 57 | N/A | N/A | N/A | Skip | Done | Done | Done | ❌ | Done |
+| 4 | Atari | 57 | N/A | N/A | N/A | Skip | Done | Done | Done | | Done |
+| 5 | Playground | 54 | N/A | N/A | N/A | N/A | N/A | 🔄 | 🔄 | N/A | In progress |
 
-**Legend**: ✅ Solved | ⚠️ Close (>80%) | 📊 Acceptable | ❌ Failed | 🔄 In progress/Pending | Skip Not started | N/A Not applicable
+**Legend**: ✅ Solved | ⚠️ Close (>80%) | 📊 Acceptable | Failed | 🔄 In progress/Pending | Skip Not started | N/A Not applicable
 
 ---
 
@@ -166,7 +167,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Data |
 |-----------|--------|-----|-----------|-----------|---------|
-| A2C | ❌ | -820.74 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_pendulum_arc | [a2c_gae_pendulum_arc_2026_02_11_162217](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_pendulum_arc_2026_02_11_162217) |
+| A2C | | -820.74 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_pendulum_arc | [a2c_gae_pendulum_arc_2026_02_11_162217](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_pendulum_arc_2026_02_11_162217) |
 | PPO | ✅ | -174.87 | [slm_lab/spec/benchmark_arc/ppo/ppo_classic_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_classic_arc.yaml) | ppo_pendulum_arc | [ppo_pendulum_arc_2026_02_11_162156](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_pendulum_arc_2026_02_11_162156) |
 | SAC | ✅ | -150.97 | [slm_lab/spec/benchmark_arc/sac/sac_classic_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_classic_arc.yaml) | sac_pendulum_arc | [sac_pendulum_arc_2026_02_11_162240](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_pendulum_arc_2026_02_11_162240) |
 | CrossQ | ✅ | -145.66 | [slm_lab/spec/benchmark/crossq/crossq_classic.yaml](../slm_lab/spec/benchmark/crossq/crossq_classic.yaml) | crossq_pendulum | [crossq_pendulum_2026_02_28_130648](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_pendulum_2026_02_28_130648) |
@@ -185,10 +186,10 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 |-----------|--------|-----|-----------|-----------|---------|
 | DQN | ⚠️ | 195.21 | [slm_lab/spec/benchmark_arc/dqn/dqn_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/dqn/dqn_box2d_arc.yaml) | dqn_concat_lunar_arc | [dqn_concat_lunar_arc_2026_02_11_201407](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/dqn_concat_lunar_arc_2026_02_11_201407) |
 | DDQN+PER | ✅ | 265.90 | [slm_lab/spec/benchmark_arc/dqn/dqn_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/dqn/dqn_box2d_arc.yaml) | ddqn_per_concat_lunar_arc | [ddqn_per_concat_lunar_arc_2026_02_13_105115](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ddqn_per_concat_lunar_arc_2026_02_13_105115) |
-| A2C | ❌ | 27.38 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_lunar_arc | [a2c_gae_lunar_arc_2026_02_11_224304](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_lunar_arc_2026_02_11_224304) |
+| A2C | | 27.38 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_lunar_arc | [a2c_gae_lunar_arc_2026_02_11_224304](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_lunar_arc_2026_02_11_224304) |
 | PPO | ⚠️ | 183.30 | [slm_lab/spec/benchmark_arc/ppo/ppo_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_box2d_arc.yaml) | ppo_lunar_arc | [ppo_lunar_arc_2026_02_11_201303](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_lunar_arc_2026_02_11_201303) |
 | SAC | ⚠️ | 106.17 | [slm_lab/spec/benchmark_arc/sac/sac_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_box2d_arc.yaml) | sac_lunar_arc | [sac_lunar_arc_2026_02_11_201417](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_lunar_arc_2026_02_11_201417) |
-| CrossQ | ❌ | 139.21 | [slm_lab/spec/benchmark/crossq/crossq_box2d.yaml](../slm_lab/spec/benchmark/crossq/crossq_box2d.yaml) | crossq_lunar | [crossq_lunar_2026_02_28_130733](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_lunar_2026_02_28_130733) |
+| CrossQ | | 139.21 | [slm_lab/spec/benchmark/crossq/crossq_box2d.yaml](../slm_lab/spec/benchmark/crossq/crossq_box2d.yaml) | crossq_lunar | [crossq_lunar_2026_02_28_130733](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_lunar_2026_02_28_130733) |
 
 ![LunarLander-v3](plots/LunarLander-v3_multi_trial_graph_mean_returns_ma_vs_frames.png)
 
@@ -200,7 +201,7 @@ Search budget: ~3-4 trials per dimension (8 trials = 2-3 dims, 16 = 3-4 dims, 20
 
 | Algorithm | Status | MA | SPEC_FILE | SPEC_NAME | HF Data |
 |-----------|--------|-----|-----------|-----------|---------|
-| A2C | ❌ | -76.81 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_lunar_continuous_arc | [a2c_gae_lunar_continuous_arc_2026_02_11_224301](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_lunar_continuous_arc_2026_02_11_224301) |
+| A2C | | -76.81 | [slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_classic_arc.yaml) | a2c_gae_lunar_continuous_arc | [a2c_gae_lunar_continuous_arc_2026_02_11_224301](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_lunar_continuous_arc_2026_02_11_224301) |
 | PPO | ⚠️ | 132.58 | [slm_lab/spec/benchmark_arc/ppo/ppo_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_box2d_arc.yaml) | ppo_lunar_continuous_arc | [ppo_lunar_continuous_arc_2026_02_11_224229](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_lunar_continuous_arc_2026_02_11_224229) |
 | SAC | ⚠️ | 125.00 | [slm_lab/spec/benchmark_arc/sac/sac_box2d_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_box2d_arc.yaml) | sac_lunar_continuous_arc | [sac_lunar_continuous_arc_2026_02_12_222203](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_lunar_continuous_arc_2026_02_12_222203) |
 | CrossQ | ✅ | 268.91 | [slm_lab/spec/benchmark/crossq/crossq_box2d.yaml](../slm_lab/spec/benchmark/crossq/crossq_box2d.yaml) | crossq_lunar_continuous | [crossq_lunar_continuous_2026_03_01_140517](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_lunar_continuous_2026_03_01_140517) |
@@ -455,7 +456,7 @@ source .env && slm-lab run-remote --gpu \
 - **A2C**: [a2c_atari_arc.yaml](../slm_lab/spec/benchmark_arc/a2c/a2c_atari_arc.yaml) - RMSprop (lr=7e-4), training_frequency=32
 - **PPO**: [ppo_atari_arc.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_atari_arc.yaml) - AdamW (lr=2.5e-4), minibatch=256, horizon=128, epochs=4, max_frame=10e6
 - **SAC**: [sac_atari_arc.yaml](../slm_lab/spec/benchmark_arc/sac/sac_atari_arc.yaml) - Categorical SAC, AdamW (lr=3e-4), training_iter=3, training_frequency=4, max_frame=2e6
-- **CrossQ**: [crossq_atari.yaml](../slm_lab/spec/benchmark/crossq/crossq_atari.yaml) - Categorical CrossQ, AdamW (lr=1e-3), training_iter=3, training_frequency=4, max_frame=2e6 (experimental — limited results on 6 games)
+- **CrossQ**: [crossq_atari.yaml](../slm_lab/spec/benchmark/crossq/crossq_atari.yaml) - Categorical CrossQ, Adam (lr=1e-3), training_iter=1, training_frequency=4, max_frame=2e6 (experimental — limited results on 6 games)
 
 **PPO Lambda Variants** (table shows best result per game):
 
@@ -486,7 +487,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 
 > **Note**: HF Data links marked "-" indicate runs completed but not yet uploaded to HuggingFace. Scores are extracted from local trial_metrics.
 
-| ENV | Score | SPEC_NAME | HF Data |
+| ENV | MA | SPEC_NAME | HF Data |
 |-----|-------|-----------|---------|
 | ALE/AirRaid-v5 | 7042.84 | ppo_atari_arc | [ppo_atari_arc_airraid_2026_02_13_124015](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_airraid_2026_02_13_124015) |
 | | 1832.54 | sac_atari_arc | [sac_atari_arc_airraid_2026_02_17_104002](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_airraid_2026_02_17_104002) |
@@ -530,7 +531,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/Breakout-v5 | 326.47 | ppo_atari_lam70_arc | [ppo_atari_lam70_arc_breakout_2026_02_13_230455](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam70_arc_breakout_2026_02_13_230455) |
 | | 20.23 | sac_atari_arc | [sac_atari_arc_breakout_2026_02_15_201235](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_breakout_2026_02_15_201235) |
 | | 273 | a2c_gae_atari_arc | [a2c_gae_atari_breakout_2026_01_31_213610](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_breakout_2026_01_31_213610) |
-| | ❌ 4.40 | crossq_atari | [crossq_atari_breakout_2026_02_25_030241](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_breakout_2026_02_25_030241) |
+| | 4.40 | crossq_atari | [crossq_atari_breakout_2026_02_25_030241](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_breakout_2026_02_25_030241) |
 | ALE/Carnival-v5 | 3912.59 | ppo_atari_lam70_arc | [ppo_atari_lam70_arc_carnival_2026_02_13_230438](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam70_arc_carnival_2026_02_13_230438) |
 | | 3501.37 | sac_atari_arc | [sac_atari_arc_carnival_2026_02_17_105834](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_carnival_2026_02_17_105834) |
 | | 2170 | a2c_gae_atari_arc | [a2c_gae_atari_carnival_2026_02_01_082726](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_carnival_2026_02_01_082726) |
@@ -594,7 +595,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/MsPacman-v5 | 2330.74 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_mspacman_2026_02_14_102435](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_mspacman_2026_02_14_102435) |
 | | 1336.96 | sac_atari_arc | [sac_atari_arc_mspacman_2026_02_17_221523](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_mspacman_2026_02_17_221523) |
 | | 2110 | a2c_gae_atari_arc | [a2c_gae_atari_mspacman_2026_02_01_001100](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_mspacman_2026_02_01_001100) |
-| | ❌ 327.79 | crossq_atari | [crossq_atari_mspacman_2026_02_23_171317](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_mspacman_2026_02_23_171317) |
+| | 327.79 | crossq_atari | [crossq_atari_mspacman_2026_02_23_171317](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_mspacman_2026_02_23_171317) |
 | ALE/NameThisGame-v5 | 6879.23 | ppo_atari_arc | [ppo_atari_arc_namethisgame_2026_02_14_103319](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_namethisgame_2026_02_14_103319) |
 | | 3992.71 | sac_atari_arc | [sac_atari_arc_namethisgame_2026_02_17_220905](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_namethisgame_2026_02_17_220905) |
 | | 5412 | a2c_gae_atari_arc | [a2c_gae_atari_namethisgame_2026_02_01_132733](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_namethisgame_2026_02_01_132733) |
@@ -604,14 +605,14 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/Pong-v5 | 16.69 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_pong_2026_02_14_103722](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_pong_2026_02_14_103722) |
 | | 10.89 | sac_atari_arc | [sac_atari_arc_pong_2026_02_17_160429](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_pong_2026_02_17_160429) |
 | | 10.17 | a2c_gae_atari_arc | [a2c_gae_atari_pong_2026_01_31_213635](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_pong_2026_01_31_213635) |
-| | ❌ -20.59 | crossq_atari | [crossq_atari_pong_2026_02_23_171158](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_pong_2026_02_23_171158) |
+| | -20.59 | crossq_atari | [crossq_atari_pong_2026_02_23_171158](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_pong_2026_02_23_171158) |
 | ALE/Pooyan-v5 | 5308.66 | ppo_atari_lam70_arc | [ppo_atari_lam70_arc_pooyan_2026_02_14_114730](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam70_arc_pooyan_2026_02_14_114730) |
 | | 2530.78 | sac_atari_arc | [sac_atari_arc_pooyan_2026_02_17_220346](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_pooyan_2026_02_17_220346) |
 | | 2997 | a2c_gae_atari_arc | [a2c_gae_atari_pooyan_2026_02_01_132748](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_pooyan_2026_02_01_132748) |
 | ALE/Qbert-v5 | 15460.48 | ppo_atari_arc | [ppo_atari_arc_qbert_2026_02_14_120409](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_qbert_2026_02_14_120409) |
 | | 3331.98 | sac_atari_arc | [sac_atari_arc_qbert_2026_02_17_223117](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_qbert_2026_02_17_223117) |
 | | 12619 | a2c_gae_atari_arc | [a2c_gae_atari_qbert_2026_01_31_213720](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_qbert_2026_01_31_213720) |
-| | ❌ 3189.73 | crossq_atari | [crossq_atari_qbert_2026_02_25_030458](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_qbert_2026_02_25_030458) |
+| | 3189.73 | crossq_atari | [crossq_atari_qbert_2026_02_25_030458](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_qbert_2026_02_25_030458) |
 | ALE/Riverraid-v5 | 9599.75 | ppo_atari_lam85_arc | [ppo_atari_lam85_arc_riverraid_2026_02_14_124700](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam85_arc_riverraid_2026_02_14_124700) |
 | | 4744.95 | sac_atari_arc | [sac_atari_arc_riverraid_2026_02_18_014310](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_riverraid_2026_02_18_014310) |
 | | 6558 | a2c_gae_atari_arc | [a2c_gae_atari_riverraid_2026_02_01_132507](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_riverraid_2026_02_01_132507) |
@@ -624,7 +625,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/Seaquest-v5 | 1775.14 | ppo_atari_arc | [ppo_atari_arc_seaquest_2026_02_11_095444](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_seaquest_2026_02_11_095444) |
 | | 1565.44 | sac_atari_arc | [sac_atari_arc_seaquest_2026_02_18_020822](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_seaquest_2026_02_18_020822) |
 | | 850 | a2c_gae_atari_arc | [a2c_gae_atari_seaquest_2026_02_01_001001](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_seaquest_2026_02_01_001001) |
-| | ❌ 234.63 | crossq_atari | [crossq_atari_seaquest_2026_02_25_030441](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_seaquest_2026_02_25_030441) |
+| | 234.63 | crossq_atari | [crossq_atari_seaquest_2026_02_25_030441](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_seaquest_2026_02_25_030441) |
 | ALE/Skiing-v5 | -28217.28 | ppo_atari_arc | [ppo_atari_arc_skiing_2026_02_14_174807](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_skiing_2026_02_14_174807) |
 | | -17464.22 | sac_atari_arc | [sac_atari_arc_skiing_2026_02_18_024444](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_skiing_2026_02_18_024444) |
 | | -14235 | a2c_gae_atari_arc | [a2c_gae_atari_skiing_2026_02_01_132451](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_skiing_2026_02_01_132451) |
@@ -634,7 +635,7 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 | ALE/SpaceInvaders-v5 | 892.49 | ppo_atari_arc | [ppo_atari_arc_spaceinvaders_2026_02_14_131114](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_arc_spaceinvaders_2026_02_14_131114) |
 | | 507.33 | sac_atari_arc | [sac_atari_arc_spaceinvaders_2026_02_18_033139](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_spaceinvaders_2026_02_18_033139) |
 | | 784 | a2c_gae_atari_arc | [a2c_gae_atari_spaceinvaders_2026_02_01_000950](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_spaceinvaders_2026_02_01_000950) |
-| | ❌ 404.50 | crossq_atari | [crossq_atari_spaceinvaders_2026_02_25_030410](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_spaceinvaders_2026_02_25_030410) |
+| | 404.50 | crossq_atari | [crossq_atari_spaceinvaders_2026_02_25_030410](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/crossq_atari_spaceinvaders_2026_02_25_030410) |
 | ALE/StarGunner-v5 | 49328.73 | ppo_atari_lam70_arc | [ppo_atari_lam70_arc_stargunner_2026_02_14_131149](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_atari_lam70_arc_stargunner_2026_02_14_131149) |
 | | 4295.97 | sac_atari_arc | [sac_atari_arc_stargunner_2026_02_18_033151](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/sac_atari_arc_stargunner_2026_02_18_033151) |
 | | 8665 | a2c_gae_atari_arc | [a2c_gae_atari_stargunner_2026_02_01_132406](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/a2c_gae_atari_stargunner_2026_02_01_132406) |
@@ -759,4 +760,124 @@ source .env && slm-lab run-remote --gpu -s env=ENV \
 **Legend**: **Bold** = Best score | - = Not tested
 
 </details>
+
+---
+
+### Phase 5: MuJoCo Playground (JAX/MJX GPU-Accelerated)
+
+[MuJoCo Playground](https://google-deepmind.github.io/mujoco_playground/) | Continuous state/action | MJWarp GPU backend
+
+**Settings**: max_frame 100M | num_envs 2048 | max_session 4
+
+**Spec file**: [ppo_playground.yaml](../slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml) — all envs via `-s env=playground/ENV`
+
+**Reproduce**:
+```bash
+source .env && slm-lab run-remote --gpu \
+  slm_lab/spec/benchmark_arc/ppo/ppo_playground.yaml SPEC_NAME train \
+  -s env=playground/ENV -s max_frame=100000000 -n NAME
+```
+
+#### Phase 5.1: DM Control Suite (25 envs)
+
+Classic control and locomotion tasks from the DeepMind Control Suite, ported to MJWarp GPU simulation.
+
+| ENV | MA | SPEC_NAME | HF Data |
+|-----|-----|-----------|---------|
+| playground/AcrobotSwingup | 253.24 | ppo_playground_vnorm | [ppo_playground_acrobotswingup_2026_03_12_175809](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_acrobotswingup_2026_03_12_175809) |
+| playground/AcrobotSwingupSparse | 146.98 | ppo_playground_vnorm | [ppo_playground_vnorm_acrobotswingupsparse_2026_03_14_161212](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_acrobotswingupsparse_2026_03_14_161212) |
+| playground/BallInCup | 942.44 | ppo_playground_vnorm | [ppo_playground_ballincup_2026_03_12_105443](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_ballincup_2026_03_12_105443) |
+| playground/CartpoleBalance | 968.23 | ppo_playground_vnorm | [ppo_playground_cartpolebalance_2026_03_12_141924](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_cartpolebalance_2026_03_12_141924) |
+| playground/CartpoleBalanceSparse | 995.34 | ppo_playground_constlr | [ppo_playground_constlr_cartpolebalancesparse_2026_03_14_000352](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_constlr_cartpolebalancesparse_2026_03_14_000352) |
+| playground/CartpoleSwingup | 729.09 | ppo_playground_constlr | [ppo_playground_constlr_cartpoleswingup_2026_03_17_041102](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_constlr_cartpoleswingup_2026_03_17_041102) |
+| playground/CartpoleSwingupSparse | 521.98 | ppo_playground_constlr | [ppo_playground_constlr_cartpoleswingupsparse_2026_03_13_233449](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_constlr_cartpoleswingupsparse_2026_03_13_233449) |
+| playground/CheetahRun | 883.44 | ppo_playground_vnorm | [ppo_playground_vnorm_cheetahrun_2026_03_14_161211](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_cheetahrun_2026_03_14_161211) |
+| playground/FingerSpin | 713.35 | ppo_playground_fingerspin | [ppo_playground_fingerspin_fingerspin_2026_03_13_033911](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_fingerspin_fingerspin_2026_03_13_033911) |
+| playground/FingerTurnEasy | 663.58 | ppo_playground_vnorm | [ppo_playground_fingerturneasy_2026_03_12_175835](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_fingerturneasy_2026_03_12_175835) |
+| playground/FingerTurnHard | 590.43 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_fingerturnhard_2026_03_16_234509](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_constlr_fingerturnhard_2026_03_16_234509) |
+| playground/FishSwim | 580.57 | ppo_playground_vnorm_constlr_clip03 | [ppo_playground_vnorm_constlr_clip03_fishswim_2026_03_14_002112](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_constlr_clip03_fishswim_2026_03_14_002112) |
+| playground/HopperHop | 22.00 | ppo_playground_vnorm | [ppo_playground_hopperhop_2026_03_12_110855](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_hopperhop_2026_03_12_110855) |
+| playground/HopperStand | 237.15 | ppo_playground_vnorm | [ppo_playground_vnorm_hopperstand_2026_03_14_095438](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_hopperstand_2026_03_14_095438) |
+| playground/HumanoidRun | 18.83 | ppo_playground_humanoid | [ppo_playground_humanoid_humanoidrun_2026_03_14_115522](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_humanoid_humanoidrun_2026_03_14_115522) |
+| playground/HumanoidStand | 114.86 | ppo_playground_humanoid | [ppo_playground_humanoid_humanoidstand_2026_03_14_115516](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_humanoid_humanoidstand_2026_03_14_115516) |
+| playground/HumanoidWalk | 47.01 | ppo_playground_humanoid | [ppo_playground_humanoid_humanoidwalk_2026_03_14_172235](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_humanoid_humanoidwalk_2026_03_14_172235) |
+| playground/PendulumSwingup | 637.46 | ppo_playground_pendulum | [ppo_playground_pendulum_pendulumswingup_2026_03_13_033818](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_pendulum_pendulumswingup_2026_03_13_033818) |
+| playground/PointMass | 868.09 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_pointmass_2026_03_14_095452](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_constlr_pointmass_2026_03_14_095452) |
+| playground/ReacherEasy | 955.08 | ppo_playground_vnorm | [ppo_playground_reachereasy_2026_03_12_122115](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_reachereasy_2026_03_12_122115) |
+| playground/ReacherHard | 946.99 | ppo_playground_vnorm | [ppo_playground_reacherhard_2026_03_12_123226](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_reacherhard_2026_03_12_123226) |
+| playground/SwimmerSwimmer6 | 591.13 | ppo_playground_vnorm_constlr | [ppo_playground_vnorm_constlr_swimmerswimmer6_2026_03_14_000406](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_constlr_swimmerswimmer6_2026_03_14_000406) |
+| playground/WalkerRun | 759.71 | ppo_playground_vnorm | [ppo_playground_vnorm_walkerrun_2026_03_14_161354](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_walkerrun_2026_03_14_161354) |
+| playground/WalkerStand | 948.35 | ppo_playground_vnorm | [ppo_playground_vnorm_walkerstand_2026_03_14_161415](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_walkerstand_2026_03_14_161415) |
+| playground/WalkerWalk | 945.31 | ppo_playground_vnorm | [ppo_playground_vnorm_walkerwalk_2026_03_14_161338](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_vnorm_walkerwalk_2026_03_14_161338) |
+
+| | | |
+|---|---|---|
+| ![AcrobotSwingup](plots/AcrobotSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![AcrobotSwingupSparse](plots/AcrobotSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![BallInCup](plots/BallInCup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![CartpoleBalance](plots/CartpoleBalance_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleBalanceSparse](plots/CartpoleBalanceSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CartpoleSwingup](plots/CartpoleSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![CartpoleSwingupSparse](plots/CartpoleSwingupSparse_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![CheetahRun](plots/CheetahRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FingerSpin](plots/FingerSpin_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![FingerTurnEasy](plots/FingerTurnEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FingerTurnHard](plots/FingerTurnHard_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![FishSwim](plots/FishSwim_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![HopperHop](plots/HopperHop_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HopperStand](plots/HopperStand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HumanoidRun](plots/HumanoidRun_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![HumanoidStand](plots/HumanoidStand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![HumanoidWalk](plots/HumanoidWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PendulumSwingup](plots/PendulumSwingup_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![PointMass](plots/PointMass_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![ReacherEasy](plots/ReacherEasy_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![ReacherHard](plots/ReacherHard_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![SwimmerSwimmer6](plots/SwimmerSwimmer6_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerRun](plots/WalkerRun_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![WalkerStand](plots/WalkerStand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![WalkerWalk](plots/WalkerWalk_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
+
+#### Phase 5.2: Locomotion Robots (19 envs)
+
+Real-world robot locomotion — quadrupeds (Go1, Spot, Barkour) and humanoids (H1, G1, T1, Op3, Apollo, BerkeleyHumanoid) on flat and rough terrain.
+
+| ENV | MA | SPEC_NAME | HF Data |
+|-----|-----|-----------|---------|
+| playground/ApolloJoystickFlatTerrain | 17.44 | ppo_playground_loco_precise | [ppo_playground_loco_precise_apollojoystickflatterrain_2026_03_14_210939](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_apollojoystickflatterrain_2026_03_14_210939) |
+| playground/BarkourJoystick | 0.0 | ppo_playground_loco | [ppo_playground_loco_barkourjoystick_2026_03_14_194525](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_barkourjoystick_2026_03_14_194525) |
+| playground/BerkeleyHumanoidJoystickFlatTerrain | 32.29 | ppo_playground_loco_precise | [ppo_playground_loco_precise_berkeleyhumanoidjoystickflatterrain_2026_03_14_213019](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_berkeleyhumanoidjoystickflatterrain_2026_03_14_213019) |
+| playground/BerkeleyHumanoidJoystickRoughTerrain | 21.25 | ppo_playground_loco_precise | [ppo_playground_loco_precise_berkeleyhumanoidjoystickroughterrain_2026_03_15_150211](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_berkeleyhumanoidjoystickroughterrain_2026_03_15_150211) |
+| playground/G1JoystickFlatTerrain | 1.85 | ppo_playground_loco_precise | [ppo_playground_loco_precise_g1joystickflatterrain_2026_03_15_150219](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_g1joystickflatterrain_2026_03_15_150219) |
+| playground/G1JoystickRoughTerrain | -2.75 | ppo_playground_loco_precise | [ppo_playground_loco_precise_g1joystickroughterrain_2026_03_19_015137](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_g1joystickroughterrain_2026_03_19_015137) |
+| playground/Go1Footstand | 23.48 | ppo_playground_loco_precise | [ppo_playground_loco_precise_go1footstand_2026_03_16_174009](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_go1footstand_2026_03_16_174009) |
+| playground/Go1Getup | 18.16 | ppo_playground_loco_go1 | [ppo_playground_loco_go1_go1getup_2026_03_16_132801](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_go1_go1getup_2026_03_16_132801) |
+| playground/Go1Handstand | 17.88 | ppo_playground_loco_precise | [ppo_playground_loco_precise_go1handstand_2026_03_16_155437](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_go1handstand_2026_03_16_155437) |
+| playground/Go1JoystickFlatTerrain | 0.0 | ppo_playground_loco | [ppo_playground_loco_go1joystickflatterrain_2026_03_14_204658](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_go1joystickflatterrain_2026_03_14_204658) |
+| playground/Go1JoystickRoughTerrain | 0.00 | ppo_playground_loco | [ppo_playground_loco_go1joystickroughterrain_2026_03_15_150321](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_go1joystickroughterrain_2026_03_15_150321) |
+| playground/H1InplaceGaitTracking | 11.95 | ppo_playground_loco_precise | [ppo_playground_loco_precise_h1inplacegaittracking_2026_03_16_170327](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_h1inplacegaittracking_2026_03_16_170327) |
+| playground/H1JoystickGaitTracking | 31.11 | ppo_playground_loco_precise | [ppo_playground_loco_precise_h1joystickgaittracking_2026_03_16_170412](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_h1joystickgaittracking_2026_03_16_170412) |
+| playground/Op3Joystick | 0.00 | ppo_playground_loco | [ppo_playground_loco_op3joystick_2026_03_15_150120](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_op3joystick_2026_03_15_150120) |
+| playground/SpotFlatTerrainJoystick | 48.58 | ppo_playground_loco_precise | [ppo_playground_loco_precise_spotflatterrainjoystick_2026_03_16_180747](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_spotflatterrainjoystick_2026_03_16_180747) |
+| playground/SpotGetup | 19.39 | ppo_playground_loco | [ppo_playground_loco_spotgetup_2026_03_14_213703](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_spotgetup_2026_03_14_213703) |
+| playground/SpotJoystickGaitTracking | 36.90 | ppo_playground_loco | [ppo_playground_loco_spotjoystickgaittracking_2026_03_19_015106](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_spotjoystickgaittracking_2026_03_19_015106) |
+| playground/T1JoystickFlatTerrain | 13.42 | ppo_playground_loco_precise | [ppo_playground_loco_precise_t1joystickflatterrain_2026_03_14_220250](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_t1joystickflatterrain_2026_03_14_220250) |
+| playground/T1JoystickRoughTerrain | 2.58 | ppo_playground_loco_precise | [ppo_playground_loco_precise_t1joystickroughterrain_2026_03_15_162332](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_precise_t1joystickroughterrain_2026_03_15_162332) |
+
+| | | |
+|---|---|---|
+| ![ApolloJoystickFlatTerrain](plots/ApolloJoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![BarkourJoystick](plots/BarkourJoystick_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![BerkeleyHumanoidJoystickFlatTerrain](plots/BerkeleyHumanoidJoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![G1JoystickFlatTerrain](plots/G1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1Footstand](plots/Go1Footstand_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1Handstand](plots/Go1Handstand_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![H1InplaceGaitTracking](plots/H1InplaceGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![H1JoystickGaitTracking](plots/H1JoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Op3Joystick](plots/Op3Joystick_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![SpotFlatTerrainJoystick](plots/SpotFlatTerrainJoystick_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotGetup](plots/SpotGetup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![SpotJoystickGaitTracking](plots/SpotJoystickGaitTracking_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![BerkeleyHumanoidJoystickRoughTerrain](plots/BerkeleyHumanoidJoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1Getup](plots/Go1Getup_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![Go1JoystickFlatTerrain](plots/Go1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![Go1JoystickRoughTerrain](plots/Go1JoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickFlatTerrain](plots/T1JoystickFlatTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![T1JoystickRoughTerrain](plots/T1JoystickRoughTerrain_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+
+#### Phase 5.3: Manipulation (10 envs)
+
+Robotic manipulation — Panda arm pick/place, Aloha bimanual, Leap dexterous hand, and AeroCube orientation tasks.
+
+| ENV | MA | SPEC_NAME | HF Data |
+|-----|-----|-----------|---------|
+| playground/AeroCubeRotateZAxis | -3.09 | ppo_playground_loco | [ppo_playground_loco_aerocuberotatezaxis_2026_03_20_012502](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_aerocuberotatezaxis_2026_03_20_012502) |
+| playground/AlohaHandOver | 3.65 | ppo_playground_loco | [ppo_playground_loco_alohahandover_2026_03_15_023712](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_alohahandover_2026_03_15_023712) |
+| playground/AlohaSinglePegInsertion | 220.93 | ppo_playground_manip_aloha_peg | [ppo_playground_manip_aloha_peg_alohasinglepeginsertion_2026_03_17_122613](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_manip_aloha_peg_alohasinglepeginsertion_2026_03_17_122613) |
+| playground/LeapCubeReorient | 74.68 | ppo_playground_loco | [ppo_playground_loco_leapcubereorient_2026_03_15_150420](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_leapcubereorient_2026_03_15_150420) |
+| playground/LeapCubeRotateZAxis | 91.65 | ppo_playground_loco | [ppo_playground_loco_leapcuberotatezaxis_2026_03_15_150334](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_leapcuberotatezaxis_2026_03_15_150334) |
+| playground/PandaOpenCabinet | 11081.51 | ppo_playground_loco | [ppo_playground_loco_pandaopencabinet_2026_03_15_150318](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_pandaopencabinet_2026_03_15_150318) |
+| playground/PandaPickCube | 4586.13 | ppo_playground_loco | [ppo_playground_loco_pandapickcube_2026_03_15_023744](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_pandapickcube_2026_03_15_023744) |
+| playground/PandaPickCubeCartesian | 10.58 | ppo_playground_loco | [ppo_playground_loco_pandapickcubecartesian_2026_03_15_023810](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_pandapickcubecartesian_2026_03_15_023810) |
+| playground/PandaPickCubeOrientation | 4281.66 | ppo_playground_loco | [ppo_playground_loco_pandapickcubeorientation_2026_03_19_015108](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_pandapickcubeorientation_2026_03_19_015108) |
+| playground/PandaRobotiqPushCube | 1.31 | ppo_playground_loco | [ppo_playground_loco_pandarobotiqpushcube_2026_03_15_042131](https://huggingface.co/datasets/SLM-Lab/benchmark/tree/main/data/ppo_playground_loco_pandarobotiqpushcube_2026_03_15_042131) |
+
+| | | |
+|---|---|---|
+| ![AeroCubeRotateZAxis](plots/AeroCubeRotateZAxis_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![AlohaHandOver](plots/AlohaHandOver_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![AlohaSinglePegInsertion](plots/AlohaSinglePegInsertion_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![LeapCubeReorient](plots/LeapCubeReorient_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![LeapCubeRotateZAxis](plots/LeapCubeRotateZAxis_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PandaOpenCabinet](plots/PandaOpenCabinet_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![PandaPickCube](plots/PandaPickCube_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PandaPickCubeCartesian](plots/PandaPickCubeCartesian_multi_trial_graph_mean_returns_ma_vs_frames.png) | ![PandaPickCubeOrientation](plots/PandaPickCubeOrientation_multi_trial_graph_mean_returns_ma_vs_frames.png) |
+| ![PandaRobotiqPushCube](plots/PandaRobotiqPushCube_multi_trial_graph_mean_returns_ma_vs_frames.png) | | |
 
