@@ -481,7 +481,7 @@ class DINOv2Backbone(nn.Module):
 
         # Stack scales: (B, 3, N_patches, 1024) ordered by _SCALE_LAYERS
         def _stack(scale_dict: dict[int, torch.Tensor]) -> torch.Tensor:
-            tensors = [scale_dict[l] for l in _SCALE_LAYERS]
+            tensors = [scale_dict[layer] for layer in _SCALE_LAYERS]
             return torch.stack(tensors, dim=1)  # (B, 3, N, D)
 
         left_feats = _stack(left_scales)

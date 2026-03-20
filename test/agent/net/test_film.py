@@ -11,6 +11,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
+import torch.nn.functional as F
 
 from slm_lab.agent.net.emotion import EmotionTag
 from slm_lab.agent.net.film import (
@@ -384,5 +385,4 @@ def test_somatic_2d_being_embedding_handled():
     assert isinstance(bias, float)
 
 
-# Need F for test helpers
-import torch.nn.functional as F
+# F imported at top of file

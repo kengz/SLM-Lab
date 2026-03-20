@@ -1212,8 +1212,8 @@ class TC23DeferredImitation:
             ) / len(trials)
         s = repro_rate(state["short_delay_trials"])
         m = repro_rate(state["medium_delay_trials"])
-        l = repro_rate(state["long_delay_trials"])
-        return 0.40 * s + 0.40 * m + 0.20 * l
+        long = repro_rate(state["long_delay_trials"])
+        return 0.40 * s + 0.40 * m + 0.20 * long
 
 
 # ---------------------------------------------------------------------------
