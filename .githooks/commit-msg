@@ -1,22 +1,78 @@
 #!/usr/bin/env bash
-# Validate conventional commit format: type: message | type(scope): message
+set -euo pipefail
 
-commit_msg_file="$1"
-commit_msg=$(head -1 "$commit_msg_file")
+# Conventional Commits validation + idempotent semantic version bump.
+#
+# Bumps pyproject.toml version based on commit type, always relative
+# to the base branch (master) version so repeated commits on a
+# feature branch converge to the same result.
+#
+# Rules (semver):
+#   breaking (!)  → major  (X.0.0)
+#   feat          → minor  (_.X.0)
+#   everything else → patch (_._.X)
 
-# Skip merge commits and fixup/squash
-if echo "$commit_msg" | grep -qE '^(Merge |fixup! |squash! )'; then
-    exit 0
+readonly COMMIT_MSG_FILE="$1"
+readonly COMMIT_MSG="$(head -1 "$COMMIT_MSG_FILE")"
+readonly TYPES="feat|fix|docs|chore|refactor|test|perf|ci|style|build"
+readonly PYPROJECT="pyproject.toml"
+readonly BASE_BRANCH="master"
+
+# --- Validation ---
+
+# Skip non-standard commits
+[[ "$COMMIT_MSG" =~ ^(Merge\ |fixup!\ |squash!\ ) ]] && exit 0
+
+# Enforce conventional commit format
+if ! [[ "$COMMIT_MSG" =~ ^($TYPES)(\(.+\))?!?:\ .+ ]]; then
+    cat >&2 <<MSG
+ERROR: Invalid commit message format.
+
+  Expected: type: message
+  Example:  feat: add user authentication
+  Example:  fix(parser): handle empty input
+
+  Types: $TYPES
+MSG
+    exit 1
 fi
 
-# Validate format
-if ! echo "$commit_msg" | grep -qE '^(feat|fix|docs|chore|refactor|test|perf|ci|style|build)(\(.+\))?: .+'; then
-    echo "ERROR: Invalid commit message format."
-    echo ""
-    echo "  Expected: type: message"
-    echo "  Example:  feat: add user authentication"
-    echo "  Example:  fix(parser): handle empty input"
-    echo ""
-    echo "  Allowed types: feat fix docs chore refactor test perf ci style build"
-    exit 1
+# --- Version bump ---
+
+[[ -f "$PYPROJECT" ]] || exit 0
+
+# Read base version from merge target (idempotent across feature branch commits)
+read_version() {
+    local source="$1"
+    if [[ "$source" == "file" ]]; then
+        grep '^version = ' "$PYPROJECT" | head -1 | sed 's/version = "//;s/"//'
+    else
+        git show "${source}:${PYPROJECT}" 2>/dev/null \
+            | grep '^version = ' | head -1 | sed 's/version = "//;s/"//' || true
+    fi
+}
+
+base_version="$(read_version "$BASE_BRANCH")"
+base_version="${base_version:-$(read_version file)}"
+[[ -z "$base_version" ]] && exit 0
+
+IFS='.' read -r major minor patch <<< "$base_version"
+
+# Classify commit
+if [[ "$COMMIT_MSG" =~ ^($TYPES)(\(.+\))?!: ]]; then
+    ((major++)); minor=0; patch=0
+elif [[ "$COMMIT_MSG" =~ ^feat(\(.+\))?:  ]]; then
+    ((minor++)); patch=0
+else
+    ((patch++))
+fi
+
+new_version="${major}.${minor}.${patch}"
+current="$(read_version file)"
+
+# Only touch the file if the version actually changed
+if [[ "$current" != "$new_version" ]]; then
+    sed -i '' "s/^version = \"${current}\"/version = \"${new_version}\"/" "$PYPROJECT"
+    git add "$PYPROJECT"
+    echo "Version: ${base_version} → ${new_version}"
 fi

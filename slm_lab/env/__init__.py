@@ -20,6 +20,7 @@ from gymnasium.wrappers.vector import (
     NormalizeReward as VectorNormalizeReward,
     RecordEpisodeStatistics as VectorRecordEpisodeStatistics,
     RescaleAction as VectorRescaleAction,
+    TransformReward as VectorTransformReward,
 )
 
 from slm_lab.env.wrappers import (
@@ -45,6 +46,22 @@ try:
 except ImportError:
     pass
 
+# Register Pavlovian environment
+gym.register(
+    id="SLM/Pavlovian-v0",
+    entry_point="slm_lab.env.pavlovian:PavlovianEnv",
+    max_episode_steps=1000,
+)
+
+# Register Sensorimotor environments (TC-11 through TC-24)
+for _tc_id in range(11, 25):
+    gym.register(
+        id=f"SLM-Sensorimotor-TC{_tc_id:02d}-v0",
+        entry_point="slm_lab.env.sensorimotor:SLMSensorimotor",
+        kwargs={"task_id": f"TC-{_tc_id:02d}"},
+        max_episode_steps=500,
+    )
+
 logger = logger.get_logger(__name__)
 
 # Keys handled by make_env, not passed to gym.make
@@ -57,6 +74,8 @@ RESERVED_KEYS = {
     "normalize_reward",
     "clip_obs",
     "clip_reward",
+    "device",
+    "reward_scale",
 }
 
 
@@ -150,16 +169,92 @@ def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
     env.done = False
 
 
+def _make_playground_env(
+    name: str,
+    num_envs: int,
+    normalize_obs: bool,
+    normalize_reward: bool,
+    clip_obs: float | None,
+    clip_reward: float | None,
+    gamma: float,
+    device: str | None = None,
+    render_mode: str | None = None,
+    reward_scale: float = 1.0,
+) -> gym.Env:
+    """Create a MuJoCo Playground vectorized environment."""
+    try:
+        from slm_lab.env.playground import PlaygroundVecEnv
+        from slm_lab.env.wrappers import (
+            PlaygroundRenderWrapper,
+            TorchNormalizeObservation,
+        )
+    except ImportError:
+        raise ImportError(
+            "MuJoCo Playground is required for playground/ environments. "
+            "Install with: uv sync --group playground"
+        )
+
+    # Prevent JAX from pre-allocating GPU memory when sharing with PyTorch
+    if device is not None:
+        os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+
+    # Strip "playground/" prefix to get the env name for the registry
+    pg_env_name = name.removeprefix("playground/")
+    env = PlaygroundVecEnv(pg_env_name, num_envs, device=device)
+    logger.info(f"Playground: JAX→PyTorch via {'DLPack zero-copy (GPU)' if device else 'numpy (CPU)'}")
+
+    if _needs_action_rescaling(env):
+        action_space = env.single_action_space
+        logger.info(
+            f"Action rescaling: [{action_space.low.min():.1f}, {action_space.high.max():.1f}] → [-1, 1]"
+        )
+        env = VectorRescaleAction(env, min_action=-1.0, max_action=1.0)
+
+    env = VectorRecordEpisodeStatistics(env)
+
+    if reward_scale != 1.0:
+        env = VectorTransformReward(env, lambda r: r * reward_scale)
+
+    if render_mode:
+        env = PlaygroundRenderWrapper(env)
+
+    if device is not None:
+        if normalize_obs:
+            env = TorchNormalizeObservation(env)
+
+    # Skip numpy-only wrappers in GPU mode (network-level normalization used instead)
+    if device is None:
+        if normalize_obs:
+            env = VectorNormalizeObservation(env)
+        if clip_obs is not None:
+            env = VectorClipObservation(env, bound=float(clip_obs))
+        if normalize_reward:
+            env = VectorNormalizeReward(env, gamma=gamma)
+        if clip_reward is not None:
+            if isinstance(clip_reward, (int, float)):
+                env = VectorClipReward(
+                    env, min_reward=-clip_reward, max_reward=clip_reward
+                )
+            else:
+                env = VectorClipReward(
+                    env, min_reward=clip_reward[0], max_reward=clip_reward[1]
+                )
+
+    return env
+
+
 def make_env(spec: dict[str, Any]) -> gym.Env:
     """Create a gymnasium environment.
 
     Gymnasium defaults are sensible - only override what's needed.
     For Atari (ALE/*), AtariVectorEnv handles all preprocessing natively.
+    For Playground (playground/*), uses JAX-based MuJoCo Playground backend.
     """
     env_spec = spec["env"]
     name = env_spec["name"]
     num_envs = env_spec.get("num_envs", 1)
     is_atari = name.startswith("ALE/")
+    is_playground = name.startswith("playground/")
     render_mode = "human" if render() else None
 
     # Pass through env kwargs (life_loss_info, repeat_action_probability, etc.)
@@ -172,7 +267,27 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
     clip_reward = env_spec.get("clip_reward", 10.0 if normalize_reward else None)
     gamma = spec.get("agent", {}).get("algorithm", {}).get("gamma", 0.99)
 
-    if num_envs > 1:
+    device = env_spec.get("device")
+    if is_playground and (device is None or device == "auto"):
+        import torch
+        device = "cuda" if torch.cuda.is_available() else None
+
+    if is_playground:
+        logger.info(f"Playground device: {'GPU (cuda) — DLPack zero-copy' if device else 'CPU — numpy transfer'}")
+        reward_scale = env_spec.get("reward_scale", 1.0)
+        env = _make_playground_env(
+            name,
+            num_envs,
+            normalize_obs,
+            normalize_reward,
+            clip_obs,
+            clip_reward,
+            gamma,
+            device=device,
+            render_mode=render_mode,
+            reward_scale=reward_scale,
+        )
+    elif num_envs > 1:
         env = _make_vector_env(
             name,
             num_envs,
