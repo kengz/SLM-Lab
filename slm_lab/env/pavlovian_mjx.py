@@ -60,12 +60,14 @@ _ANGULAR_COST = 0.005
 
 
 def default_config() -> config_dict.ConfigDict:
+    import sys
+    impl = "jax" if sys.platform == "darwin" else "warp"
     return config_dict.create(
         ctrl_dt=0.0333,
         sim_dt=0.0333,
         episode_length=_MAX_STEPS,
         action_repeat=1,
-        impl="warp",
+        impl=impl,
         naconmax=0,
         njmax=5,
     )
