@@ -732,8 +732,9 @@ class SLMSensorimotor(gym.Env):
         obs[26] = float(self._data.sensordata[right_id] > 0.0) if right_id >= 0 else 0.0
 
         # --- EE state (6 channels, idx 27-32) ---
+        # Normalize relative to workspace center with ±1.5m range
         ee_pos = self._data.xpos[self._ee_body_id]
-        obs[27:30] = (ee_pos - TABLE_CENTER[:3]) / 0.5
+        obs[27:30] = (ee_pos - TABLE_CENTER[:3]) / 1.5
 
         # EE orientation (euler angles from rotation matrix)
         ee_mat = self._data.xmat[self._ee_body_id].reshape(3, 3)
@@ -763,9 +764,9 @@ class SLMSensorimotor(gym.Env):
             if bid < 0:
                 continue
             pos = self._data.xpos[bid]
-            obs[base + 0] = (pos[0] - 2.5) / 0.5
-            obs[base + 1] = (pos[1] - 2.5) / 0.5
-            obs[base + 2] = (pos[2] - 0.75) / 0.5
+            obs[base + 0] = (pos[0] - 2.5) / 1.5
+            obs[base + 1] = (pos[1] - 2.5) / 1.5
+            obs[base + 2] = (pos[2] - 0.75) / 1.5
 
             # Visibility: simple occlusion check vs screens
             visible = self._check_visibility(pos)

@@ -25,11 +25,11 @@ ppo_sensorimotor_tc13:
         start_step: 0
         end_step: 2000000
       entropy_coef_spec:
-        name: no_decay
-        start_val: 0.005
+        name: linear_decay
+        start_val: 0.05
         end_val: 0.005
         start_step: 0
-        end_step: 2000000
+        end_step: 5000000
       val_loss_coef: 0.5
       clip_val_loss: false
       time_horizon: 200
@@ -58,9 +58,9 @@ ppo_sensorimotor_tc13:
   env:
     name: SLM-Sensorimotor-TC13-v0
     max_t: 200
-    max_frame: 2000000
+    max_frame: 5000000
     num_envs: 16
-    normalize_obs: true
+    normalize_obs: false
   meta:
     distributed: false
     log_frequency: 1000

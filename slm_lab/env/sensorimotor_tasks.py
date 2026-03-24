@@ -334,13 +334,33 @@ class TC12ActionEffectDiscovery:
 class TC13Reaching:
     task_id = "TC-13"
     REACH_THRESH = 0.03  # m
+    # Curriculum: expand target radius as episodes accumulate
+    EASY_RADIUS = 0.15   # m — initial radius around a near-home point
+    FULL_RADIUS = 0.50   # m — full workspace radius
+    CURRICULUM_EPISODES = 200  # episodes to reach full difficulty
 
     def scene_objects(self) -> list[str]:
         return ["target_disk"]
 
     def reset(self, model: mujoco.MjModel, data: mujoco.MjData, rng: np.random.Generator) -> dict:
-        # Randomize target disk within reachable workspace
-        pos = _sample_pos(rng, (2.1, 2.6), (2.2, 2.8), z=TABLE_HEIGHT + 0.001)
+        # EE home projects onto table at approximately (1.55, 2.5, TABLE_HEIGHT)
+        # but arm can reach forward — use a point slightly in front of home
+        anchor = np.array([1.8, 2.5, TABLE_HEIGHT + 0.001])
+
+        # Curriculum: expand sampling radius over episodes
+        n_eps = len(getattr(self, '_successes_acc', []))
+        frac = min(1.0, n_eps / self.CURRICULUM_EPISODES)
+        radius = self.EASY_RADIUS + (self.FULL_RADIUS - self.EASY_RADIUS) * frac
+
+        # Sample within radius on table surface
+        angle = rng.uniform(-np.pi, np.pi)
+        r = radius * np.sqrt(rng.uniform())
+        pos = anchor + np.array([r * np.cos(angle), r * np.sin(angle), 0.0])
+        # Clamp to reachable table region
+        pos[0] = np.clip(pos[0], 1.6, 2.6)
+        pos[1] = np.clip(pos[1], 2.1, 2.9)
+        pos[2] = TABLE_HEIGHT + 0.001
+
         _set_body_pos(model, data, "target_disk", pos)
         return {
             "target_pos": pos.copy(),
@@ -371,6 +391,10 @@ class TC13Reaching:
         state["successes"].append(state["reached_this_ep"])
         if state["reached_this_ep"]:
             state["completion_times"].append(state["ep_step"])
+        # Track cumulative episode count for curriculum
+        if not hasattr(self, '_successes_acc'):
+            self._successes_acc = []
+        self._successes_acc.append(state["reached_this_ep"])
         state["reached_this_ep"] = False
         state["ep_step"] = 0
 
