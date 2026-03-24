@@ -90,6 +90,7 @@ RESERVED_KEYS = {
     "clip_reward",
     "device",
     "reward_scale",
+    "env_kwargs",
 }
 
 
@@ -273,6 +274,9 @@ def make_env(spec: dict[str, Any]) -> gym.Env:
 
     # Pass through env kwargs (life_loss_info, repeat_action_probability, etc.)
     make_kwargs = {k: v for k, v in env_spec.items() if k not in RESERVED_KEYS}
+    # Flatten nested env_kwargs into make_kwargs (for specs that use env_kwargs: {})
+    if "env_kwargs" in env_spec and isinstance(env_spec["env_kwargs"], dict):
+        make_kwargs.update(env_spec["env_kwargs"])
 
     # Normalization options (for MuJoCo/continuous control)
     normalize_obs = env_spec.get("normalize_obs", False)

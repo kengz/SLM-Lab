@@ -66,8 +66,6 @@ ppo_pavlovian_tc07:
       max_energy: 100.0
       energy_decay: 0.1
       contact_radius: 0.6
-      # Dense reward: no shaping needed (task passes reliably)
-      reward_scale: 0.5        # reward = max(0, action[0]) * reward_scale
   meta:
     distributed: false
     log_frequency: 1000
