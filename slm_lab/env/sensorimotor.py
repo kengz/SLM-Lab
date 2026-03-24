@@ -345,6 +345,7 @@ def _build_mjcf(include_objects: list[str]) -> str:
 
     <!-- Special objects -->
     <body name="target_disk" pos="5.5 5.0 -1.0">
+      <joint type="free"/>
       <geom type="cylinder" size="0.03 0.001" class="visual" rgba="1 0 0 0.8"/>
     </body>
     <body name="platform" pos="5.5 5.1 -1.0">

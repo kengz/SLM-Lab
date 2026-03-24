@@ -23,17 +23,17 @@ ppo_sensorimotor_tc13:
         start_val: 0.2
         end_val: 0.2
         start_step: 0
-        end_step: 1000000
+        end_step: 2000000
       entropy_coef_spec:
         name: no_decay
-        start_val: 0.01
-        end_val: 0.01
+        start_val: 0.005
+        end_val: 0.005
         start_step: 0
-        end_step: 1000000
+        end_step: 2000000
       val_loss_coef: 0.5
       clip_val_loss: false
-      time_horizon: 512
-      minibatch_size: 64
+      time_horizon: 200
+      minibatch_size: 128
       training_epoch: 10
     memory:
       name: OnPolicyBatchReplay
@@ -41,50 +41,26 @@ ppo_sensorimotor_tc13:
       type: MLPNet
       shared: false
       hid_layers:
-        - 512
-        - 512
+        - 256
+        - 256
       hid_layers_activation: tanh
-      clip_grad_val: 1.0
+      clip_grad_val: 0.5
       use_same_optim: false
       loss_spec:
         name: MSELoss
       actor_optim_spec:
-        name: AdamW
+        name: Adam
         lr: 0.0003
-        betas:
-          - 0.9
-          - 0.999
-        weight_decay: 0.01
       critic_optim_spec:
-        name: AdamW
-        lr: 0.0003
-        betas:
-          - 0.9
-          - 0.999
-        weight_decay: 0.01
+        name: Adam
+        lr: 0.001
       gpu: auto
   env:
-    name: SLM/Sensorimotor-v0
-    max_t: 200                       # 200 steps per episode (8 s)
-    max_frame: 1000000
+    name: SLM-Sensorimotor-TC13-v0
+    max_t: 200
+    max_frame: 2000000
     num_envs: 16
-    env_kwargs:
-      task: motor_coordination
-      dt: 0.002
-      control_freq: 25
-      arena_size: 5.0
-      table_height: 0.75
-      max_energy: 100.0
-      energy_decay: 0.05
-      intrinsic_eta: 0.01
-      n_objects: 0                   # target marker, not an object
-      use_ground_truth_obs: true
-      # TC-13 specific
-      training_episodes: 100         # Phase 1: shaped reaching
-      eval_episodes: 20              # Phase 2: no reward
-      target_radius: 0.03            # m — success if ee within this radius
-      contact_bonus: 10.0            # reward for touching target
-      shaping_scale: 1.0             # dense -||ee-target|| reward scale
+    normalize_obs: true
   meta:
     distributed: false
     log_frequency: 1000

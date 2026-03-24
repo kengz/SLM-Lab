@@ -26,9 +26,11 @@ from gymnasium.wrappers.vector import (
 from slm_lab.env.wrappers import (
     ClipObservation,
     ClockWrapper,
+    ExtractDictObs,
     TrackReward,
     VectorClipObservation,
     VectorClockWrapper,
+    VectorExtractDictObs,
     VectorFullGameStatistics,
     VectorRenderAll,
 )
@@ -384,6 +386,11 @@ def _make_vector_env(
         **make_kwargs,
     )
 
+    # Extract flat obs from Dict observation spaces (e.g., sensorimotor env)
+    if isinstance(env.single_observation_space, spaces.Dict):
+        env = VectorExtractDictObs(env, key="ground_truth")
+        logger.info("Dict obs → extracted 'ground_truth' key")
+
     if _needs_action_rescaling(env):
         action_space = env.single_action_space
         logger.info(
@@ -435,6 +442,10 @@ def _make_single_env(
 
     make_kwargs["render_mode"] = render_mode
     env = gym.make(name, **make_kwargs)
+
+    # Extract flat obs from Dict observation spaces (e.g., sensorimotor env)
+    if isinstance(env.observation_space, spaces.Dict):
+        env = ExtractDictObs(env, key="ground_truth")
 
     # Match AtariVectorEnv preprocessing (uint8, network handles /255 normalization)
     if is_atari:

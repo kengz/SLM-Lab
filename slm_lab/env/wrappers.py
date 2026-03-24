@@ -148,6 +148,32 @@ class VectorClockWrapper(ClockMixin, gym.vector.VectorWrapper):
         return getattr(self.env, name)
 
 
+class ExtractDictObs(gym.ObservationWrapper):
+    """Extract a single key from Dict observation space, exposing it as a flat Box."""
+
+    def __init__(self, env: gym.Env, key: str = "ground_truth"):
+        super().__init__(env)
+        self._key = key
+        self.observation_space = env.observation_space[key]
+
+    def observation(self, observation: dict) -> np.ndarray:
+        return observation[self._key]
+
+
+class VectorExtractDictObs(gym.vector.VectorObservationWrapper):
+    """Extract a single key from Dict observation space for vector environments."""
+
+    def __init__(self, env: gym.vector.VectorEnv, key: str = "ground_truth"):
+        super().__init__(env)
+        self._key = key
+        inner_space = env.single_observation_space[key]
+        self.single_observation_space = inner_space
+        self.observation_space = gym.vector.utils.batch_space(inner_space, env.num_envs)
+
+    def observations(self, observations: dict) -> np.ndarray:
+        return observations[self._key]
+
+
 class ClipObservation(gym.ObservationWrapper):
     """Clip observations to [-bound, bound]."""
 
