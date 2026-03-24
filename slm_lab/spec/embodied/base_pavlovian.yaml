@@ -3,7 +3,7 @@
 # Task-specific overrides live in pavlovian_tc_XX.yaml (one file per task).
 # Load via: spec_util.get('embodied/base_pavlovian.yaml', 'ppo_pavlovian_base')
 #
-# Agent: PPO with 2-layer MLP (256 units), matching Phase 3.1 architecture.
+# Agent: PPO with asymmetric 2x64 policy + 3x256 value (TorchArcNet).
 # Env:   SLM/Pavlovian-v0 — 10x10 2D kinematic arena, 18-dim obs, 2-DOF action.
 #        Env registered in slm_lab/env/__init__.py; task variant set via env kwargs.
 #
@@ -14,14 +14,52 @@
 #   - mastery_threshold / mastery_window: read by curriculum.py for gate logic.
 #   - acquisition_trials / probe_trials: read by pavlovian.py phase manager.
 
+_policy_body: &policy_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 64}
+        - Tanh:
+        - LazyLinear: {out_features: 64}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_value_body: &value_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 2560
+  max_session: 1
+  max_trial: 1
+
 ppo_pavlovian_base:
   agent:
     name: PPO
     algorithm:
       name: PPO
-      action_pdtype: default
-      action_policy: default
-      explore_var_spec: null
+      action_pdtype: Normal
       gamma: 0.99
       lam: 0.95
       clip_eps_spec:
@@ -41,25 +79,22 @@ ppo_pavlovian_base:
       time_horizon: 256
       minibatch_size: 64
       training_epoch: 10
-    memory:
-      name: OnPolicyBatchReplay
+    memory: *memory
     net:
-      type: MLPNet
+      type: TorchArcNet
+      actor_arc: *policy_body
+      critic_arc: *value_body
       shared: false
-      hid_layers:
-        - 256
-        - 256
       hid_layers_activation: tanh
+      init_fn: orthogonal_
       clip_grad_val: 0.5
       use_same_optim: false
       loss_spec:
         name: MSELoss
-      actor_optim_spec:
+      optim_spec:
         name: Adam
-        lr: 0.0003
-      critic_optim_spec:
-        name: Adam
-        lr: 0.001
+        lr: 3.0e-4
+        eps: 1.0e-5
       gpu: auto
   env:
     # Registered Gymnasium env. Task variant is set per-file via env_kwargs.
@@ -76,12 +111,7 @@ ppo_pavlovian_base:
       energy_decay: 0.1
       contact_radius: 0.6
       shaping_scale: 1.0       # distance-based shaping scale (acquisition only)
-  meta:
-    distributed: false
-    log_frequency: 1000
-    eval_frequency: 2560       # ~10 * time_horizon
-    max_session: 1
-    max_trial: 1
+  meta: *meta
   # Curriculum / mastery parameters (read by curriculum.py)
   curriculum:
     mastery_threshold: 0.80

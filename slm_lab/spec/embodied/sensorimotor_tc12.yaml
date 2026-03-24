@@ -8,14 +8,52 @@
 #
 # Load: spec_util.get('embodied/sensorimotor_tc12.yaml', 'ppo_sensorimotor_tc12')
 
+_policy_body: &policy_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_value_body: &value_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 8192
+  max_session: 1
+  max_trial: 1
+
 ppo_sensorimotor_tc12:
   agent:
     name: PPO
     algorithm:
       name: PPO
-      action_pdtype: default
-      action_policy: default
-      explore_var_spec: null
+      action_pdtype: Normal
       gamma: 0.99
       lam: 0.95
       clip_eps_spec:
@@ -35,33 +73,22 @@ ppo_sensorimotor_tc12:
       time_horizon: 512
       minibatch_size: 64
       training_epoch: 10
-    memory:
-      name: OnPolicyBatchReplay
+    memory: *memory
     net:
-      type: MLPNet
+      type: TorchArcNet
+      actor_arc: *policy_body
+      critic_arc: *value_body
       shared: false
-      hid_layers:
-        - 512
-        - 512
       hid_layers_activation: tanh
+      init_fn: orthogonal_
       clip_grad_val: 1.0
       use_same_optim: false
       loss_spec:
         name: MSELoss
-      actor_optim_spec:
-        name: AdamW
-        lr: 0.0003
-        betas:
-          - 0.9
-          - 0.999
-        weight_decay: 0.01
-      critic_optim_spec:
-        name: AdamW
-        lr: 0.0003
-        betas:
-          - 0.9
-          - 0.999
-        weight_decay: 0.01
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
       gpu: auto
   env:
     name: SLM/Sensorimotor-v0
@@ -85,12 +112,7 @@ ppo_sensorimotor_tc12:
       extinction_episodes: 10        # Phase 3: no intrinsic reward
       high_effect_ee_threshold: 0.05 # m/step — displacement qualifying as high-effect
       repetition_joint_tolerance: 0.1 # rad — threshold for "repeating" a joint config
-  meta:
-    distributed: false
-    log_frequency: 1000
-    eval_frequency: 8192
-    max_session: 1
-    max_trial: 1
+  meta: *meta
   curriculum:
     mastery_threshold: 0.95
     mastery_window: 20

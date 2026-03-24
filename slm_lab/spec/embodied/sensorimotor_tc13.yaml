@@ -8,14 +8,52 @@
 #
 # Load: spec_util.get('embodied/sensorimotor_tc13.yaml', 'ppo_sensorimotor_tc13')
 
+_policy_body: &policy_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_value_body: &value_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 8192
+  max_session: 1
+  max_trial: 1
+
 ppo_sensorimotor_tc13:
   agent:
     name: PPO
     algorithm:
       name: PPO
-      action_pdtype: default
-      action_policy: default
-      explore_var_spec: null
+      action_pdtype: Normal
       gamma: 0.99
       lam: 0.95
       clip_eps_spec:
@@ -35,25 +73,22 @@ ppo_sensorimotor_tc13:
       time_horizon: 200
       minibatch_size: 128
       training_epoch: 10
-    memory:
-      name: OnPolicyBatchReplay
+    memory: *memory
     net:
-      type: MLPNet
+      type: TorchArcNet
+      actor_arc: *policy_body
+      critic_arc: *value_body
       shared: false
-      hid_layers:
-        - 256
-        - 256
       hid_layers_activation: tanh
+      init_fn: orthogonal_
       clip_grad_val: 0.5
       use_same_optim: false
       loss_spec:
         name: MSELoss
-      actor_optim_spec:
+      optim_spec:
         name: Adam
-        lr: 0.0003
-      critic_optim_spec:
-        name: Adam
-        lr: 0.001
+        lr: 3.0e-4
+        eps: 1.0e-5
       gpu: auto
   env:
     name: SLM-Sensorimotor-TC13-v0
@@ -61,12 +96,7 @@ ppo_sensorimotor_tc13:
     max_frame: 5000000
     num_envs: 16
     normalize_obs: false
-  meta:
-    distributed: false
-    log_frequency: 1000
-    eval_frequency: 8192
-    max_session: 1
-    max_trial: 1
+  meta: *meta
   curriculum:
     mastery_threshold: 0.95
     mastery_window: 20

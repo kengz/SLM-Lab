@@ -11,14 +11,52 @@
 #
 # Load: spec_util.get('embodied/pavlovian_tc04.yaml', 'ppo_pavlovian_tc04')
 
+_policy_body: &policy_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 64}
+        - Tanh:
+        - LazyLinear: {out_features: 64}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_value_body: &value_body
+  modules:
+    body:
+      Sequential:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+        - LazyLinear: {out_features: 256}
+        - Tanh:
+  graph:
+    input: x
+    modules:
+      body: [x]
+    output: body
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 2560
+  max_session: 1
+  max_trial: 1
+
 ppo_pavlovian_tc04:
   agent:
     name: PPO
     algorithm:
       name: PPO
-      action_pdtype: default
-      action_policy: default
-      explore_var_spec: null
+      action_pdtype: Normal
       gamma: 0.99
       lam: 0.95
       clip_eps_spec:
@@ -38,25 +76,22 @@ ppo_pavlovian_tc04:
       time_horizon: 256
       minibatch_size: 64
       training_epoch: 10
-    memory:
-      name: OnPolicyBatchReplay
+    memory: *memory
     net:
-      type: MLPNet
+      type: TorchArcNet
+      actor_arc: *policy_body
+      critic_arc: *value_body
       shared: false
-      hid_layers:
-        - 256
-        - 256
       hid_layers_activation: tanh
+      init_fn: orthogonal_
       clip_grad_val: 0.5
       use_same_optim: false
       loss_spec:
         name: MSELoss
-      actor_optim_spec:
+      optim_spec:
         name: Adam
-        lr: 0.0003
-      critic_optim_spec:
-        name: Adam
-        lr: 0.001
+        lr: 3.0e-4
+        eps: 1.0e-5
       gpu: auto
   env:
     name: SLM/Pavlovian-v0
@@ -71,12 +106,7 @@ ppo_pavlovian_tc04:
       energy_decay: 0.1
       contact_radius: 0.6
       shaping_scale: 1.0
-  meta:
-    distributed: false
-    log_frequency: 1000
-    eval_frequency: 2560
-    max_session: 1
-    max_trial: 1
+  meta: *meta
   curriculum:
     mastery_threshold: 0.80
     mastery_window: 20
