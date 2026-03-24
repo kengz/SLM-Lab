@@ -232,3 +232,10 @@ class ObjectStateEncoder(nn.Module):
         return self.proj(obj_state)  # (B, 512)
 
 
+# Register for TorchArc YAML spec usage
+import torch.nn as nn  # noqa: E402
+if not hasattr(nn, "ProprioceptionEncoder"):
+    setattr(nn, "ProprioceptionEncoder", ProprioceptionEncoder)
+if not hasattr(nn, "ObjectStateEncoder"):
+    setattr(nn, "ObjectStateEncoder", ObjectStateEncoder)
+

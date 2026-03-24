@@ -446,3 +446,20 @@ class BeingEmbedding(nn.Module):
     def init_hidden(self, batch_size: int, device: torch.device) -> torch.Tensor:
         """Initialize GRU hidden state for episode start."""
         return self.thrownness_enc.init_hidden(batch_size, device)
+
+
+# Register for TorchArc YAML spec usage
+if not hasattr(nn, "ChannelTypeEmbedding"):
+    setattr(nn, "ChannelTypeEmbedding", ChannelTypeEmbedding)
+if not hasattr(nn, "ChannelAttention"):
+    setattr(nn, "ChannelAttention", ChannelAttention)
+if not hasattr(nn, "HierarchicalFusion"):
+    setattr(nn, "HierarchicalFusion", HierarchicalFusion)
+if not hasattr(nn, "ThrownessEncoder"):
+    setattr(nn, "ThrownessEncoder", ThrownessEncoder)
+if not hasattr(nn, "ProjectionEncoder"):
+    setattr(nn, "ProjectionEncoder", ProjectionEncoder)
+if not hasattr(nn, "TemporalAttention"):
+    setattr(nn, "TemporalAttention", TemporalAttention)
+if not hasattr(nn, "BeingEmbedding"):
+    setattr(nn, "BeingEmbedding", BeingEmbedding)

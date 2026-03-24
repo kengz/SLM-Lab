@@ -456,3 +456,8 @@ class DaseinNet(Net, nn.Module):
         α = net.infonce_alpha
         """
         return self._last_infonce_loss
+
+
+# Register for TorchArc YAML spec usage
+if not hasattr(nn, "DaseinNet"):
+    setattr(nn, "DaseinNet", DaseinNet)

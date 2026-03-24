@@ -5,6 +5,10 @@ import torch.nn as nn
 
 import slm_lab.agent.net.batch_renorm  # noqa: F401 — registers BatchRenorm1d in torch.nn for TorchArc
 import slm_lab.agent.net.weight_norm  # noqa: F401 — registers WeightNormLinear in torch.nn for TorchArc
+import slm_lab.agent.net.perception      # noqa: F401 — registers ProprioceptionEncoder, ObjectStateEncoder
+import slm_lab.agent.net.being_embedding # noqa: F401 — registers L1 modules
+import slm_lab.agent.net.dasein_net      # noqa: F401 — registers DaseinNet
+import slm_lab.agent.net.emotion         # noqa: F401 — registers EmotionModule, InteroceptionModule, IntrinsicMotivation
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import util

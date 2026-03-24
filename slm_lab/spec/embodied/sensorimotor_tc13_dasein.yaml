@@ -1,0 +1,95 @@
+# TC-13: Motor Coordination (Reaching) — DaseinNet variant
+#
+# Uses DaseinNet (L0 perception + L1 being-time embedding + policy/value heads)
+# instead of the simple Sequential MLP in sensorimotor_tc13.yaml.
+#
+# DaseinNet is a self-contained net (not a TorchArc body+tails):
+#   - Input: 56-dim flat obs (ground_truth mode)
+#   - L0: ProprioceptionEncoder (25+2+6+2 dims) + ObjectStateEncoder (21 dims)
+#   - L1: ChannelAttention → HierarchicalFusion → ThrownessEncoder (GRU) → TemporalAttention
+#   - Heads: shared backbone → policy (mean, log_std) + value
+#   - Output: [mean (B,A), log_std (B,A), value (B,1)]
+#
+# NOTE: DaseinNet manages its own heads and GRU state — it is not compatible with
+# TorchArcNet's body+tails pattern. This spec documents the intended configuration.
+# Training integration (direct DaseinNet wiring) is deferred to Phase 3.2 implementation.
+#
+# net_spec keys consumed by DaseinNet.__init__ via util.set_attr:
+#   vision_mode, action_dim, log_std_init, infonce_alpha,
+#   clip_grad_val, loss_spec, optim_spec, lr_scheduler_spec,
+#   update_type, update_frequency, polyak_coef, gpu, shared,
+#   lora_rank, lora_alpha
+#
+# Axiom trace: Ax14 (motor intentionality), Ax1 (embodied perception),
+#              Ax3 (temporal structure / thrownness), Ax5 (mood/emotion)
+# Load: spec_util.get('embodied/sensorimotor_tc13_dasein.yaml', 'ppo_sensorimotor_tc13_dasein')
+
+_memory: &memory
+  name: OnPolicyBatchReplay
+
+_meta: &meta
+  distributed: false
+  log_frequency: 1000
+  eval_frequency: 8192
+  max_session: 1
+  max_trial: 1
+
+ppo_sensorimotor_tc13_dasein:
+  agent:
+    name: PPO
+    algorithm:
+      name: PPO
+      action_pdtype: Normal
+      gamma: 0.99
+      lam: 0.95
+      clip_eps_spec:
+        name: no_decay
+        start_val: 0.2
+      entropy_coef_spec:
+        name: linear_decay
+        start_val: 0.05
+        end_val: 0.005
+        start_step: 0
+        end_step: 5000000
+      val_loss_coef: 0.5
+      normalize_v_targets: false
+      time_horizon: 200
+      minibatch_size: 128
+      training_epoch: 10
+    memory: *memory
+    net:
+      type: DaseinNet
+      # DaseinNet net_spec params (consumed by util.set_attr in DaseinNet.__init__)
+      vision_mode: ground_truth   # 56-dim flat obs; L0 = proprio + object_state
+      action_dim: 10              # matches SLM-Sensorimotor-TC13-v0 action space
+      log_std_init: 0.0
+      shared: true                # policy + value share backbone
+      clip_grad_val: 0.5
+      loss_spec:
+        name: MSELoss
+      optim_spec:
+        name: Adam
+        lr: 3.0e-4
+        eps: 1.0e-5
+      gpu: auto
+  env:
+    name: SLM-Sensorimotor-TC13-v0
+    max_t: 200
+    max_frame: 5000000
+    num_envs: 16
+    normalize_obs: false
+  meta: *meta
+  curriculum:
+    mastery_threshold: 0.95
+    mastery_window: 20
+    min_eval_trials: 20
+    max_eval_trials: 50
+  intrinsic:
+    eta: 0.01
+    active_during_training: true
+    active_during_eval: false
+  eval:
+    score_fn: score_tc13
+    pass_threshold: 0.50             # composite: 0.7*success + 0.3*efficiency
+    ci_lower_min: 0.35               # 0.70 * 0.50
+    success_rate_min: 0.60

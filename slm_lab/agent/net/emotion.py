@@ -507,3 +507,12 @@ class IntrinsicMotivation(nn.Module):
     def reset(self) -> None:
         self.lp_reward.reset()
         self.grip_reward.reset()
+
+
+# Register for TorchArc YAML spec usage
+if not hasattr(nn, "EmotionModule"):
+    setattr(nn, "EmotionModule", EmotionModule)
+if not hasattr(nn, "InteroceptionModule"):
+    setattr(nn, "InteroceptionModule", InteroceptionModule)
+if not hasattr(nn, "IntrinsicMotivation"):
+    setattr(nn, "IntrinsicMotivation", IntrinsicMotivation)
