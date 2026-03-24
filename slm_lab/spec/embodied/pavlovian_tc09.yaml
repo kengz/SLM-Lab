@@ -70,13 +70,6 @@ ppo_pavlovian_tc09:
       max_energy: 100.0
       energy_decay: 0.1
       contact_radius: 0.6
-      shaping_scale: 1.0
-      contact_reward: 10.0
-      milestone_distances:     # fraction of initial distance
-        - 0.75
-        - 0.50
-        - 0.25
-      milestone_bonus: 2.0
   meta:
     distributed: false
     log_frequency: 1000

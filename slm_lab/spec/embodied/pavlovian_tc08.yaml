@@ -66,8 +66,6 @@ ppo_pavlovian_tc08:
       max_energy: 100.0
       energy_decay: 0.1
       contact_radius: 0.6
-      reward_scale: 0.5
-      reward_probability: 0.5  # Bernoulli p for reward delivery
   meta:
     distributed: false
     log_frequency: 1000
