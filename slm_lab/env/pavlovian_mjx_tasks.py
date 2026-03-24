@@ -1,4 +1,12 @@
-"""Pure JAX reward functions for Pavlovian TC-01 through TC-10."""
+"""Pure JAX reward functions for Pavlovian TC-01 through TC-10.
+
+Each task function has signature:
+    (data, action, info, metrics) -> (reward, info, metrics)
+
+IMPORTANT: task functions must NOT add new keys to metrics — JAX scan
+requires fixed pytree structure. All metric keys must be pre-initialized
+in TASK_METRIC_KEYS and populated in reset().
+"""
 import jax.numpy as jp
 
 
@@ -29,4 +37,19 @@ TASK_FNS = [
     _not_implemented,  # TC-08
     _not_implemented,  # TC-09
     _not_implemented,  # TC-10
+]
+
+# Extra metric keys per task (beyond "reward/task" which is always present).
+# Must match exactly the keys written by the corresponding reward function.
+TASK_METRIC_KEYS: list[list[str]] = [
+    [],                   # TC-01
+    [],                   # TC-02
+    [],                   # TC-03
+    [],                   # TC-04
+    [],                   # TC-05
+    [],                   # TC-06
+    ["reward/forward"],   # TC-07
+    [],                   # TC-08
+    [],                   # TC-09
+    [],                   # TC-10
 ]

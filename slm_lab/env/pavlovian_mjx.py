@@ -14,7 +14,7 @@ import mujoco
 from mujoco import mjx
 
 from mujoco_playground._src import mjx_env
-from slm_lab.env.pavlovian_mjx_tasks import TASK_FNS
+from slm_lab.env.pavlovian_mjx_tasks import TASK_FNS, TASK_METRIC_KEYS
 
 _ARENA_XML = """
 <mujoco model="pavlovian_arena">
@@ -142,6 +142,8 @@ class PavlovianMjxEnv(mjx_env.MjxEnv):
         }
 
         metrics = {"reward/task": jp.zeros(())}
+        for key in TASK_METRIC_KEYS[self._task_id - 1]:
+            metrics[key] = jp.zeros(())
         obs = self._get_obs(data, info)
         return mjx_env.State(data, obs, jp.zeros(()), jp.zeros(()), metrics, info)
 
