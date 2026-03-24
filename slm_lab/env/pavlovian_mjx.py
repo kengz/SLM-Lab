@@ -1,7 +1,8 @@
 """Native MuJoCo Playground environment for Pavlovian conditioning.
 
 TC-01 through TC-10 tasks in a 10x10 arena with three landmark objects.
-Pure JAX kinematics (MuJoCo model retained for rendering only).
+Pure JAX kinematics — agent state stored in info dict, not mjx.Data.
+MuJoCo model retained for rendering; mjx.Data frozen after reset.
 Action space: 2-DOF (forward, turn).
 """
 
@@ -71,7 +72,13 @@ def default_config() -> config_dict.ConfigDict:
 
 
 class PavlovianMjxEnv(mjx_env.MjxEnv):
-    """MJX Pavlovian arena. Action: [forward (0-1), turn (-1 to 1)]."""
+    """MJX Pavlovian arena. Action: [forward (0-1), turn (-1 to 1)].
+
+    Kinematic state lives in info["qpos"] and info["qvel"] (shape (3,) each).
+    mjx.Data is frozen after reset — only used for rendering.
+    This avoids tracing the full mjx.Data pytree through JAX scan/vmap,
+    which is prohibitively slow for a kinematic env.
+    """
 
     def __init__(
         self,
@@ -85,12 +92,6 @@ class PavlovianMjxEnv(mjx_env.MjxEnv):
         self._mj_model = mujoco.MjModel.from_xml_string(_ARENA_XML)
         self._mj_model.opt.timestep = self.sim_dt
         self._mjx_model = mjx.put_model(self._mj_model, impl=self._config.impl)
-        self._post_init()
-
-    def _post_init(self) -> None:
-        self._qpos_x = 0
-        self._qpos_y = 1
-        self._qpos_heading = 2
 
     def reset(self, rng: jax.Array) -> mjx_env.State:
         rng, rng_angle, rng_radius, rng_heading, rng_obj = jax.random.split(rng, 5)
@@ -109,26 +110,28 @@ class PavlovianMjxEnv(mjx_env.MjxEnv):
         jitter = jax.random.uniform(rng_obj, (3, 2), minval=-0.5, maxval=0.5)
         obj_xy = _OBJ_BASE_POS[:, :2] + jitter
         obj_pos = jp.concatenate([obj_xy, _OBJ_BASE_POS[:, 2:3]], axis=1)
-        mocap_pos = obj_pos
 
+        # Build mjx.Data for rendering only — frozen after this point
         data = mjx_env.make_data(
             self.mj_model,
             qpos=qpos,
             qvel=qvel,
-            mocap_pos=mocap_pos,
+            mocap_pos=obj_pos,
             impl=self.mjx_model.impl.value,
             naconmax=self._config.naconmax,
             njmax=self._config.njmax,
         )
         data = mjx.forward(self.mjx_model, data)
 
-        # Compute initial distance to red sphere for delta-based rewards
+        # Initial distance to red sphere for delta-based rewards
         dx = obj_pos[0, 0] - agent_x
         dy = obj_pos[0, 1] - agent_y
         prev_dist_red = jp.sqrt(dx**2 + dy**2)
 
         info = {
             "rng": rng,
+            "qpos": qpos,
+            "qvel": qvel,
             "step_count": jp.float32(0),
             "energy": jp.float32(_INIT_ENERGY),
             "cs_signal": jp.float32(0.0),
@@ -144,38 +147,40 @@ class PavlovianMjxEnv(mjx_env.MjxEnv):
         metrics = {"reward/task": jp.zeros(())}
         for key in TASK_METRIC_KEYS[self._task_id - 1]:
             metrics[key] = jp.zeros(())
-        obs = self._get_obs(data, info)
+        obs = self._get_obs(info)
         return mjx_env.State(data, obs, jp.zeros(()), jp.zeros(()), metrics, info)
 
     def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
-        heading = state.data.qpos[self._qpos_heading]
+        info = state.info
+        qpos = info["qpos"]
+        heading = qpos[2]
         dt = self._config.ctrl_dt
 
-        # Map 2-DOF action → kinematics (pure JAX, no mjx.step)
+        # Map 2-DOF action → kinematics
         fwd = jp.clip(action[0], 0.0, 1.0)
         omega = action[1] * (jp.pi / 2)
         vx = fwd * jp.cos(heading)
         vy = fwd * jp.sin(heading)
 
         # Integrate and clamp to arena bounds
-        new_x = jp.clip(state.data.qpos[self._qpos_x] + vx * dt, 0.25, 9.75)
-        new_y = jp.clip(state.data.qpos[self._qpos_y] + vy * dt, 0.25, 9.75)
+        new_x = jp.clip(qpos[0] + vx * dt, 0.25, 9.75)
+        new_y = jp.clip(qpos[1] + vy * dt, 0.25, 9.75)
         new_heading = heading + omega * dt
 
         new_qpos = jp.array([new_x, new_y, new_heading])
         new_qvel = jp.array([vx, vy, omega])
-        data = state.data.replace(qpos=new_qpos, qvel=new_qvel)
 
         # Base energy decay before reward function
         omega_abs = jp.abs(omega)
-        energy = state.info["energy"] - _ENERGY_DECAY - fwd * _FORWARD_COST - omega_abs * _ANGULAR_COST
-        step_count = state.info["step_count"] + 1
+        energy = info["energy"] - _ENERGY_DECAY - fwd * _FORWARD_COST - omega_abs * _ANGULAR_COST
+        step_count = info["step_count"] + 1
 
-        info = {**state.info, "energy": energy, "step_count": step_count}
+        info = {**info, "qpos": new_qpos, "qvel": new_qvel,
+                "energy": energy, "step_count": step_count}
 
         # Task-specific reward (may further modify info["energy"])
         reward_fn = TASK_FNS[self._task_id - 1]
-        reward, info, metrics = reward_fn(data, action, info, dict(state.metrics))
+        reward, info, metrics = reward_fn(state.data, action, info, dict(state.metrics))
 
         metrics["reward/task"] = reward
 
@@ -185,16 +190,15 @@ class PavlovianMjxEnv(mjx_env.MjxEnv):
             jp.float32(0.0),
         )
 
-        obs = self._get_obs(data, info)
-        return mjx_env.State(data, obs, reward, done, metrics, info)
+        obs = self._get_obs(info)
+        # data is frozen — pass through unchanged
+        return mjx_env.State(state.data, obs, reward, done, metrics, info)
 
-    def _get_obs(self, data: mjx.Data, info: dict[str, Any]) -> jax.Array:
-        x = data.qpos[self._qpos_x]
-        y = data.qpos[self._qpos_y]
-        heading = data.qpos[self._qpos_heading]
-        vx = data.qvel[0]
-        vy = data.qvel[1]
-        omega = data.qvel[2]
+    def _get_obs(self, info: dict[str, Any]) -> jax.Array:
+        qpos = info["qpos"]
+        qvel = info["qvel"]
+        x, y, heading = qpos[0], qpos[1], qpos[2]
+        vx, vy, omega = qvel[0], qvel[1], qvel[2]
         energy = info["energy"]
         step_count = info["step_count"]
 
@@ -211,10 +215,8 @@ class PavlovianMjxEnv(mjx_env.MjxEnv):
 
         obj_pos = info["obj_pos"]
         for i in range(3):
-            ox = obj_pos[i, 0]
-            oy = obj_pos[i, 1]
-            dx = ox - x
-            dy = oy - y
+            ox, oy = obj_pos[i, 0], obj_pos[i, 1]
+            dx, dy = ox - x, oy - y
             dist = jp.sqrt(dx**2 + dy**2)
             ego_angle = jp.arctan2(dy, dx) - heading
             ego_angle = jp.arctan2(jp.sin(ego_angle), jp.cos(ego_angle))

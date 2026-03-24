@@ -92,11 +92,11 @@ class TestStep:
 
     def test_agent_moves_with_forward_action(self, env, rng):
         state = env.reset(rng)
-        x_before = float(state.data.qpos[0])
-        y_before = float(state.data.qpos[1])
+        x_before = float(state.info["qpos"][0])
+        y_before = float(state.info["qpos"][1])
         state = env.step(state, jp.array([1.0, 0.0]))
-        x_after = float(state.data.qpos[0])
-        y_after = float(state.data.qpos[1])
+        x_after = float(state.info["qpos"][0])
+        y_after = float(state.info["qpos"][1])
         displacement = np.sqrt((x_after - x_before) ** 2 + (y_after - y_before) ** 2)
         assert displacement > 0.0
 
@@ -142,8 +142,8 @@ class TestEpisodeTermination:
             if float(state.done) == 1.0:
                 break
             state = jit_step(state, action)
-            x = float(state.data.qpos[0])
-            y = float(state.data.qpos[1])
+            x = float(state.info["qpos"][0])
+            y = float(state.info["qpos"][1])
             assert 0.25 <= x <= 9.75, f"x={x} out of bounds"
             assert 0.25 <= y <= 9.75, f"y={y} out of bounds"
 
