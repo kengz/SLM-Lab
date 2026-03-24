@@ -62,6 +62,20 @@ for _tc_id in range(11, 25):
         max_episode_steps=500,
     )
 
+# Register Pavlovian MJX environments (playground-native, TC-01 through TC-10)
+try:
+    from functools import partial
+    from slm_lab.env.playground import register_slm_env
+    from slm_lab.env.pavlovian_mjx import PavlovianMjxEnv, default_config
+    for _tc_id in range(1, 11):
+        register_slm_env(
+            f"SLM-Pavlovian-TC{_tc_id:02d}-v0",
+            partial(PavlovianMjxEnv, task_id=_tc_id),
+            default_config,
+        )
+except ImportError:
+    pass  # playground deps not installed
+
 logger = logger.get_logger(__name__)
 
 # Keys handled by make_env, not passed to gym.make

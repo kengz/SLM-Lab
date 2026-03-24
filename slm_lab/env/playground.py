@@ -55,6 +55,14 @@ _ACTION_REPEAT: dict[str, int] = {
     "PendulumSwingup": 4,
 }
 
+# SLM-native MjxEnv registry — bypasses mujoco_playground registry
+_SLM_ENVS: dict[str, tuple[type, callable]] = {}
+
+
+def register_slm_env(name: str, env_class: type, config_fn: callable) -> None:
+    """Register an SLM-native MjxEnv for use with PlaygroundVecEnv."""
+    _SLM_ENVS[name] = (env_class, config_fn)
+
 
 def _build_config_overrides(env_name: str) -> dict:
     """Build config overrides for the given env.
@@ -98,10 +106,14 @@ class PlaygroundVecEnv(gym.vector.VectorEnv):
         # Load the MJX environment and wrap for batched training
         # wrap_for_brax_training applies: VmapWrapper → EpisodeWrapper → BraxAutoResetWrapper
         # impl='warp' selects MJWarp (Warp-accelerated MJX) on CUDA; 'jax' on CPU
-        config_overrides = _build_config_overrides(env_name)
-        self._base_env = pg_registry.load(
-            env_name, config_overrides=config_overrides
-        )  # kept for rendering
+        if env_name in _SLM_ENVS:
+            env_cls, config_fn = _SLM_ENVS[env_name]
+            self._base_env = env_cls(config=config_fn())
+        else:
+            config_overrides = _build_config_overrides(env_name)
+            self._base_env = pg_registry.load(
+                env_name, config_overrides=config_overrides
+            )  # kept for rendering
         base_env = self._base_env
         action_repeat = _ACTION_REPEAT.get(env_name, 1)
         self._env = pg_wrapper.wrap_for_brax_training(
