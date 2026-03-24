@@ -28,6 +28,20 @@ CONTACT_RADIUS: float = 0.6       # metres
 AGENT_RADIUS: float = 0.25
 MAX_ENERGY: float = 100.0
 ENERGY_DECAY: float = 0.1         # per step
+
+# Per-task success thresholds (mirrors curriculum.py TASK_THRESHOLDS for Pavlovian tasks).
+_SUCCESS_THRESHOLDS: dict[str, float] = {
+    "stimulus_response": 0.80,
+    "temporal_contingency": 0.50,
+    "extinction": 0.70,
+    "spontaneous_recovery": 0.50,
+    "generalization": 0.70,
+    "discrimination": 0.60,
+    "reward_contingency": 1.00,
+    "partial_reinforcement": 1.00,
+    "shaping": 0.60,
+    "chaining": 0.70,
+}
 FORWARD_COST: float = 0.01
 ANGULAR_COST: float = 0.005
 MAX_FORWARD: float = 1.0          # m/s
@@ -1015,6 +1029,7 @@ class PavlovianEnv(gym.Env):
             info["chain_step"] = ts.chain_step
             info["score"] = float(ts.chains_completed / ts.chains_attempted) if ts.chains_attempted > 0 else 0.0
 
+        info["is_success"] = info.get("score", 0.0) >= _SUCCESS_THRESHOLDS.get(self.task, 1.0)
         return info
 
     # ------------------------------------------------------------------
