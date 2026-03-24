@@ -5,7 +5,7 @@
 # Phase 1: discovery (20 episodes, 500 steps) with intrinsic + sparse reward.
 # Phase 2: evaluation known tools (20 episodes, 500 steps) — no reward.
 # Phase 3: transfer novel tool (10 episodes, 500 steps) — no reward.
-# Axiom trace: Ax8 (affordances), Ax16 (equipment totality — tools have purpose-relative meaning).
+# Axiom trace: Ax8 (affordances), Ax7 (equipment totality — tools have purpose-relative meaning).
 # Pass threshold: known_rate >= 0.60; selection_rate >= 0.50; transfer_rate >= 0.40; score >= 0.50.
 #
 # Load: spec_util.get('embodied/sensorimotor_tc20.yaml', 'ppo_sensorimotor_tc20')
