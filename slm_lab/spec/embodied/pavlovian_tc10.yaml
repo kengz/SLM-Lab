@@ -71,13 +71,6 @@ ppo_pavlovian_tc10:
       max_energy: 100.0
       energy_decay: 0.1
       contact_radius: 0.6
-      chain_sequence:          # object indices in order: green=2, blue=1, red=0
-        - 2
-        - 1
-        - 0
-      step_reward: 2.0
-      completion_bonus: 20.0
-      wrong_step_penalty: -1.0
   meta:
     distributed: false
     log_frequency: 1000

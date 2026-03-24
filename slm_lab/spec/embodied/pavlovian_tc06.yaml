@@ -73,8 +73,6 @@ ppo_pavlovian_tc06:
       energy_decay: 0.1
       contact_radius: 0.6
       shaping_scale: 1.0
-      # Two-feature discrimination encoding
-      cs_encoding: visibility   # "visibility" (two-feature) or "scalar" (fallback)
   meta:
     distributed: false
     log_frequency: 1000
