@@ -64,6 +64,12 @@ for _tc_id in range(11, 25):
 
 logger = logger.get_logger(__name__)
 
+# Register evo-dex body environments (EvoDex/<body>-v0), if the package is installed
+try:
+    import evo_dex.rl  # noqa: F401
+except ImportError as e:
+    logger.debug(f"evo-dex envs unavailable: {e}")
+
 # Keys handled by make_env, not passed to gym.make
 RESERVED_KEYS = {
     "name",

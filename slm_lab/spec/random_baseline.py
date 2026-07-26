@@ -16,6 +16,13 @@ try:
 except ImportError:
     pass
 
+# Ensure evo-dex body environments are registered (same as slm_lab.env); needed here too
+# because the baseline runs in a multiprocessing pool that does not import slm_lab.env
+try:
+    import evo_dex.rl  # noqa: F401
+except ImportError:
+    pass
+
 
 FILEPATH = 'slm_lab/spec/_random_baseline.json'
 NUM_EVAL = 100
