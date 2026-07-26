@@ -24,6 +24,15 @@ def _perf_cpu_threads():
     if torch.cuda.is_available() or not optimize_perf():
         return
 
+    # Respect an explicit OMP_NUM_THREADS. A caller that pinned threads did so deliberately —
+    # typically because many env workers share few cores — and raising torch back up to the core
+    # count is a slowdown, not an optimization. Measured on a 4-core box running 16 async env
+    # workers: overriding a pinned OMP_NUM_THREADS=1 back to 4 costs ~9% on each PPO update
+    # (47s -> 43s per update when left at 1), because the small MLP's minibatches are dominated
+    # by per-op dispatch rather than FLOPs, so extra threads only add synchronization.
+    if os.environ.get("OMP_NUM_THREADS"):
+        return
+
     current, cpu_count = torch.get_num_threads(), os.cpu_count() or 1
     optimal = min(cpu_count, 32)
 
