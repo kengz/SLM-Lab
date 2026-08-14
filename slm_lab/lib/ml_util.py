@@ -120,10 +120,24 @@ def set_cuda_id(spec):
 
 
 def set_random_seed(spec):
-    '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed'''
+    '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed
+
+    The seed is derived from `time.time()` unless `spec.meta.random_seed` is set explicitly, in
+    which case that value is used verbatim. Setting it makes a session REGENERABLE: the same spec
+    re-run with the same `random_seed` draws the same network init and the same env stream.
+
+    Default behaviour is unchanged. When `random_seed` is absent or None the time-derived value is
+    used exactly as before, so every existing spec and every recorded run is unaffected.
+    '''
     trial = spec['meta']['trial']
     session = spec['meta']['session']
-    random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
+    explicit = spec['meta'].get('random_seed')
+    if explicit is None:
+        random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
+    else:
+        # Offset by trial/session so the sessions of one trial stay distinct from each other while
+        # the whole experiment remains reproducible from the one number the user supplied.
+        random_seed = int(explicit) + int(1e5 * (trial or 0) + 1e3 * (session or 0))
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
