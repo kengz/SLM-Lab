@@ -110,7 +110,20 @@ def _needs_action_rescaling(env: gym.Env) -> bool:
 def _get_vectorization_mode(
     name: str, num_envs: int, is_rendering: bool = False
 ) -> str:
-    """Select vectorization mode based on environment type."""
+    """Select vectorization mode by environment type and by what the box can actually hold.
+
+    `async` gives every env its own process, and every one of those processes pays a full import
+    of this package — measured at ~450 MB RSS each. The cost is therefore num_envs * 450 MB *per
+    concurrent session*, which the old rule never accounted for: a 4-core, 15 GB box running the
+    stock `max_session: 4` MuJoCo spec at `num_envs: 16` asks for 64 workers and ~28 GB, and dies
+    in swap rather than running slowly.
+
+    So async is used only when the workers fit the cores. `VECTORIZATION_MODE` overrides.
+    """
+    override = os.environ.get("VECTORIZATION_MODE")
+    if override:
+        return override
+
     entry_point = gym.envs.registry[name].entry_point.lower()
 
     # ALE: use AtariVectorEnv for speed, but sync mode when rendering
@@ -118,9 +131,18 @@ def _get_vectorization_mode(
     if "ale_py" in entry_point:
         return "sync" if is_rendering else "vector_entry_point"
 
-    # Complex envs benefit from async parallelization
+    # Complex envs benefit from async parallelization -- when there are cores to run them on
     is_simple = "classic_control" in entry_point or "box2d" in entry_point
-    return "sync" if is_simple or num_envs < 8 else "async"
+    if is_simple or num_envs < 8:
+        return "sync"
+    n_cpu = os.cpu_count() or 1
+    if num_envs > n_cpu:
+        logger.info(
+            f"sync vectorization: {num_envs} envs exceed {n_cpu} cores — async would cost "
+            f"~{num_envs * 450 // 1024} GB of worker processes PER SESSION with no parallelism to show for it"
+        )
+        return "sync"
+    return "async"
 
 
 def _set_env_attributes(env: gym.Env, spec: dict[str, Any]) -> None:
