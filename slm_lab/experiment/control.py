@@ -47,8 +47,8 @@ class Session:
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, "session")
 
-        # Apply perf optimizations for all sessions
-        self.perf_setup = optimize()
+        # Apply perf optimizations for all sessions; sessions run concurrently and share the cores
+        self.perf_setup = optimize(self.spec["meta"].get("max_session", 1))
 
         self.agent, self.env = make_agent_env(self.spec, global_nets)
         self._rigorous_eval = self.spec.get("meta", {}).get("rigorous_eval", False)

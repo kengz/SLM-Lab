@@ -11,23 +11,32 @@ from slm_lab.lib.env_var import optimize_perf, profile
 logger = logger.get_logger(__name__)
 
 
-def optimize():
-    """Apply all perf optimizations."""
-    _perf_cpu_threads()
+def optimize(n_concurrent: int = 1):
+    """Apply all perf optimizations. `n_concurrent` = sessions sharing this machine."""
+    _perf_cpu_threads(n_concurrent)
     _perf_gpu()
     _perf_memory()
     return _get_perf_status()
 
 
-def _perf_cpu_threads():
-    """Optimize CPU threading."""
+def _perf_cpu_threads(n_concurrent: int = 1):
+    """Give torch its SHARE of the cores, not all of them.
+
+    This runs inside every session process, and a trial runs `meta.max_session` of them at once.
+    Sizing the thread pool from `os.cpu_count()` therefore hands each session the whole machine:
+    with the stock `max_session: 4` benchmark specs on a 4-core box, four processes each claimed
+    4 threads, and OpenMP's spin-wait burned the cores that the env workers needed.
+
+    Measured on that box, PPO Hopper: 10.5 frames/s per session before, ~500 after. The
+    optimisation was costing ~50x on the configuration it was meant to help.
+    """
     if torch.cuda.is_available() or not optimize_perf():
         return
 
-    current, cpu_count = torch.get_num_threads(), os.cpu_count() or 1
-    optimal = min(cpu_count, 32)
+    cpu_count = os.cpu_count() or 1
+    optimal = max(1, min(cpu_count // max(1, n_concurrent), 32))
 
-    if current < optimal:
+    if torch.get_num_threads() != optimal:
         torch.set_num_threads(optimal)
         for var in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "BLAS_NUM_THREADS"]:
             os.environ.setdefault(var, str(optimal))
