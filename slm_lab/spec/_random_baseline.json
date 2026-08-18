@@ -533,5 +533,121 @@
   "EvoDex/Aptenodytes_forsteri-v0": {
     "mean": 93.74277535011451,
     "std": 14.213190034268676
+  },
+  "EvoDex/salamander-v0": {
+    "mean": 101.01864711724856,
+    "std": 2.7664728795012636
+  },
+  "EvoDex/Aptenodytes_forsteri-fa-v0": {
+    "mean": 90.3159275449683,
+    "std": 16.386228042821692
+  },
+  "EvoDex/Aptenodytes_forsteri-scr0-v0": {
+    "mean": 95.31427953574895,
+    "std": 10.39776074959644
+  },
+  "EvoDex/Aptenodytes_forsteri-scr1-v0": {
+    "mean": 92.79589871576918,
+    "std": 10.082664808056048
+  },
+  "EvoDex/Aptenodytes_forsteri-scr2-v0": {
+    "mean": 96.19974861600932,
+    "std": 8.03399348841612
+  },
+  "EvoDex/Aptenodytes_forsteri-scr3-v0": {
+    "mean": 94.42148414971898,
+    "std": 7.800582386135345
+  },
+  "EvoDex/Aptenodytes_forsteri-scr4-v0": {
+    "mean": 93.63432295983745,
+    "std": 9.586985835803343
+  },
+  "EvoDex/m0-shared-v0": {
+    "mean": 100.12564237143823,
+    "std": 0.5563941971984754
+  },
+  "EvoDex/m1-family-v0": {
+    "mean": 100.11463574357704,
+    "std": 0.6802301613087968
+  },
+  "EvoDex/m1-heldout-v0": {
+    "mean": 74.64343989939412,
+    "std": 22.46204114153742
+  },
+  "EvoDex/stock-ant-v0": {
+    "mean": 15.462336031305409,
+    "std": 47.1688359366167
+  },
+  "EvoDex/stock-half_cheetah-v0": {
+    "mean": -12.789423488241919,
+    "std": 53.02992064430699
+  },
+  "EvoDex/stock-walker2d-v0": {
+    "mean": -0.10622651333370767,
+    "std": 1.40824051160188
+  },
+  "EvoDex/Adenomus_kelaartii-v0": {
+    "mean": 99.53695657218321,
+    "std": 0.27215267875903587
+  },
+  "EvoDex/Diadectes_phaseolinus_-v0": {
+    "mean": 99.59741457075788,
+    "std": 0.3756903399035817
+  },
+  "EvoDex/Spheniscus_humboldti-v0": {
+    "mean": 73.02409770140173,
+    "std": 34.3332182607663
+  },
+  "EvoDex/Elephantulus_rozeti-v0": {
+    "mean": 99.87803230583975,
+    "std": 0.20086474072174518
+  },
+  "EvoDex/Molossus_rufus-v0": {
+    "mean": 77.77105258308193,
+    "std": 18.98567354810427
+  },
+  "EvoDex/Sorex_monticolus-v0": {
+    "mean": 99.94075916635641,
+    "std": 0.04484555149170486
+  },
+  "EvoDex/Moloch_horridus-v0": {
+    "mean": 99.21820822516038,
+    "std": 0.28399748923189727
+  },
+  "EvoDex/gecko-v0": {
+    "mean": 99.52488767454048,
+    "std": 0.5810468200673625
+  },
+  "EvoDex/Alligator_mississippiensis-v0": {
+    "mean": 89.5731302589415,
+    "std": 15.71576350989404
+  },
+  "EvoDex/Alectoris_rufa-v0": {
+    "mean": 84.70188300072067,
+    "std": 8.718593094184994
+  },
+  "EvoDex/gecko-abl-v0": {
+    "mean": 98.13218941940977,
+    "std": 1.5255584516427585
+  },
+  "EvoDex/Alligator_mississippiensis-abl-v0": {
+    "mean": 35.75141919654193,
+    "std": 39.338192059229556
+  },
+  "EvoDex/Sorex_monticolus-abl-v0": {
+    "mean": 99.88196372639582,
+    "std": 0.10379283564084077
+  },
+  "EvoDex/Aptenodytes_forsteri-abl-v0": {
+    "mean": 73.60826075895002,
+    "std": 34.0886418801576
+  },
+  "EvoDex/salamander-abl-v0": {
+    "mean": 99.50000902184968,
+    "std": 1.7920099665703142
+  },
+  "EvoDex/Ardenna_grisea-v0": {
+    "mean": 35.470057742143254,
+    "std": 37.43054561246644
   }
 }
